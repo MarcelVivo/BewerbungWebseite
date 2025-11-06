@@ -1,0 +1,29 @@
+[
+  {
+    "id": "44905c93-bad8-4939-9156-79eedb796afa",
+    "title": "1761949481798 SCRUMZertifikat",
+    "type": "certificate",
+    "description": "",
+    "url": "/uploads/1761949481798-SCRUMZertifikat.pdf",
+    "code": "",
+    "createdAt": 1761949483379
+  },
+  {
+    "id": "979d8d7c-291a-4a56-a904-dfbc1c28f399",
+    "title": "1761949580332 ArbeitszeugnisMarcelSpahr2025",
+    "type": "zeugnis",
+    "description": "",
+    "url": "/uploads/1761949580332-ArbeitszeugnisMarcelSpahr2025.pdf",
+    "code": "",
+    "createdAt": 1761949583112
+  },
+  {
+    "id": "71d2bce8-2277-4f4b-820d-07616e4e6b2e",
+    "title": "1762008184566 SAFeZertifikatMarcelSpahr",
+    "type": "certificate",
+    "description": "",
+    "url": "/uploads/1762008184566-SAFeZertifikatMarcelSpahr.pdf",
+    "code": "",
+    "createdAt": 1762008188161
+  }
+]

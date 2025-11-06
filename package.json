@@ -1,0 +1,23 @@
+{
+  "name": "ms-bewerbung",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "NODE_ENV=development node server.js",
+    "test": "echo \"No tests configured\" && exit 0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "Private Bewerbungs-Webseite (Vanilla JS + Express)",
+  "type": "module",
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "express-session": "^1.18.2",
+    "fs-extra": "^11.3.2",
+    "multer": "^2.0.2",
+    "uuid": "^13.0.0"
+  }
+}

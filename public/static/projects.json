@@ -1,0 +1,37 @@
+[
+  {
+    "id": "photo-portrait",
+    "title": "Portrait",
+    "type": "photo",
+    "url": "assets/portrait.jpg",
+    "createdAt": 1761945566359
+  },
+  {
+    "id": "cv",
+    "title": "Lebenslauf (PDF)",
+    "type": "cv",
+    "url": "assets/CV.pdf",
+    "createdAt": 1762040000000
+  },
+  {
+    "id": "scrum",
+    "title": "SCRUM Zertifikat",
+    "type": "certificate",
+    "url": "assets/SCRUMZertifikat.pdf",
+    "createdAt": 1761949481798
+  },
+  {
+    "id": "safe",
+    "title": "SAFe Zertifikat",
+    "type": "certificate",
+    "url": "assets/SAFeZertifikatMarcelSpahr.pdf",
+    "createdAt": 1762008184566
+  },
+  {
+    "id": "workref",
+    "title": "Arbeitszeugnis (2025)",
+    "type": "zeugnis",
+    "url": "assets/ArbeitszeugnisMarcelSpahr2025.pdf",
+    "createdAt": 1761949580332
+  }
+]
