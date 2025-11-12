@@ -1,0 +1,20 @@
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ✅ audit secrets and track compliance: https://dotenvx.com/ops
+/Users//Users/marcelspahr/Desktop/MSBewerbungWebseite/node_modules/path-to-regexp/dist/index.js:96
+            throw new PathError(`Missing parameter name at index ${index}`, str);
+                  ^
+
+PathError [TypeError]: Missing parameter name at index 1: *; visit https://git.new/pathToRegexpError for info
+    at name (/Users/marcelspahr/Desktop/MSBewerbungWebseite/node_modules/path-to-regexp/dist/index.js:96:19)
+    at parse (/Users/marcelspahr/Desktop/MSBewerbungWebseite/node_modules/path-to-regexp/dist/index.js:113:68)
+    at pathToRegexp (/Users/marcelspahr/Desktop/MSBewerbungWebseite/node_modules/path-to-regexp/dist/index.js:267:58)
+    at Object.match (/Users/marcelspahr/Desktop/MSBewerbungWebseite/node_modules/path-to-regexp/dist/index.js:237:30)
+    at matcher (/Users/marcelspahr/Desktop/MSBewerbungWebseite/node_modules/router/lib/layer.js:86:23)
+    at new Layer (/Users/marcelspahr/Desktop/MSBewerbungWebseite/node_modules/router/lib/layer.js:93:62)
+    at Function.route (/Users/marcelspahr/Desktop/MSBewerbungWebseite/node_modules/router/index.js:428:17)
+    at Function.route (/Users/marcelspahr/Desktop/MSBewerbungWebseite/node_modules/express/lib/application.js:257:22)
+    at app.<computed> [as get] (/Users/marcelspahr/Desktop/MSBewerbungWebseite/node_modules/express/lib/application.js:478:22)
+    at file:///Users/marcelspahr/Desktop/MSBewerbungWebseite/server.js:237:5 {
+  originalPath: '*'
+}
+
+Node.js v20.19.5

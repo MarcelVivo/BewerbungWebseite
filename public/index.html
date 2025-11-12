@@ -30,11 +30,16 @@
       };
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="/static/app.css?v=3" />
+    <link rel="stylesheet" href="/static/app.css?v=4" />
   </head>
   <body class="bg-ms-50 text-slate-900">
     <div id="root"></div>
-    <script>window.STATIC_MODE = true;</script>
-    <script defer src="/static/app.js?v=4"></script>
+    <!-- React + ReactDOM (UMD) -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel for in-browser JSX transform (replace with build step in prod) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- React SPA -->
+    <script type="text/babel" data-type="module" data-presets="env,react" src="/static/react-app.jsx?v=1"></script>
   </body>
   </html>

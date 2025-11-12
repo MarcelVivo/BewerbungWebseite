@@ -5,6 +5,9 @@
   "scripts": {
     "start": "node server.js",
     "dev": "NODE_ENV=development node server.js",
+    "client:dev": "vite",
+    "client:build": "vite build",
+    "client:preview": "vite preview --host",
     "test": "echo \"No tests configured\" && exit 0"
   },
   "keywords": [],
@@ -13,11 +16,18 @@
   "description": "Private Bewerbungs-Webseite (Vanilla JS + Express)",
   "type": "module",
   "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.28.0",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "express-session": "^1.18.2",
     "fs-extra": "^11.3.2",
     "multer": "^2.0.2",
     "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.2",
+    "vite": "^5.4.10"
   }
 }

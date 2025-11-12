@@ -1,0 +1,680 @@
+// Vanilla JS SPA (no React)
+(function () {
+  'use strict';
+
+  // --- State ---
+  const state = {
+    current: 'home',
+    items: [],
+    role: null,
+    loading: true,
+    docTab: 'alle',
+    viewer: null,
+  };
+
+  // --- Config/Mode ---
+  const STATIC = typeof window !== 'undefined' && !!window.STATIC_MODE;
+
+  // --- Utils ---
+  const qs = (sel, el = document) => el.querySelector(sel);
+  const qsa = (sel, el = document) => Array.from(el.querySelectorAll(sel));
+
+  async function api(path, options = {}) {
+    const res = await fetch(path, options);
+    if (!res.ok) throw new Error(await res.text().catch(() => res.statusText));
+    return res.json();
+  }
+
+  function el(tag, props = {}, ...children) {
+    const node = document.createElement(tag);
+    for (const [k, v] of Object.entries(props || {})) {
+      if (v == null) continue;
+      if (k === 'class' || k === 'className') node.className = v;
+      else if (k === 'style' && typeof v === 'object') Object.assign(node.style, v);
+      else if (k.startsWith('on') && typeof v === 'function') node.addEventListener(k.slice(2).toLowerCase(), v);
+      else if (k === 'dataset' && v && typeof v === 'object') Object.assign(node.dataset, v);
+      else if (k in node) node[k] = v;
+      else node.setAttribute(k, v);
+    }
+    for (const c of children.flat()) {
+      if (c == null) continue;
+      node.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+    }
+    return node;
+  }
+
+  function navigate(target) {
+    state.current = target;
+    render();
+  }
+
+  function openPdf(item) {
+    if (!item || !item.url) return;
+    state.viewer = { url: item.url, title: item.title || 'Dokument' };
+    navigate('viewer');
+  }
+
+  async function logout() {
+    try { await fetch('/api/logout', { method: 'POST' }); } catch {}
+    window.location.href = '/login';
+  }
+
+  // --- Navbar ---
+  function Navbar() {
+    const container = el('header', { className: 'nav-blue sticky top-0 z-10' },
+      el('div', { className: 'container-narrow px-4 py-3 flex items-center justify-between' },
+        el('div', { className: 'flex items-center gap-3' },
+          el('div', { className: 'brand-name text-xl font-semibold text-slate-900' }, 'Marcel Spahr'),
+          el('span', { className: 'hidden sm:inline text-slate-700 label-pill' }, 'Wirtschaftsinformatiker')
+        ),
+        el('nav', { className: 'flex items-center gap-1' },
+          ...['home', ...(state.role === 'owner' && !STATIC ? ['projects'] : []), 'contact'].map((id) =>
+            el('button', {
+              className: 'px-3 py-1.5 rounded-lg text-sm font-medium ' + (state.current === id ? 'bg-ms-600 text-white' : 'hover:bg-ms-100 text-slate-700'),
+              onclick: () => navigate(id)
+            }, id === 'home' ? 'Start' : id === 'projects' ? 'Projekte' : 'Kontakt')
+          ),
+          (!STATIC ? el('button', { className: 'ml-2 px-3 py-1.5 rounded-lg text-sm bg-ms-100 hover:bg-ms-200 text-slate-700', onclick: logout }, 'Logout') : null)
+        )
+      )
+    );
+    return container;
+  }
+
+  // --- Home (hero + timeline + documents) ---
+  async function getAutoAvatarUrl() {
+    try {
+      const d = await api('/api/assets/avatar');
+      return d && d.url ? d.url : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function buildAvatar(imgEl, items, autoUrl) {
+    const photo = items.find((i) => i.type === 'photo');
+    const candidates = [];
+    if (photo && photo.url) candidates.push(photo.url);
+    if (autoUrl) candidates.push(autoUrl);
+    candidates.push('/assets/portrait.jpg', '/assets/portrait.jpeg', '/assets/portrait.png');
+    candidates.push('/assets/marcel.jpg', '/assets/marcel.jpeg', '/assets/marcel.png');
+    candidates.push('/assets/marcelspahr.jpg', '/assets/marcelspahr.jpeg');
+    candidates.push('/assets/foto.jpg', '/assets/photo.jpg');
+    candidates.push('https://api.dicebear.com/9.x/initials/svg?seed=Marcel%20Spahr');
+
+    let idx = 0;
+    function setNext() {
+      if (idx < candidates.length) {
+        imgEl.src = candidates[idx++];
+      }
+    }
+    imgEl.addEventListener('error', setNext);
+    setNext();
+  }
+
+  function Documents(items) {
+    const wrap = el('section', { id: 'docs', className: 'container-narrow px-4 space-y-4' });
+    wrap.appendChild(el('div', { className: 'label-pill inline-block' }, 'Zeugnisse, Nachweise & Zertifikate'));
+
+    const tabs = [
+      { id: 'alle', label: 'Alle' },
+      { id: 'zertifikate', label: 'Zertifikate' },
+      { id: 'sprachen', label: 'Sprachen' },
+      { id: 'arbeitszeugnisse', label: 'Arbeitszeugnisse' },
+      { id: 'diplome', label: 'Diplome' },
+    ];
+    const tabsEl = el('div', { className: 'flex gap-2' }, ...tabs.map((t) =>
+      el('button', {
+        className: 'px-3 py-1.5 rounded-lg text-sm font-medium ' + (state.docTab === t.id ? 'bg-ms-600 text-white' : 'hover:bg-ms-100 text-slate-700'),
+        onclick: () => { state.docTab = t.id; render(); }
+      }, t.label)
+    ));
+    wrap.appendChild(tabsEl);
+
+    const grid = el('div', { className: 'grid sm:grid-cols-2 md:grid-cols-3 gap-4' });
+
+    const isImg = (u = '') => /\.(png|jpe?g|webp|avif|gif)$/i.test(u);
+    const isPdf = (u = '') => /\.pdf$/i.test(u);
+    const classify = (it) => {
+      const t = (it.type || '').toLowerCase();
+      const title = (it.title || '').toLowerCase();
+      if (t === 'zeugnis' || /arbeitszeugnis|zeugnis/.test(title)) return 'arbeitszeugnisse';
+      if (t === 'language' || /englisch|english|language/.test(title)) return 'sprachen';
+      if (t === 'diploma' || /diplom|diploma/.test(title)) return 'diplome';
+      if (t === 'certificate' || /zertifikat|certificate|scrum|safe/.test(title)) return 'zertifikate';
+      return 'alle';
+    };
+
+    const allDocs = items.filter((it) => {
+      const t = (it.type || '').toLowerCase();
+      const title = (it.title || '').toLowerCase();
+      return (
+        ['certificate', 'zeugnis', 'diploma', 'language', 'pdf', 'link', 'cv'].includes(t) ||
+        /(lebenslauf|curriculum\s*vitae|cv|zeugnis|zertifikat|certificate|diplom|diploma|englisch|english|nachweis)/i.test(title)
+      );
+    });
+
+    const present = { scrum: false, safe: false, english: false, workref: false };
+    for (const it of allDocs) {
+      const title = (it.title || '').toLowerCase();
+      const t = (it.type || '').toLowerCase();
+      if (/scrum/.test(title) || (t === 'certificate' && /scrum/.test(title))) present.scrum = true;
+      if (/safe/.test(title) || /scaled\s*agile/.test(title)) present.safe = true;
+      if (/englisch|english/.test(title) || t === 'language') present.english = true;
+      if ((/zeugnis/.test(title) && /swisscom/.test(title)) || t === 'zeugnis') present.workref = true;
+    }
+
+    const placeholders = [
+      { key: 'scrum', title: 'SCRUM Zertifikat', tabs: ['alle', 'zertifikate'], caption: 'Unter „Projekte“ als Typ „certificate“ hochladen.' },
+      { key: 'english', title: 'Englisch Diplom', tabs: ['alle', 'sprachen', 'diplome'], caption: 'Als „language“ oder „pdf“ hinzufügen.' },
+      { key: 'safe', title: 'SAFe Zertifikat', tabs: ['alle', 'zertifikate'], caption: 'Als „certificate“ hinzufügen.' },
+      { key: 'workref', title: 'Arbeitszeugnis Swisscom', tabs: ['alle', 'arbeitszeugnisse'], caption: 'Als „zeugnis“ oder „pdf“ hinzufügen.' },
+    ];
+
+    const filtered = allDocs.filter((it) => state.docTab === 'alle' || classify(it) === state.docTab);
+    const cards = [...filtered.map((it) => ({ ...it, _placeholder: false }))];
+    for (const ph of placeholders) {
+      if (!ph.tabs.includes(state.docTab)) continue;
+      if (present[ph.key]) continue;
+      cards.push({ id: `ph-${ph.key}`, title: ph.title, type: 'placeholder', url: '', _placeholder: true, caption: ph.caption });
+    }
+
+    for (const it of cards) {
+      if (it._placeholder) {
+        grid.appendChild(
+          el('div', { className: 'card p-3 bg-white/90' },
+            el('div', { className: 'flex items-center gap-3' },
+              el('div', { className: 'w-16 h-16 rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center bg-slate-50 text-[10px] text-slate-500' }, 'Platzhalter'),
+              el('div', null,
+                el('div', { className: 'font-medium text-slate-800' }, it.title),
+                el('div', { className: 'text-xs text-slate-500 mt-0.5' }, it.caption)
+              )
+            )
+          )
+        );
+      } else {
+        const pdf = isPdf(it.url);
+        if (pdf) {
+          grid.appendChild(
+            el('div', { className: 'card p-3 hover:shadow-md transition bg-white/95 cursor-pointer', onclick: () => openPdf(it) },
+              el('div', { className: 'flex items-center gap-3' },
+                el('div', { className: 'w-16 h-16 rounded-lg ring-1 ring-slate-200 flex items-center justify-center overflow-hidden bg-slate-50' },
+                  el('span', { className: 'text-xs font-bold text-slate-600' }, 'PDF')
+                ),
+                el('div', null,
+                  el('div', { className: 'font-medium text-slate-800' }, it.title || 'Nachweis'),
+                  el('div', { className: 'text-xs text-slate-500 mt-0.5' }, it.type || 'Dokument')
+                )
+              )
+            )
+          );
+        } else {
+          grid.appendChild(
+            el('a', { href: it.url || '#', target: it.url ? '_blank' : null, className: 'card p-3 hover:shadow-md transition bg-white/95' },
+              el('div', { className: 'flex items-center gap-3' },
+                el('div', { className: 'w-16 h-16 rounded-lg ring-1 ring-slate-200 flex items-center justify-center overflow-hidden bg-slate-50' },
+                  isImg(it.url)
+                    ? el('img', { src: it.url, alt: it.title || 'Vorschau', className: 'w-full h-full object-cover' })
+                    : el('span', { className: 'text-xs font-bold text-slate-600' }, (it.type || 'Dokument').toUpperCase())
+                ),
+                el('div', null,
+                  el('div', { className: 'font-medium text-slate-800' }, it.title || 'Nachweis'),
+                  el('div', { className: 'text-xs text-slate-500 mt-0.5' }, it.type || 'Dokument')
+                )
+              )
+            )
+          );
+        }
+      }
+    }
+
+    wrap.appendChild(grid);
+    return wrap;
+  }
+
+  async function Home() {
+    const main = el('main', { className: 'space-y-10' });
+    const hero = el('section', { className: 'hero border-b border-sky-100' },
+      el('div', { className: 'container-narrow px-4 py-10 grid md:grid-cols-2 gap-8 items-center' },
+        el('div', null,
+          el('div', { className: 'flex items-center gap-6' },
+            (() => { const img = el('img', { alt: 'Foto von Marcel Spahr', className: 'w-28 h-28 md:w-36 md:h-36 rounded-full object-cover ring-soft bg-white' });
+                      // Fill avatar src candidates
+                      getAutoAvatarUrl().then((u) => buildAvatar(img, state.items, u));
+                      return img; })(),
+            el('div', null,
+              el('h1', { className: 'brand-name text-3xl md:text-4xl font-semibold text-slate-900' }, 'Marcel Spahr'),
+              el('div', { className: 'mt-2 label-pill inline-flex' }, 'Wirtschaftsinformatiker')
+            )
+          ),
+          el('p', { className: 'mt-5 text-slate-700 leading-relaxed max-w-2xl' }, 'Kreativer Wirtschaftsinformatiker mit technischem Verständnis, Empathie und digitalem Gespür.'),
+          el('p', { className: 'mt-3 text-slate-700 leading-relaxed max-w-2xl' }, 'Meine Leidenschaft ist es, technisches Know-how mit kreativen Ideen zu verbinden. Mit langjähriger Erfahrung im Marketing und Online-Business gestalte ich individuelle Kundenerlebnisse. Mein Talent für strategische Planung, Organisation und vernetztes Denken erlaubt mir, effizient, kundenorientiert und wirtschaftlich sinnvoll zu handeln. Die Begeisterung für digitale Innovationen treibt mich an, mein Wissen stetig zu erweitern und Lösungen mit technologischem Fortschritt zu verbinden.'),
+          (() => {
+            const row = el('div', { className: 'mt-5 flex flex-wrap gap-2' });
+            // Try to find a CV in items or a default assets/CV.pdf
+            const findCv = () => {
+              const byType = state.items.find((i) => (i.type || '').toLowerCase() === 'cv');
+              if (byType && byType.url) return byType.url;
+              const byTitle = state.items.find((i) => /lebenslauf|curriculum\s*vitae|\bcv\b/i.test(i.title || '') && /pdf|link|cv/i.test(i.type || ''));
+              if (byTitle && byTitle.url) return byTitle.url;
+              // fallback to conventional path
+              return 'assets/CV.pdf';
+            };
+            const cvUrl = findCv();
+            // Always render button; if file fehlt, 404 – daher Hinweis-Title bereitstellen
+            row.append(
+              el('a', { href: cvUrl, target: '_blank', className: 'btn btn-primary px-4 py-2' }, 'Lebenslauf (PDF)'),
+              el('a', { href: '#docs', className: 'btn btn-soft px-4 py-2' }, 'Alle Dokumente ansehen')
+            );
+            return row;
+          })()
+        ),
+        el('aside', { className: 'card p-5 bg-white/90 sticky-aside' },
+          el('h3', { className: 'text-sm tracking-widest font-bold text-slate-700 mb-3' }, 'Kontakt'),
+          el('ul', { className: 'text-slate-700 space-y-2' },
+            el('li', null, 'Bern, Schweiz'),
+            el('li', null, '+41 79 511 09 11'),
+            el('li', null, el('a', { href: 'mailto:marcelspahr82@bluewin.ch', className: 'link-blue' }, 'marcelspahr82@bluewin.ch'))
+          ),
+          el('div', { className: 'mt-3 flex flex-wrap gap-2' },
+            el('span', { className: 'tag' }, 'Deutsch'),
+            el('span', { className: 'tag' }, 'Englisch B1')
+          ),
+          el('div', { className: 'mt-6' },
+            el('div', { className: 'label-pill inline-block mb-2' }, 'Skills'),
+            el('details', { className: 'accordion mb-2', open: true },
+              el('summary', null, el('span', { className: 'badge' }, 'Soft Skills'), el('span', { className: 'ml-2 font-medium' }, 'Persönliche Stärken')),
+              el('div', { className: 'skills-list' },
+                el('ul', null,
+                  el('li', null, 'Analytisches Denken & Problemlösung'),
+                  el('li', null, 'Kommunikationsstark'),
+                  el('li', null, 'Organisationstalent'),
+                  el('li', null, 'Geduldig und zuverlässig'),
+                  el('li', null, 'Stakeholder‑Management & Schnittstellenkommunikation'),
+                  el('li', null, 'Strukturiertes Arbeiten & Priorisierung'),
+                  el('li', null, 'Moderation von Workshops & Meetings'),
+                  el('li', null, 'Kunden‑ und Serviceorientierung'),
+                  el('li', null, 'Selbstorganisation & Zeitmanagement'),
+                  el('li', null, 'Lernbereitschaft & Neugier'),
+                  el('li', null, 'Verantwortungsbewusstsein & Entscheidungsfreude')
+                )
+              )
+            ),
+            el('details', { className: 'accordion mb-2' },
+              el('summary', null, el('span', { className: 'badge' }, 'Tech Skills'), el('span', { className: 'ml-2 font-medium' }, 'Wirtschaftsinformatik & IT')),
+              el('div', { className: 'skills-list' },
+                el('ul', null,
+                  el('li', null, 'Requirements Engineering (User Stories, Use Cases, Akzeptanzkriterien)'),
+                  el('li', null, 'IT‑Projektmanagement & Agile Methoden (Scrum/Kanban, Backlog, Estimation)'),
+                  el('li', null, 'Geschäftsprozessanalyse & ‑modellierung (BPMN 2.0)'),
+                  el('li', null, 'UML‑Diagramme (Klassendiagramm, Aktivitäts‑ & Sequenzdiagramm)'),
+                  el('li', null, 'Datenmodellierung (ERM), Normalisierung'),
+                  el('li', null, 'Relationale Datenbanken & SQL (Joins, Views, Transaktionen, Indexe)'),
+                  el('li', null, 'Datenanalyse & Reporting (Power BI/Tableau, Excel Pivot)'),
+                  el('li', null, 'ETL/ELT & Data Warehousing (Star/Snowflake Schema)'),
+                  el('li', null, 'API‑Grundlagen (REST/HTTP, JSON, OpenAPI/Swagger)'),
+                  el('li', null, 'Web‑Grundlagen & Prototyping (HTML/CSS/JavaScript)'),
+                  el('li', null, 'Versionsverwaltung & Zusammenarbeit (Git/GitHub, Branching)'),
+                  el('li', null, 'Testen & Qualitätssicherung (Testfälle, Unit/Integration, UAT)'),
+                  el('li', null, 'IT‑Security & Datenschutz (OWASP Basics, DSGVO)'),
+                  el('li', null, 'Cloud & DevOps Basics (CI/CD, Docker‑Grundlagen)'),
+                  el('li', null, 'Skripting & Automatisierung (Shell/Node‑Basics)'),
+                  el('li', null, 'Künstliche Intelligenz / Prompting (produktiver Einsatz im Alltag)')
+                )
+              )
+            ),
+            el('details', { className: 'accordion mb-2' },
+              el('summary', null, el('span', { className: 'badge' }, 'Operative Skills'), el('span', { className: 'ml-2 font-medium' }, 'Support & Operations')),
+              el('div', { className: 'skills-list' },
+                el('ul', null,
+                  el('li', null, '1st/2nd Level Support'),
+                  el('li', null, 'Systemadministration (Tech & Admin)'),
+                  el('li', null, 'Workflow‑Optimierung im Kundenservice'),
+                  el('li', null, 'Retention‑ & Sales‑Prozesse')
+                )
+              )
+            ),
+            el('details', { className: 'accordion mb-2' },
+              el('summary', null, el('span', { className: 'badge' }, 'Kreative Skills'), el('span', { className: 'ml-2 font-medium' }, 'Marketing & Content')),
+              el('div', { className: 'skills-list' },
+                el('ul', null,
+                  el('li', null, 'Videoproduktion'),
+                  el('li', null, 'Adobe Photoshop & Illustrator'),
+                  el('li', null, 'Marketingkenntnisse & Erfahrung'),
+                  el('li', null, 'Content‑Erstellung')
+                )
+              )
+            ),
+            el('details', { className: 'accordion mb-2' },
+              el('summary', null, el('span', { className: 'badge' }, 'Software'), el('span', { className: 'ml-2 font-medium' }, 'Tools')),
+              el('div', { className: 'skills-list' },
+                el('ul', null,
+                  el('li', null, 'Windows & macOS'),
+                  el('li', null, 'Microsoft Office 365'),
+                  el('li', null, 'Jira & Confluence'),
+                  el('li', null, 'Git & GitHub'),
+                  el('li', null, 'VS Code'),
+                  el('li', null, 'Power BI'),
+                  el('li', null, 'Figma & Miro')
+                )
+              )
+            ),
+            el('details', { className: 'accordion' },
+              el('summary', null, el('span', { className: 'badge' }, 'Sprachen'), el('span', { className: 'ml-2 font-medium' }, 'Languages')),
+              el('div', { className: 'skills-list' },
+                el('ul', null,
+                  el('li', null, 'Deutsch (Muttersprache)'),
+                  el('li', null, 'Englisch (B1)')
+                )
+              )
+            ),
+            el('details', { className: 'accordion' },
+              el('summary', null, el('span', { className: 'badge' }, 'Zertifikate'), el('span', { className: 'ml-2 font-medium' }, 'Nachweise')),
+              el('div', { className: 'skills-list' },
+                el('ul', null,
+                  el('li', null, 'Professional Scrum Master I (Sep 2024)')
+                )
+              )
+            )
+          )
+        )
+      )
+    );
+    main.appendChild(hero);
+    // CV timeline directly under hero
+    main.appendChild(CvSection());
+    main.appendChild(Documents(state.items));
+    return main;
+  }
+
+  // --- CV Section (timelines) ---
+  function CvSection() {
+    const section = el('section', { id: 'cv', className: 'container-narrow px-4 space-y-6' });
+
+    // Helper to add one timeline block
+    function addBlock(title, items) {
+      if (title) section.appendChild(el('h3', { className: 'text-slate-800 font-semibold' }, title));
+      const tl = el('div', { className: 'timeline' });
+      items.forEach((it, idx) => {
+        const item = el('div', { className: 'timeline-item' });
+        const details = el('details', { className: 'accordion', open: idx === 0 });
+        const summary = el('summary', null,
+          el('span', { className: 'badge' }, it.period),
+          el('span', { className: 'ml-2 font-medium' }, it.title),
+          it.subtitle ? el('span', { className: 'ml-2 text-slate-500' }, it.subtitle) : null
+        );
+        const body = el('div', null,
+          it.bullets && it.bullets.length
+            ? el('ul', { className: 'cv-summary' }, ...it.bullets.map((b) => el('li', null, b)))
+            : null
+        );
+        details.appendChild(summary);
+        details.appendChild(body);
+        item.appendChild(details);
+        tl.appendChild(item);
+      });
+      section.appendChild(tl);
+    }
+
+    // Beruflicher Werdegang
+    section.appendChild(el('div', { className: 'label-pill inline-block' }, 'Beruflicher Werdegang'));
+    addBlock('', [
+      {
+        period: '2008 – 2025',
+        title: 'Swisscom Schweiz AG',
+        subtitle: 'IT-Support, Systemadministration & Prozessdigitalisierung',
+        bullets: [
+          'Mitarbeit bei der Digitalisierung interner Prozesse (z. B. Projekt X‑ITE) und Verbesserung der Kundenkommunikation.',
+          '1st/2nd Level Support und Systemadministration für Privatkunden (Tech & Admin).',
+          'Analyse und Lösung von IT‑Problemen, Optimierung von Workflows im Kundenservice.',
+          'Betreuung von Retention‑ und Sales‑Management‑Prozessen.'
+        ]
+      },
+      {
+        period: '2007 – 2008',
+        title: 'Freelance Einsätze als Werbetechniker',
+        subtitle: 'Frontwork Zürich; Seka Thun',
+        bullets: [
+          'Umsetzung von Markenauftritten und Shop‑Redesigns (u. a. Swisscom Shops Schweiz).',
+          'Event‑/Sportproduktion (EM 2008 Projekte).'
+        ]
+      }
+    ]);
+
+    // Ausbildung
+    section.appendChild(el('div', { className: 'label-pill inline-block' }, 'Schulausbildung, Lehrabschlüsse (EFZ) & aktuelles Studium'));
+    addBlock('', [
+      {
+        period: '2023 – heute',
+        title: 'Feusi HF Wankdorf Bern',
+        subtitle: 'Studium Wirtschaftsinformatik (4. Semester)',
+        bullets: [
+          'Fokus: Datenanalyse, Prozessoptimierung, IT‑Systeme und Digitalisierung.',
+          'Erlernte Konzepte: E‑Marketing, Datenbanken, BPMN, IT‑Projektmanagement, KI & Requirements Engineering.',
+          'Notenschnitt ca. 5.5 (bisher).'
+        ]
+      },
+      { period: '2004 – 2007', title: 'Ambühl Werbung AG Bern', subtitle: 'Lehre mit EFZ als Werbetechniker' },
+      { period: '2002 – 2004', title: 'Roth Malerei AG Solothurn', subtitle: '2. & 3. Lehrjahr Maler, Abschluss EFZ' },
+      { period: '2001 – 2002', title: 'Rekrutenschule und Temporäre Arbeit als Maler' },
+      { period: '1999 – 2001', title: 'Branger & Frigerio Solothurn', subtitle: '1. & 2. Lehrjahr als Maler' },
+      { period: '1996 – 1999', title: 'Sekundarschule Bellach SO' },
+      { period: '1989 – 1996', title: 'Primarschule Bellach SO' }
+    ]);
+
+    // Nebenberufliches
+    section.appendChild(el('div', { className: 'label-pill inline-block' }, 'Nebenberufliche Tätigkeiten bis 2020'));
+    addBlock('', [
+      {
+        period: '2018 – 2020',
+        title: 'Inhaber & Betreiber Cube Club Bern',
+        bullets: [
+          'Eventplanung, ‑organisation und ‑durchführung; Budget & Marketing (Ticketing, Getränke, Merchandise).',
+          'Leitung mit Personalverantwortung (bis 18 Mitarbeitende).',
+          'Erstellung & Betrieb der Webseite cube.club.'
+        ]
+      },
+      {
+        period: '2009 – 2020',
+        title: 'Organisation und Durchführung diverser Events',
+        bullets: [
+          'Mehrere Events in Gaskessel Bern und anderen Lokalen.',
+          '2011–2015: Organisation Love Mobile / Streetparade Zürich.',
+          'Event‑ und Programm‑Management im Babette Club Zürich.'
+        ]
+      }
+    ]);
+
+    return section;
+  }
+
+  // --- Projects ---
+  function Projects() {
+    const main = el('main', { className: 'container-narrow px-4 py-6 space-y-6' });
+    main.appendChild(el('div', { className: 'label-pill inline-block' }, 'Projekte & Dateien'));
+
+    const form = { title: '', type: 'project', description: '', url: '', code: '' };
+    let busy = false;
+
+    const titleI = el('input', { className: 'mt-1 w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500', value: '' });
+    const typeS = el('select', { className: 'mt-1 w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500' }, ...['project','photo','cv','certificate','zeugnis','diploma','language','pdf','link','code'].map((t) => el('option', { value: t }, t)));
+    const descT = el('textarea', { rows: 3, className: 'mt-1 w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500' });
+    const urlI  = el('input', { placeholder: '/uploads/datei.pdf oder https://…', className: 'mt-1 w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500' });
+    const codeI = el('input', { placeholder: 'z. B. Snippet/Referenz', className: 'mt-1 w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500' });
+    const fileI = el('input', { type: 'file' });
+    const saveB = el('button', { type: 'submit', className: 'btn btn-primary px-4 py-2' }, 'Speichern');
+
+    function syncForm() {
+      form.title = titleI.value.trim();
+      form.type = typeS.value;
+      form.description = descT.value;
+      form.url = urlI.value.trim();
+      form.code = codeI.value.trim();
+    }
+
+    async function onUpload(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      busy = true; saveB.disabled = true; saveB.textContent = 'Speichern…';
+      const fd = new FormData(); fd.append('file', file);
+      try {
+        const res = await fetch('/api/upload', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (res.ok && data && data.file && data.file.url) {
+          urlI.value = data.file.url;
+        } else {
+          alert('Upload fehlgeschlagen');
+        }
+      } catch {
+        alert('Upload fehlgeschlagen');
+      }
+      busy = false; saveB.disabled = false; saveB.textContent = 'Speichern';
+    }
+
+    async function onSave(e) {
+      e.preventDefault();
+      if (busy) return;
+      syncForm();
+      busy = true; saveB.disabled = true; saveB.textContent = 'Speichern…';
+      try {
+        const res = await fetch('/api/projects', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
+        if (!res.ok) throw new Error('Fehler beim Speichern');
+        titleI.value = ''; typeS.value = 'project'; descT.value = ''; codeI.value = ''; // keep url if set
+        await loadItems();
+      } catch (err) {
+        alert(err.message || 'Fehler');
+      }
+      busy = false; saveB.disabled = false; saveB.textContent = 'Speichern';
+    }
+
+    const formEl = el('form', { className: 'card p-4 space-y-3 bg-white/95', onsubmit: onSave },
+      el('div', { className: 'grid sm:grid-cols-2 gap-3' },
+        el('div', null, el('label', { className: 'block text-sm font-medium text-slate-700' }, 'Titel'), titleI),
+        el('div', null, el('label', { className: 'block text-sm font-medium text-slate-700' }, 'Typ'), typeS),
+      ),
+      el('div', null, el('label', { className: 'block text-sm font-medium text-slate-700' }, 'Beschreibung'), descT),
+      el('div', { className: 'grid sm:grid-cols-2 gap-3' },
+        el('div', null, el('label', { className: 'block text-sm font-medium text-slate-700' }, 'URL'), urlI),
+        el('div', null, el('label', { className: 'block text-sm font-medium text-slate-700' }, 'Code (optional)'), codeI),
+      ),
+      el('div', { className: 'flex items-center gap-3' }, fileI, saveB)
+    );
+    fileI.addEventListener('change', onUpload);
+    main.appendChild(formEl);
+
+    const listGrid = el('div', { className: 'grid sm:grid-cols-2 md:grid-cols-3 gap-3' });
+    main.appendChild(listGrid);
+
+    async function loadItems() {
+      listGrid.innerHTML = '<div class="text-slate-600">Laden…</div>';
+      try {
+        const data = await api('/api/projects');
+        state.items = data.items || [];
+        renderList();
+      } catch {
+        listGrid.innerHTML = '<div class="text-red-600">Fehler beim Laden</div>';
+      }
+    }
+
+    function renderList() {
+      listGrid.innerHTML = '';
+      for (const it of state.items) {
+        listGrid.appendChild(
+          el('div', { className: 'card p-3 flex items-center justify-between bg-white/95' },
+            el('div', null,
+              el('div', { className: 'font-medium text-slate-800' }, it.title || '(ohne Titel)'),
+              el('div', { className: 'text-xs text-slate-500' }, it.type || '-')
+            ),
+            el('div', { className: 'flex items-center gap-2' },
+              it.url ? el('a', { href: it.url, target: '_blank', className: 'text-sm link-blue' }, 'öffnen') : null,
+              el('button', { className: 'text-sm text-red-600 hover:underline', onclick: async () => {
+                if (!confirm('Eintrag löschen?')) return;
+                await fetch(`/api/projects/${it.id}`, { method: 'DELETE' });
+                await loadItems();
+              }}, 'Löschen')
+            )
+          )
+        );
+      }
+    }
+
+    loadItems();
+    return main;
+  }
+
+  function Contact() {
+    return el('main', { className: 'container-narrow px-4 py-10' },
+      el('div', { className: 'card p-6 bg-white/95' },
+        el('h2', { className: 'text-xl font-semibold text-slate-900 mb-3' }, 'Kontakt'),
+        el('p', { className: 'text-slate-700' }, 'Sie erreichen mich unter:'),
+        el('ul', { className: 'text-slate-700 mt-2 space-y-1' },
+          el('li', null, 'Bern, Schweiz'),
+          el('li', null, '+41 79 511 09 11'),
+          el('li', null, el('a', { href: 'mailto:marcelspahr82@bluewin.ch', className: 'link-blue' }, 'marcelspahr82@bluewin.ch'))
+        )
+      )
+    );
+  }
+
+  function PdfViewer() {
+    const v = state.viewer || {};
+    if (!v.url) return el('main', { className: 'container-narrow px-4 py-10' },
+      el('div', { className: 'text-slate-700' }, 'Kein Dokument ausgewählt.')
+    );
+    return el('main', { className: 'container-narrow px-4 py-6 space-y-4' },
+      el('div', { className: 'flex items-center justify-between' },
+        el('div', null,
+          el('h2', { className: 'text-xl font-semibold text-slate-900' }, v.title || 'Dokument')
+        ),
+        el('div', { className: 'flex items-center gap-2' },
+          el('a', { href: v.url, target: '_blank', className: 'btn btn-soft px-3 py-2' }, 'In neuem Tab öffnen'),
+          el('a', { href: v.url, download: '', className: 'btn btn-primary px-3 py-2' }, 'Download')
+        )
+      ),
+      el('div', { className: 'card p-2 bg-white/95' },
+        el('iframe', { src: v.url, className: 'pdf-frame', title: v.title || 'PDF' })
+      ),
+      el('div', null,
+        el('button', { className: 'link-blue', onclick: () => navigate('home') }, '← Zurück')
+      )
+    );
+  }
+
+  function render() {
+    const root = qs('#root');
+    root.innerHTML = '';
+    root.appendChild(Navbar());
+    if (state.current === 'projects' && state.role === 'owner') {
+      root.appendChild(Projects());
+    } else if (state.current === 'viewer') {
+      root.appendChild(PdfViewer());
+    } else if (state.current === 'contact') {
+      root.appendChild(Contact());
+    } else {
+      // default to home
+      Home().then((homeEl) => { root.appendChild(homeEl); });
+    }
+  }
+
+  async function init() {
+    if (!STATIC) {
+      try {
+        const d = await api('/api/session');
+        state.role = d && d.user ? d.user.role : null;
+      } catch {}
+      try {
+        const p = await api('/api/projects');
+        state.items = p.items || [];
+      } catch {}
+    } else {
+      try {
+        const p = await fetch('static/projects.json', { cache: 'no-cache' }).then((r) => r.ok ? r.json() : { items: [] });
+        state.items = Array.isArray(p) ? p : (p.items || []);
+      } catch {}
+    }
+    state.loading = false;
+    render();
+  }
+
+  window.addEventListener('DOMContentLoaded', init);
+})();

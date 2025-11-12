@@ -113,6 +113,8 @@ app.use(authGate);
 app.use('/static', express.static(STATIC_DIR, { maxAge: '1h' }));
 app.use('/uploads', express.static(UPLOAD_DIR));
 app.use('/assets', express.static(ASSETS_DIR));
+// Serve built client bundle under /dist (Vite output)
+app.use('/dist', express.static(path.join(PUBLIC_DIR, 'dist'), { maxAge: '1h' }));
 
 // Session info & logout
 app.get('/api/session', (req, res) => {
@@ -218,9 +220,23 @@ app.get('/api/assets/avatar', async (req, res) => {
   }
 });
 
+// Helper to serve built app (Vite) if present, else fallback to public/index.html
+function serveApp(req, res) {
+  const distIndex = path.join(PUBLIC_DIR, 'dist', 'index.html');
+  fs.pathExists(distIndex)
+    .then((exists) => {
+      res.sendFile(exists ? distIndex : path.join(PUBLIC_DIR, 'index.html'));
+    })
+    .catch(() => res.sendFile(path.join(PUBLIC_DIR, 'index.html')));
+}
+
 // Main app
-app.get('/', (req, res) => {
-  res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
+app.get('/', serveApp);
+
+// SPA fallback for client-side routes (keep APIs and login separate)
+// Express 5 uses path-to-regexp v6, so '*' is not allowed. Use a regex.
+app.get(/^(?!\/api|\/login).*/, (req, res, next) => {
+  return serveApp(req, res);
 });
 
 app.listen(PORT, () => {

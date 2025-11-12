@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bewerbung – Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <script>
+      tailwind = window.tailwind || {};
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              ms: { 50:'#f0f8ff',100:'#e0f2fe',200:'#bae6fd',300:'#7dd3fc',400:'#38bdf8',500:'#0ea5e9',600:'#0284c7',700:'#0369a1' }
+            }
+          }
+        }
+      };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="min-h-screen bg-ms-50 flex items-center justify-center p-6" style="font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;">
+    <div class="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-ms-100 to-transparent"></div>
+    <div class="w-full max-w-sm bg-white/95 shadow-xl rounded-2xl p-6 border border-sky-100 relative">
+      <div class="mb-4">
+        <div class="text-sm text-slate-600">Privater Zugang</div>
+        <h1 class="text-2xl font-semibold text-slate-900">Marcel Spahr – Bewerbung</h1>
+      </div>
+      <p class="text-slate-600 text-sm mb-6">Bitte mit Admin-Zugangsdaten anmelden.</p>
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700">Benutzername</label>
+          <input id="username" class="mt-1 w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="admin" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700">Passwort</label>
+          <input id="password" type="password" class="mt-1 w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="••••••••" />
+        </div>
+        <button type="submit" class="w-full rounded-lg bg-ms-600 hover:bg-ms-700 text-white py-2.5 font-medium shadow" style="background-color:#0284c7">Anmelden</button>
+        <p id="error" class="text-sm text-red-600 hidden">Fehler bei der Anmeldung</p>
+      </form>
+      <p class="mt-6 text-xs text-slate-500">Hinweis: Die Seite ist privat und nur mit Passwort zugänglich.<br/>Bei Interesse: Passwort-Anfrage unter <a class="underline text-ms-700" href="mailto:kontakt@marcelspahr.ch">kontakt@marcelspahr.ch</a>.</p>
+    </div>
+    <script>
+      const form = document.getElementById('loginForm');
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
+        const res = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
+        if (res.ok) {
+          window.location.href = '/';
+        } else {
+          document.getElementById('error').classList.remove('hidden');
+        }
+      });
+    </script>
+  </body>
+  </html>

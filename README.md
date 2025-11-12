@@ -1,6 +1,6 @@
-# Private Bewerbungs‑Webseite (Vanilla JS + Express)
+# Private Bewerbungs‑Webseite (React + Express + Vite)
 
-Eine schlanke, passwortgeschützte Bewerbungsseite für Marcel Spahr. Frontend als schlanke Vanilla‑JavaScript‑SPA (ohne React), Backend mit Express inkl. Login‑Session, Datei‑Uploads und Projektverwaltung (JSON‑Datei).
+Passwortgeschützte Bewerbungsseite für Marcel Spahr. Frontend als React‑SPA mit sanften Scroll‑Animationen, gebündelt via Vite. Backend: Express mit Login‑Sessions, Datei‑Upload und Projekt‑CRUD (JSON‑Datei).
 
 ## Schnellstart
 
@@ -10,48 +10,79 @@ Eine schlanke, passwortgeschützte Bewerbungsseite für Marcel Spahr. Frontend a
    npm install
    ```
 
-2. Umgebungsvariablen setzen (optional):
+2. Umgebungsvariablen setzen:
 
    ```bash
    cp .env.example .env
-   # Admin‑Zugang anpassen
-   # ADMIN_USER=admin
-   # ADMIN_PASS=mein-passwort
-   # SESSION_SECRET=ein-langes-geheimnis
+   # ADMIN_*, VIEW_*, SESSION_SECRET in .env anpassen (siehe .env.example)
    ```
 
-3. Server starten (lokal, optional):
+3. Client bauen (Vite → public/dist):
+
+   ```bash
+   npm run client:build
+   ```
+
+4. Server starten (lokal):
 
    ```bash
    npm start
    # http://localhost:5173
    ```
 
-4. Static‑Modus (für Hostpoint Standard/Smart):
-   - In `public/index.html` ist `window.STATIC_MODE = true` bereits gesetzt.
-   - Inhalte kommen aus `public/static/projects.json` und Dateien unter `public/assets/`.
-   - Zum Deployen ins Web‑Root der Domain den gesamten Inhalt aus `public/` hochladen.
-   - In Hostpoint TLS/SSL aktivieren; `public/.htaccess` erzwingt HTTPS.
+   Der Express‑Server liefert automatisch das Vite‑Bundle aus `public/dist` aus. Falls kein Build vorhanden ist, fällt er auf `public/index.html` (CDN‑React Fallback) zurück.
+
+## Development (Hot Reload)
+
+- Frontend: `npm run client:dev` (Vite)
+  - Standard‑Port ist 5173 (Kollision mit Express). Optionen:
+    - Express auf anderen Port starten: `PORT=3000 npm run dev`
+    - Vite auf anderen Port starten: `npm run client:dev -- --port 5174`
+- Server: `npm run dev`
+
+Typische Dev‑Kombi:
+
+```bash
+PORT=3000 npm run dev         # Express
+npm run client:dev -- --port 5174  # Vite Devserver
+```
 
 ## Struktur
 
 - `server.js` – Express‑Server, Login, APIs, statische Auslieferung
 - `public/` – Frontend (Login + App)
-- `public/static/app.js` – SPA‑Logik (Vanilla JavaScript)
-- `public/static/projects.json` – Inhalte für Static‑Modus
-- `public/assets/` – Dateien (Bilder/PDFs) für Static‑Modus
+- `public/dist/` – Vite‑Build‑Ausgabe (wird automatisch ausgeliefert)
+- `public/static/` – Statische Styles/JS (Fallback, u. a. `app.css`)
+- `public/assets/` – optionale Bilder/PDFs (Avatar, CV‑Fallback etc.)
+- `src/` – React‑Quellcode (`App.jsx`, `main.jsx`)
 - `uploads/` – hochgeladene Dateien (geschützt)
 - `data/projects.json` – persistierte Einträge
 
 ## Inhalte auf der Startseite
 
-- Lade unter „Projekte“ folgende Typen hoch, damit sie vorne angezeigt werden:
-  - Foto → Typ `photo`
-  - CV (Bild/PDF) → Typ `cv` oder `pdf`
-  - Scrum‑Zertifikat → Typ `certificate`
+- Lade im Admin‑Bereich „Projekte“ Einträge hoch. Für die Startseite relevant:
+  - Foto → Typ `photo` (Avatar wird automatisch aus `/Bilder` erkannt, sonst Fallback)
+  - CV (PDF) → Typ `cv` oder `pdf` (wird als „Lebenslauf (PDF)“ verlinkt)
+  - Zertifikate → Typ `certificate`
+  - Arbeitszeugnisse → Typ `reference` oder `zeugnis`
+  - Diplome → Typ `diploma`
+  - Sprachen → Typ `language`
 
-## Sicherheitshinweise
+## Sicherheit
 
-- Zugang ist nur mit Benutzername/Passwort möglich (Session‑Cookie).
-- Passe `ADMIN_PASS` und `SESSION_SECRET` an, bevor du die Seite extern nutzt.
-- Für Hostpoint‑Webhosting HTTPS im Control‑Panel aktivieren. `.htaccess` erzwingt den Redirect.
+- Login ist passwortgeschützt (Session‑Cookie).
+- Setze `ADMIN_PASS`, `VIEW_PASS` und vor allem `SESSION_SECRET` unbedingt auf sichere, zufällige Werte.
+- Aktiviere HTTPS im Hosting (Reverse‑Proxy/Load‑Balancer oder Hosting‑Panel). Falls du einen reinen Static‑Host nutzt, ist die Admin‑Funktion nicht verfügbar (Server erforderlich).
+
+## Deployment
+
+1) Node‑Hosting (empfohlen)
+- `npm install`
+- `npm run client:build`
+- `npm start` (oder als Service/PM2/Docker)
+
+2) Reverse‑Proxy
+- Proxy `/` → Express (liefert `public/dist`)
+- Belasse statische Pfade `/uploads`, `/assets`, `/dist` pass‑through
+
+Hinweis: Ohne laufenden Node‑Server sind Login/Uploads/Admin nicht verfügbar.
