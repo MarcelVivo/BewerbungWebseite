@@ -76,13 +76,24 @@ npm run client:dev -- --port 5174  # Vite Devserver
 
 ## Deployment
 
-1) Node‑Hosting (empfohlen)
+1) Vercel (kostenlos, schnell; read‑only)
+- Static Deploy ohne Backend. Admin/Login/Uploads sind deaktiviert.
+- Schritte:
+  - `npm install`
+  - `npm run client:build`
+  - Repository zu Vercel verbinden (oder `vercel` CLI). Vercel nutzt `vercel-build` → baut ins `public/`.
+  - `vercel.json` sorgt dafür, dass `/` auf `/dist/index.html` zeigt.
+  - Optional Inhalte pflegen: `public/assets/projects.json` (statische Liste der Dokumente).
+  - Domain in Vercel hinzufügen und bei Hostpoint DNS setzen: A `@` → `76.76.21.21`, CNAME `www` → `cname.vercel-dns.com`.
+
+2) Node‑Hosting (voller Funktionsumfang)
 - `npm install`
 - `npm run client:build`
 - `npm start` (oder als Service/PM2/Docker)
+- Domain via A/Proxy auf den Node‑Host zeigen.
 
-2) Reverse‑Proxy
+3) Reverse‑Proxy
 - Proxy `/` → Express (liefert `public/dist`)
 - Belasse statische Pfade `/uploads`, `/assets`, `/dist` pass‑through
 
-Hinweis: Ohne laufenden Node‑Server sind Login/Uploads/Admin nicht verfügbar.
+Hinweis: Ohne laufenden Node‑Server sind Login/Uploads/Admin nicht verfügbar. Die Vercel‑Variante verwendet eine statische Fallback‑Datenquelle (`public/assets/projects.json`).

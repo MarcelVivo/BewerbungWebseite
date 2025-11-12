@@ -137,9 +137,31 @@ async function writeProjects(items) {
 // List projects
 app.get('/api/projects', async (req, res) => {
   const items = await readProjects();
-  // Newest first
+  // Helper to present a human‑friendly title to clients
+  const pretty = (i) => {
+    try {
+      let s = (i.title || '').trim();
+      if (!s) {
+        const base = (i.url ? String(i.url).split('/').pop() : '') || '';
+        s = base.replace(/\.[^.]+$/, '');
+      }
+      // Remove leading timestamps or numeric prefixes like 1762008184566-
+      s = s.replace(/^\s*\d{6,}[\s_\-]*/, '');
+      // Replace separators and split camelCase: "ArbeitszeugnisMarcelSpahr" -> "Arbeitszeugnis Marcel Spahr"
+      s = s.replace(/[._-]+/g, ' ');
+      s = s.replace(/([a-zäöüß])([A-ZÄÖÜ])/g, '$1 $2');
+      s = s.replace(/([A-Za-zÄÖÜäöüß])(\d)/g, '$1 $2');
+      s = s.replace(/\s{2,}/g, ' ').trim();
+      return s || (i.type || 'Dokument');
+    } catch {
+      return i.title || i.type || 'Dokument';
+    }
+  };
+
+  // Newest first and map titles to pretty variant
   items.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-  res.json({ ok: true, items });
+  const presented = items.map((it) => ({ ...it, title: pretty(it) }));
+  res.json({ ok: true, items: presented });
 });
 
 // Create project
@@ -156,7 +178,13 @@ app.post('/api/projects', ownerGate, async (req, res) => {
   if (!title || !String(title).trim()) {
     if (url) {
       const base = path.basename(String(url)).replace(/\.[^.]+$/, '');
-      title = base.replace(/[._-]+/g, ' ').trim();
+      // Entferne führende Zeitstempel/IDs und hübsche auf
+      let s = base;
+      s = s.replace(/^\s*\d{6,}[\s_\-]*/, '');
+      s = s.replace(/[._-]+/g, ' ');
+      s = s.replace(/([a-zäöüß])([A-ZÄÖÜ])/g, '$1 $2');
+      s = s.replace(/([A-Za-zÄÖÜäöüß])(\d)/g, '$1 $2');
+      title = s.trim();
     } else {
       title = String(type).trim();
     }

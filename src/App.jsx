@@ -424,11 +424,23 @@ function AppShell() {
   useEffect(() => {
     (async () => {
       try {
+        // Try backend session first (dynamic mode)
         const sess = await api('/api/session');
         setRole(sess?.user?.role || null);
-        const p = await api('/api/projects'); setItems(p.items || []);
+        const p = await api('/api/projects');
+        setItems(p.items || []);
         try { const av = await api('/api/assets/avatar'); if (av && av.url) setAvatar(av.url); } catch {}
-      } catch (e) { window.location.href = '/login'; } finally { setLoading(false); }
+      } catch (e) {
+        // Static fallback (no backend): public viewer + static data
+        try {
+          setRole('viewer');
+          const fallback = await fetch('/assets/projects.json').then(r => r.ok ? r.json() : { items: [] }).catch(() => ({ items: [] }));
+          const arr = Array.isArray(fallback) ? fallback : (fallback.items || []);
+          setItems(arr);
+        } catch {}
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
   if (loading) return <div className="min-h-screen flex items-center justify-center text-slate-600">Lädt…</div>;
