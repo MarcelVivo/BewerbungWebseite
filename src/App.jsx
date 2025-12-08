@@ -217,6 +217,14 @@ function Documents({ items }) {
     if (!cat || tab === 'alle') return items;
     return items.filter((i) => cat.match?.(i));
   }, [items, tab]);
+  const docUrl = (u) => {
+    if (!u) return '';
+    if (/^https?:\/\//i.test(u)) return u;
+    if (u.startsWith('/api/uploads/')) return u;
+    if (u.startsWith('/uploads/')) return `/api/uploads/${u.replace(/^\\/uploads\\//, '')}`;
+    if (u.startsWith('/')) return u;
+    return `/api/uploads/${u}`;
+  };
   const [viewer, setViewer] = useState(null);
   return (
     <section id="docs" className="container-narrow px-4 space-y-4">
@@ -234,8 +242,8 @@ function Documents({ items }) {
             <div className="flex gap-2 mt-auto">
               {i.url ? (
                 <>
-                  <button className="btn btn-soft px-3 py-1.5" onClick={() => setViewer(i)}>Öffnen</button>
-                  <a className="btn btn-primary px-3 py-1.5" href={i.url} download>Download</a>
+                  <button className="btn btn-soft px-3 py-1.5" onClick={() => setViewer({ ...i, url: docUrl(i.url) })}>Öffnen</button>
+                  <a className="btn btn-primary px-3 py-1.5" href={docUrl(i.url)} download>Download</a>
                 </>
               ) : null}
             </div>
@@ -248,12 +256,12 @@ function Documents({ items }) {
           <div className="flex items-center justify-between p-2">
             <div className="text-slate-900 font-semibold">{viewer.title || 'Dokument'}</div>
             <div className="flex items-center gap-2">
-              <a className="btn btn-soft px-3 py-1.5" target="_blank" rel="noreferrer" href={viewer.url}>In neuem Tab öffnen</a>
-              <a className="btn btn-primary px-3 py-1.5" download href={viewer.url}>Download</a>
+              <a className="btn btn-soft px-3 py-1.5" target="_blank" rel="noreferrer" href={docUrl(viewer.url)}>In neuem Tab öffnen</a>
+              <a className="btn btn-primary px-3 py-1.5" download href={docUrl(viewer.url)}>Download</a>
               <button className="btn btn-soft px-3 py-1.5" onClick={() => setViewer(null)}>Schließen</button>
             </div>
           </div>
-          <iframe className="pdf-frame" src={viewer.url}></iframe>
+          <iframe className="pdf-frame" src={docUrl(viewer.url)}></iframe>
         </div>
       ) : null}
     </section>

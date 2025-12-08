@@ -60,8 +60,10 @@ export default function ProjectsPage() {
       const normalizeUrl = (u) => {
         if (!u) return '';
         if (/^https?:\/\//i.test(u)) return u;
+        if (u.startsWith('/api/uploads/')) return u;
+        if (u.startsWith('/uploads/')) return `/api/uploads/${u.replace(/^\\/uploads\\//, '')}`;
         if (u.startsWith('/')) return u;
-        return `/uploads/${u}`;
+        return `/api/uploads/${u}`;
       };
 
       if (form.file) {

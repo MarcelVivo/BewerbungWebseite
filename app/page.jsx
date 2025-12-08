@@ -80,6 +80,14 @@ export default function HomePage() {
   }
 
   const categorized = categorize(items);
+  const docUrl = (u) => {
+    if (!u) return '';
+    if (/^https?:\/\//i.test(u)) return u;
+    if (u.startsWith('/api/uploads/')) return u;
+    if (u.startsWith('/uploads/')) return `/api/uploads/${u.replace(/^\\/uploads\\//, '')}`;
+    if (u.startsWith('/')) return u;
+    return `/api/uploads/${u}`;
+  };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center text-slate-600">Lädt…</div>;
 
@@ -176,8 +184,8 @@ export default function HomePage() {
                         <div className="mt-auto flex items-center justify-center gap-2">
                           {i.url ? (
                             <>
-                              <a className="btn btn-soft px-3 py-1.5" href={i.url} target="_blank" rel="noreferrer">Öffnen</a>
-                              <a className="btn btn-primary px-3 py-1.5" href={i.url} download>Download</a>
+                              <a className="btn btn-soft px-3 py-1.5" href={docUrl(i.url)} target="_blank" rel="noreferrer">Öffnen</a>
+                              <a className="btn btn-primary px-3 py-1.5" href={docUrl(i.url)} download>Download</a>
                             </>
                           ) : (
                             <div className="text-sm text-slate-500">Kein Link hinterlegt</div>
