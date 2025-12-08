@@ -6,7 +6,9 @@ import { requireOwner } from '../../../lib/auth';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const uploadDir = path.join(process.cwd(), 'public', 'uploads');
+// Use /tmp on Vercel (read-only file system), otherwise write into public/uploads locally.
+const isVercel = !!process.env.VERCEL;
+const uploadDir = isVercel ? path.join('/tmp', 'uploads') : path.join(process.cwd(), 'public', 'uploads');
 
 function safeName(name = '') {
   return name
@@ -33,7 +35,7 @@ export async function POST(request) {
     await fs.mkdir(uploadDir, { recursive: true });
     const target = path.join(uploadDir, filename);
     await fs.writeFile(target, buffer);
-    const url = `/uploads/${filename}`;
+    const url = isVercel ? `/api/uploads/${filename}` : `/uploads/${filename}`;
     return NextResponse.json({ ok: true, file: { name: filename, size: buffer.byteLength, url } });
   } catch (e) {
     return NextResponse.json({ ok: false, error: e.message || 'Upload failed' }, { status: 500 });
