@@ -19,6 +19,14 @@ function Reveal({ as: Tag = 'div', children, className = '' }) {
 export default function HomePage() {
   const [items, setItems] = useState([]);
   const [avatar, setAvatar] = useState('/assets/portrait.jpg');
+  const [role, setRole] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const categories = [
+    { id: 'diploma', label: 'Diplome & EFZ', types: ['diploma', 'efz', 'cv'] },
+    { id: 'certificate', label: 'Zertifikate', types: ['certificate'] },
+    { id: 'reference', label: 'Arbeitszeugnisse & Referenzen', types: ['zeugnis', 'reference'] },
+    { id: 'portfolio', label: 'Portfolio / Projekte', types: ['project', 'code', 'link', 'photo', 'pdf'] },
+  ];
   const quickDocs = [
     { label: 'SCRUM Zertifikat', url: '/assets/SCRUMZertifikat.pdf' },
     { label: 'SAFe Zertifikat', url: '/assets/SAFeZertifikatMarcelSpahr.pdf' },
@@ -27,12 +35,53 @@ export default function HomePage() {
   ];
 
   useEffect(() => {
-    fetch('/assets/projects.json').then(r => r.json()).then((j) => setItems(Array.isArray(j) ? j : (j.items || []))).catch(()=>{});
+    (async () => {
+      try {
+        const sess = await fetch('/api/session');
+        if (!sess.ok) throw new Error('no session');
+        const data = await sess.json();
+        setRole(data?.user?.role || 'viewer');
+      } catch {
+        window.location.href = '/login';
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/projects');
+        if (!res.ok) throw new Error('load failed');
+        const data = await res.json();
+        setItems(Array.isArray(data.items) ? data.items : []);
+      } catch {
+        fetch('/assets/projects.json')
+          .then((r) => r.json())
+          .then((j) => setItems(Array.isArray(j) ? j : (j.items || [])))
+          .catch(() => {});
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
   function logout() {
     fetch('/api/logout', { method: 'POST' }).finally(() => { window.location.href = '/login'; });
   }
+
+  function categorize(list) {
+    const buckets = {};
+    categories.forEach((c) => { buckets[c.id] = []; });
+    (list || []).forEach((it) => {
+      const t = (it.type || '').toLowerCase();
+      const cat = categories.find((c) => c.types.includes(t));
+      const target = cat ? cat.id : 'portfolio';
+      buckets[target] = buckets[target] || [];
+      buckets[target].push(it);
+    });
+    return buckets;
+  }
+
+  const categorized = categorize(items);
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-slate-600">Lädt…</div>;
 
   return (
     <>
@@ -44,6 +93,7 @@ export default function HomePage() {
           </div>
           <nav className="flex items-center gap-2">
             <a className="px-3 py-1.5 rounded-lg text-sm hover:bg-ms-100" href="#dokumente">Dokumente</a>
+            {role === 'owner' ? <a className="px-3 py-1.5 rounded-lg text-sm hover:bg-ms-100" href="/projects">Dokumente bearbeiten</a> : null}
             <button className="ml-2 px-3 py-1.5 rounded-lg text-sm bg-ms-100 hover:bg-ms-200" onClick={logout}>Logout</button>
           </nav>
         </div>
@@ -106,22 +156,33 @@ export default function HomePage() {
           <Reveal>
             <h2 className="text-2xl font-semibold mb-6">Dokumente & Zertifikate</h2>
           </Reveal>
-          <div className="grid md:grid-cols-2 gap-4">
-            {items.filter((i) => ['certificate','diploma','zeugnis','cv','pdf'].includes((i.type || '').toLowerCase())).map((i, idx) => (
-              <Reveal key={i.id || i.url || idx} className="">
-                <div className="card p-4 flex items-center justify-between">
-                  <div>
-                    <div className="font-medium text-slate-900">{prettyTitle(i)}</div>
-                    {i.description && <div className="text-sm text-slate-600 mt-1">{i.description}</div>}
+          <div className="space-y-8">
+            {categories.map((cat) => {
+              const docs = categorized[cat.id] || [];
+              return (
+                <Reveal key={cat.id} className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="label-pill inline-block">{cat.label}</div>
+                    <div className="text-xs text-slate-500">{docs.length} Dokument{docs.length === 1 ? '' : 'e'}</div>
                   </div>
-                  {i.url && (
-                    <a className="btn btn-soft" href={i.url} download>
-                      Download
-                    </a>
-                  )}
-                </div>
-              </Reveal>
-            ))}
+                  {!docs.length && <div className="text-sm text-slate-500">Noch keine Dokumente hinterlegt.</div>}
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {docs.map((i, idx) => (
+                      <div key={i.id || i.url || idx} className="card p-4 flex flex-col gap-2">
+                        <div className="font-medium text-slate-900">{prettyTitle(i)}</div>
+                        {i.description ? <div className="text-sm text-slate-600">{i.description}</div> : null}
+                        {i.url ? (
+                          <div className="flex gap-2 mt-auto">
+                            <a className="btn btn-soft px-3 py-1.5" href={i.url} target="_blank" rel="noreferrer">Öffnen</a>
+                            <a className="btn btn-primary px-3 py-1.5" href={i.url} download>Download</a>
+                          </div>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                </Reveal>
+              );
+            })}
           </div>
         </section>
       </main>
