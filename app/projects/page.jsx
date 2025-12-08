@@ -57,6 +57,13 @@ export default function ProjectsPage() {
     setError('');
     try {
       let payload = { ...form };
+      const normalizeUrl = (u) => {
+        if (!u) return '';
+        if (/^https?:\/\//i.test(u)) return u;
+        if (u.startsWith('/')) return u;
+        return `/uploads/${u}`;
+      };
+
       if (form.file) {
         const fd = new FormData();
         fd.append('file', form.file);
@@ -64,6 +71,8 @@ export default function ProjectsPage() {
         if (!up.ok) throw new Error(await up.text().catch(() => 'Upload fehlgeschlagen'));
         const uploaded = await up.json();
         payload.url = uploaded?.file?.url || '';
+      } else {
+        payload.url = normalizeUrl(payload.url);
       }
 
       if (isEditing) {
