@@ -41,7 +41,9 @@ function Navbar({ role }) {
           {items.map((p) => (
             <button key={p} onClick={() => nav(p)} className={'px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-ms-100 text-slate-700'}>{label(p)}</button>
           ))}
-          <button className="ml-2 px-3 py-1.5 rounded-lg text-sm bg-ms-100 hover:bg-ms-200 text-slate-700" onClick={async () => { try { await fetch('/api/logout', { method: 'POST' }); } finally { window.location.href = '/login'; } }}>Logout</button>
+          {role === 'owner' && (
+            <button className="ml-2 px-3 py-1.5 rounded-lg text-sm bg-ms-100 hover:bg-ms-200 text-slate-700" onClick={async () => { try { await fetch('/api/logout', { method: 'POST' }); } finally { window.location.href = '/login'; } }}>Logout</button>
+          )}
         </nav>
       </div>
     </header>

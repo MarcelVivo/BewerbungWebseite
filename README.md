@@ -1,6 +1,6 @@
-# Private Bewerbungs‑Webseite (React + Express + Vite)
+# Private Bewerbungs‑Webseite (Next.js auf Vercel)
 
-Passwortgeschützte Bewerbungsseite für Marcel Spahr. Frontend als React‑SPA mit sanften Scroll‑Animationen, gebündelt via Vite. Backend: Express mit Login‑Sessions, Datei‑Upload und Projekt‑CRUD (JSON‑Datei).
+Passwortgeschützte One‑Page‑Bewerbungsseite für Marcel Spahr. React via Next.js (App Router), gehostet auf Vercel. Login per Benutzername/Passwort (Admin/Viewer), Auth‑Schutz über Next Middleware. Inhalte (Dokumente, Zertifikate, Zeugnisse) werden als statische Dateien im Repo gepflegt und per Download‑Button angeboten.
 
 ## Schnellstart
 
@@ -17,83 +17,54 @@ Passwortgeschützte Bewerbungsseite für Marcel Spahr. Frontend als React‑SPA 
    # ADMIN_*, VIEW_*, SESSION_SECRET in .env anpassen (siehe .env.example)
    ```
 
-3. Client bauen (Vite → public/dist):
+3. Start im Development:
 
    ```bash
-   npm run client:build
+   npm run dev
+   # http://localhost:3000
    ```
 
-4. Server starten (lokal):
+## Entwicklung
 
-   ```bash
-   npm start
-   # http://localhost:5173
-   ```
-
-   Der Express‑Server liefert automatisch das Vite‑Bundle aus `public/dist` aus. Falls kein Build vorhanden ist, fällt er auf `public/index.html` (CDN‑React Fallback) zurück.
-
-## Development (Hot Reload)
-
-- Frontend: `npm run client:dev` (Vite)
-  - Standard‑Port ist 5173 (Kollision mit Express). Optionen:
-    - Express auf anderen Port starten: `PORT=3000 npm run dev`
-    - Vite auf anderen Port starten: `npm run client:dev -- --port 5174`
-- Server: `npm run dev`
-
-Typische Dev‑Kombi:
-
-```bash
-PORT=3000 npm run dev         # Express
-npm run client:dev -- --port 5174  # Vite Devserver
-```
+- Next.js Dev‑Server: `npm run dev`
+- Build: `npm run build`, Start: `npm start`
 
 ## Struktur
 
-- `server.js` – Express‑Server, Login, APIs, statische Auslieferung
-- `public/` – Frontend (Login + App)
-- `public/dist/` – Vite‑Build‑Ausgabe (wird automatisch ausgeliefert)
-- `public/static/` – Statische Styles/JS (Fallback, u. a. `app.css`)
-- `public/assets/` – optionale Bilder/PDFs (Avatar, CV‑Fallback etc.)
-- `src/` – React‑Quellcode (`App.jsx`, `main.jsx`)
-- `uploads/` – hochgeladene Dateien (geschützt)
-- `data/projects.json` – persistierte Einträge
+- `app/` – Next.js App Router
+  - `page.jsx` – One‑Page‑UI (Scroll‑Animationen, Downloads)
+  - `login/page.jsx` – Login‑Seite
+  - `api/login` / `api/logout` – Login/Logout (setzt/entfernt Cookie)
+- `middleware.js` – schützt alle Pfade per Cookie‑Prüfung (Login erforderlich)
+- `public/assets/` – Bilder/PDFs (z. B. `portrait.jpg`, Zertifikate, Zeugnisse)
+- `public/assets/projects.json` – Liste der anzuzeigenden Dokumente
+- `public/static/app.css` – Styles inkl. Reveal/Sticky
 
-## Inhalte auf der Startseite
+## Inhalte pflegen (VS Code, ohne Online‑Upload)
 
-- Lade im Admin‑Bereich „Projekte“ Einträge hoch. Für die Startseite relevant:
-  - Foto → Typ `photo` (Avatar wird automatisch aus `/Bilder` erkannt, sonst Fallback)
-  - CV (PDF) → Typ `cv` oder `pdf` (wird als „Lebenslauf (PDF)“ verlinkt)
-  - Zertifikate → Typ `certificate`
-  - Arbeitszeugnisse → Typ `reference` oder `zeugnis`
-  - Diplome → Typ `diploma`
-  - Sprachen → Typ `language`
+- Lege deine Dateien in `public/assets/` ab (z. B. `ArbeitszeugnisMarcelSpahr2025.pdf`).
+- Trage sie in `public/assets/projects.json` ein, z. B.:
+
+  ```json
+  [
+    { "title": "Lebenslauf", "type": "cv", "url": "/assets/CV.pdf" },
+    { "title": "SCRUM Zertifikat", "type": "certificate", "url": "/assets/SCRUMZertifikat.pdf" }
+  ]
+  ```
+
+- Avatar‑Bild optional als `public/assets/portrait.jpg`.
 
 ## Sicherheit
 
-- Login ist passwortgeschützt (Session‑Cookie).
-- Setze `ADMIN_PASS`, `VIEW_PASS` und vor allem `SESSION_SECRET` unbedingt auf sichere, zufällige Werte.
-- Aktiviere HTTPS im Hosting (Reverse‑Proxy/Load‑Balancer oder Hosting‑Panel). Falls du einen reinen Static‑Host nutzt, ist die Admin‑Funktion nicht verfügbar (Server erforderlich).
+- Login ist passwortgeschützt; Cookie wird signiert und per Middleware geprüft.
+- Setze `ADMIN_PASS`, `VIEW_PASS` und vor allem `SESSION_SECRET` auf sichere, zufällige Werte (Vercel Projekt‑Einstellungen → Environment Variables).
+- Ohne gültigen Login sind auch Dateien unter `/assets` nicht erreichbar (Middleware).
 
-## Deployment
+## Deployment (Vercel)
 
-1) Vercel (kostenlos, schnell; read‑only)
-- Static Deploy ohne Backend. Admin/Login/Uploads sind deaktiviert.
-- Schritte:
-  - `npm install`
-  - `npm run client:build`
-  - Repository zu Vercel verbinden (oder `vercel` CLI). Vercel nutzt `vercel-build` → baut ins `public/`.
-  - `vercel.json` sorgt dafür, dass `/` auf `/dist/index.html` zeigt.
-  - Optional Inhalte pflegen: `public/assets/projects.json` (statische Liste der Dokumente).
-  - Domain in Vercel hinzufügen und bei Hostpoint DNS setzen: A `@` → `76.76.21.21`, CNAME `www` → `cname.vercel-dns.com`.
+1. Repo mit Vercel verbinden (oder `vercel` CLI).
+2. Environment Variables setzen: `ADMIN_USER`, `ADMIN_PASS`, `VIEW_USER`, `VIEW_PASS`, `SESSION_SECRET`.
+3. Build & Deploy läuft automatisch (`next build`).
+4. Domain in Vercel hinzufügen und DNS bei Hostpoint setzen: A `@` → `76.76.21.21`, CNAME `www` → `cname.vercel-dns.com`.
 
-2) Node‑Hosting (voller Funktionsumfang)
-- `npm install`
-- `npm run client:build`
-- `npm start` (oder als Service/PM2/Docker)
-- Domain via A/Proxy auf den Node‑Host zeigen.
-
-3) Reverse‑Proxy
-- Proxy `/` → Express (liefert `public/dist`)
-- Belasse statische Pfade `/uploads`, `/assets`, `/dist` pass‑through
-
-Hinweis: Ohne laufenden Node‑Server sind Login/Uploads/Admin nicht verfügbar. Die Vercel‑Variante verwendet eine statische Fallback‑Datenquelle (`public/assets/projects.json`).
+Inhalte aktualisieren, indem du Dateien/JSON im Repo änderst und pushst – kein Online‑Upload nötig.

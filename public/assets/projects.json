@@ -1,4 +1,44 @@
 {
-  "items": []
+  "items": [
+    {
+      "id": "static-cv",
+      "type": "cv",
+      "title": "Lebenslauf (Platzhalter)",
+      "url": "/assets/ArbeitszeugnisMarcelSpahr2025.pdf"
+    },
+    {
+      "id": "static-scrum",
+      "type": "certificate",
+      "title": "SCRUM Zertifikat",
+      "url": "/assets/SCRUMZertifikat.pdf"
+    },
+    {
+      "id": "static-safe",
+      "type": "certificate",
+      "title": "SAFe Zertifikat",
+      "url": "/assets/SAFeZertifikatMarcelSpahr.pdf"
+    },
+    {
+      "id": "static-zeugnis",
+      "type": "zeugnis",
+      "title": "Arbeitszeugnis Swisscom",
+      "url": "/assets/ArbeitszeugnisMarcelSpahr2025.pdf"
+    },
+    {
+      "id": "static-photo",
+      "type": "photo",
+      "title": "Portrait",
+      "url": "/assets/portrait.jpg"
+    },
+    {
+      "id": "static-lang-de",
+      "type": "language",
+      "title": "Deutsch (Muttersprache)"
+    },
+    {
+      "id": "static-lang-en",
+      "type": "language",
+      "title": "Englisch (B1)"
+    }
+  ]
 }
-
