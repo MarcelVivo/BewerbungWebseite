@@ -79,15 +79,16 @@ export default function HomePage() {
     return buckets;
   }
 
-  const categorized = categorize(items);
-  const docUrl = (u) => {
-    if (!u) return '';
-    if (/^https?:\/\//i.test(u)) return u;
-    if (u.startsWith('/api/uploads/')) return u;
-    if (u.startsWith('/uploads/')) return `/api/uploads/${u.replace(/^\\/uploads\\//, '')}`;
-    if (u.startsWith('/')) return u;
-    return `/api/uploads/${u}`;
-  };
+const categorized = categorize(items);
+const docUrl = (u) => {
+  if (!u) return '';
+  if (/^https?:\/\//i.test(u)) return u;
+  if (u.startsWith('/api/upload?file=')) return u;
+  if (u.startsWith('/api/uploads/')) return `/api/upload?file=${encodeURIComponent(u.replace(/^\\/api\\/uploads\\//, ''))}`;
+  if (u.startsWith('/uploads/')) return `/api/upload?file=${encodeURIComponent(u.replace(/^\\/uploads\\//, ''))}`;
+  if (u.startsWith('/')) return u;
+  return `/api/upload?file=${encodeURIComponent(u)}`;
+};
 
   if (loading) return <div className="min-h-screen flex items-center justify-center text-slate-600">Lädt…</div>;
 

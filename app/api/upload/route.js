@@ -35,9 +35,29 @@ export async function POST(request) {
     await fs.mkdir(uploadDir, { recursive: true });
     const target = path.join(uploadDir, filename);
     await fs.writeFile(target, buffer);
-    const url = isVercel ? `/api/uploads/${filename}` : `/uploads/${filename}`;
+    const url = `/api/upload?file=${encodeURIComponent(filename)}`;
     return NextResponse.json({ ok: true, file: { name: filename, size: buffer.byteLength, url } });
   } catch (e) {
     return NextResponse.json({ ok: false, error: e.message || 'Upload failed' }, { status: 500 });
+  }
+}
+
+export async function GET(request) {
+  const fileParam = request.nextUrl.searchParams.get('file') || '';
+  if (!fileParam) return NextResponse.json({ ok: false, error: 'file param missing' }, { status: 400 });
+  try {
+    const name = path.basename(fileParam);
+    const filePath = path.join(uploadDir, name);
+    const data = await fs.readFile(filePath);
+    const ct = name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'application/octet-stream';
+    return new NextResponse(data, {
+      status: 200,
+      headers: {
+        'Content-Type': ct,
+        'Content-Disposition': `inline; filename="${name}"`,
+      },
+    });
+  } catch (e) {
+    return NextResponse.json({ ok: false, error: e.message || 'Not found' }, { status: 404 });
   }
 }

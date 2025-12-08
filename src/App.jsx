@@ -220,10 +220,11 @@ function Documents({ items }) {
   const docUrl = (u) => {
     if (!u) return '';
     if (/^https?:\/\//i.test(u)) return u;
-    if (u.startsWith('/api/uploads/')) return u;
-    if (u.startsWith('/uploads/')) return `/api/uploads/${u.replace(/^\\/uploads\\//, '')}`;
+    if (u.startsWith('/api/upload?file=')) return u;
+    if (u.startsWith('/api/uploads/')) return `/api/upload?file=${encodeURIComponent(u.replace(/^\\/api\\/uploads\\//, ''))}`;
+    if (u.startsWith('/uploads/')) return `/api/upload?file=${encodeURIComponent(u.replace(/^\\/uploads\\//, ''))}`;
     if (u.startsWith('/')) return u;
-    return `/api/uploads/${u}`;
+    return `/api/upload?file=${encodeURIComponent(u)}`;
   };
   const [viewer, setViewer] = useState(null);
   return (
