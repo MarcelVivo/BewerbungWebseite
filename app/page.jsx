@@ -166,13 +166,13 @@ export default function HomePage() {
                     <div className="text-xs text-slate-500">{docs.length} Dokument{docs.length === 1 ? '' : 'e'}</div>
                   </div>
                   {!docs.length && <div className="text-sm text-slate-500">Noch keine Dokumente hinterlegt.</div>}
-                  <div className="grid md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {docs.map((i, idx) => (
                       <div key={i.id || i.url || idx} className="card aspect-square p-4 flex flex-col gap-3 justify-between">
                         <div className="font-medium text-slate-900 text-center">{prettyTitle(i)}</div>
                         <div className="flex items-start gap-3 justify-between h-full">
                           {i.url ? (
-                            <div className="flex flex-col sm:flex-row gap-2">
+                            <div className="flex flex-col gap-2">
                               <a className="btn btn-soft px-3 py-1.5" href={i.url} target="_blank" rel="noreferrer">Öffnen</a>
                               <a className="btn btn-primary px-3 py-1.5" href={i.url} download>Download</a>
                             </div>
