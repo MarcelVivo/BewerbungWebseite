@@ -3,6 +3,9 @@ import path from 'path';
 import { NextResponse } from 'next/server';
 import { requireOwner } from '../../../lib/auth';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 const uploadDir = path.join(process.cwd(), 'public', 'uploads');
 
 function safeName(name = '') {
@@ -22,13 +25,17 @@ export async function POST(request) {
     return NextResponse.json({ ok: false, error: 'Keine Datei übergeben' }, { status: 400 });
   }
 
-  const arrayBuffer = await file.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
-  const original = safeName(file.name);
-  const filename = `${Date.now()}-${original}`;
-  await fs.mkdir(uploadDir, { recursive: true });
-  const target = path.join(uploadDir, filename);
-  await fs.writeFile(target, buffer);
-  const url = `/uploads/${filename}`;
-  return NextResponse.json({ ok: true, file: { name: filename, size: buffer.byteLength, url } });
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const original = safeName(file.name);
+    const filename = `${Date.now()}-${original}`;
+    await fs.mkdir(uploadDir, { recursive: true });
+    const target = path.join(uploadDir, filename);
+    await fs.writeFile(target, buffer);
+    const url = `/uploads/${filename}`;
+    return NextResponse.json({ ok: true, file: { name: filename, size: buffer.byteLength, url } });
+  } catch (e) {
+    return NextResponse.json({ ok: false, error: e.message || 'Upload failed' }, { status: 500 });
+  }
 }
