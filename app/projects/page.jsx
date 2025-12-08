@@ -60,11 +60,12 @@ export default function ProjectsPage() {
       const normalizeUrl = (u) => {
         if (!u) return '';
         if (/^https?:\/\//i.test(u)) return u;
+        if (u.startsWith('/assets/')) return u;
         if (u.startsWith('/api/upload?file=')) return u;
-        if (u.startsWith('/api/uploads/')) return `/api/upload?file=${encodeURIComponent(u.replace(/^\\/api\\/uploads\\//, ''))}`;
-        if (u.startsWith('/uploads/')) return `/api/upload?file=${encodeURIComponent(u.replace(/^\\/uploads\\//, ''))}`;
+        if (u.startsWith('/api/uploads/')) return `/api/upload?file=${encodeURIComponent(u.replace('/api/uploads/', ''))}`;
+        if (u.startsWith('/uploads/')) return `/api/upload?file=${encodeURIComponent(u.replace('/uploads/', ''))}`;
         if (u.startsWith('/')) return u;
-        return `/api/upload?file=${encodeURIComponent(u)}`;
+        return `/assets/${u}`;
       };
 
       if (form.file) {
