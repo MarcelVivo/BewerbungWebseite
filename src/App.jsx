@@ -200,17 +200,6 @@ function prettyTitle(i) {
   s = s.replace(/^\s*\d+[\s_\-]*/,'');
   s = s.replace(/[\-_]+/g,' ');
   s = s.replace(/([a-z])([A-Z])/g, '$1 $2');
-  const urlLower = (i.url || '').toLowerCase();
-  const t = s.toLowerCase();
-  if (/scrum/i.test(s)) return 'SCRUM Zertifikat';
-  if (/safe/i.test(s)) return 'SAFe Zertifikat';
-  if (/lebenslauf|cv/.test(t)) return 'Lebenslauf';
-  if (/diplom|diploma/.test(t)) return 'Diplom';
-  if (/certificate|zerti|zertifikat/.test(t)) return 'Zertifikat';
-  if (/arbeitszeugnis|zeugnis/.test(t)) {
-    if (/swisscom/.test(t) || urlLower.includes('swisscom')) return 'Arbeitszeugnis Swisscom';
-    return 'Arbeitszeugnis';
-  }
   return s.trim() || (i.type || 'Dokument');
 }
 
