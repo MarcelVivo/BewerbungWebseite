@@ -168,18 +168,20 @@ export default function HomePage() {
                   {!docs.length && <div className="text-sm text-slate-500">Noch keine Dokumente hinterlegt.</div>}
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {docs.map((i, idx) => (
-                      <div key={i.id || i.url || idx} className="card aspect-square p-4 flex flex-col gap-3 justify-between">
+                      <div key={i.id || i.url || idx} className="card aspect-square p-4 flex flex-col gap-3">
                         <div className="font-medium text-slate-900 text-center">{prettyTitle(i)}</div>
-                        <div className="flex items-start gap-3 justify-between h-full">
+                        <div className="flex-1 flex items-center justify-center text-sm text-slate-600 text-center">
+                          {i.description ? i.description : <span className="text-xs text-slate-400">Keine Beschreibung</span>}
+                        </div>
+                        <div className="mt-auto flex items-center justify-center gap-2">
                           {i.url ? (
-                            <div className="flex flex-col gap-2">
+                            <>
                               <a className="btn btn-soft px-3 py-1.5" href={i.url} target="_blank" rel="noreferrer">Öffnen</a>
                               <a className="btn btn-primary px-3 py-1.5" href={i.url} download>Download</a>
-                            </div>
+                            </>
                           ) : (
                             <div className="text-sm text-slate-500">Kein Link hinterlegt</div>
                           )}
-                          {i.description ? <div className="text-sm text-slate-600 flex-1 text-right">{i.description}</div> : <div className="text-xs text-slate-400 text-right">Keine Beschreibung</div>}
                         </div>
                       </div>
                     ))}
