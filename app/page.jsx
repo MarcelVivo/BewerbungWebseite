@@ -22,7 +22,8 @@ export default function HomePage() {
   const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
   const categories = [
-    { id: 'diploma', label: 'Diplome & EFZ', types: ['diploma', 'efz', 'cv'] },
+    { id: 'cv', label: 'Lebenslauf', types: ['cv'] },
+    { id: 'diploma', label: 'Diplome & EFZ', types: ['diploma', 'efz'] },
     { id: 'certificate', label: 'Zertifikate', types: ['certificate'] },
     { id: 'reference', label: 'Arbeitszeugnisse & Referenzen', types: ['zeugnis', 'reference'] },
     { id: 'portfolio', label: 'Portfolio / Projekte', types: ['project', 'code', 'link', 'photo', 'pdf'] },
@@ -66,6 +67,13 @@ export default function HomePage() {
     fetch('/api/logout', { method: 'POST' }).finally(() => { window.location.href = '/login'; });
   }
 
+  function findCvDoc(list) {
+    const byType = (list || []).find((i) => (i.type || '').toLowerCase() === 'cv');
+    if (byType) return byType;
+    const byTitle = (list || []).find((i) => /lebenslauf|cv/i.test(i.title || ''));
+    return byTitle || null;
+  }
+
   function categorize(list) {
     const buckets = {};
     categories.forEach((c) => { buckets[c.id] = []; });
@@ -80,17 +88,19 @@ export default function HomePage() {
   }
 
 const categorized = categorize(items);
-const docUrl = (u) => {
-  if (!u) return '';
-  if (/^https?:\/\//i.test(u)) return u;
-  if (u.startsWith('/api/upload?file=')) return u;
-  if (u.startsWith('/api/uploads/')) return `/api/upload?file=${encodeURIComponent(u.replace('/api/uploads/', ''))}`;
-  if (u.startsWith('/uploads/')) return `/api/upload?file=${encodeURIComponent(u.replace('/uploads/', ''))}`;
-  if (u.startsWith('/')) return u;
-  return `/api/upload?file=${encodeURIComponent(u)}`;
+  const docUrl = (u) => {
+    if (!u) return '';
+    if (/^https?:\/\//i.test(u)) return u;
+    if (u.startsWith('/assets/')) return u;
+    if (u.startsWith('/api/upload?file=')) return u;
+    if (u.startsWith('/api/uploads/')) return `/api/upload?file=${encodeURIComponent(u.replace('/api/uploads/', ''))}`;
+    if (u.startsWith('/uploads/')) return `/api/upload?file=${encodeURIComponent(u.replace('/uploads/', ''))}`;
+    if (u.startsWith('/')) return u;
+    return `/api/upload?file=${encodeURIComponent(u)}`;
 };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center text-slate-600">Lädt…</div>;
+  const cvDoc = findCvDoc(items);
 
   return (
     <>
@@ -153,6 +163,23 @@ const docUrl = (u) => {
                       </a>
                     ))}
                   </div>
+                </div>
+              </Reveal>
+              <Reveal>
+                <div className="card p-4 bg-white/90">
+                  <div className="label-pill inline-block mb-2">Lebenslauf</div>
+                  {cvDoc ? (
+                    <div className="space-y-3">
+                      <div className="text-slate-900 font-semibold">{prettyTitle(cvDoc)}</div>
+                      {cvDoc.description ? <div className="text-sm text-slate-600">{cvDoc.description}</div> : null}
+                      <div className="flex gap-2">
+                        <a className="btn btn-soft px-3 py-1.5" href={docUrl(cvDoc.url)} target="_blank" rel="noreferrer">Öffnen</a>
+                        <a className="btn btn-primary px-3 py-1.5" href={docUrl(cvDoc.url)} download>Download</a>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-sm text-slate-500">Noch kein Lebenslauf hinterlegt.</div>
+                  )}
                 </div>
               </Reveal>
             </div>

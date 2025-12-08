@@ -57,6 +57,7 @@ function Home({ items, avatar }) {
     { label: 'Englisch Zertifikat', url: '/assets/CambridgeEnglischA2ZertifikatMarcelSpahr.pdf' },
     { label: 'Arbeitszeugnis Swisscom', url: '/assets/ArbeitszeugnisMarcelSpahr2025.pdf' },
   ];
+  const cvDoc = (items || []).find((i) => (i.type || '').toLowerCase() === 'cv') || (items || []).find((i) => /lebenslauf|cv/i.test(i.title || ''));
   function findCvUrl() {
     const byType = (items || []).find((i) => (i.type || '').toLowerCase() === 'cv');
     if (byType && byType.url) return byType.url;
@@ -111,6 +112,21 @@ function Home({ items, avatar }) {
                 </a>
               ))}
             </div>
+          </div>
+          <div>
+            <div className="label-pill inline-block mb-2">Lebenslauf</div>
+            {cvDoc ? (
+              <div className="space-y-3">
+                <div className="text-slate-900 font-semibold">{prettyTitle(cvDoc)}</div>
+                {cvDoc.description ? <div className="text-sm text-slate-600">{cvDoc.description}</div> : null}
+                <div className="flex gap-2">
+                  <a className="btn btn-soft px-3 py-1.5" href={docUrl(cvDoc.url)} target="_blank" rel="noreferrer">Öffnen</a>
+                  <a className="btn btn-primary px-3 py-1.5" href={docUrl(cvDoc.url)} download>Download</a>
+                </div>
+              </div>
+            ) : (
+              <div className="text-sm text-slate-500">Noch kein Lebenslauf hinterlegt.</div>
+            )}
           </div>
           <div>
             <div className="label-pill inline-block mb-2">Skills</div>
@@ -206,6 +222,7 @@ function prettyTitle(i) {
 function Documents({ items }) {
   const categories = [
     { id: 'alle', label: 'Alle' },
+    { id: 'cv', label: 'Lebenslauf', match: (i) => /^(cv)$/i.test(i.type || '') || /lebenslauf|cv/i.test(i.title || '') },
     { id: 'zertifikate', label: 'Zertifikate', match: (i) => /^(certificate)$/i.test(i.type || '') },
     { id: 'sprachen', label: 'Sprachen', match: (i) => /^(language)$/i.test(i.type || '') },
     { id: 'arbeitszeugnisse', label: 'Arbeitszeugnisse', match: (i) => /^(reference|zeugnis)$/i.test(i.type || '') },
