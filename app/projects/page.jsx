@@ -200,19 +200,26 @@ export default function ProjectsPage() {
               {!docs.length && <div className="text-sm text-slate-500">Noch nichts in dieser Kategorie.</div>}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {docs.map((i) => (
-                  <div key={i.id} className="card p-4 space-y-2">
+                  <div key={i.id} className="card aspect-square p-4 flex flex-col gap-3 justify-between">
                     <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <div className="text-slate-900 font-semibold">{i.title || i.type}</div>
-                        <div className="text-xs text-slate-500">Typ: {i.type}</div>
-                      </div>
+                      <div className="text-slate-900 font-semibold text-center w-full">{i.title || i.type}</div>
                       <div className="flex items-center gap-2">
                         <button className="text-sm text-blue-600" onClick={() => startEdit(i)}>Bearbeiten</button>
                         <button className="text-sm text-red-600" onClick={() => remove(i.id)}>Löschen</button>
                       </div>
                     </div>
-                    {i.description ? <div className="text-sm text-slate-600">{i.description}</div> : null}
-                    {i.url ? <a className="link-blue text-sm" href={i.url} target="_blank" rel="noreferrer">Öffnen</a> : null}
+                    <div className="flex items-start gap-3 justify-between h-full">
+                      {i.url ? (
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <a className="btn btn-soft px-3 py-1.5" href={i.url} target="_blank" rel="noreferrer">Öffnen</a>
+                          <a className="btn btn-primary px-3 py-1.5" href={i.url} download>Download</a>
+                        </div>
+                      ) : (
+                        <div className="text-sm text-slate-500">Kein Link</div>
+                      )}
+                      {i.description ? <div className="text-sm text-slate-600 flex-1 text-right">{i.description}</div> : <div className="text-xs text-slate-400 text-right">Keine Beschreibung</div>}
+                    </div>
+                    <div className="text-xs text-slate-500">Typ: {i.type}</div>
                   </div>
                 ))}
               </div>

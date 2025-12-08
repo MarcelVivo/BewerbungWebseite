@@ -168,15 +168,19 @@ export default function HomePage() {
                   {!docs.length && <div className="text-sm text-slate-500">Noch keine Dokumente hinterlegt.</div>}
                   <div className="grid md:grid-cols-2 gap-4">
                     {docs.map((i, idx) => (
-                      <div key={i.id || i.url || idx} className="card p-4 flex flex-col gap-2">
-                        <div className="font-medium text-slate-900">{prettyTitle(i)}</div>
-                        {i.description ? <div className="text-sm text-slate-600">{i.description}</div> : null}
-                        {i.url ? (
-                          <div className="flex gap-2 mt-auto">
-                            <a className="btn btn-soft px-3 py-1.5" href={i.url} target="_blank" rel="noreferrer">Öffnen</a>
-                            <a className="btn btn-primary px-3 py-1.5" href={i.url} download>Download</a>
-                          </div>
-                        ) : null}
+                      <div key={i.id || i.url || idx} className="card aspect-square p-4 flex flex-col gap-3 justify-between">
+                        <div className="font-medium text-slate-900 text-center">{prettyTitle(i)}</div>
+                        <div className="flex items-start gap-3 justify-between h-full">
+                          {i.url ? (
+                            <div className="flex flex-col sm:flex-row gap-2">
+                              <a className="btn btn-soft px-3 py-1.5" href={i.url} target="_blank" rel="noreferrer">Öffnen</a>
+                              <a className="btn btn-primary px-3 py-1.5" href={i.url} download>Download</a>
+                            </div>
+                          ) : (
+                            <div className="text-sm text-slate-500">Kein Link hinterlegt</div>
+                          )}
+                          {i.description ? <div className="text-sm text-slate-600 flex-1 text-right">{i.description}</div> : <div className="text-xs text-slate-400 text-right">Keine Beschreibung</div>}
+                        </div>
                       </div>
                     ))}
                   </div>
