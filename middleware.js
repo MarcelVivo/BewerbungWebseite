@@ -9,6 +9,22 @@ const PUBLIC_PATHS = [
   '/robots.txt',
 ];
 
+// Utility helpers for Edge runtime (no Buffer available)
+const base64UrlEncode = (arrayBuffer) => {
+  const bytes = new Uint8Array(arrayBuffer);
+  let binary = '';
+  bytes.forEach((b) => { binary += String.fromCharCode(b); });
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+};
+
+const base64UrlDecodeToString = (b64url) => {
+  const normalized = b64url.replace(/-/g, '+').replace(/_/g, '/');
+  const padded = normalized + '='.repeat((4 - (normalized.length % 4)) % 4);
+  const binary = atob(padded);
+  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+};
+
 // Use Web Crypto in Edge to verify HMAC token
 async function verifyToken(token, secret) {
   try {
@@ -23,9 +39,9 @@ async function verifyToken(token, secret) {
       ['sign']
     );
     const expected = await crypto.subtle.sign('HMAC', key, data);
-    const expectedB64 = Buffer.from(new Uint8Array(expected)).toString('base64url');
+    const expectedB64 = base64UrlEncode(expected);
     if (expectedB64 !== sig) return null;
-    const json = JSON.parse(Buffer.from(b64, 'base64url').toString('utf8'));
+    const json = JSON.parse(base64UrlDecodeToString(b64));
     if (!json || !json.exp || Date.now() > json.exp) return null;
     return json;
   } catch {
@@ -57,4 +73,3 @@ export async function middleware(req) {
 export const config = {
   matcher: '/:path*',
 };
-

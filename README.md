@@ -29,6 +29,20 @@ Passwortgeschützte One‑Page‑Bewerbungsseite für Marcel Spahr. React via Ne
 - Next.js Dev‑Server: `npm run dev`
 - Build: `npm run build`, Start: `npm start`
 
+## Deployment auf Vercel (GitHub)
+
+1. Repository zu GitHub pushen (z. B. `ms-bewerbung`).
+2. In Vercel ein neues Projekt anlegen und das GitHub-Repo verknüpfen. Vercel erkennt Next.js automatisch.
+3. In den Vercel-Einstellungen die folgenden Environment-Variablen setzen (Production/Preview):
+
+   - `ADMIN_USER`, `ADMIN_PASS`
+   - `VIEW_USER`, `VIEW_PASS`
+   - `SESSION_SECRET` (lange, zufällige Zeichenkette)
+
+4. Deploy starten – Vercel baut mit `npm install && npm run build`.
+5. Domain anbinden: In Vercel unter *Domains* `www.marcelspahr.ch` hinzufügen und DNS-A/ALIAS bzw. CNAME laut Vercel-Hinweis beim Domain-Provider setzen.
+6. Nach dem ersten erfolgreichen Deploy ist die Seite per Login erreichbar. Lokale Entwicklung weiter wie oben beschrieben.
+
 ## Struktur
 
 - `app/` – Next.js App Router

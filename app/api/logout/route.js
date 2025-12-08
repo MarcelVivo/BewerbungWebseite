@@ -1,13 +1,14 @@
 import { cookies } from 'next/headers';
 
 export async function POST() {
-  (await cookies()).set('msb_token', '', {
+  const cookieStore = cookies();
+  const isProd = process.env.NODE_ENV === 'production';
+  cookieStore.set('msb_token', '', {
     httpOnly: true,
     sameSite: 'lax',
-    secure: true,
+    secure: isProd,
     path: '/',
     maxAge: 0,
   });
   return Response.json({ ok: true });
 }
-

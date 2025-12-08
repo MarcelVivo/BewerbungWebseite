@@ -51,6 +51,12 @@ function Navbar({ role }) {
 }
 
 function Home({ items, avatar }) {
+  const quickDocs = [
+    { label: 'SCRUM Zertifikat', url: '/assets/SCRUMZertifikat.pdf' },
+    { label: 'SAFe Zertifikat', url: '/assets/SAFeZertifikatMarcelSpahr.pdf' },
+    { label: 'Englisch Zertifikat', url: '/assets/CambridgeEnglischA2ZertifikatMarcelSpahr.pdf' },
+    { label: 'Arbeitszeugnis Swisscom', url: '/assets/ArbeitszeugnisMarcelSpahr2025.pdf' },
+  ];
   function findCvUrl() {
     const byType = (items || []).find((i) => (i.type || '').toLowerCase() === 'cv');
     if (byType && byType.url) return byType.url;
@@ -72,102 +78,116 @@ function Home({ items, avatar }) {
                   <div className="mt-2 label-pill inline-flex">Wirtschaftsinformatiker</div>
                 </div>
               </div>
-              <p className="mt-5 text-slate-700 leading-relaxed max-w-2xl">Kreativer Wirtschaftsinformatiker mit technischem Verständnis, Empathie und digitalem Gespür.</p>
-              <p className="mt-3 text-slate-700 leading-relaxed max-w-2xl">Meine Leidenschaft ist es, technisches Know-how mit kreativen Ideen zu verbinden. Mit langjähriger Erfahrung im Marketing und Online-Business gestalte ich individuelle Kundenerlebnisse. Mein Talent für strategische Planung, Organisation und vernetztes Denken erlaubt mir, effizient, kundenorientiert und wirtschaftlich sinnvoll zu handeln. Die Begeisterung für digitale Innovationen treibt mich an, mein Wissen stetig zu erweitern und Lösungen mit technologischem Fortschritt zu verbinden.</p>
+              <p className="mt-5 text-slate-700 leading-relaxed max-w-2xl">Kreativer Wirtschaftsinformatiker mit viel Verstand, Empathie & digitalem Gespür. Technisches Know-how mit kreativen Ideen zu verknüpfen, ist meine Leidenschaft.</p>
+              <p className="mt-3 text-slate-700 leading-relaxed max-w-2xl">Mit viel Erfahrung in Marketing und Online-Business sowie als langjähriger Kundenberater schaffe ich individuelle Kundenerlebnisse. Mein Talent für strategische Planung, Organisation und vernetztes Denken ermöglicht es mir, effizient, kundenorientiert und wirtschaftlich sinnvoll zu handeln. Meine Begeisterung für digitale Innovationen treibt mich an, mein Wissen kontinuierlich zu erweitern und kreative Lösungen mit technologischem Fortschritt zu verbinden.</p>
               <div className="mt-5 flex flex-wrap gap-2">
                 <a className="btn btn-primary px-4 py-2" href={cvUrl} target="_blank" rel="noreferrer">Lebenslauf (PDF)</a>
                 <a className="btn btn-soft px-4 py-2" href="#docs">Alle Dokumente ansehen</a>
               </div>
-            </div>
-          </Reveal>
-          <Reveal>
-            <aside className="card p-5 bg-white/90 sticky-aside">
-              <h3 className="text-sm tracking-widest font-bold text-slate-700 mb-3">Kontakt</h3>
-              <ul className="text-slate-700 space-y-2">
-                <li>Bern, Schweiz</li>
-                <li>+41 79 511 09 11</li>
-                <li><a className="link-blue" href="mailto:marcelspahr82@bluewin.ch">marcelspahr82@bluewin.ch</a></li>
-              </ul>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <span className="tag">Deutsch</span>
-                <span className="tag">Englisch B1</span>
-              </div>
-              <div className="mt-6">
-                <div className="label-pill inline-block mb-2">Skills</div>
-                <details className="accordion mb-2" open>
-                  <summary><span className="badge">Soft Skills</span><span className="ml-2 font-medium">Persönliche Stärken</span></summary>
-                  <div className="skills-list"><ul>
-                    <li>Analytisches Denken & Problemlösung</li>
-                    <li>Kommunikationsstark</li>
-                    <li>Organisationstalent</li>
-                    <li>Geduldig und zuverlässig</li>
-                    <li>Stakeholder‑Management & Schnittstellenkommunikation</li>
-                    <li>Strukturiertes Arbeiten & Priorisierung</li>
-                    <li>Moderation von Workshops & Meetings</li>
-                    <li>Kunden‑ und Serviceorientierung</li>
-                    <li>Selbstorganisation & Zeitmanagement</li>
-                    <li>Lernbereitschaft & Neugier</li>
-                    <li>Verantwortungsbewusstsein & Entscheidungsfreude</li>
-                  </ul></div>
-                </details>
-                <details className="accordion mb-2">
-                  <summary><span className="badge">Tech Skills</span><span className="ml-2 font-medium">Wirtschaftsinformatik & IT</span></summary>
-                  <div className="skills-list"><ul>
-                    <li>Requirements Engineering (User Stories, Use Cases, Akzeptanzkriterien)</li>
-                    <li>IT‑Projektmanagement & Agile Methoden (Scrum/Kanban, Backlog, Estimation)</li>
-                    <li>Geschäftsprozessanalyse & ‑modellierung (BPMN 2.0)</li>
-                    <li>UML‑Diagramme (Klassendiagramm, Aktivitäts‑ & Sequenzdiagramm)</li>
-                    <li>Datenmodellierung (ERM), Normalisierung</li>
-                    <li>Relationale Datenbanken & SQL (Joins, Views, Transaktionen, Indexe)</li>
-                    <li>Datenanalyse & Reporting (Power BI/Tableau, Excel Pivot)</li>
-                    <li>ETL/ELT & Data Warehousing (Star/Snowflake Schema)</li>
-                    <li>API‑Grundlagen (REST/HTTP, JSON, OpenAPI/Swagger)</li>
-                    <li>Web‑Grundlagen & Prototyping (HTML/CSS/JavaScript)</li>
-                    <li>Versionsverwaltung (Git/GitHub)</li>
-                  </ul></div>
-                </details>
-                <details className="accordion mb-2">
-                  <summary><span className="badge">Praxis</span><span className="ml-2 font-medium">Support & Administration</span></summary>
-                  <div className="skills-list"><ul>
-                    <li>1st/2nd Level Support</li>
-                    <li>Systemadministration (Tech & Admin)</li>
-                    <li>Workflow‑Optimierung im Kundenservice</li>
-                    <li>Retention‑ & Sales‑Prozesse</li>
-                  </ul></div>
-                </details>
-                <details className="accordion mb-2">
-                  <summary><span className="badge">Kreative Skills</span><span className="ml-2 font-medium">Marketing & Content</span></summary>
-                  <div className="skills-list"><ul>
-                    <li>Videoproduktion</li>
-                    <li>Adobe Photoshop & Illustrator</li>
-                    <li>Marketingkenntnisse & Erfahrung</li>
-                    <li>Content‑Erstellung</li>
-                  </ul></div>
-                </details>
-                <details className="accordion mb-2">
-                  <summary><span className="badge">Software</span><span className="ml-2 font-medium">Tools</span></summary>
-                  <div className="skills-list"><ul>
-                    <li>Windows & macOS</li>
-                    <li>Microsoft Office 365</li>
-                    <li>Jira & Confluence</li>
-                    <li>Git & GitHub</li>
-                    <li>VS Code</li>
-                    <li>Power BI</li>
-                    <li>Figma & Miro</li>
-                  </ul></div>
-                </details>
-                <details className="accordion">
-                  <summary><span className="badge">Sprachen</span><span className="ml-2 font-medium">Languages</span></summary>
-                  <div className="skills-list"><ul>
-                    <li>Deutsch (Muttersprache)</li>
-                    <li>Englisch (B1)</li>
-                  </ul></div>
-                </details>
-              </div>
-            </aside>
-          </Reveal>
         </div>
-      </section>
+      </Reveal>
+      <Reveal>
+        <aside className="card p-5 bg-white/90 sticky-aside space-y-4">
+          <div>
+            <h3 className="text-sm tracking-widest font-bold text-slate-700 mb-3">Kontakt</h3>
+            <ul className="text-slate-700 space-y-2">
+              <li>Bern, Schweiz</li>
+              <li>+41 79 511 09 11</li>
+              <li><a className="link-blue" href="mailto:kontakt@marcelspahr.ch">kontakt@marcelspahr.ch</a></li>
+              <li><a className="link-blue" href="https://www.marcelspahr.ch" target="_blank" rel="noreferrer">www.marcelspahr.ch</a></li>
+            </ul>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <span className="tag">Deutsch (Muttersprache)</span>
+              <span className="tag">Englisch (A2)</span>
+              <span className="tag">Führerausweis Kat. B</span>
+            </div>
+          </div>
+          <div>
+            <div className="label-pill inline-block mb-2">Top Dokumente</div>
+            <div className="grid grid-cols-2 gap-2">
+              {quickDocs.map((d) => (
+                <a key={d.label} className="card p-3 text-sm font-semibold text-slate-800 hover:bg-ms-50" href={d.url} target="_blank" rel="noreferrer">
+                  {d.label}
+                </a>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="label-pill inline-block mb-2">Skills</div>
+            <details className="accordion mb-2" open>
+              <summary><span className="badge">Soft Skills</span><span className="ml-2 font-medium">Persönliche Stärken</span></summary>
+              <div className="skills-list"><ul>
+                <li>Analytisches Denken & Problemlösung</li>
+                <li>Kommunikationsstark</li>
+                <li>Organisationstalent</li>
+                <li>Geduldig und zuverlässig</li>
+                <li>Stakeholder‑Management & Schnittstellenkommunikation</li>
+                <li>Strukturiertes Arbeiten & Priorisierung</li>
+                <li>Moderation von Workshops & Meetings</li>
+                <li>Kunden‑ und Serviceorientierung</li>
+                <li>Selbstorganisation & Zeitmanagement</li>
+                <li>Lernbereitschaft & Neugier</li>
+                <li>Verantwortungsbewusstsein & Entscheidungsfreude</li>
+              </ul></div>
+            </details>
+            <details className="accordion mb-2">
+              <summary><span className="badge">Tech Skills</span><span className="ml-2 font-medium">Wirtschaftsinformatik & IT</span></summary>
+              <div className="skills-list"><ul>
+                <li>Requirements Engineering (User Stories, Use Cases, Akzeptanzkriterien)</li>
+                <li>IT‑Projektmanagement & Agile Methoden (Scrum/Kanban, Backlog, Estimation)</li>
+                <li>Geschäftsprozessanalyse & ‑modellierung (BPMN 2.0)</li>
+                <li>UML‑Diagramme (Klassendiagramm, Aktivitäts‑ & Sequenzdiagramm)</li>
+                <li>Datenmodellierung (ERM), Normalisierung</li>
+                <li>Relationale Datenbanken & SQL (Joins, Views, Transaktionen, Indexe)</li>
+                <li>Datenanalyse & Reporting (Power BI/Tableau, Excel Pivot)</li>
+                <li>ETL/ELT & Data Warehousing (Star/Snowflake Schema)</li>
+                <li>API‑Grundlagen (REST/HTTP, JSON, OpenAPI/Swagger)</li>
+                <li>Web‑Grundlagen & Prototyping (HTML/CSS/JavaScript)</li>
+                <li>Versionsverwaltung (Git/GitHub)</li>
+              </ul></div>
+            </details>
+            <details className="accordion mb-2">
+              <summary><span className="badge">Praxis</span><span className="ml-2 font-medium">Support & Administration</span></summary>
+              <div className="skills-list"><ul>
+                <li>1st/2nd Level Support</li>
+                <li>Systemadministration (Tech & Admin)</li>
+                <li>Workflow‑Optimierung im Kundenservice</li>
+                <li>Retention‑ & Sales‑Prozesse</li>
+              </ul></div>
+            </details>
+            <details className="accordion mb-2">
+              <summary><span className="badge">Kreative Skills</span><span className="ml-2 font-medium">Marketing & Content</span></summary>
+              <div className="skills-list"><ul>
+                <li>Videoproduktion</li>
+                <li>Adobe Photoshop & Illustrator</li>
+                <li>Marketingkenntnisse & Erfahrung</li>
+                <li>Content‑Erstellung</li>
+              </ul></div>
+            </details>
+            <details className="accordion mb-2">
+              <summary><span className="badge">Software</span><span className="ml-2 font-medium">Tools</span></summary>
+              <div className="skills-list"><ul>
+                <li>Windows & macOS</li>
+                <li>Microsoft Office 365</li>
+                <li>Jira & Confluence</li>
+                <li>Git & GitHub</li>
+                <li>VS Code</li>
+                <li>Power BI</li>
+                <li>Figma & Miro</li>
+              </ul></div>
+            </details>
+            <details className="accordion">
+              <summary><span className="badge">Sprachen</span><span className="ml-2 font-medium">Languages</span></summary>
+              <div className="skills-list"><ul>
+                <li>Deutsch (Muttersprache)</li>
+                <li>Englisch (B1)</li>
+              </ul></div>
+            </details>
+          </div>
+        </aside>
+      </Reveal>
+    </div>
+  </section>
       <CvSection />
       <Documents items={items.filter((i) => ['certificate','language','reference','diploma','pdf','zeugnis'].includes(i.type))} />
     </>
@@ -261,8 +281,10 @@ function CvSection() {
         'Betreuung von Retention‑ und Sales‑Management‑Prozessen.'
       ]},
       { period: '2007 – 2008', title: 'Freelance Einsätze als Werbetechniker', subtitle: 'Frontwork Zürich; Seka Thun', bullets: [
-        'Umsetzung von Markenauftritten und Shop‑Redesigns (u. a. Swisscom Shops Schweiz).',
-        'Event‑/Sportproduktion (EM 2008 Projekte).'
+        'Umsetzung diverser Projekte zur Fussball EM 08.',
+        'Redesign der Swisscom Shops in der Schweiz.',
+        'Eventplanung, Organisation und Betreuung.',
+        'Marketing, Ticketing, Verkauf und Merchandise.'
       ]}
     ] },
     { label: 'Schulausbildung, Lehrabschlüsse (EFZ) & aktuelles Studium', items: [
@@ -280,14 +302,13 @@ function CvSection() {
     ] },
     { label: 'Nebenberufliche Tätigkeiten bis 2020', items: [
       { period: '2018 – 2020', title: 'Inhaber & Betreiber Cube Club Bern', bullets: [
-        'Eventplanung, ‑organisation und ‑durchführung; Budget & Marketing (Ticketing, Getränke, Merchandise).',
-        'Leitung mit Personalverantwortung (bis 18 Mitarbeitende).',
-        'Erstellung & Betrieb der Webseite cube.club.'
+        'Vollständige Organisation, Leitung, wirtschaftliche Verantwortung und Führung von bis zu 18 Mitarbeitenden.',
+        'Marketing, Online‑Auftritt, Eventplanung und Budgetierung.'
       ]},
       { period: '2009 – 2020', title: 'Organisation und Durchführung diverser Events', bullets: [
-        'Mehrere Events in Gaskessel Bern und anderen Lokalen.',
-        '2011–2015: Organisation Love Mobile / Streetparade Zürich.',
-        'Event‑ und Programm‑Management im Babette Club Zürich.'
+        'Planung und Durchführung von Events im Gaskessel Bern und weiteren Locations.',
+        'Organisation eines Love Mobiles an der Streetparade Zürich (2011–2015).',
+        'Programm‑ und Eventmanagement im Babette Club Zürich.'
       ]}
     ] },
   ];
@@ -406,11 +427,13 @@ function Contact() {
           <ul className="text-slate-700 space-y-2">
             <li>Bern, Schweiz</li>
             <li>+41 79 511 09 11</li>
-            <li><a className="link-blue" href="mailto:marcelspahr82@bluewin.ch">marcelspahr82@bluewin.ch</a></li>
+            <li><a className="link-blue" href="mailto:kontakt@marcelspahr.ch">kontakt@marcelspahr.ch</a></li>
+            <li><a className="link-blue" href="https://www.marcelspahr.ch" target="_blank" rel="noreferrer">www.marcelspahr.ch</a></li>
           </ul>
           <div className="mt-3 flex flex-wrap gap-2">
-            <span className="tag">Deutsch</span>
-            <span className="tag">Englisch B1</span>
+            <span className="tag">Deutsch (Muttersprache)</span>
+            <span className="tag">Englisch (A2)</span>
+            <span className="tag">Führerausweis Kat. B</span>
           </div>
         </div>
       </Reveal>
