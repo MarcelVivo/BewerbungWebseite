@@ -50,8 +50,26 @@ async function verifyToken(token, secret) {
 }
 
 export async function middleware(req) {
-  // Static-only Modus: Auth-Prüfung umgehen, alle Routen erlauben
-  return NextResponse.next();
+  const { pathname } = req.nextUrl;
+
+  // Always allow Next.js internals
+  if (pathname.startsWith('/_next')) return NextResponse.next();
+  // Allow static assets for layout (CSS/JS), but block sensitive PDFs until login
+  if (pathname.startsWith('/static')) return NextResponse.next();
+  // Allow explicitly public paths (login + auth endpoints)
+  if (PUBLIC_PATHS.includes(pathname)) return NextResponse.next();
+
+  const token = req.cookies.get('msb_token')?.value || '';
+  const secret = process.env.SESSION_SECRET || 'please-change';
+  const payload = await verifyToken(token, secret);
+
+  if (payload) return NextResponse.next();
+
+  // Redirect to /login and preserve the original destination as query
+  const url = req.nextUrl.clone();
+  url.pathname = '/login';
+  url.searchParams.set('next', pathname);
+  return NextResponse.redirect(url);
 }
 
 export const config = {

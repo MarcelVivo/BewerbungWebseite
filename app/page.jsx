@@ -87,6 +87,7 @@ const categorized = categorize(items);
           </div>
           <nav className="flex items-center gap-2">
             <a className="px-3 py-1.5 rounded-lg text-sm hover:bg-ms-100" href="#dokumente">Dokumente</a>
+            <button className="ml-2 px-3 py-1.5 rounded-lg text-sm bg-ms-100 hover:bg-ms-200" onClick={() => { fetch('/api/logout', { method: 'POST' }).finally(() => { window.location.href = '/login'; }); }}>Logout</button>
           </nav>
         </div>
       </header>
