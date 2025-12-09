@@ -33,7 +33,7 @@ export default function LoginPage() {
         </div>
         <div className="space-y-1 text-center">
           <div className="text-base font-semibold text-slate-900">Geschützter Bewerbungsbereich</div>
-          <div className="text-sm text-slate-600">Bitte mit den Login Daten anmelden, um meinen Lebenslauf, Diplome und Projektdokumente einzusehen.</div>
+          <div className="text-sm text-slate-600">Bitte mit den Logindaten anmelden, um meinen Lebenslauf, Diplome und Projektdokumente einzusehen.</div>
           <div className="text-xs text-slate-500">(Der Zugang dauert nur wenige Sekunden.)</div>
         </div>
         <div className="space-y-3">
