@@ -107,13 +107,12 @@ function Home({ items, avatar }) {
             </div>
           </div>
           <div>
-            <div className="label-pill inline-block mb-2">Top Dokumente</div>
+            <div className="label-pill inline-block mb-2">Dokumente & Praktische Arbeiten</div>
             <div className="grid grid-cols-2 gap-2">
-              {quickDocs.map((d) => (
-                <a key={d.label} className="card p-3 text-sm font-semibold text-slate-800 hover:bg-ms-50" href={d.url} target="_blank" rel="noreferrer">
-                  {d.label}
-                </a>
-              ))}
+              <a className="card p-3 text-sm font-semibold text-slate-800 hover:bg-ms-50" href="#cat-diplome">DIPLOME & EFZ</a>
+              <a className="card p-3 text-sm font-semibold text-slate-800 hover:bg-ms-50" href="#cat-zertifikate">ZERTIFIKATE</a>
+              <a className="card p-3 text-sm font-semibold text-slate-800 hover:bg-ms-50" href="#cat-arbeitszeugnisse">ARBEITSZEUGNISSE</a>
+              <a className="card p-3 text-sm font-semibold text-slate-800 hover:bg-ms-50" href="#cat-portfolio">PROJEKT PORTFOLIO</a>
             </div>
           </div>
           <div>
@@ -255,7 +254,7 @@ function Documents({ items }) {
           <button key={c.id} onClick={() => setTab(c.id)} className={clsx('px-3 py-1.5 rounded-lg text-sm font-medium', tab === c.id ? 'bg-ms-600 text-white' : 'hover:bg-ms-100 text-slate-700')}>{c.label}</button>
         ))}
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id={`cat-${tab === 'alle' ? 'alle' : tab}`}>
         {filtered.map((i) => (
           <Reveal key={i.id} className="card p-4 flex flex-col gap-2">
             <div className="text-slate-900 font-semibold">{prettyTitle(i)}</div>

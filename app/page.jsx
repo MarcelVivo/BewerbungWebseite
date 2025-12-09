@@ -132,13 +132,12 @@ const categorized = categorize(items);
               </Reveal>
               <Reveal>
                 <div className="card p-4 bg-white/90">
-                  <div className="label-pill inline-block mb-2">Top Dokumente</div>
+                  <div className="label-pill inline-block mb-2">Dokumente & Praktische Arbeiten</div>
                   <div className="grid grid-cols-2 gap-2">
-                    {quickDocs.map((d) => (
-                      <a key={d.label} className="card p-3 text-sm font-semibold text-slate-800 hover:bg-ms-50" href={d.url} target="_blank" rel="noreferrer">
-                        {d.label}
-                      </a>
-                    ))}
+                    <a className="card p-3 text-sm font-semibold text-slate-800 hover:bg-ms-50" href="#cat-diploma">DIPLOME & EFZ</a>
+                    <a className="card p-3 text-sm font-semibold text-slate-800 hover:bg-ms-50" href="#cat-certificate">ZERTIFIKATE</a>
+                    <a className="card p-3 text-sm font-semibold text-slate-800 hover:bg-ms-50" href="#cat-reference">ARBEITSZEUGNISSE</a>
+                    <a className="card p-3 text-sm font-semibold text-slate-800 hover:bg-ms-50" href="#cat-portfolio">PROJEKT PORTFOLIO</a>
                   </div>
                 </div>
               </Reveal>
@@ -174,7 +173,7 @@ const categorized = categorize(items);
               const docs = categorized[cat.id] || [];
               return (
                 <Reveal key={cat.id} className="space-y-3">
-                  <div className="flex items-center justify-between">
+                  <div id={`cat-${cat.id}`} className="flex items-center justify-between">
                     <div className="label-pill inline-block">{cat.label}</div>
                     <div className="text-xs text-slate-500">{docs.length} Dokument{docs.length === 1 ? '' : 'e'}</div>
                   </div>
