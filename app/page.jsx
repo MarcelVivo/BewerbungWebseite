@@ -19,7 +19,6 @@ function Reveal({ as: Tag = 'div', children, className = '' }) {
 export default function HomePage() {
   const [items, setItems] = useState([]);
   const [avatar, setAvatar] = useState('/assets/portrait.jpg');
-  const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
   const categories = [
     { id: 'cv', label: 'Lebenslauf', types: ['cv'] },
@@ -36,36 +35,12 @@ export default function HomePage() {
   ];
 
   useEffect(() => {
-    (async () => {
-      try {
-        const sess = await fetch('/api/session');
-        if (!sess.ok) throw new Error('no session');
-        const data = await sess.json();
-        setRole(data?.user?.role || 'viewer');
-      } catch {
-        window.location.href = '/login';
-        return;
-      }
-
-      try {
-        const res = await fetch('/api/projects');
-        if (!res.ok) throw new Error('load failed');
-        const data = await res.json();
-        setItems(Array.isArray(data.items) ? data.items : []);
-      } catch {
-        fetch('/assets/projects.json')
-          .then((r) => r.json())
-          .then((j) => setItems(Array.isArray(j) ? j : (j.items || [])))
-          .catch(() => {});
-      } finally {
-        setLoading(false);
-      }
-    })();
+    fetch('/assets/projects.json')
+      .then((r) => r.json())
+      .then((j) => setItems(Array.isArray(j) ? j : (j.items || [])))
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
-
-  function logout() {
-    fetch('/api/logout', { method: 'POST' }).finally(() => { window.location.href = '/login'; });
-  }
 
   function findCvDoc(list) {
     const byType = (list || []).find((i) => (i.type || '').toLowerCase() === 'cv');
@@ -112,8 +87,6 @@ const categorized = categorize(items);
           </div>
           <nav className="flex items-center gap-2">
             <a className="px-3 py-1.5 rounded-lg text-sm hover:bg-ms-100" href="#dokumente">Dokumente</a>
-            {role === 'owner' ? <a className="px-3 py-1.5 rounded-lg text-sm hover:bg-ms-100" href="/projects">Dokumente bearbeiten</a> : null}
-            <button className="ml-2 px-3 py-1.5 rounded-lg text-sm bg-ms-100 hover:bg-ms-200" onClick={logout}>Logout</button>
           </nav>
         </div>
       </header>

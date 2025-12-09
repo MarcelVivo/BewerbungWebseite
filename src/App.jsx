@@ -28,7 +28,7 @@ function Reveal({ className, children, as: Tag = 'div', delay = 0 }) {
 
 function Navbar({ role }) {
   const nav = useNavigate();
-  const items = ['/', ...(role === 'owner' ? ['/projects'] : []), '/contact'];
+  const items = ['/', '/contact'];
   const label = (p) => (p === '/' ? 'Start' : p === '/projects' ? 'Projekte' : 'Kontakt');
   return (
     <header className="nav-blue sticky top-0 z-10">
@@ -463,38 +463,24 @@ function Contact() {
 
 function AppShell() {
   const [items, setItems] = useState([]);
-  const [role, setRole] = useState(null);
-  const [avatar, setAvatar] = useState(null);
+  const [avatar, setAvatar] = useState('/assets/portrait.jpg');
   const [loading, setLoading] = useState(true);
   useEffect(() => {
-    (async () => {
-      try {
-        // Try backend session first (dynamic mode)
-        const sess = await api('/api/session');
-        setRole(sess?.user?.role || null);
-        const p = await api('/api/projects');
-        setItems(p.items || []);
-        try { const av = await api('/api/assets/avatar'); if (av && av.url) setAvatar(av.url); } catch {}
-      } catch (e) {
-        // Static fallback (no backend): public viewer + static data
-        try {
-          setRole('viewer');
-          const fallback = await fetch('/assets/projects.json').then(r => r.ok ? r.json() : { items: [] }).catch(() => ({ items: [] }));
-          const arr = Array.isArray(fallback) ? fallback : (fallback.items || []);
-          setItems(arr);
-        } catch {}
-      } finally {
-        setLoading(false);
-      }
-    })();
+    fetch('/assets/projects.json')
+      .then(r => r.ok ? r.json() : { items: [] })
+      .then((fallback) => {
+        const arr = Array.isArray(fallback) ? fallback : (fallback.items || []);
+        setItems(arr);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
   if (loading) return <div className="min-h-screen flex items-center justify-center text-slate-600">Lädt…</div>;
   return (
     <>
-      <Navbar role={role} />
+      <Navbar role={null} />
       <Routes>
         <Route path="/" element={<Home items={items} avatar={avatar} />} />
-        {role === 'owner' ? <Route path="/projects" element={<ProjectsAdmin items={items} setItems={setItems} />} /> : null}
         <Route path="/contact" element={<Contact />} />
         <Route path="*" element={<Home items={items} avatar={avatar} />} />
       </Routes>
