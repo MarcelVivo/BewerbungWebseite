@@ -3,7 +3,7 @@
     "id": "cv-1",
     "title": "Lebenslauf",
     "type": "cv",
-    "description": "",
+    "description": "Aktueller Lebenslauf (PDF) mit allen Stationen.",
     "url": "/assets/LebenslaufMarcelSpahr.pdf",
     "code": "",
     "createdAt": 1
@@ -12,7 +12,7 @@
     "id": "safe-2025",
     "title": "SAFe Zertifikat 2025",
     "type": "certificate",
-    "description": "",
+    "description": "Zertifikat SAFe 2025.",
     "url": "/assets/SAFeZertifikatMarcelSpahr.pdf",
     "code": "",
     "createdAt": 2
@@ -21,7 +21,7 @@
     "id": "cambridge-a2-2025",
     "title": "Cambridge Englisch Zertifikat A2 2025",
     "type": "certificate",
-    "description": "",
+    "description": "Englisch-Zertifikat A2 (Cambridge).",
     "url": "/assets/CambridgeEnglischA2ZertifikatMarcelSpahr.pdf",
     "code": "",
     "createdAt": 3
@@ -30,7 +30,7 @@
     "id": "scrum-2024",
     "title": "SCRUM Master Zertifikat 2024",
     "type": "certificate",
-    "description": "",
+    "description": "Scrum Master Zertifikat 2024.",
     "url": "/assets/SCRUMZertifikat.pdf",
     "code": "",
     "createdAt": 4
@@ -39,7 +39,7 @@
     "id": "efz-werbetechniker",
     "title": "EFZ Werbetechniker",
     "type": "diploma",
-    "description": "",
+    "description": "Fähigkeitszeugnis als Werbetechniker EFZ.",
     "url": "/assets/FaehigkeitszeugnisWerbetechniker.pdf",
     "code": "",
     "createdAt": 5
@@ -48,7 +48,7 @@
     "id": "efz-maler",
     "title": "EFZ Maler",
     "type": "diploma",
-    "description": "",
+    "description": "Fähigkeitszeugnis als Maler EFZ.",
     "url": "/assets/FaehigkeitszeugnisMaler.pdf",
     "code": "",
     "createdAt": 6
@@ -57,7 +57,7 @@
     "id": "zeugnis-swisscom",
     "title": "Arbeitszeugnis Swisscom",
     "type": "zeugnis",
-    "description": "",
+    "description": "Arbeitszeugnis Swisscom.",
     "url": "/assets/ArbeitszeugnisSwisscomMarcelSpahr2025.pdf",
     "code": "",
     "createdAt": 7
@@ -66,7 +66,7 @@
     "id": "zeugnis-roth",
     "title": "Arbeitszeugnis Roth Malerei",
     "type": "zeugnis",
-    "description": "",
+    "description": "Arbeitszeugnis Roth Malerei.",
     "url": "/assets/ArbeitszeugnisRothMalerei.pdf",
     "code": "",
     "createdAt": 8
