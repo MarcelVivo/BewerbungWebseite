@@ -43,7 +43,13 @@ export default function LoginPage() {
           <input type="password" className="w-full rounded-lg border border-slate-300 focus:border-ms-600 focus:ring-ms-600 px-3 py-2" value={password} onChange={(e)=>setPassword(e.target.value)} required />
         </div>
         {error && <div className="text-red-600 text-sm">{error}</div>}
-        <button className="w-full rounded-lg bg-ms-600 hover:bg-ms-700 text-white py-2.5 font-medium shadow" type="submit">Bewerbungsunterlagen öffnen</button>
+        <button
+          className="w-full rounded-lg bg-ms-600 hover:bg-ms-700 text-white py-3 font-semibold shadow-md shadow-sky-200 text-center"
+          type="submit"
+          style={{ backgroundColor: '#0284c7' }}
+        >
+          Bewerbungsunterlagen öffnen
+        </button>
         <div className="text-xs text-slate-500 text-center">Falls nicht bekannt, können login Namen und Passwort unter <a className="underline text-ms-700" href="mailto:kontakt@marcelspahr.ch">kontakt@marcelspahr.ch</a> angefordert werden</div>
       </form>
     </main>
