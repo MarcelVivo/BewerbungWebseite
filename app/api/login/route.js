@@ -9,16 +9,13 @@ function sign(payload, secret) {
 
 export async function POST(request) {
   const { username, password } = await request.json();
-  const ADMIN_USER = process.env.ADMIN_USER || 'admin';
-  const ADMIN_PASS = process.env.ADMIN_PASS || 'change-me';
-  const VIEW_USER = process.env.VIEW_USER || 'recruiter';
-  const VIEW_PASS = process.env.VIEW_PASS || 'request-pass';
+  const ADMIN_USER = process.env.ADMIN_USER || 'Recruiter';
+  const ADMIN_PASS = process.env.ADMIN_PASS || 'Marcel2025!';
   const SESSION_SECRET = process.env.SESSION_SECRET || 'please-change';
   const isProd = process.env.NODE_ENV === 'production';
 
   let role = null;
   if (username === ADMIN_USER && password === ADMIN_PASS) role = 'owner';
-  if (username === VIEW_USER && password === VIEW_PASS) role = role || 'viewer';
 
   if (!role) {
     return new Response('Unauthorized', { status: 401 });
