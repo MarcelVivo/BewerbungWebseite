@@ -1,44 +1,83 @@
-{
-  "items": [
-    {
-      "id": "static-cv",
-      "type": "cv",
-      "title": "Lebenslauf (Platzhalter)",
-      "url": "/assets/ArbeitszeugnisMarcelSpahr2025.pdf"
-    },
-    {
-      "id": "static-scrum",
-      "type": "certificate",
-      "title": "SCRUM Zertifikat",
-      "url": "/assets/SCRUMZertifikat.pdf"
-    },
-    {
-      "id": "static-safe",
-      "type": "certificate",
-      "title": "SAFe Zertifikat",
-      "url": "/assets/SAFeZertifikatMarcelSpahr.pdf"
-    },
-    {
-      "id": "static-zeugnis",
-      "type": "zeugnis",
-      "title": "Arbeitszeugnis Swisscom",
-      "url": "/assets/ArbeitszeugnisMarcelSpahr2025.pdf"
-    },
-    {
-      "id": "static-photo",
-      "type": "photo",
-      "title": "Portrait",
-      "url": "/assets/portrait.jpg"
-    },
-    {
-      "id": "static-lang-de",
-      "type": "language",
-      "title": "Deutsch (Muttersprache)"
-    },
-    {
-      "id": "static-lang-en",
-      "type": "language",
-      "title": "Englisch (B1)"
-    }
-  ]
-}
+[
+  {
+    "id": "cv-1",
+    "title": "Lebenslauf",
+    "type": "cv",
+    "description": "",
+    "url": "/assets/LebenslaufMarcelSpahr.pdf",
+    "code": "",
+    "createdAt": 1
+  },
+  {
+    "id": "safe-2025",
+    "title": "SAFe Zertifikat 2025",
+    "type": "certificate",
+    "description": "",
+    "url": "/assets/SAFeZertifikatMarcelSpahr.pdf",
+    "code": "",
+    "createdAt": 2
+  },
+  {
+    "id": "cambridge-a2-2025",
+    "title": "Cambridge Englisch Zertifikat A2 2025",
+    "type": "certificate",
+    "description": "",
+    "url": "/assets/CambridgeEnglischA2ZertifikatMarcelSpahr.pdf",
+    "code": "",
+    "createdAt": 3
+  },
+  {
+    "id": "scrum-2024",
+    "title": "SCRUM Master Zertifikat 2024",
+    "type": "certificate",
+    "description": "",
+    "url": "/assets/SCRUMZertifikat.pdf",
+    "code": "",
+    "createdAt": 4
+  },
+  {
+    "id": "efz-werbetechniker",
+    "title": "EFZ Werbetechniker",
+    "type": "diploma",
+    "description": "",
+    "url": "/assets/FähigkeitszeugnisWerbetechniker.pdf",
+    "code": "",
+    "createdAt": 5
+  },
+  {
+    "id": "efz-maler",
+    "title": "EFZ Maler",
+    "type": "diploma",
+    "description": "",
+    "url": "/assets/FähigkeitszeugnisMaler.pdf",
+    "code": "",
+    "createdAt": 6
+  },
+  {
+    "id": "zeugnis-swisscom",
+    "title": "Arbeitszeugnis Swisscom",
+    "type": "zeugnis",
+    "description": "",
+    "url": "/assets/ArbeitszeugnisSwisscomMarcelSpahr2025.pdf",
+    "code": "",
+    "createdAt": 7
+  },
+  {
+    "id": "zeugnis-roth",
+    "title": "Arbeitszeugnis Roth Malerei",
+    "type": "zeugnis",
+    "description": "",
+    "url": "/assets/ArbeitszeugnisRothMalerei.pdf",
+    "code": "",
+    "createdAt": 8
+  },
+  {
+    "id": "portfolio-placeholder",
+    "title": "Portfolio / Projekte (in Vorbereitung)",
+    "type": "project",
+    "description": "Platzhalter – noch keine Dokumente.",
+    "url": "",
+    "code": "",
+    "createdAt": 9
+  }
+]
