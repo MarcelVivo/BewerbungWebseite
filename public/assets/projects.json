@@ -3,7 +3,7 @@
     "id": "cv-1",
     "title": "Lebenslauf",
     "type": "cv",
-    "description": "Aktueller Lebenslauf (PDF) mit allen Stationen.",
+    "description": "Beruflicher Werdegang von Marcel Spahr",
     "url": "/assets/LebenslaufMarcelSpahr.pdf",
     "code": "",
     "createdAt": 1
@@ -12,61 +12,61 @@
     "id": "safe-2025",
     "title": "SAFe Zertifikat 2025",
     "type": "certificate",
-    "description": "Zertifikat SAFe 2025.",
+    "description": "Das SAFe Zertifikat weist meine Fähigkeiten im skalierbaren agilen Arbeiten nach. Ich kann Abläufe in grösseren Organisationen abstimmen und mehrere Teams strukturiert koordinieren. Diese Kenntnisse helfen mir, komplexe Projekte stabil und zielgerichtet zu steuern.",
     "url": "/assets/SAFeZertifikatMarcelSpahr.pdf",
     "code": "",
     "createdAt": 2
   },
   {
     "id": "cambridge-a2-2025",
-    "title": "Cambridge Englisch Zertifikat A2 2025",
+    "title": "Englisch A2 Diplom 2025",
     "type": "certificate",
-    "description": "Englisch-Zertifikat A2 (Cambridge).",
+    "description": "Das Diplom bestätigt meine Englischkenntnisse auf Niveau A2. Ich kann grundlegende Gespräche führen, berufliche Inhalte verstehen und mich zuverlässig schriftlich ausdrücken. Damit bin ich in internationalen oder englischsprachigen Situationen solide handlungsfähig.",
     "url": "/assets/CambridgeEnglischA2ZertifikatMarcelSpahr.pdf",
     "code": "",
     "createdAt": 3
   },
   {
     "id": "scrum-2024",
-    "title": "SCRUM Master Zertifikat 2024",
+    "title": "Scrum Master Zertifikat 2024",
     "type": "certificate",
-    "description": "Scrum Master Zertifikat 2024.",
+    "description": "Dieses Zertifikat bestätigt meine Kenntnisse im agilen Arbeiten sowie die sichere Anwendung des Scrum Frameworks. Ich führe Teams fokussiert durch den Prozess und sorge für eine klare, effiziente Zusammenarbeit. Dadurch gelingt es mir, Projekte strukturiert voranzutreiben und ein produktives Arbeitsumfeld zu schaffen.",
     "url": "/assets/SCRUMZertifikat.pdf",
     "code": "",
     "createdAt": 4
   },
   {
     "id": "efz-werbetechniker",
-    "title": "EFZ Werbetechniker",
+    "title": "EFZ Werbetechniker 2007",
     "type": "diploma",
-    "description": "Fähigkeitszeugnis als Werbetechniker EFZ.",
+    "description": "Dieses EFZ zeigt meine Ausbildung in der visuellen und technischen Werbetechnik. Dazu gehören Gestaltung, Produktion und Montage von Beschriftungen und Werbematerialien. Die Tätigkeit hat mein Verständnis für Design, Technik und kundenorientierte Lösungen deutlich erweitert.",
     "url": "/assets/FaehigkeitszeugnisWerbetechniker.pdf",
     "code": "",
     "createdAt": 5
   },
   {
     "id": "efz-maler",
-    "title": "EFZ Maler",
+    "title": "EFZ Maler 2004",
     "type": "diploma",
-    "description": "Fähigkeitszeugnis als Maler EFZ.",
+    "description": "Das EFZ Maler belegt meine abgeschlossene handwerkliche Ausbildung sowie eine präzise, zuverlässige und selbstständige Arbeitsweise im praktischen Umfeld. Diese Erfahrung hat meine Belastbarkeit, Genauigkeit und Ausdauer im Arbeitsalltag nachhaltig gestärkt.",
     "url": "/assets/FaehigkeitszeugnisMaler.pdf",
     "code": "",
     "createdAt": 6
   },
   {
     "id": "zeugnis-swisscom",
-    "title": "Arbeitszeugnis Swisscom",
+    "title": "Arbeitszeugnis Swisscom 2025",
     "type": "zeugnis",
-    "description": "Arbeitszeugnis Swisscom.",
+    "description": "Das Arbeitszeugnis bestätigt meine langjährige Erfahrung im ICT Umfeld, meine Rolle in der Prozessoptimierung und Digitalisierung sowie eine zuverlässige und lösungsorientierte Arbeitsweise. Diese Zeit hat meine fachliche Tiefe und meine Fähigkeit zur strukturierten Problemlösung entscheidend geprägt.",
     "url": "/assets/ArbeitszeugnisSwisscomMarcelSpahr2025.pdf",
     "code": "",
     "createdAt": 7
   },
   {
     "id": "zeugnis-roth",
-    "title": "Arbeitszeugnis Roth Malerei",
+    "title": "Arbeitszeugnis Roth Malerei 2004",
     "type": "zeugnis",
-    "description": "Arbeitszeugnis Roth Malerei.",
+    "description": "Das Zeugnis bestätigt meinen erfolgreichen Lehrabschluss, eine selbstständige und korrekte Arbeitshaltung sowie zuverlässig ausgeführte Aufgaben zur vollen Zufriedenheit. Diese Grundausbildung hat meine berufliche Basis gestärkt und meine Arbeitsethik nachhaltig geformt.",
     "url": "/assets/ArbeitszeugnisRothMalerei.pdf",
     "code": "",
     "createdAt": 8
