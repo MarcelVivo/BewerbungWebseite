@@ -50,7 +50,7 @@ export default function LoginPage() {
         >
           Bewerbungsunterlagen öffnen
         </button>
-        <div className="text-xs text-slate-500 text-center">Falls nicht bekannt, können login Namen und Passwort unter <a className="underline text-ms-700" href="mailto:kontakt@marcelspahr.ch">kontakt@marcelspahr.ch</a> angefordert werden</div>
+        <div className="text-xs text-slate-500 text-center">Falls nicht bekannt, können Benutzername und Passwort unter <a className="underline text-ms-700" href="mailto:kontakt@marcelspahr.ch">kontakt@marcelspahr.ch</a> angefordert werden</div>
       </form>
     </main>
   );
