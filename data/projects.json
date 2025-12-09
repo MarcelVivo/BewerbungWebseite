@@ -72,12 +72,39 @@
     "createdAt": 8
   },
   {
-    "id": "portfolio-placeholder",
-    "title": "Portfolio / Projekte (in Vorbereitung)",
+    "id": "portfolio-aila",
+    "title": "Transferbericht AILA – KI-gestützte Gesprächsanalyse",
     "type": "project",
-    "description": "Platzhalter – noch keine Dokumente.",
-    "url": "",
+    "description": "Der Bericht analysiert die Machbarkeit von AILA, einem KI-System zur Echtzeitanalyse von Kundengesprächen. Ich untersuchte NLP, Maschinelles Lernen, Sentiment-Analyse und Datenschutz und simulierte einen möglichen Einsatz im Call-Center. Die Arbeit zeigt mein technisches Verständnis und meine Fähigkeit, KI-Lösungen praxisnah zu evaluieren.",
+    "url": "/assets/TransferberichtMarcelSpahrAILA.pdf",
     "code": "",
     "createdAt": 9
+  },
+  {
+    "id": "portfolio-olivenpaste",
+    "title": "Business Konzept Olivias Olivenpaste",
+    "type": "project",
+    "description": "Das Konzept beschreibt die vollständige Entwicklung eines nachhaltigen Bio-Produkts – von der Produktidee über Marken- und Verpackungsdesign bis zu Marktanalyse, SWOT und Business Canvas. Es zeigt meine Stärke in ganzheitlicher Produktentwicklung und betont mein Verständnis für Marktmechanismen, Positionierung und wirtschaftliche Machbarkeit.",
+    "url": "/assets/OliviasOlivenpaste_MarcelSpahr.pdf",
+    "code": "",
+    "createdAt": 10
+  },
+  {
+    "id": "portfolio-software-re",
+    "title": "Projektarbeit Software- & Requirements Engineering",
+    "type": "project",
+    "description": "Die Arbeit zeigt mein Verständnis für moderne Softwareentwicklung, präzise Anforderungsanalyse und den Einsatz professioneller Werkzeuge wie UML, BPMN und Jira. Behandelt werden strukturierte Spezifikation, Validierung, agile Methoden und DevOps. Der Fokus liegt auf sauber definierten Anforderungen als Grundlage für robuste Softwarelösungen.",
+    "url": "/assets/FinalArbeitSoftwareundRequirementsEngineering.pdf",
+    "code": "",
+    "createdAt": 11
+  },
+  {
+    "id": "portfolio-streetparade",
+    "title": "Marketingkonzept Streetparade Love Mobile",
+    "type": "project",
+    "description": "Dieses Konzept zeigt meine Fähigkeit, ein gesamtes Marketingprojekt strategisch und operativ umzusetzen. Mit einem 90s-Eurodance-Motto entwickelte ich Zielgruppenanalysen, Social-Media-Strategien, eine Customer Journey und ein Erlösmodell. Das Projekt kombiniert kreative Markenentwicklung mit strukturiertem, datenbasiertem Marketing.",
+    "url": "/assets/90sLoveMobileProjektarbeit_Digital Marketing-Final.pdf",
+    "code": "",
+    "createdAt": 12
   }
 ]
