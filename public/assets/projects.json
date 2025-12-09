@@ -40,7 +40,7 @@
     "title": "EFZ Werbetechniker",
     "type": "diploma",
     "description": "",
-    "url": "/assets/FähigkeitszeugnisWerbetechniker.pdf",
+    "url": "/assets/FaehigkeitszeugnisWerbetechniker.pdf",
     "code": "",
     "createdAt": 5
   },
@@ -49,7 +49,7 @@
     "title": "EFZ Maler",
     "type": "diploma",
     "description": "",
-    "url": "/assets/FähigkeitszeugnisMaler.pdf",
+    "url": "/assets/FaehigkeitszeugnisMaler.pdf",
     "code": "",
     "createdAt": 6
   },
