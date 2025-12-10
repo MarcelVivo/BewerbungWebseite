@@ -357,7 +357,7 @@
         const item = el('div', { className: 'timeline-item' });
         const details = el('details', { className: 'accordion', open: idx === 0 });
       const hideChevron = (!it.bullets || !it.bullets.length) || /efz|sekundarschule|primarschule/i.test(it.title || '');
-      const summary = el('summary', null,
+      const summary = el('summary', hideChevron ? { dataset: { noChevron: 'true' } } : null,
         el('span', { className: 'badge' }, it.period),
         el('span', { className: 'ml-2 font-medium' }, it.title),
         it.subtitle ? el('span', { className: 'ml-2 text-slate-500' }, it.subtitle) : null
