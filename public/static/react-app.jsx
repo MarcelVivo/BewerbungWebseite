@@ -471,7 +471,7 @@ function CvSection() {
             <div className="timeline mt-2">
               {b.items.map((it, idx) => (
                 <div className="timeline-item" key={idx}>
-                  <details className={`accordion ${/efz|sekundarschule|primarschule/i.test(it.title || '') ? 'no-chevron' : ''}`} open={idx === 0}>
+                  <details className={`accordion ${(!it.bullets || !it.bullets.length || /efz|sekundarschule|primarschule/i.test(it.title || '')) ? 'no-chevron' : ''}`} open={idx === 0}>
                     <summary>
                       <span className="badge">{it.period}</span>
                       <span className="ml-2 font-medium">{it.title}</span>

@@ -356,7 +356,7 @@
       items.forEach((it, idx) => {
         const item = el('div', { className: 'timeline-item' });
         const details = el('details', { className: 'accordion', open: idx === 0 });
-      const hideChevron = /efz|sekundarschule|primarschule/i.test(it.title || '');
+      const hideChevron = (!it.bullets || !it.bullets.length) || /efz|sekundarschule|primarschule/i.test(it.title || '');
       const summary = el('summary', null,
         el('span', { className: 'badge' }, it.period),
         el('span', { className: 'ml-2 font-medium' }, it.title),
