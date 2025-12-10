@@ -356,17 +356,19 @@
       items.forEach((it, idx) => {
         const item = el('div', { className: 'timeline-item' });
         const details = el('details', { className: 'accordion', open: idx === 0 });
-        const summary = el('summary', null,
-          el('span', { className: 'badge' }, it.period),
-          el('span', { className: 'ml-2 font-medium' }, it.title),
-          it.subtitle ? el('span', { className: 'ml-2 text-slate-500' }, it.subtitle) : null
-        );
-        const body = el('div', null,
-          it.bullets && it.bullets.length
-            ? el('ul', { className: 'cv-summary' }, ...it.bullets.map((b) => el('li', null, b)))
-            : null
-        );
-        details.appendChild(summary);
+      const hideChevron = /efz|sekundarschule|primarschule/i.test(it.title || '');
+      const summary = el('summary', null,
+        el('span', { className: 'badge' }, it.period),
+        el('span', { className: 'ml-2 font-medium' }, it.title),
+        it.subtitle ? el('span', { className: 'ml-2 text-slate-500' }, it.subtitle) : null
+      );
+      const body = el('div', null,
+        it.bullets && it.bullets.length
+          ? el('ul', { className: 'cv-summary' }, ...it.bullets.map((b) => el('li', null, b)))
+          : null
+      );
+      if (hideChevron) details.className += ' no-chevron';
+      details.appendChild(summary);
         details.appendChild(body);
         item.appendChild(details);
         tl.appendChild(item);
