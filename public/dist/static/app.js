@@ -247,8 +247,12 @@
               el('div', { className: 'mt-2 label-pill inline-flex' }, 'Wirtschaftsinformatiker')
             )
           ),
-          el('p', { className: 'mt-5 text-slate-700 leading-relaxed max-w-2xl' }, 'Kreativer Wirtschaftsinformatiker mit technischem Verständnis, Empathie und digitalem Gespür.'),
-          el('p', { className: 'mt-3 text-slate-700 leading-relaxed max-w-2xl' }, 'Meine Leidenschaft ist es, technisches Know-how mit kreativen Ideen zu verbinden. Mit langjähriger Erfahrung im Marketing und Online-Business gestalte ich individuelle Kundenerlebnisse. Mein Talent für strategische Planung, Organisation und vernetztes Denken erlaubt mir, effizient, kundenorientiert und wirtschaftlich sinnvoll zu handeln. Die Begeisterung für digitale Innovationen treibt mich an, mein Wissen stetig zu erweitern und Lösungen mit technologischem Fortschritt zu verbinden.'),
+          el('p', { className: 'mt-5 text-slate-700 leading-relaxed max-w-2xl' }, 'Kreativer Wirtschaftsinformatiker mit ausgeprägtem technischem Verständnis, viel Empathie und digitalem Gespür.'),
+          el('p', { className: 'mt-3 text-slate-700 leading-relaxed max-w-2xl' }, 'Ich verbinde analytisches Denken mit kreativen Ideen und gestalte nachhaltige digitale Lösungen. Durch langjährige Erfahrung bei Swisscom in Digitalisierung, Systemadministration und technischem Kundensupport verfüge ich über ein breites, praxisnahes IT-Fundament.'),
+          el('p', { className: 'mt-3 text-slate-700 leading-relaxed max-w-2xl' }, 'Meine Begeisterung für digitale Innovationen treibt mich an, Prozesse zu optimieren, neue Technologien einzusetzen und mich kontinuierlich weiterzuentwickeln. Stakeholderkommunikation, Priorisierung und Reporting gehören für mich genauso dazu wie saubere Daten- und Prozessarbeit.'),
+          el('div', { className: 'mt-4 max-w-2xl card bg-ms-50/60 p-4 shadow-sm border border-ms-100' },
+            el('p', { className: 'text-ms-700 font-semibold' }, 'Aktuelles Studium Wirtschaftsinformatik HF (Feusi Bern), Abschluss Sommer 2026')
+          ),
           (() => {
             const row = el('div', { className: 'mt-5 flex flex-wrap gap-2' });
             // Try to find a CV in items or a default assets/CV.pdf
@@ -278,84 +282,46 @@
           ),
           el('div', { className: 'mt-3 flex flex-wrap gap-2' },
             el('span', { className: 'tag' }, 'Deutsch'),
-            el('span', { className: 'tag' }, 'Englisch B1')
+            el('span', { className: 'tag' }, 'Englisch (A2)')
           ),
           el('div', { className: 'mt-6' },
             el('div', { className: 'label-pill inline-block mb-2' }, 'Skills'),
             el('details', { className: 'accordion mb-2', open: true },
-              el('summary', null, el('span', { className: 'badge' }, 'Soft Skills'), el('span', { className: 'ml-2 font-medium' }, 'Persönliche Stärken')),
+              el('summary', null, el('span', { className: 'badge' }, 'Tech Skills'), el('span', { className: 'ml-2 font-medium' }, 'Technische Kenntnisse')),
               el('div', { className: 'skills-list' },
                 el('ul', null,
-                  el('li', null, 'Analytisches Denken & Problemlösung'),
-                  el('li', null, 'Kommunikationsstark'),
-                  el('li', null, 'Organisationstalent'),
-                  el('li', null, 'Geduldig und zuverlässig'),
-                  el('li', null, 'Stakeholder‑Management & Schnittstellenkommunikation'),
-                  el('li', null, 'Strukturiertes Arbeiten & Priorisierung'),
-                  el('li', null, 'Moderation von Workshops & Meetings'),
-                  el('li', null, 'Kunden‑ und Serviceorientierung'),
-                  el('li', null, 'Selbstorganisation & Zeitmanagement'),
-                  el('li', null, 'Lernbereitschaft & Neugier'),
-                  el('li', null, 'Verantwortungsbewusstsein & Entscheidungsfreude')
-                )
-              )
-            ),
-            el('details', { className: 'accordion mb-2' },
-              el('summary', null, el('span', { className: 'badge' }, 'Tech Skills'), el('span', { className: 'ml-2 font-medium' }, 'Wirtschaftsinformatik & IT')),
-              el('div', { className: 'skills-list' },
-                el('ul', null,
+                  el('li', null, 'IT‑Projektmanagement (Scrum/Kanban) & Releaseplanung'),
+                  el('li', null, 'KI & Prompt Engineering für effiziente Automatisierung'),
+                  el('li', null, 'Datenbanken & SQL; Datenmodelle und Reporting'),
+                  el('li', null, 'Geschäftsprozessmodellierung (BPMN) & Prozessoptimierung'),
                   el('li', null, 'Requirements Engineering (User Stories, Use Cases, Akzeptanzkriterien)'),
-                  el('li', null, 'IT‑Projektmanagement & Agile Methoden (Scrum/Kanban, Backlog, Estimation)'),
-                  el('li', null, 'Geschäftsprozessanalyse & ‑modellierung (BPMN 2.0)'),
-                  el('li', null, 'UML‑Diagramme (Klassendiagramm, Aktivitäts‑ & Sequenzdiagramm)'),
-                  el('li', null, 'Datenmodellierung (ERM), Normalisierung'),
-                  el('li', null, 'Relationale Datenbanken & SQL (Joins, Views, Transaktionen, Indexe)'),
-                  el('li', null, 'Datenanalyse & Reporting (Power BI/Tableau, Excel Pivot)'),
-                  el('li', null, 'ETL/ELT & Data Warehousing (Star/Snowflake Schema)'),
-                  el('li', null, 'API‑Grundlagen (REST/HTTP, JSON, OpenAPI/Swagger)'),
-                  el('li', null, 'Web‑Grundlagen & Prototyping (HTML/CSS/JavaScript)'),
-                  el('li', null, 'Versionsverwaltung & Zusammenarbeit (Git/GitHub, Branching)'),
-                  el('li', null, 'Testen & Qualitätssicherung (Testfälle, Unit/Integration, UAT)'),
-                  el('li', null, 'IT‑Security & Datenschutz (OWASP Basics, DSGVO)'),
-                  el('li', null, 'Cloud & DevOps Basics (CI/CD, Docker‑Grundlagen)'),
-                  el('li', null, 'Skripting & Automatisierung (Shell/Node‑Basics)'),
-                  el('li', null, 'Künstliche Intelligenz / Prompting (produktiver Einsatz im Alltag)')
+                  el('li', null, 'Grundkenntnisse Programmierung & API‑Design'),
+                  el('li', null, 'Blockchain‑/Krypto‑Technologie Grundlagen'),
+                  el('li', null, 'Windows, macOS, Microsoft 365')
                 )
               )
             ),
             el('details', { className: 'accordion mb-2' },
-              el('summary', null, el('span', { className: 'badge' }, 'Operative Skills'), el('span', { className: 'ml-2 font-medium' }, 'Support & Operations')),
+              el('summary', null, el('span', { className: 'badge' }, 'Kreativität'), el('span', { className: 'ml-2 font-medium' }, 'Kreativität & Marketing')),
               el('div', { className: 'skills-list' },
                 el('ul', null,
-                  el('li', null, '1st/2nd Level Support'),
-                  el('li', null, 'Systemadministration (Tech & Admin)'),
-                  el('li', null, 'Workflow‑Optimierung im Kundenservice'),
-                  el('li', null, 'Retention‑ & Sales‑Prozesse')
-                )
-              )
-            ),
-            el('details', { className: 'accordion mb-2' },
-              el('summary', null, el('span', { className: 'badge' }, 'Kreative Skills'), el('span', { className: 'ml-2 font-medium' }, 'Marketing & Content')),
-              el('div', { className: 'skills-list' },
-                el('ul', null,
-                  el('li', null, 'Videoproduktion'),
+                  el('li', null, 'Videoproduktion & Storytelling für digitale Kanäle'),
                   el('li', null, 'Adobe Photoshop & Illustrator'),
-                  el('li', null, 'Marketingkenntnisse & Erfahrung'),
-                  el('li', null, 'Content‑Erstellung')
+                  el('li', null, 'Online‑Marketing und E‑Commerce Konzepte'),
+                  el('li', null, 'Konzeption & Umsetzung digitaler Inhalte und Kampagnen')
                 )
               )
             ),
             el('details', { className: 'accordion mb-2' },
-              el('summary', null, el('span', { className: 'badge' }, 'Software'), el('span', { className: 'ml-2 font-medium' }, 'Tools')),
+              el('summary', null, el('span', { className: 'badge' }, 'Stärken'), el('span', { className: 'ml-2 font-medium' }, 'Persönliche Stärken')),
               el('div', { className: 'skills-list' },
                 el('ul', null,
-                  el('li', null, 'Windows & macOS'),
-                  el('li', null, 'Microsoft Office 365'),
-                  el('li', null, 'Jira & Confluence'),
-                  el('li', null, 'Git & GitHub'),
-                  el('li', null, 'VS Code'),
-                  el('li', null, 'Power BI'),
-                  el('li', null, 'Figma & Miro')
+                  el('li', null, 'Analytisches Denken & Problemlösungsfähigkeit'),
+                  el('li', null, 'Kommunikationsstark mit Stakeholdern'),
+                  el('li', null, 'Organisationstalent und Priorisierung'),
+                  el('li', null, 'Zuverlässig, geduldig, qualitätsorientiert'),
+                  el('li', null, 'Hohe Lernbereitschaft & Eigeninitiative'),
+                  el('li', null, 'Empathisch und teamorientiert')
                 )
               )
             ),
@@ -364,15 +330,7 @@
               el('div', { className: 'skills-list' },
                 el('ul', null,
                   el('li', null, 'Deutsch (Muttersprache)'),
-                  el('li', null, 'Englisch (B1)')
-                )
-              )
-            ),
-            el('details', { className: 'accordion' },
-              el('summary', null, el('span', { className: 'badge' }, 'Zertifikate'), el('span', { className: 'ml-2 font-medium' }, 'Nachweise')),
-              el('div', { className: 'skills-list' },
-                el('ul', null,
-                  el('li', null, 'Professional Scrum Master I (Sep 2024)')
+                  el('li', null, 'Englisch (A2)')
                 )
               )
             )
@@ -416,48 +374,71 @@
       section.appendChild(tl);
     }
 
-    // Beruflicher Werdegang
-    section.appendChild(el('div', { className: 'label-pill inline-block' }, 'Beruflicher Werdegang'));
+    // Aktuelle Weiterbildung
+    section.appendChild(el('div', { className: 'label-pill inline-block' }, 'Aktuelle Weiterbildung'));
     addBlock('', [
       {
-        period: '2008 – 2025',
-        title: 'Swisscom Schweiz AG',
-        subtitle: 'IT-Support, Systemadministration & Prozessdigitalisierung',
+        period: '2023 – 2026',
+        title: 'Wirtschaftsinformatik HF, Feusi Bern',
+        subtitle: 'Diplom Sommer 2026 (laufend)',
         bullets: [
-          'Mitarbeit bei der Digitalisierung interner Prozesse (z. B. Projekt X‑ITE) und Verbesserung der Kundenkommunikation.',
-          '1st/2nd Level Support und Systemadministration für Privatkunden (Tech & Admin).',
-          'Analyse und Lösung von IT‑Problemen, Optimierung von Workflows im Kundenservice.',
-          'Betreuung von Retention‑ und Sales‑Management‑Prozessen.'
-        ]
-      },
-      {
-        period: '2007 – 2008',
-        title: 'Freelance Einsätze als Werbetechniker',
-        subtitle: 'Frontwork Zürich; Seka Thun',
-        bullets: [
-          'Umsetzung von Markenauftritten und Shop‑Redesigns (u. a. Swisscom Shops Schweiz).',
-          'Event‑/Sportproduktion (EM 2008 Projekte).'
+          'Vertiefung in Prozessmanagement, Requirements Engineering, SQL/Datenbanken und IT-Architekturen.',
+          'Projektmanagement (Scrum), digitale Transformation, BPMN, Informationssysteme und IT-Service-Management.',
+          'Datenanalyse/Reporting, Programmierung und betriebswirtschaftliche Grundlagen.'
         ]
       }
     ]);
 
-    // Ausbildung
-    section.appendChild(el('div', { className: 'label-pill inline-block' }, 'Schulausbildung, Lehrabschlüsse (EFZ) & aktuelles Studium'));
+    // Beruflicher Werdegang
+    section.appendChild(el('div', { className: 'label-pill inline-block' }, 'Beruflicher Werdegang'));
     addBlock('', [
       {
-        period: '2023 – heute',
-        title: 'Feusi HF Wankdorf Bern',
-        subtitle: 'Studium Wirtschaftsinformatik (4. Semester)',
+        period: '2021 – 2025',
+        title: 'Digitalisierung, Swisscom Schweiz AG',
         bullets: [
-          'Fokus: Datenanalyse, Prozessoptimierung, IT‑Systeme und Digitalisierung.',
-          'Erlernte Konzepte: E‑Marketing, Datenbanken, BPMN, IT‑Projektmanagement, KI & Requirements Engineering.',
-          'Notenschnitt ca. 5.5 (bisher).'
+          'Mitgestaltung der Digitalisierung und Automatisierung interner Prozesse mit Fokus auf Effizienz, Datenqualität und Kundenerlebnis.',
+          'Optimierung von Datenbereitstellung und Reporting-Pipelines; enge Abstimmung mit Fachbereichen und IT.',
+          'Priorisierung von Anforderungen, Aufbereitung von Use Cases und transparente Kommunikation mit Stakeholdern.',
+          'Erfolgsanalysen, Kennzahlenmonitoring und strukturierte Weiterentwicklung digitaler Abläufe.'
         ]
       },
-      { period: '2004 – 2007', title: 'Ambühl Werbung AG Bern', subtitle: 'Lehre mit EFZ als Werbetechniker' },
-      { period: '2002 – 2004', title: 'Roth Malerei AG Solothurn', subtitle: '2. & 3. Lehrjahr Maler, Abschluss EFZ' },
-      { period: '2001 – 2002', title: 'Rekrutenschule und Temporäre Arbeit als Maler' },
-      { period: '1999 – 2001', title: 'Branger & Frigerio Solothurn', subtitle: '1. & 2. Lehrjahr als Maler' },
+      {
+        period: '2015 – 2021',
+        title: 'Systemadministration, Swisscom Schweiz AG',
+        bullets: [
+          'Betreuung und Weiterentwicklung von Systemen und Abläufen im Privatkundenumfeld.',
+          'Technische Analyse von Störungen sowie Erarbeitung nachhaltiger Lösungen.',
+          'Unterstützung von Sales- und Retention-Prozessen; Mitgestaltung von Tools und Workflows.',
+          'Schulung neuer Mitarbeitender und Sicherstellung hoher Qualitätsstandards.'
+        ]
+      },
+      {
+        period: '2008 – 2015',
+        title: 'Kundenservice Tech & Admin, Swisscom Schweiz AG',
+        bullets: [
+          'Technische Kundenbetreuung (1st/2nd Level) bei komplexen ICT-Anfragen.',
+          'Fehleranalyse, Eskalationsmanagement und nachhaltige Problemlösungen.',
+          'Hohe Serviceorientierung und effiziente Kommunikationsfähigkeit im Kundenkontakt.'
+        ]
+      },
+      {
+        period: '2007 – 2008',
+        title: 'Werbetechniker, Frontwork Zürich / Seka Thun',
+        bullets: [
+          'Umsetzung von Projekten zur Fussball EM 08 und Redesign der Swisscom Shops in der Schweiz.',
+          'Gestaltung, Produktion und Montage von Markenauftritten in Zusammenarbeit mit Agenturen.'
+        ]
+      }
+    ]);
+
+    // Ausbildungen & Diplome
+    section.appendChild(el('div', { className: 'label-pill inline-block' }, 'Ausbildungen & Diplome'));
+    addBlock('', [
+      { period: '2025', title: 'Cambridge Englisch Zertifikat A2' },
+      { period: '2025', title: 'SAFe Zertifikat' },
+      { period: '2024', title: 'SCRUM Zertifikat' },
+      { period: '2004 – 2007', title: 'EFZ Werbetechniker', subtitle: 'Ambühl Werbung AG Bern' },
+      { period: '1999 – 2004', title: 'EFZ Maler', subtitle: 'Roth Malerei & Branger Frigerio, Solothurn' },
       { period: '1996 – 1999', title: 'Sekundarschule Bellach SO' },
       { period: '1989 – 1996', title: 'Primarschule Bellach SO' }
     ]);
@@ -469,18 +450,17 @@
         period: '2018 – 2020',
         title: 'Inhaber & Betreiber Cube Club Bern',
         bullets: [
-          'Eventplanung, ‑organisation und ‑durchführung; Budget & Marketing (Ticketing, Getränke, Merchandise).',
-          'Leitung mit Personalverantwortung (bis 18 Mitarbeitende).',
-          'Erstellung & Betrieb der Webseite cube.club.'
+          'Operative Leitung, Organisation und wirtschaftliche Verantwortung; Führung von bis zu 18 Mitarbeitenden.',
+          'Planung, Marketing, Budgetierung und Eventmanagement; Umsetzung digitaler und analoger Werbemassnahmen.'
         ]
       },
       {
         period: '2009 – 2020',
-        title: 'Organisation und Durchführung diverser Events',
+        title: 'Eventmanager & Organisator',
         bullets: [
-          'Mehrere Events in Gaskessel Bern und anderen Lokalen.',
-          '2011–2015: Organisation Love Mobile / Streetparade Zürich.',
-          'Event‑ und Programm‑Management im Babette Club Zürich.'
+          'Planung und Durchführung von Events im Gaskessel Bern und weiteren Locations.',
+          'Organisation und Betrieb eines Love Mobiles (Streetparade Zürich, 2011–2015).',
+          'Teamführung sowie Programm- und Eventmanagement in verschiedenen Clubs.'
         ]
       }
     ]);
