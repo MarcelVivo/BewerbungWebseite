@@ -89,9 +89,9 @@ function Hero({ avatarUrl, items }) {
                 <div className="mt-2 label-pill inline-flex">Wirtschaftsinformatiker</div>
               </div>
             </div>
-            <p className="mt-5 text-slate-700 leading-relaxed max-w-2xl">Kreativer Wirtschaftsinformatiker mit ausgeprägtem technischem Verständnis, viel Empathie und digitalem Gespür.</p>
-            <p className="mt-3 text-slate-700 leading-relaxed max-w-2xl">Ich verbinde analytisches Denken mit kreativen Ideen und gestalte nachhaltige digitale Lösungen. Durch langjährige Erfahrung bei Swisscom in Digitalisierung, Systemadministration und technischem Kundensupport verfüge ich über ein breites, praxisnahes IT-Fundament.</p>
-            <p className="mt-3 text-slate-700 leading-relaxed max-w-2xl">Meine Begeisterung für digitale Innovationen treibt mich an, Prozesse zu optimieren, neue Technologien einzusetzen und mich kontinuierlich weiterzuentwickeln. Stakeholderkommunikation, Priorisierung und Reporting gehören für mich genauso dazu wie saubere Daten- und Prozessarbeit.</p>
+            <p className="mt-5 text-slate-700 leading-relaxed max-w-2xl">Kreativer Wirtschaftsinformatiker mit ausgeprägtem technischen Verständnis, viel Empathie und digitalem Gespür.</p>
+            <p className="mt-3 text-slate-700 leading-relaxed max-w-2xl">Ich verbinde analytisches Denken mit kreativen Ideen und gestalte nachhaltige digitale Lösungen. Durch meine langjährige Erfahrung bei Swisscom in Digitalisierung, Systemadministration und technischem Kundensupport verfüge ich über ein breites, praxisnahes IT-Fundament.</p>
+            <p className="mt-3 text-slate-700 leading-relaxed max-w-2xl">Meine Begeisterung für digitale Innovationen treibt mich an, Prozesse zu optimieren, neue Technologien einzusetzen und mich kontinuierlich weiterzuentwickeln.</p>
             <div className="mt-5 flex flex-wrap gap-2">
               <a className="btn btn-primary px-4 py-2" href={cvUrl} target="_blank" rel="noreferrer">Lebenslauf (PDF)</a>
               <a className="btn btn-soft px-4 py-2" href="#docs">Alle Dokumente ansehen</a>
@@ -400,11 +400,11 @@ function CvSection() {
         {
           period: '2023 – 2026',
           title: 'Wirtschaftsinformatik HF, Feusi Bern',
-          subtitle: 'Diplom Sommer 2026 (laufend)',
+          subtitle: 'Aktuelles Studium (Diplom Sommer 2026)',
           bullets: [
-            'Vertiefung in Prozessmanagement, Requirements Engineering, SQL/Datenbanken und IT-Architekturen.',
-            'Projektmanagement (Scrum), digitale Transformation, BPMN, Informationssysteme und IT-Service-Management.',
-            'Datenanalyse/Reporting, Programmierung und betriebswirtschaftliche Grundlagen.'
+            'Vertiefung in Prozessmanagement, Requirements Engineering, SQL-Datenbanken und Projektmanagement (Scrum).',
+            'Digitale Transformation, Programmierung und IT-Architekturen.',
+            'Geschäftsprozessmodellierung (BPMN), Informationssysteme, Datenanalyse/Reporting, IT-Service-Management und betriebswirtschaftliche Grundlagen.'
           ]
         }
       ]

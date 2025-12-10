@@ -247,9 +247,9 @@
               el('div', { className: 'mt-2 label-pill inline-flex' }, 'Wirtschaftsinformatiker')
             )
           ),
-          el('p', { className: 'mt-5 text-slate-700 leading-relaxed max-w-2xl' }, 'Kreativer Wirtschaftsinformatiker mit ausgeprägtem technischem Verständnis, viel Empathie und digitalem Gespür.'),
-          el('p', { className: 'mt-3 text-slate-700 leading-relaxed max-w-2xl' }, 'Ich verbinde analytisches Denken mit kreativen Ideen und gestalte nachhaltige digitale Lösungen. Durch langjährige Erfahrung bei Swisscom in Digitalisierung, Systemadministration und technischem Kundensupport verfüge ich über ein breites, praxisnahes IT-Fundament.'),
-          el('p', { className: 'mt-3 text-slate-700 leading-relaxed max-w-2xl' }, 'Meine Begeisterung für digitale Innovationen treibt mich an, Prozesse zu optimieren, neue Technologien einzusetzen und mich kontinuierlich weiterzuentwickeln. Stakeholderkommunikation, Priorisierung und Reporting gehören für mich genauso dazu wie saubere Daten- und Prozessarbeit.'),
+          el('p', { className: 'mt-5 text-slate-700 leading-relaxed max-w-2xl' }, 'Kreativer Wirtschaftsinformatiker mit ausgeprägtem technischen Verständnis, viel Empathie und digitalem Gespür.'),
+          el('p', { className: 'mt-3 text-slate-700 leading-relaxed max-w-2xl' }, 'Ich verbinde analytisches Denken mit kreativen Ideen und gestalte nachhaltige digitale Lösungen. Durch meine langjährige Erfahrung bei Swisscom in Digitalisierung, Systemadministration und technischem Kundensupport verfüge ich über ein breites, praxisnahes IT-Fundament.'),
+          el('p', { className: 'mt-3 text-slate-700 leading-relaxed max-w-2xl' }, 'Meine Begeisterung für digitale Innovationen treibt mich an, Prozesse zu optimieren, neue Technologien einzusetzen und mich kontinuierlich weiterzuentwickeln.'),
           el('div', { className: 'mt-4 max-w-2xl card bg-ms-50/60 p-4 shadow-sm border border-ms-100' },
             el('p', { className: 'text-ms-700 font-semibold' }, 'Aktuelles Studium Wirtschaftsinformatik HF (Feusi Bern), Abschluss Sommer 2026')
           ),
@@ -380,11 +380,11 @@
       {
         period: '2023 – 2026',
         title: 'Wirtschaftsinformatik HF, Feusi Bern',
-        subtitle: 'Diplom Sommer 2026 (laufend)',
+        subtitle: 'Aktuelles Studium (Diplom Sommer 2026)',
         bullets: [
-          'Vertiefung in Prozessmanagement, Requirements Engineering, SQL/Datenbanken und IT-Architekturen.',
-          'Projektmanagement (Scrum), digitale Transformation, BPMN, Informationssysteme und IT-Service-Management.',
-          'Datenanalyse/Reporting, Programmierung und betriebswirtschaftliche Grundlagen.'
+          'Vertiefung in Prozessmanagement, Requirements Engineering, SQL-Datenbanken und Projektmanagement (Scrum).',
+          'Digitale Transformation, Programmierung und IT-Architekturen.',
+          'Geschäftsprozessmodellierung (BPMN), Informationssysteme, Datenanalyse/Reporting, IT-Service-Management und betriebswirtschaftliche Grundlagen.'
         ]
       }
     ]);
