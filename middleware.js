@@ -56,6 +56,8 @@ export async function middleware(req) {
   if (pathname.startsWith('/_next')) return NextResponse.next();
   // Allow static assets for layout (CSS/JS), but block sensitive PDFs until login
   if (pathname.startsWith('/static')) return NextResponse.next();
+  // Allow public avatar on the login page
+  if (pathname.startsWith('/assets/portrait')) return NextResponse.next();
   // Allow explicitly public paths (login + auth endpoints)
   if (PUBLIC_PATHS.includes(pathname)) return NextResponse.next();
 
