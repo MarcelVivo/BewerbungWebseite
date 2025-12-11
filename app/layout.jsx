@@ -18,7 +18,7 @@ export default function RootLayout({ children }) {
           tailwind.config = { theme: { extend: { colors: { ms: { 50:'#f0f8ff',100:'#e0f2fe',200:'#bae6fd',300:'#7dd3fc',400:'#38bdf8',500:'#0ea5e9',600:'#0284c7',700:'#0369a1' } } } } };
         `}} />
         <script src="https://cdn.tailwindcss.com"></script>
-        <link rel="stylesheet" href="/static/app.css?v=5" />
+        <link rel="stylesheet" href="/static/app.css?v=6" />
       </head>
       <body className="bg-ms-50 text-slate-900">
         {children}
@@ -26,4 +26,3 @@ export default function RootLayout({ children }) {
     </html>
   );
 }
-
