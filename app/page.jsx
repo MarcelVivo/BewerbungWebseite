@@ -335,7 +335,6 @@ function ResumeAndSkills() {
             <details className="accordion" open={idx === 0}>
               <summary>
                 <span className="badge">{s.label}</span>
-                <span className="ml-2 text-slate-700 font-medium">Details</span>
               </summary>
               <div>{s.bullets?.length ? <ul className="cv-summary">{s.bullets.map((b, i) => <li key={i}>{b}</li>)}</ul> : null}</div>
             </details>
