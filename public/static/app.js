@@ -261,6 +261,15 @@
                 el('li', null, 'Projektmanagement (Scrum) und digitale Transformation.'),
                 el('li', null, 'IT-Architekturen, Informationssysteme und BPMN.'),
                 el('li', null, 'Datenanalyse/Reporting, IT-Service-Management und betriebswirtschaftliche Grundlagen.')
+              ),
+              el('div', { className: 'mt-3' },
+                el('p', { className: 'text-sm font-semibold text-slate-700 mb-1' }, 'Module (Auszug)'),
+                el('ul', { className: 'cv-summary' },
+                  el('li', null, el('strong', null, 'Informatik: '), 'Grundlagen Informatik, Mathematik, Statistik, OOP & Softwarearchitektur, Betriebssysteme, Datenbanken & Webtechnologien, IT-Security.'),
+                  el('li', null, el('strong', null, 'Wirtschaftsinformatik: '), 'Grundlagen WI, Prozess-/Service-/Wissensmanagement, Innovationsmanagement, Arbeiten in agilen Unternehmen (SAFe), Business Intelligence & Data Visualization, Usability & UX-Design, Integrationsprojekt.'),
+                  el('li', null, el('strong', null, 'Leadership: '), 'Kommunikation & Gesprächsführung, Moderations- & Präsentationstechnik, Self-Leadership, Teamführung & Personalmanagement, Business English (B1), Design- und Working Methods.'),
+                  el('li', null, el('strong', null, 'General Management: '), 'Finanzielle Führung, Rechtsgrundlagen & IT-Recht, IT-Management & Governance, Green-IT, Projektmanagement & Requirements Engineering, Digital Marketing & E-Business.')
+                )
               )
             )
           ),

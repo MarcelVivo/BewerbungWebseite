@@ -120,6 +120,15 @@ const categorized = categorize(items);
                       <li>IT-Architekturen, Informationssysteme und BPMN.</li>
                       <li>Datenanalyse/Reporting, IT-Service-Management und betriebswirtschaftliche Grundlagen.</li>
                     </ul>
+                    <div className="mt-3">
+                      <p className="text-sm font-semibold text-slate-700 mb-1">Module (Auszug)</p>
+                      <ul className="cv-summary">
+                        <li><strong>Informatik:</strong> Grundlagen Informatik, Mathematik, Statistik, OOP & Softwarearchitektur, Betriebssysteme, Datenbanken & Webtechnologien, IT-Security.</li>
+                        <li><strong>Wirtschaftsinformatik:</strong> Grundlagen WI, Prozess-/Service-/Wissensmanagement, Innovationsmanagement, Arbeiten in agilen Unternehmen (SAFe), Business Intelligence & Data Visualization, Usability & UX-Design, Integrationsprojekt.</li>
+                        <li><strong>Leadership:</strong> Kommunikation & Gesprächsführung, Moderations- & Präsentationstechnik, Self-Leadership, Teamführung & Personalmanagement, Business English (B1), Design- und Working Methods.</li>
+                        <li><strong>General Management:</strong> Finanzielle Führung, Rechtsgrundlagen & IT-Recht, IT-Management & Governance, Green-IT, Projektmanagement & Requirements Engineering, Digital Marketing & E-Business.</li>
+                      </ul>
+                    </div>
                   </div>
                 </details>
               </div>
