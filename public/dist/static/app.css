@@ -38,10 +38,9 @@ details.accordion{border:1px solid #e6eef5;background:#fff;border-radius:12px;bo
 details.accordion[open]{box-shadow:0 2px 6px rgba(2,132,199,.12)}
 details.accordion>summary{cursor:pointer;list-style:none;padding:12px 14px;border-radius:12px;display:flex;align-items:center;gap:10px}
 details.accordion>summary::-webkit-details-marker{display:none}
-.timeline details.accordion>summary::after,
-.timeline summary::after,
-details.accordion>summary::after,
-details.accordion[open]>summary::after{display:none!important;content:none!important}
+details.accordion>summary::after{content:"";margin-left:auto;width:26px;height:26px;border-radius:9999px;display:inline-block;flex-shrink:0;background:var(--ms-100) url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%230284c7'%20stroke-width='2.4'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpolyline%20points='9%206%2015%2012%209%2018'/%3E%3C/svg%3E") center/12px 12px no-repeat;box-shadow:0 1px 3px rgba(2,132,199,.18),0 0 0 1px rgba(2,132,199,.12);transition:transform .22s ease,box-shadow .22s ease,background-color .22s ease}
+details.accordion>summary:hover::after{box-shadow:0 4px 10px rgba(2,132,199,.18),0 0 0 1px rgba(2,132,199,.16)}
+details.accordion[open]>summary::after{transform:rotate(90deg);background-color:var(--ms-200);box-shadow:0 6px 14px rgba(2,132,199,.2),0 0 0 1px rgba(2,132,199,.2)}
 details.accordion.no-chevron>summary::after,
 details.accordion>summary[data-no-chevron="true"]::after,
 summary.no-chevron::after{display:none!important}
