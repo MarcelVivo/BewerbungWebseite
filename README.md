@@ -82,3 +82,10 @@ Passwortgeschützte One‑Page‑Bewerbungsseite für Marcel Spahr. React via Ne
 4. Domain in Vercel hinzufügen und DNS bei Hostpoint setzen: A `@` → `76.76.21.21`, CNAME `www` → `cname.vercel-dns.com`.
 
 Inhalte aktualisieren, indem du Dateien/JSON im Repo änderst und pushst – kein Online‑Upload nötig.
+
+## Notizen zur Entscheidungslogik (persönliches Profil)
+
+- Abschnitte sind nach Arbeitsweise benannt (Systeme, Prozesse, Wirkung), kein Marketing.
+- Texte beschreiben Ausgangslage, Rolle, Denkansatz und Wirkung, damit Entscheidungsverhalten sichtbar wird.
+- KI wird als Werkzeug genutzt (Textentwürfe, Strukturierung), Verantwortung für Inhalte liegt bei Marcel Spahr.
+- Studium Wirtschaftsinformatik HF noch im Gange; Praxisorientierung bleibt Schwerpunkt.

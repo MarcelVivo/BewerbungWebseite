@@ -48,7 +48,8 @@ function Navbar({ role }) {
   );
 }
 
-function Home({ items, avatar }) {
+// Hauptseite zeigt Arbeitsweise und Nachweise (kein Marketing, nur Haltung).
+function SystemsThinkingPage({ items, avatar }) {
   const quickDocs = [
     { label: 'SCRUM Zertifikat', url: '/assets/SCRUMZertifikat.pdf' },
     { label: 'SAFe Zertifikat', url: '/assets/SAFeZertifikatMarcelSpahr.pdf' },
@@ -74,16 +75,27 @@ function Home({ items, avatar }) {
                 <img src={avatar || 'https://api.dicebear.com/9.x/initials/svg?seed=Marcel%20Spahr'} alt="Foto von Marcel Spahr" className="w-28 h-28 md:w-36 md:h-36 rounded-full object-cover ring-soft bg-white" />
                 <div>
                   <h1 className="brand-name text-3xl md:text-4xl font-semibold text-slate-900">Marcel Spahr</h1>
-                  <div className="mt-2 label-pill inline-flex">Wirtschaftsinformatiker</div>
+                  <div className="mt-2 label-pill inline-flex">Denkt in Systemen, Prozessen und Wirkung</div>
                 </div>
               </div>
               <div className="mt-5 max-w-2xl card bg-white/80 p-5 shadow-sm space-y-3">
-                <p className="text-slate-700 leading-relaxed">Kreativer Wirtschaftsinformatiker mit ausgeprägtem technischen Verständnis, viel Empathie und digitalem Gespür.</p>
-                <p className="text-slate-700 leading-relaxed">Ich verbinde analytisches Denken mit kreativen Ideen und gestalte nachhaltige digitale Lösungen. Durch meine langjährige Erfahrung bei Swisscom in Digitalisierung, Systemadministration und technischem Kundensupport verfüge ich über ein breites, praxisnahes IT-Fundament.</p>
-                <p className="text-slate-700 leading-relaxed">Meine Begeisterung für digitale Innovationen treibt mich an, Prozesse zu optimieren, neue Technologien einzusetzen und mich kontinuierlich weiterzuentwickeln.</p>
+                <p className="text-slate-700 leading-relaxed">Ich arbeite als Wirtschaftsinformatiker, der Fachlichkeit, Daten und Menschen zusammenbringt. Entscheidungen stütze ich auf Fakten und beobachtbare Wirkung.</p>
+                <p className="text-slate-700 leading-relaxed">Langjährige Praxis bei Swisscom in Support, Systembetrieb und Prozessdigitalisierung zeigt: stabile Services entstehen, wenn Abläufe klar sind und Verantwortung bekannt ist. Genau das treibt mich an.</p>
+                <p className="text-slate-700 leading-relaxed">Ich lerne weiter: Wirtschaftsinformatik HF (Feusi Bern), Abschluss geplant Sommer 2026. Fokus auf Umsetzung, nicht auf Schlagworte.</p>
               </div>
-              <div className="mt-4 max-w-2xl card bg-ms-50/60 p-4 shadow-sm border border-ms-100">
-                <p className="text-ms-700 font-semibold">Aktuelles Studium Wirtschaftsinformatik HF (Feusi Bern), Abschluss Sommer 2026</p>
+              <div className="mt-4 max-w-2xl card bg-ms-50/60 p-4 shadow-sm border border-ms-100 space-y-2">
+                <div className="text-slate-800 font-semibold">Wie ich arbeite</div>
+                <ul className="list-disc ml-4 text-slate-700 space-y-1">
+                  <li>Prozesse zuerst verstehen, dann vereinfachen und erst danach digitalisieren.</li>
+                  <li>Business und IT in Sprache, Bildern und Zahlen zusammenbringen.</li>
+                  <li>Schrittweise liefern, Risiken klein halten, Ergebnisse messen.</li>
+                  <li>Transparente Kommunikation, saubere Dokumentation, klare Zuständigkeiten.</li>
+                  <li>Lernen als Dauerzustand: Feedback aufnehmen, Hypothesen testen.</li>
+                </ul>
+              </div>
+              <div className="mt-4 max-w-2xl card bg-white/80 p-4 shadow-sm border border-slate-100 space-y-2">
+                <div className="text-slate-800 font-semibold">Warum Wirtschaftsinformatik</div>
+                <p className="text-slate-700">Ich habe früh gemerkt, dass gute IT nur wirkt, wenn Prozesse und Menschen mitgehen. Als Wirtschaftsinformatiker halte ich beide Seiten zusammen: fachliche Ziele, stabile Systeme, verständliche Lösungen.</p>
               </div>
               <div className="mt-5 flex flex-wrap gap-2">
                 <a className="btn btn-primary px-4 py-2" href={cvUrl} target="_blank" rel="noreferrer">Lebenslauf (PDF)</a>
@@ -178,8 +190,59 @@ function Home({ items, avatar }) {
       </Reveal>
     </div>
   </section>
-      <CvSection />
-      <Documents items={items.filter((i) => ['certificate','language','reference','diploma','pdf','zeugnis'].includes(i.type))} />
+      {/* Projektlogik zeigt, wie Entscheidungen getroffen wurden. */}
+      <section className="container-narrow px-4 py-8 space-y-4">
+        <div className="label-pill inline-block">Arbeitsbeispiele</div>
+        <div className="grid md:grid-cols-2 gap-4">
+          {[
+            {
+              title: 'Serviceprozesse stabilisieren (Swisscom)',
+              bullets: [
+                'Ausgangslage: wiederkehrende Eskalationen im Support und unklare Verantwortungen.',
+                'Rolle: 1st/2nd Level, Aufbau von Prozessklarheit und Wissensbasis.',
+                'Denkansatz: wenige, messbare Schritte definieren, Engpaesse sichtbar machen, Wissen teilen.',
+                'Wirkung: kuerzere Eskalationsketten, nachvollziehbare Loesungen, ruhigerer Betrieb.'
+              ]
+            },
+            {
+              title: 'Digitale Abläufe nachschaerfen',
+              bullets: [
+                'Ausgangslage: verstreute Tools und Medienbrueche im Kundenkontakt.',
+                'Rolle: Prozessunterstuetzung und Dokumentation, Vermittler zwischen Fach und IT.',
+                'Denkansatz: erst Prozess skizzieren, dann Tooling vereinfachen, danach automatisieren.',
+                'Wirkung: weniger Nacharbeiten, klarere Zuständigkeiten, messbare Durchlaufzeiten.'
+              ]
+            },
+            {
+              title: 'Eventbetrieb mit Verantwortung',
+              bullets: [
+                'Ausgangslage: Personal, Sicherheit, Budget und Zeitdruck im Clubbetrieb.',
+                'Rolle: Leitung, Finanzen, Einsatzplanung, Kommunikation mit Partnern.',
+                'Denkansatz: Risiken klein schneiden, Rollen definieren, ruhige Kommunikation.',
+                'Wirkung: planbare Events, entlastete Teams, stabile Zahlen.'
+              ]
+            },
+            {
+              title: 'Warum Wirtschaftsinformatik',
+              bullets: [
+                'Ausgangslage: IT greift nur, wenn Menschen, Prozesse und Daten zusammenpassen.',
+                'Rolle: Uebersetzer zwischen Fachziel und technischer Umsetzung.',
+                'Denkansatz: Klarheit schaffen, Verantwortung sichtbar machen, Daten nutzen.',
+                'Wirkung: loesungsorientierte Entscheidungen statt Tool-Glaeubigkeit.'
+              ]
+            }
+          ].map((c, idx) => (
+            <div key={idx} className="card p-4 space-y-2">
+              <div className="text-slate-900 font-semibold">{c.title}</div>
+              <ul className="cv-summary">
+                {c.bullets.map((b, i) => <li key={i}>{b}</li>)}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </section>
+      <RealWorldExperience />
+      <ProofOfWorkLibrary items={items.filter((i) => ['certificate','language','reference','diploma','pdf','zeugnis'].includes(i.type))} />
     </>
   );
 }
@@ -193,7 +256,7 @@ function prettyTitle(i) {
   return s.trim() || (i.type || 'Dokument');
 }
 
-function Documents({ items }) {
+function ProofOfWorkLibrary({ items }) {
   const categories = [
     { id: 'alle', label: 'Alle' },
     { id: 'cv', label: 'Lebenslauf', match: (i) => /^(cv)$/i.test(i.type || '') || /lebenslauf|cv/i.test(i.title || '') },
@@ -250,7 +313,7 @@ function Documents({ items }) {
             <div className="flex items-center gap-2">
               <a className="btn btn-soft px-3 py-1.5" target="_blank" rel="noreferrer" href={docUrl(viewer.url)}>In neuem Tab öffnen</a>
               <a className="btn btn-primary px-3 py-1.5" download href={docUrl(viewer.url)}>Download</a>
-              <button className="btn btn-soft px-3 py-1.5" onClick={() => setViewer(null)}>Schließen</button>
+              <button className="btn btn-soft px-3 py-1.5" onClick={() => setViewer(null)}>Schliessen</button>
             </div>
           </div>
           <iframe className="pdf-frame" src={docUrl(viewer.url)}></iframe>
@@ -260,56 +323,53 @@ function Documents({ items }) {
   );
 }
 
-function CvSection() {
+// Laufbahn als Prozess: Ausgangslage, Rolle, Denkansatz, Wirkung.
+function RealWorldExperience() {
   const blocks = [
-    { label: 'Aktuelle Weiterbildung', items: [
-      { period: '2023 – 2026', title: 'Wirtschaftsinformatik HF, Feusi Bern', subtitle: 'Aktuelles Studium (Diplom Sommer 2026)', bullets: [
-        'Vertiefung in Prozessmanagement, Requirements Engineering, SQL-Datenbanken und Projektmanagement (Scrum).',
-        'Digitale Transformation, Programmierung und IT-Architekturen.',
-        'Geschäftsprozessmodellierung (BPMN), Informationssysteme, Datenanalyse/Reporting, IT-Service-Management und betriebswirtschaftliche Grundlagen.'
+    { label: 'Berufliche Praxis', items: [
+      { period: '2008 - 2025', title: 'Swisscom Schweiz AG', subtitle: 'Support, Systembetrieb, Prozessarbeit', bullets: [
+        'Ausgangslage: hoher Kundendruck, heterogene Systeme.',
+        'Rolle: 1st/2nd Level, später Systemadministration und Prozessdigitalisierung.',
+        'Denkansatz: Abläufe erst stabilisieren, dann automatisieren; Messpunkte definieren.',
+        'Wirkung: weniger Eskalationen, nachvollziehbare Workflows, klares Wissen im Team.'
+      ]},
+      { period: '2007 - 2008', title: 'Freelance Werbetechnik', subtitle: 'Frontwork Zürich; Seka Thun', bullets: [
+        'Ausgangslage: zeitkritische Projekte (EM 08) und Shop-Redesigns.',
+        'Rolle: Umsetzung vor Ort, Qualitätssicherung, Koordination.',
+        'Denkansatz: klare Absprachen, saubere Übergaben, sichtbare Ergebnisse.',
+        'Wirkung: termingerechte Installationen, konsistente Markenauftritte.'
       ]}
     ] },
-    { label: 'Beruflicher Werdegang', items: [
-      { period: '2021 – 2025', title: 'Digitalisierung, Swisscom Schweiz AG', bullets: [
-        'Mitgestaltung der Digitalisierung und Automatisierung interner Prozesse mit Fokus auf Effizienz, Datenqualität und Kundenerlebnis.',
-        'Optimierung von Datenbereitstellung und Reporting-Pipelines; enge Abstimmung mit Fachbereichen und IT.',
-        'Priorisierung von Anforderungen, Aufbereitung von Use Cases und transparente Kommunikation mit Stakeholdern.',
-        'Erfolgsanalysen, Kennzahlenmonitoring und strukturierte Weiterentwicklung digitaler Abläufe.'
+    { label: 'Ausbildung und Studium', items: [
+      { period: '2023 - heute', title: 'Wirtschaftsinformatik HF, Feusi Bern', subtitle: '4. Semester', bullets: [
+        'Motivation: Brücke zwischen Fachbereich und IT stärken.',
+        'Fokus: Prozesse, Daten, Requirements Engineering, Projektsteuerung.',
+        'Status: noch im Studium, Praxis bleibt Leitplanke.'
       ]},
-      { period: '2015 – 2021', title: 'Systemadministration, Swisscom Schweiz AG', bullets: [
-        'Betreuung und Weiterentwicklung von Systemen und Abläufen im Privatkundenumfeld.',
-        'Technische Analyse von Störungen sowie Erarbeitung nachhaltiger Lösungen.',
-        'Unterstützung von Sales- und Retention-Prozessen; Mitgestaltung von Tools und Workflows.',
-        'Schulung neuer Mitarbeitender und Sicherstellung hoher Qualitätsstandards.'
+      { period: '2004 - 2007', title: 'EFZ Werbetechniker', subtitle: 'Ambühl Werbung AG Bern', bullets: [
+        'Ausgangslage: handwerkliche Fertigung mit engen Timelines.',
+        'Wirkung: sorgfaeltige Arbeit unter Zeitdruck, klare Kundenkommunikation.'
       ]},
-      { period: '2008 – 2015', title: 'Kundenservice Tech & Admin, Swisscom Schweiz AG', bullets: [
-        'Technische Kundenbetreuung (1st/2nd Level) bei komplexen ICT-Anfragen.',
-        'Fehleranalyse, Eskalationsmanagement und nachhaltige Problemlösungen.',
-        'Hohe Serviceorientierung und effiziente Kommunikationsfähigkeit im Kundenkontakt.'
+      { period: '2002 - 2004', title: 'EFZ Maler', subtitle: 'Roth Malerei AG Solothurn', bullets: [
+        'Ausgangslage: praezise Ausführung und Teamarbeit.',
+        'Wirkung: Sorgfalt und Verantwortung als Routine.'
       ]},
-      { period: '2007 – 2008', title: 'Werbetechniker, Frontwork Zürich / Seka Thun', bullets: [
-        'Umsetzung von Projekten zur Fussball EM 08 und Redesign der Swisscom Shops in der Schweiz.',
-        'Gestaltung, Produktion und Montage von Markenauftritten in Zusammenarbeit mit Agenturen.'
-      ]}
+      { period: '1999 - 2001', title: 'EFZ Maler', subtitle: 'Branger & Frigerio Solothurn' },
+      { period: '1996 - 1999', title: 'Sekundarschule Bellach SO' },
+      { period: '1989 - 1996', title: 'Primarschule Bellach SO' },
     ] },
-    { label: 'Ausbildungen & Diplome', items: [
-      { period: '2025', title: 'Cambridge Englisch Zertifikat A2' },
-      { period: '2025', title: 'SAFe Zertifikat' },
-      { period: '2024', title: 'SCRUM Zertifikat' },
-      { period: '2004 – 2007', title: 'EFZ Werbetechniker', subtitle: 'Ambühl Werbung AG Bern' },
-      { period: '1999 – 2004', title: 'EFZ Maler', subtitle: 'Roth Malerei & Branger Frigerio, Solothurn' },
-      { period: '1996 – 1999', title: 'Sekundarschule Bellach SO' },
-      { period: '1989 – 1996', title: 'Primarschule Bellach SO' },
-    ] },
-    { label: 'Nebenberufliche Tätigkeiten bis 2020', items: [
-      { period: '2018 – 2020', title: 'Inhaber & Betreiber Cube Club Bern', bullets: [
-        'Operative Leitung, Organisation und wirtschaftliche Verantwortung; Führung von bis zu 18 Mitarbeitenden.',
-        'Planung, Marketing, Budgetierung und Eventmanagement; Umsetzung digitaler und analoger Werbemassnahmen.'
+    { label: 'Nebenberufliche Praxis', items: [
+      { period: '2018 - 2020', title: 'Cube Club Bern', subtitle: 'Inhaber, Betreiber', bullets: [
+        'Ausgangslage: Eventbetrieb mit Personal- und Budgetverantwortung.',
+        'Rolle: Leitung, Finanzen, Personalführung (bis 18 Personen).',
+        'Denkansatz: klare Rollen, einfache Prozesse, transparente Zahlen.',
+        'Wirkung: planbare Ablaeufe, nachvollziehbare Entscheide.'
       ]},
-      { period: '2009 – 2020', title: 'Eventmanager & Organisator', bullets: [
-        'Planung und Durchführung von Events im Gaskessel Bern und weiteren Locations.',
-        'Organisation und Betrieb eines Love Mobiles (Streetparade Zürich, 2011–2015).',
-        'Teamführung sowie Programm- und Eventmanagement in verschiedenen Clubs.'
+      { period: '2009 - 2020', title: 'Eventorganisation', subtitle: 'Bern, Streetparade, Clubs', bullets: [
+        'Ausgangslage: wechselnde Locations, Sicherheits- und Zeitvorgaben.',
+        'Rolle: Planung, Betrieb, Teamsteuerung.',
+        'Denkansatz: Risiken klein halten, Szenarien durchspielen, ruhige Kommunikation.',
+        'Wirkung: Events sicher durchgefuehrt, Teams entlastet, Gaeste zufrieden.'
       ]}
     ] },
   ];
@@ -367,7 +427,7 @@ function ProjectsAdmin({ items, setItems }) {
   }
   return (
     <section className="container-narrow px-4 space-y-6">
-      <Reveal><div className="flex items-center justify-between"><h2 className="text-xl font-semibold text-slate-900">Admin – Inhalte</h2></div></Reveal>
+      <Reveal><div className="flex items-center justify-between"><h2 className="text-xl font-semibold text-slate-900">Admin - Inhalte</h2></div></Reveal>
       <Reveal className="card p-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
@@ -461,9 +521,9 @@ function AppShell() {
     <>
       <Navbar role={null} />
       <Routes>
-        <Route path="/" element={<Home items={items} avatar={avatar} />} />
+        <Route path="/" element={<SystemsThinkingPage items={items} avatar={avatar} />} />
         <Route path="/contact" element={<Contact />} />
-        <Route path="*" element={<Home items={items} avatar={avatar} />} />
+        <Route path="*" element={<SystemsThinkingPage items={items} avatar={avatar} />} />
       </Routes>
       <footer className="container-narrow px-4 py-10 text-xs text-slate-500">© {new Date().getFullYear()} Marcel Spahr</footer>
     </>
