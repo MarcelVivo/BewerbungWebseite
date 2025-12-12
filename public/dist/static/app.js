@@ -250,8 +250,19 @@
           el('p', { className: 'mt-5 text-slate-700 leading-relaxed max-w-2xl' }, 'Kreativer Wirtschaftsinformatiker mit ausgeprägtem technischen Verständnis, viel Empathie und digitalem Gespür.'),
           el('p', { className: 'mt-3 text-slate-700 leading-relaxed max-w-2xl' }, 'Ich verbinde analytisches Denken mit kreativen Ideen und gestalte nachhaltige digitale Lösungen. Durch meine langjährige Erfahrung bei Swisscom in Digitalisierung, Systemadministration und technischem Kundensupport verfüge ich über ein breites, praxisnahes IT-Fundament.'),
           el('p', { className: 'mt-3 text-slate-700 leading-relaxed max-w-2xl' }, 'Meine Begeisterung für digitale Innovationen treibt mich an, Prozesse zu optimieren, neue Technologien einzusetzen und mich kontinuierlich weiterzuentwickeln.'),
-          el('div', { className: 'mt-4 max-w-2xl card bg-ms-50/60 p-4 shadow-sm border border-ms-100' },
-            el('p', { className: 'text-ms-700 font-semibold' }, 'Aktuelles Studium Wirtschaftsinformatik HF (Feusi Bern), Abschluss Sommer 2026')
+          el('details', { className: 'accordion mt-4 max-w-2xl' },
+            el('summary', null,
+              el('span', { className: 'ml-1 font-semibold text-slate-900' }, 'Aktuelles Wirtschaftsinformatik Studium 2023 - 2026')
+            ),
+            el('div', null,
+              el('ul', { className: 'cv-summary' },
+                el('li', null, 'Vertiefung in Prozessmanagement und Requirements Engineering.'),
+                el('li', null, 'SQL-Datenbanken, Datenmodellierung und Programmierung.'),
+                el('li', null, 'Projektmanagement (Scrum) und digitale Transformation.'),
+                el('li', null, 'IT-Architekturen, Informationssysteme und BPMN.'),
+                el('li', null, 'Datenanalyse/Reporting, IT-Service-Management und betriebswirtschaftliche Grundlagen.')
+              )
+            )
           ),
           (() => {
             const row = el('div', { className: 'mt-5 flex flex-wrap gap-2' });

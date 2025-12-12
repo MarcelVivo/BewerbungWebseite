@@ -108,9 +108,20 @@ const categorized = categorize(items);
                   <p className="text-slate-700 leading-relaxed">Kreativer Wirtschaftsinformatiker mit viel Verstand, Empathie & digitalem Gespür. Technisches Know-how mit kreativen Ideen zu verknüpfen, ist meine Leidenschaft.</p>
                   <p className="text-slate-700 leading-relaxed">Mit viel Erfahrung in Marketing und Online-Business sowie als langjähriger Kundenberater schaffe ich individuelle Kundenerlebnisse. Mein Talent für strategische Planung, Organisation und vernetztes Denken ermöglicht es mir, effizient, kundenorientiert und wirtschaftlich sinnvoll zu handeln. Meine Begeisterung für digitale Innovationen treibt mich an, mein Wissen kontinuierlich zu erweitern und kreative Lösungen mit technologischem Fortschritt zu verbinden.</p>
                 </div>
-                <div className="mt-4 max-w-2xl card bg-ms-50/60 p-4 shadow-sm border border-ms-100">
-                  <p className="text-ms-700 font-semibold">Aktuelles Wirtschaftsinformatik Studium 2023 - 2026</p>
-                </div>
+                <details className="accordion mt-4 max-w-2xl">
+                  <summary>
+                    <span className="ml-1 font-semibold text-slate-900">Aktuelles Wirtschaftsinformatik Studium 2023 - 2026</span>
+                  </summary>
+                  <div>
+                    <ul className="cv-summary">
+                      <li>Vertiefung in Prozessmanagement und Requirements Engineering.</li>
+                      <li>SQL-Datenbanken, Datenmodellierung und Programmierung.</li>
+                      <li>Projektmanagement (Scrum) und digitale Transformation.</li>
+                      <li>IT-Architekturen, Informationssysteme und BPMN.</li>
+                      <li>Datenanalyse/Reporting, IT-Service-Management und betriebswirtschaftliche Grundlagen.</li>
+                    </ul>
+                  </div>
+                </details>
               </div>
             </Reveal>
             <div className="space-y-3 sticky top-24">
