@@ -106,5 +106,14 @@
     "url": "/assets/90sLoveMobileProjektarbeit_Digital Marketing-Final.pdf",
     "code": "",
     "createdAt": 12
+  },
+  {
+    "id": "portfolio-covid-cert-architecture",
+    "title": "Swiss Covid Cert App – Softwarearchitektur & Sicherheitskonzept (arc42)",
+    "type": "project",
+    "description": "Diese Arbeit dokumentiert die Softwarearchitektur der Swiss Covid Cert App nach dem arc42-Standard. Im Fokus stehen Datenschutz, Sicherheit und Offline-Fähigkeit einer hochverfügbaren mobilen Lösung. Beschrieben werden Systemkontext, Use Cases, Deployment, Qualitätsanforderungen sowie die Trennung zwischen Wallet-App, Check-App und Backend (BAG/FOITT). Die Arbeit zeigt mein strukturiertes Vorgehen in Architekturdesign, Requirements-Analyse und technischen Qualitätsbewertungen anhand eines realitätsnahen, sicherheitskritischen Systems.",
+    "url": "/assets/SWISS_COVID_CERT_APP_SoftwareArchitektur.pdf",
+    "code": "",
+    "createdAt": 13
   }
 ]
