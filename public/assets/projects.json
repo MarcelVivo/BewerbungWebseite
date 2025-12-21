@@ -115,5 +115,14 @@
     "url": "/assets/SWISS_COVID_CERT_APP_SoftwareArchitektur.pdf",
     "code": "",
     "createdAt": 13
+  },
+  {
+    "id": "portfolio-fuehrungshandbuch",
+    "title": "Persönliches Führungshandbuch",
+    "type": "project",
+    "description": "In diesem Handbuch habe ich meine Haltung und Arbeitsweise als Führungsperson praxisnah und ehrlich beschrieben. Es basiert auf meiner bisherigen Erfahrung in der Personalführung sowie auf meinen Werten: Vertrauen, Klarheit, Empathie und Zielorientierung. Das Handbuch zeigt, wie ich mit echten Alltagssituationen im Büro umgehe – strukturiert, menschlich und lösungsorientiert. Es ist kein Theoriewerk, sondern ein persönlicher Leitfaden, wie ich als ruhiger, vorausdenkender und engagierter Mensch Teams erfolgreich führe und entwickle.",
+    "url": "/assets/Personliches_Fuhrungshandbuch_MarcelSpahr.pdf",
+    "code": "",
+    "createdAt": 14
   }
 ]
