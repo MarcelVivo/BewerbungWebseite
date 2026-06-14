@@ -1,7 +1,36 @@
+# Dependencies
 node_modules
-.env
+
+# Next.js
 .next
+next-env.d.ts
+tsconfig.tsbuildinfo
+
+# Vercel
 .vercel
+
+# Environment variables – NIEMALS committen
+.env
+.env.local
+.env.*.local
+.env.production
+
+# Secrets / Sessions
+cookies.txt
+server.out
+server.pid
+
+# Uploads (ephemeral on Vercel /tmp)
 uploads/
+
+# Data backups
 data/*.log
 data/*.bak
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Claude memory (local dev only)
+memory/
+messages/

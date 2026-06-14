@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* CSS Custom Properties – Repliziert das bisherige CDN-Tailwind-Config */
+:root {
+  --ms-50:  #f0f8ff;
+  --ms-100: #e0f2fe;
+  --ms-200: #bae6fd;
+  --ms-300: #7dd3fc;
+  --ms-400: #38bdf8;
+  --ms-500: #0ea5e9;
+  --ms-600: #0284c7;
+  --ms-700: #0369a1;
+}

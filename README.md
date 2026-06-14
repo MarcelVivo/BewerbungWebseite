@@ -1,91 +1,90 @@
-# Private Bewerbungs‑Webseite (Next.js auf Vercel)
+# marcelspahr.ch — Next.js 14 Platform
 
-Passwortgeschützte One‑Page‑Bewerbungsseite für Marcel Spahr. React via Next.js (App Router), gehostet auf Vercel. Login per Benutzername/Passwort (Admin/Viewer), Auth‑Schutz über Next Middleware. Inhalte (Dokumente, Zertifikate, Zeugnisse) werden als statische Dateien im Repo gepflegt und per Download‑Button angeboten.
+Persönliche Webseite + privates Command Center von Marcel Spahr.
 
-## Schnellstart
+## Architektur – 3 Zonen
 
-1. Abhängigkeiten installieren:
+| Zone | Pfad | Auth |
+|------|------|------|
+| Public One-Pager | `/` | Öffentlich |
+| Command Center (CRM) | `/dashboard/*` | Supabase Auth (Email + PW) |
+| Recruiter Portfolio | `/recruiter/*` | Cookie-Passwort |
 
-   ```bash
-   npm install
-   ```
+## Lokale Entwicklung
 
-2. Umgebungsvariablen setzen:
+```bash
+npm install
+cp .env.example .env.local   # Credentials eintragen
+npm run dev                   # → http://localhost:3000
+```
 
-   ```bash
-   cp .env.example .env
-   # ADMIN_*, VIEW_*, SESSION_SECRET in .env anpassen (siehe .env.example)
-   ```
+## Vercel Deployment
 
-3. Start im Development:
+### 1. Repository verbinden
 
-   ```bash
-   npm run dev
-   # http://localhost:3000
-   ```
+```bash
+npx vercel --prod
+```
 
-## Entwicklung
+Oder: Vercel Dashboard → "Add New Project" → GitHub-Repo auswählen.
 
-- Next.js Dev‑Server: `npm run dev`
-- Build: `npm run build`, Start: `npm start`
+### 2. Pflicht-Umgebungsvariablen
 
-## Deployment auf Vercel (GitHub)
+Im Vercel Dashboard unter **Settings → Environment Variables** eintragen:
 
-1. Repository zu GitHub pushen (z. B. `ms-bewerbung`).
-2. In Vercel ein neues Projekt anlegen und das GitHub-Repo verknüpfen. Vercel erkennt Next.js automatisch.
-3. In den Vercel-Einstellungen die folgenden Environment-Variablen setzen (Production/Preview):
+| Variable | Beschreibung |
+|----------|--------------|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase Projekt-URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase Public Key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase Secret Key ⚠️ |
+| `RECRUITER_PASSWORD` | Passwort für /recruiter |
+| `SESSION_SECRET` | Secret für HMAC-Auth (langer zufälliger String) |
+| `NEXT_PUBLIC_SITE_URL` | `https://www.marcelspahr.ch` |
+| `ADMIN_USER` | Altes Login-Konto |
+| `ADMIN_PASS` | Altes Login-Passwort |
 
-   - `ADMIN_USER`, `ADMIN_PASS`
-   - `VIEW_USER`, `VIEW_PASS`
-   - `SESSION_SECRET` (lange, zufällige Zeichenkette)
+### 3. Optionale Variablen
 
-4. Deploy starten – Vercel baut mit `npm install && npm run build`.
-5. Domain anbinden: In Vercel unter *Domains* `www.marcelspahr.ch` hinzufügen und DNS-A/ALIAS bzw. CNAME laut Vercel-Hinweis beim Domain-Provider setzen.
-6. Nach dem ersten erfolgreichen Deploy ist die Seite per Login erreichbar. Lokale Entwicklung weiter wie oben beschrieben.
+| Variable | Beschreibung |
+|----------|--------------|
+| `RESEND_API_KEY` | E-Mail-Versand via Resend |
+| `RESEND_FROM_EMAIL` | Absenderadresse |
+| `ANTHROPIC_API_KEY` | Claude API für KI-Agenten |
+
+### 4. Supabase Setup
+
+1. SQL Editor im Supabase Dashboard → `supabase/migrations/001_init.sql` ausführen
+2. Authentication → Users → User anlegen mit `kontakt@marcelspahr.ch`
+
+### 5. Domain konfigurieren
+
+Vercel Dashboard → Settings → Domains → `marcelspahr.ch` + `www.marcelspahr.ch`
+
+## Tech Stack
+
+- **Framework:** Next.js 14 (App Router, TypeScript)
+- **Styling:** Tailwind CSS v3
+- **Datenbank:** Supabase (PostgreSQL + Auth + RLS)
+- **Deployment:** Vercel (Region: Frankfurt fra1)
+- **Animationen:** Framer Motion
 
 ## Struktur
 
-- `app/` – Next.js App Router
-  - `page.jsx` – One‑Page‑UI (Scroll‑Animationen, Downloads)
-  - `login/page.jsx` – Login‑Seite
-  - `api/login` / `api/logout` – Login/Logout (setzt/entfernt Cookie)
-- `middleware.js` – schützt alle Pfade per Cookie‑Prüfung (Login erforderlich)
-- `public/assets/` – Bilder/PDFs (z. B. `portrait.jpg`, Zertifikate, Zeugnisse)
-- `public/assets/projects.json` – Liste der anzuzeigenden Dokumente
-- `public/static/app.css` – Styles inkl. Reveal/Sticky
-
-## Inhalte pflegen (VS Code, ohne Online‑Upload)
-
-- Lege deine Dateien in `public/assets/` ab (z. B. `ArbeitszeugnisMarcelSpahr2025.pdf`).
-- Trage sie in `public/assets/projects.json` ein, z. B.:
-
-  ```json
-  [
-    { "title": "Lebenslauf", "type": "cv", "url": "/assets/CV.pdf" },
-    { "title": "SCRUM Zertifikat", "type": "certificate", "url": "/assets/SCRUMZertifikat.pdf" }
-  ]
-  ```
-
-- Avatar‑Bild optional als `public/assets/portrait.jpg`.
-
-## Sicherheit
-
-- Login ist passwortgeschützt; Cookie wird signiert und per Middleware geprüft.
-- Setze `ADMIN_PASS`, `VIEW_PASS` und vor allem `SESSION_SECRET` auf sichere, zufällige Werte (Vercel Projekt‑Einstellungen → Environment Variables).
-- Ohne gültigen Login sind auch Dateien unter `/assets` nicht erreichbar (Middleware).
-
-## Deployment (Vercel)
-
-1. Repo mit Vercel verbinden (oder `vercel` CLI).
-2. Environment Variables setzen: `ADMIN_USER`, `ADMIN_PASS`, `VIEW_USER`, `VIEW_PASS`, `SESSION_SECRET`.
-3. Build & Deploy läuft automatisch (`next build`).
-4. Domain in Vercel hinzufügen und DNS bei Hostpoint setzen: A `@` → `76.76.21.21`, CNAME `www` → `cname.vercel-dns.com`.
-
-Inhalte aktualisieren, indem du Dateien/JSON im Repo änderst und pushst – kein Online‑Upload nötig.
-
-## Notizen zur Entscheidungslogik (persönliches Profil)
-
-- Abschnitte sind nach Arbeitsweise benannt (Systeme, Prozesse, Wirkung), kein Marketing.
-- Texte beschreiben Ausgangslage, Rolle, Denkansatz und Wirkung, damit Entscheidungsverhalten sichtbar wird.
-- KI wird als Werkzeug genutzt (Textentwürfe, Strukturierung), Verantwortung für Inhalte liegt bei Marcel Spahr.
-- Studium Wirtschaftsinformatik HF noch im Gange; Praxisorientierung bleibt Schwerpunkt.
+```
+app/
+├── page.tsx              # Public One-Pager
+├── dashboard/            # Command Center (CRM)
+│   ├── kunden/           # Kundenverwaltung
+│   ├── pipeline/         # Deal-Pipeline Kanban
+│   ├── projekte/         # Projekte & Tasks
+│   ├── rechnungen/       # Rechnungen + PDF
+│   ├── zeiterfassung/    # Timer + Zeiteinträge
+│   ├── kalender/         # Terminkalender
+│   └── ki-agenten/       # KI-Agent Dashboard + Chat
+├── recruiter/            # Recruiter Portfolio
+│   └── login/            # Passwort-Login
+└── api/
+    ├── auth/             # Supabase-Callback + Recruiter-Auth
+    ├── kontakt/          # Kontaktformular → Supabase
+    └── ...               # Legacy-Routen
+```
