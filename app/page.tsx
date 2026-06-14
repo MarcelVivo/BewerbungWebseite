@@ -338,7 +338,7 @@ function HeroSection({ t }: { t: typeof T['de'] }) {
         >
           <div className="relative">
             <div className="absolute inset-0 rounded-full bg-[#6366f1]/30 blur-xl scale-110" />
-            <NextImage src="/assets/portrait.jpg" alt="Marcel Spahr" width={144} height={144} priority className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-full object-cover ring-2 ring-[#6366f1]/50" />
+            <NextImage src="/assets/portrait2.jpg" alt="Marcel Spahr" width={144} height={144} priority className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-full object-cover ring-2 ring-[#6366f1]/50" />
           </div>
         </motion.div>
       </div>

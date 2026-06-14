@@ -216,7 +216,7 @@ export default function RecruiterPage() {
               <div className="h-24 bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-600" />
               <div className="px-6 pb-6 -mt-10">
                 <img
-                  src="/assets/portrait.jpg"
+                  src="/assets/portrait2.jpg"
                   alt="Marcel Spahr"
                   className="w-20 h-20 rounded-2xl border-4 border-white object-cover shadow-md mb-3"
                   onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}

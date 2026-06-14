@@ -27,7 +27,7 @@ export default function LoginPage() {
     <main className="min-h-screen flex items-center justify-center p-4 bg-ms-50">
       <form onSubmit={onSubmit} className="bg-white/95 border border-sky-100 shadow-lg rounded-2xl p-8 w-full max-w-md space-y-4">
         <div className="flex flex-col items-center text-center space-y-3">
-          <img src="/assets/portrait.jpg" alt="Marcel Spahr" className="w-24 h-24 rounded-full object-cover ring-soft" />
+          <img src="/assets/portrait2.jpg" alt="Marcel Spahr" className="w-24 h-24 rounded-full object-cover ring-soft" />
           <div className="text-lg font-semibold text-slate-900">Marcel Spahr</div>
           <div className="text-sm text-slate-600">Herzlich willkommen auf meiner persönlichen Bewerbungsseite</div>
         </div>
