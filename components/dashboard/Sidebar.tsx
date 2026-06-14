@@ -1,19 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, GitBranch, Users, Megaphone,
   FolderKanban, Timer, Receipt, FileText, Calendar,
-  Bot, FolderOpen, BarChart3, Settings, Bell,
+  Bot, FolderOpen, BarChart3, Settings,
   ChevronLeft, ChevronRight, LogOut, Briefcase,
-  Search, Command,
+  Search, Command, MessageSquare,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
 
-type NavItem  = { label: string; href: string; icon: React.ElementType };
+type NavItem  = { label: string; href: string; icon: React.ElementType; badgeKey?: string };
 type NavGroup = { label: string; items: NavItem[] };
 
 const NAV_GROUPS: NavGroup[] = [
@@ -27,6 +27,7 @@ const NAV_GROUPS: NavGroup[] = [
       { label: 'Pipeline',  href: '/dashboard/pipeline',  icon: GitBranch },
       { label: 'Kunden',    href: '/dashboard/kunden',    icon: Users },
       { label: 'Outreach',  href: '/dashboard/outreach',  icon: Megaphone },
+      { label: 'Kontakt',   href: '/dashboard/kontakt',   icon: MessageSquare, badgeKey: 'kontakt' },
     ],
   },
   {
@@ -59,9 +60,25 @@ const NAV_GROUPS: NavGroup[] = [
 ];
 
 export default function Sidebar() {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed]   = useState(false);
+  const [badges, setBadges]         = useState<Record<string, number>>({});
   const pathname = usePathname();
   const router   = useRouter();
+  const supabase = createClient();
+
+  useEffect(() => {
+    loadBadges();
+    // Realtime: bei neuen Kontaktanfragen Badge aktualisieren
+    const channel = supabase.channel('kontakt-badge')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'kontaktanfragen' }, () => loadBadges())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
+  async function loadBadges() {
+    const { data } = await supabase.from('kontaktanfragen').select('status').eq('status', 'neu');
+    setBadges({ kontakt: data?.length ?? 0 });
+  }
 
   async function handleLogout() {
     const supabase = createClient();
@@ -136,7 +153,7 @@ export default function Sidebar() {
                   href={item.href}
                   title={collapsed ? item.label : undefined}
                   className={cn(
-                    'flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm transition-all duration-150 group',
+                    'relative flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm transition-all duration-150 group',
                     active
                       ? 'bg-[#6366f1] text-white shadow-md shadow-indigo-500/20'
                       : 'text-slate-400 hover:text-white hover:bg-[#252836]',
@@ -147,7 +164,15 @@ export default function Sidebar() {
                     size={17}
                     className={cn('flex-shrink-0', active ? 'text-white' : 'text-slate-400 group-hover:text-white')}
                   />
-                  {!collapsed && <span className="truncate font-medium">{item.label}</span>}
+                  {!collapsed && <span className="truncate font-medium flex-1">{item.label}</span>}
+                  {!collapsed && item.badgeKey && (badges[item.badgeKey] ?? 0) > 0 && (
+                    <span className="ml-auto flex-shrink-0 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-blue-500 text-white text-[10px] font-bold px-1">
+                      {badges[item.badgeKey]}
+                    </span>
+                  )}
+                  {collapsed && item.badgeKey && (badges[item.badgeKey] ?? 0) > 0 && (
+                    <span className="absolute top-0.5 right-0.5 w-2 h-2 rounded-full bg-blue-500" />
+                  )}
                 </Link>
               );
             })}
