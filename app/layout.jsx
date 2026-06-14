@@ -1,4 +1,25 @@
 import './globals.css';
+import { Inter, Poppins, Space_Grotesk } from 'next/font/google';
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+  preload: true,
+});
+const poppins = Poppins({
+  subsets: ['latin'],
+  weight: ['400', '600'],
+  display: 'swap',
+  variable: '--font-poppins',
+  preload: false,
+});
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-space-grotesk',
+  preload: false,
+});
 
 export const metadata = {
   title: 'Marcel Spahr – KI-Berater & Wirtschaftsinformatiker',
@@ -26,14 +47,8 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="de">
+    <html lang="de" className={`${inter.variable} ${poppins.variable} ${spaceGrotesk.variable}`}>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;600&family=Space+Grotesk:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
         <link rel="stylesheet" href="/static/app.css?v=6" />
       </head>
       <body className="bg-ms-50 text-slate-900">
