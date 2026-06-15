@@ -13,15 +13,15 @@ export const dynamic = 'force-static';
 // ── Services ──────────────────────────────────────────────
 
 const SERVICES = [
-  { icon: Bot,           title: 'KI-Agenten & Automatisierung',     desc: 'Intelligente Agenten die für dich arbeiten – 24/7' },
-  { icon: BarChart3,     title: 'Business Analyse & Requirements',   desc: 'Prozesse verstehen, Lösungen definieren' },
-  { icon: Workflow,      title: 'Prozessoptimierung (BPMN)',         desc: 'Manuelle Abläufe digitalisieren und automatisieren' },
-  { icon: Megaphone,     title: 'Digital Marketing & Social Media',  desc: 'LinkedIn, Content-Strategie, KI-unterstütztes Marketing' },
-  { icon: Video,         title: 'Video-Produktion',                  desc: 'Erklärvideos, Unternehmensfilme, Social-Content' },
-  { icon: FolderKanban,  title: 'Projektmanagement',                 desc: 'Von der Idee bis zum Go-Live – strukturiert und agil' },
-  { icon: GraduationCap, title: 'Workshops & Schulungen',            desc: 'KI-Schulungen für Teams (ChatGPT, Copilot, Automatisierung)' },
-  { icon: Globe,         title: 'Website-Optimierung',               desc: 'Performance, SEO, Conversion – für KMU optimiert' },
-  { icon: Lightbulb,     title: 'KI-Beratung für KMU',              desc: 'Digitalisierungsanalyse und KI-Roadmap' },
+  { icon: Bot,           title: 'KI-Agenten & Automatisierung',     desc: 'Intelligente Agenten die für dich arbeiten – 24/7',         slug: 'ki-agenten' },
+  { icon: BarChart3,     title: 'Business Analyse & Requirements',   desc: 'Prozesse verstehen, Lösungen definieren',                   slug: 'business-analyse' },
+  { icon: Workflow,      title: 'Prozessoptimierung (BPMN)',         desc: 'Manuelle Abläufe digitalisieren und automatisieren',         slug: 'prozessoptimierung' },
+  { icon: Megaphone,     title: 'Digital Marketing & Social Media',  desc: 'LinkedIn, Content-Strategie, KI-unterstütztes Marketing',   slug: 'digital-marketing' },
+  { icon: Video,         title: 'Video-Produktion',                  desc: 'Erklärvideos, Unternehmensfilme, Social-Content',           slug: 'video-produktion' },
+  { icon: FolderKanban,  title: 'Projektmanagement',                 desc: 'Von der Idee bis zum Go-Live – strukturiert und agil',      slug: 'projektmanagement' },
+  { icon: GraduationCap, title: 'Workshops & Schulungen',            desc: 'KI-Schulungen für Teams (ChatGPT, Copilot, Automatisierung)', slug: 'workshops' },
+  { icon: Globe,         title: 'Website-Optimierung',               desc: 'Performance, SEO, Conversion – für KMU optimiert',         slug: 'website-optimierung' },
+  { icon: Lightbulb,     title: 'KI-Beratung für KMU',              desc: 'Digitalisierungsanalyse und KI-Roadmap',                    slug: 'ki-beratung-kmu' },
 ];
 
 // ── Portfolio ─────────────────────────────────────────────
@@ -179,13 +179,17 @@ export default function HomePage() {
             {SERVICES.map((s, i) => {
               const Icon = s.icon;
               return (
-                <div key={i} className="group h-full rounded-xl border border-[#2d3144] bg-[#1a1d27] p-6 hover:border-[#6366f1]/50 hover:bg-[#1e2035] transition-all cursor-default">
+                <a key={i} href={`/leistungen/${s.slug}`}
+                  className="group h-full rounded-xl border border-[#2d3144] bg-[#1a1d27] p-6 hover:border-[#6366f1]/50 hover:bg-[#1e2035] transition-all block">
                   <div className="mb-4 inline-flex p-2.5 rounded-lg bg-[#6366f1]/10 text-[#818cf8] group-hover:bg-[#6366f1]/20 transition-colors">
                     <Icon size={20} />
                   </div>
                   <h3 className="font-semibold text-white mb-2 leading-snug">{s.title}</h3>
                   <p className="text-sm text-slate-400 leading-relaxed">{s.desc}</p>
-                </div>
+                  <div className="mt-4 flex items-center gap-1 text-xs text-[#6366f1] opacity-0 group-hover:opacity-100 transition-opacity font-medium">
+                    Mehr erfahren <ChevronRight size={12} />
+                  </div>
+                </a>
               );
             })}
           </div>
