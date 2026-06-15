@@ -14,7 +14,7 @@ export default function HomeNavBar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 inset-x-0 z-50 border-b border-[#2d3144]/60 bg-[#0f1117]/80 backdrop-blur-md">
+    <header className="fixed top-0 inset-x-0 z-50 border-b border-[#2d3144] bg-[#0f1117]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         <span className="font-bold text-white text-lg tracking-tight">Marcel Spahr</span>
         <nav className="hidden md:flex items-center gap-6">

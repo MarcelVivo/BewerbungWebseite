@@ -96,10 +96,7 @@ export default function HomePage() {
 
       {/* ── Hero ── */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -top-32 -left-32 w-[600px] h-[600px] rounded-full bg-[#6366f1]/20 blur-[120px]" />
-          <div className="absolute -bottom-32 -right-32 w-[500px] h-[500px] rounded-full bg-[#06b6d4]/10 blur-[120px]" />
-        </div>
+        <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(ellipse 60% 55% at 15% 15%, #6366f118 0%, transparent 70%), radial-gradient(ellipse 50% 45% at 85% 85%, #06b6d40d 0%, transparent 70%)' }} />
         <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 text-center">
           <div className="ms-anim-scale mb-6 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#6366f1]/40 bg-[#6366f1]/10 text-[#a5b4fc] text-sm font-medium">
             <Bot size={14} /> KI-Berater & Wirtschaftsinformatiker
@@ -121,7 +118,7 @@ export default function HomePage() {
           </div>
           <div style={{ animationDelay: '0.45s' }} className="ms-anim mt-16 flex justify-center">
             <div className="relative">
-              <div className="absolute inset-0 rounded-full bg-[#6366f1]/30 blur-xl scale-110" />
+              <div className="absolute inset-0 rounded-full bg-[#6366f1]/15" />
               <div className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-[#1e2235] ring-2 ring-[#6366f1]/50 flex items-center justify-center">
                 <User size={56} className="text-[#6366f1] sm:hidden" />
                 <User size={72} className="text-[#6366f1] hidden sm:block" />

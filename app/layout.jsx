@@ -35,10 +35,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="de" className={inter.variable}>
-      <head>
-        <link rel="stylesheet" href="/static/app.css?v=6" />
-      </head>
-      <body className="bg-ms-50 text-slate-900">
+<body className="bg-ms-50 text-slate-900">
         {children}
       </body>
     </html>

@@ -150,7 +150,7 @@ export default function ProjectsPage() {
   const grouped = categorize(items);
 
   return (
-    <main className="container-narrow px-4 py-10 space-y-6">
+    <main className="max-w-5xl mx-auto px-4 py-10 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <div className="label-pill inline-block">Admin</div>
