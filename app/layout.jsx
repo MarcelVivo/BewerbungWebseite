@@ -1,5 +1,6 @@
 import './globals.css';
 import { Inter } from 'next/font/google';
+import { LanguageProvider } from './LanguageContext';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -138,7 +139,7 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body className="text-[#f4edd8]">
-        {children}
+        <LanguageProvider>{children}</LanguageProvider>
       </body>
     </html>
   );

@@ -1,9 +1,13 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
+import { useLanguage } from './LanguageContext';
+import { T } from '../lib/translations';
 
 export default function ContactFormClient() {
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+  const { lang } = useLanguage();
+  const t = T[lang].form;
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -27,21 +31,21 @@ export default function ContactFormClient() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <input name="name"    type="text"  required placeholder="Name"      className={inputCls} />
-      <input name="email"   type="email" required placeholder="E-Mail"    className={inputCls} />
-      <textarea name="message" required rows={5} placeholder="Nachricht" className={`${inputCls} resize-none`} />
+      <input name="name"    type="text"  required placeholder={t.name}    className={inputCls} />
+      <input name="email"   type="email" required placeholder={t.email}   className={inputCls} />
+      <textarea name="message" required rows={5} placeholder={t.message} className={`${inputCls} resize-none`} />
       {status === 'success' && (
-        <p className="text-sm text-[#8fb58a] bg-[#8fb58a]/10 rounded-lg px-4 py-3">Vielen Dank! Ich melde mich bald.</p>
+        <p className="text-sm text-[#8fb58a] bg-[#8fb58a]/10 rounded-lg px-4 py-3">{t.success}</p>
       )}
       {status === 'error' && (
-        <p className="text-sm text-[#c4897a] bg-[#c4897a]/10 rounded-lg px-4 py-3">Fehler beim Senden. Bitte versuche es erneut.</p>
+        <p className="text-sm text-[#c4897a] bg-[#c4897a]/10 rounded-lg px-4 py-3">{t.error}</p>
       )}
       <button
         type="submit"
         disabled={status === 'sending'}
         className="w-full py-3 rounded-xl bg-[#c9a84c] hover:bg-[#b8943a] disabled:opacity-60 text-[#0c0a06] font-bold transition-all shadow-lg shadow-[#c9a84c]/20"
       >
-        {status === 'sending' ? 'Wird gesendet…' : 'Nachricht senden'}
+        {status === 'sending' ? t.sending : t.send}
       </button>
     </form>
   );
