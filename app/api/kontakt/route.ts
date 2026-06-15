@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 
 export async function POST(request: Request) {
@@ -10,10 +10,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Fehlende Felder' }, { status: 400 });
     }
 
-    // Supabase-Insert versuchen — schlägt fehl wenn Tabelle/RLS fehlt, aber Form bleibt nutzbar
+    // Supabase-Insert mit Service Role Key (umgeht RLS)
     let insertedId: string | undefined;
     try {
-      const supabase = createClient();
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
       const { data, error } = await supabase.from('kontaktanfragen').insert({
         name,
         email,
