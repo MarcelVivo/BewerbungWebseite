@@ -99,13 +99,13 @@ export default function HomePage() {
         <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(ellipse 60% 55% at 15% 15%, #6366f118 0%, transparent 70%), radial-gradient(ellipse 50% 45% at 85% 85%, #06b6d40d 0%, transparent 70%)' }} />
         <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 text-center">
           <div className="ms-anim-scale mb-6 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#6366f1]/40 bg-[#6366f1]/10 text-[#a5b4fc] text-sm font-medium">
-            <Bot size={14} /> KI-Berater & Wirtschaftsinformatiker
+            <Bot size={14} /> Kreativer KI-Unternehmensberater · Bern, Schweiz
           </div>
           <h1 style={{ animationDelay: '0.1s' }} className="ms-anim text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight tracking-tight">
             KI-Intelligenz trifft Kreativität
           </h1>
           <p style={{ animationDelay: '0.2s' }} className="ms-anim mt-6 text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            Wirtschaftsinformatiker & KI-Berater für Schweizer KMU – ich automatisiere, optimiere und digitalisiere deinen Betrieb.
+            Kreativer KI-Unternehmensberater & Wirtschaftsinformatiker für Schweizer KMU – ich automatisiere, optimiere und digitalisiere deinen Betrieb.
           </p>
           <div style={{ animationDelay: '0.3s' }} className="ms-anim mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <a href="#contact" className="group flex items-center gap-2 px-6 py-3 rounded-xl bg-[#6366f1] hover:bg-[#5254cc] text-white font-semibold transition-all shadow-lg shadow-[#6366f1]/25">
@@ -294,6 +294,84 @@ export default function HomePage() {
               ))}
             </div>
             <ContactFormClient />
+          </div>
+        </div>
+      </section>
+
+      {/* ── FAQ ── */}
+      <section id="faq" className="py-24 px-4 sm:px-6">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: [
+              {
+                '@type': 'Question',
+                name: 'Was macht ein kreativer KI-Unternehmensberater?',
+                acceptedAnswer: { '@type': 'Answer', text: 'Ein kreativer KI-Unternehmensberater verbindet technisches KI-Know-how mit strategischem Denken und kreativem Problemlösen. Ich analysiere dein Unternehmen, identifiziere konkrete KI-Potenziale und begleite die Umsetzung – von der Strategie über die Konzeption bis zum laufenden, automatisierten System.' },
+              },
+              {
+                '@type': 'Question',
+                name: 'Für welche Unternehmen ist KI-Beratung geeignet?',
+                acceptedAnswer: { '@type': 'Answer', text: 'KI-Beratung eignet sich für jedes KMU, das wiederkehrende Prozesse hat, Zeit sparen möchte oder digital wachsen will – unabhängig von der Branche. Ob Handwerksbetrieb, Beratungsunternehmen oder Online-Shop: KI lässt sich fast überall sinnvoll einsetzen und bringt messbare Ergebnisse.' },
+              },
+              {
+                '@type': 'Question',
+                name: 'Was kostet eine KI-Beratung bei Marcel Spahr?',
+                acceptedAnswer: { '@type': 'Answer', text: 'Die Erstberatung ist kostenlos und unverbindlich. Konkrete Projekte wie KI-Agenten-Entwicklung, Prozessoptimierung oder Workshop-Durchführung werden individuell nach Aufwand und Projektumfang berechnet. Kontaktiere mich für ein unverbindliches Angebot.' },
+              },
+              {
+                '@type': 'Question',
+                name: 'Wie lange dauert ein typisches KI-Projekt?',
+                acceptedAnswer: { '@type': 'Answer', text: 'Ein erster Quick Win – zum Beispiel ein einfacher KI-Agent oder ein optimierter Prozess – ist oft innerhalb von 2 bis 4 Wochen umgesetzt. Grössere Projekte wie eine vollständige KI-Roadmap oder komplexe Automatisierungen dauern 2 bis 3 Monate. Ich arbeite mit klaren Meilensteinen und regelmässigen Status-Updates.' },
+              },
+              {
+                '@type': 'Question',
+                name: 'Arbeitet Marcel Spahr auch remote oder nur in Bern?',
+                acceptedAnswer: { '@type': 'Answer', text: 'Die meisten Projekte laufen hybrid: Kick-off und wichtige Workshops gerne persönlich in Bern oder direkt bei dir vor Ort, der Rest effizient remote. Ich arbeite mit Kunden in der gesamten Deutschschweiz und darüber hinaus zusammen.' },
+              },
+            ],
+          })}}
+        />
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-12">
+            <span className="text-[#6366f1] text-sm font-semibold tracking-widest uppercase">FAQ</span>
+            <h2 className="mt-2 text-3xl sm:text-4xl font-bold text-white">Häufige Fragen</h2>
+          </div>
+          <div className="space-y-3">
+            {[
+              {
+                q: 'Was macht ein kreativer KI-Unternehmensberater?',
+                a: 'Ein kreativer KI-Unternehmensberater verbindet technisches KI-Know-how mit strategischem Denken und kreativem Problemlösen. Ich analysiere dein Unternehmen, identifiziere konkrete KI-Potenziale und begleite die Umsetzung – von der Strategie über die Konzeption bis zum laufenden, automatisierten System.',
+              },
+              {
+                q: 'Für welche Unternehmen ist KI-Beratung geeignet?',
+                a: 'KI-Beratung eignet sich für jedes KMU, das wiederkehrende Prozesse hat, Zeit sparen möchte oder digital wachsen will – unabhängig von der Branche. Ob Handwerksbetrieb, Beratungsunternehmen oder Online-Shop: KI lässt sich fast überall sinnvoll einsetzen und bringt messbare Ergebnisse.',
+              },
+              {
+                q: 'Was kostet eine KI-Beratung bei Marcel Spahr?',
+                a: 'Die Erstberatung ist kostenlos und unverbindlich. Konkrete Projekte werden individuell nach Aufwand und Projektumfang berechnet. Kontaktiere mich für ein unverbindliches Angebot – ich melde mich innerhalb von 2 Arbeitstagen.',
+              },
+              {
+                q: 'Wie lange dauert ein typisches KI-Projekt?',
+                a: 'Ein erster Quick Win – zum Beispiel ein einfacher KI-Agent oder ein optimierter Prozess – ist oft innerhalb von 2 bis 4 Wochen umgesetzt. Grössere Projekte wie eine vollständige KI-Roadmap dauern 2 bis 3 Monate. Ich arbeite mit klaren Meilensteinen und regelmässigen Status-Updates.',
+              },
+              {
+                q: 'Arbeitet Marcel Spahr auch remote oder nur in Bern?',
+                a: 'Die meisten Projekte laufen hybrid: Kick-off und wichtige Workshops gerne persönlich in Bern oder direkt bei dir vor Ort, der Rest effizient remote. Ich arbeite mit Kunden in der gesamten Deutschschweiz zusammen.',
+              },
+            ].map((item, i) => (
+              <details key={i} className="group rounded-xl border border-[#2d3144] bg-[#1a1d27] overflow-hidden">
+                <summary className="flex items-center justify-between gap-4 px-6 py-4 cursor-pointer list-none hover:bg-[#1e2235] transition-colors">
+                  <span className="font-medium text-white text-sm sm:text-base">{item.q}</span>
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full border border-[#2d3144] flex items-center justify-center text-[#6366f1] text-lg leading-none group-open:rotate-45 transition-transform duration-200">+</span>
+                </summary>
+                <div className="px-6 pb-5 pt-1">
+                  <p className="text-sm text-slate-400 leading-relaxed">{item.a}</p>
+                </div>
+              </details>
+            ))}
           </div>
         </div>
       </section>

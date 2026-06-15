@@ -18,8 +18,15 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const s = getService(params.slug);
   if (!s) return {};
   return {
-    title: `${s.title} – Marcel Spahr`,
+    title: `${s.title} Schweiz | Marcel Spahr`,
     description: s.metaDesc,
+    alternates: { canonical: `https://www.marcelspahr.ch/leistungen/${s.slug}` },
+    openGraph: {
+      title: `${s.title} – Marcel Spahr`,
+      description: s.metaDesc,
+      url: `https://www.marcelspahr.ch/leistungen/${s.slug}`,
+      type: 'website',
+    },
   };
 }
 
@@ -345,8 +352,27 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
 
   const Icon = ICON_MAP[s.iconKey] || Lightbulb;
 
+  const serviceJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: s.title,
+    description: s.metaDesc,
+    url: `https://www.marcelspahr.ch/leistungen/${s.slug}`,
+    provider: {
+      '@type': 'Person',
+      name: 'Marcel Spahr',
+      url: 'https://www.marcelspahr.ch',
+      address: { '@type': 'PostalAddress', addressLocality: 'Bern', addressCountry: 'CH' },
+    },
+    areaServed: { '@type': 'Country', name: 'Schweiz' },
+  };
+
   return (
     <div className="min-h-screen bg-[#0f1117] text-slate-100">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
+      />
 
       {/* ── Nav ── */}
       <header className="fixed top-0 inset-x-0 z-50 border-b border-[#2d3144] bg-[#0f1117]">
