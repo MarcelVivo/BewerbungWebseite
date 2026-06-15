@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import {
   Download, Mail, Globe, MapPin, Phone,
   Briefcase, GraduationCap, Award, Code2, Star,
-  ExternalLink, LogOut, ChevronRight, FileText, Shield,
+  ExternalLink, LogOut, ChevronRight, FileText, Shield, User,
 } from 'lucide-react';
 
 // ── Data ──────────────────────────────────────────────────
@@ -215,12 +215,9 @@ export default function RecruiterPage() {
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
               <div className="h-24 bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-600" />
               <div className="px-6 pb-6 -mt-10">
-                <img
-                  src="/assets/portrait2.jpg"
-                  alt="Marcel Spahr"
-                  className="w-20 h-20 rounded-2xl border-4 border-white object-cover shadow-md mb-3"
-                  onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                />
+                <div className="w-20 h-20 rounded-2xl border-4 border-white shadow-md mb-3 bg-indigo-50 flex items-center justify-center">
+                  <User size={36} className="text-indigo-500" />
+                </div>
                 <h1 className="text-xl font-bold text-slate-900">Marcel Spahr</h1>
                 <p className="text-indigo-600 font-medium text-sm mt-0.5">Wirtschaftsinformatiker & KI-Berater</p>
                 <p className="text-slate-500 text-xs mt-2 flex items-center gap-1.5">

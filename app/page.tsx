@@ -1,12 +1,11 @@
 'use client';
 
 import { useState, useEffect, useRef, FormEvent } from 'react';
-import NextImage from 'next/image';
 import {
   Bot, BarChart3, Workflow, Megaphone, Video, FolderKanban,
   GraduationCap, Globe, Lightbulb, Mail, MapPin, Phone,
   Menu, X, ChevronRight, ExternalLink, FileText, Star,
-  CheckCircle, Zap, Users, Award,
+  CheckCircle, Zap, Users, Award, User,
 } from 'lucide-react';
 
 // ── Translations ──────────────────────────────────────────
@@ -345,7 +344,10 @@ function HeroSection({ t }: { t: typeof T['de'] }) {
         >
           <div className="relative">
             <div className="absolute inset-0 rounded-full bg-[#6366f1]/30 blur-xl scale-110" />
-            <NextImage src="/assets/portrait2.jpg" alt="Marcel Spahr" width={144} height={144} priority className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-full object-cover ring-2 ring-[#6366f1]/50" />
+            <div className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-[#1e2235] ring-2 ring-[#6366f1]/50 flex items-center justify-center">
+              <User size={56} className="text-[#6366f1] sm:hidden" />
+              <User size={72} className="text-[#6366f1] hidden sm:block" />
+            </div>
           </div>
         </div>
       </div>
