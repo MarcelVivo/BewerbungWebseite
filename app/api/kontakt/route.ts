@@ -10,18 +10,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Fehlende Felder' }, { status: 400 });
     }
 
-    const supabase = createClient();
-    const { data, error } = await supabase.from('kontaktanfragen').insert({
-      name,
-      email,
-      nachricht: message,
-      sprache: 'de',
-      status: 'neu',
-    }).select('id').single();
+    // Supabase-Insert versuchen — schlägt fehl wenn Tabelle/RLS fehlt, aber Form bleibt nutzbar
+    let insertedId: string | undefined;
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase.from('kontaktanfragen').insert({
+        name,
+        email,
+        nachricht: message,
+        sprache: 'de',
+        status: 'neu',
+      }).select('id').single();
 
-    if (error) {
-      console.error('Supabase error:', error.message);
-      return NextResponse.json({ error: 'Datenbankfehler' }, { status: 500 });
+      if (error) {
+        console.error('[kontakt] Supabase error:', error.code, error.message);
+      } else {
+        insertedId = data?.id;
+      }
+    } catch (dbErr) {
+      console.error('[kontakt] DB exception:', dbErr);
     }
 
     // E-Mail-Benachrichtigung via Resend (nur wenn API Key gesetzt ist)
@@ -66,7 +73,7 @@ export async function POST(request: Request) {
                 </div>
               </div>
               <div style="padding:16px 32px;background:#1a1d27;border-top:1px solid #2d3144">
-                <p style="margin:0;color:#475569;font-size:11px">marcelspahr.ch · Command Center · Anfrage-ID: ${data?.id || '–'}</p>
+                <p style="margin:0;color:#475569;font-size:11px">marcelspahr.ch · Command Center · Anfrage-ID: ${insertedId || '–'}</p>
               </div>
             </div>
           `,
