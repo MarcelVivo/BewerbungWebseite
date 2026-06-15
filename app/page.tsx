@@ -3,7 +3,7 @@ import {
   Bot, BarChart3, Workflow, Megaphone, Video, FolderKanban,
   GraduationCap, Globe, Lightbulb, Mail, MapPin, Phone,
   ChevronRight, ExternalLink, FileText, Star,
-  CheckCircle, Zap, Users, Award, User,
+  CheckCircle, Zap, Users, Award,
   MessageSquare, Search, Compass, Wrench, Heart,
 } from 'lucide-react';
 import HomeNavBar from './HomeNavBar';
@@ -141,34 +141,40 @@ export default function HomePage() {
       <HomeNavBar />
 
       {/* ── Hero ── */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
-        <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(ellipse 60% 55% at 15% 15%, #c9a84c0b 0%, transparent 70%), radial-gradient(ellipse 50% 45% at 85% 85%, #8b6f3a0d 0%, transparent 70%)' }} />
-        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 text-center">
-          <div className="ms-anim-scale mb-6 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#c9a84c]/40 bg-[#c9a84c]/10 text-[#d4b86a] text-sm font-medium">
-            <Bot size={14} /> Kreativer KI-Unternehmensberater · Bern, Schweiz
-          </div>
-          <h1 style={{ animationDelay: '0.1s' }} className="ms-anim text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight tracking-tight">
-            KI-Intelligenz trifft Kreativität
-          </h1>
-          <p style={{ animationDelay: '0.2s' }} className="ms-anim mt-6 text-lg sm:text-xl text-[#a89880] max-w-2xl mx-auto leading-relaxed">
-            Kreativer KI-Unternehmensberater & Wirtschaftsinformatiker für Schweizer KMU – ich automatisiere, optimiere und digitalisiere deinen Betrieb.
-          </p>
-          <div style={{ animationDelay: '0.3s' }} className="ms-anim mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a href="#contact" className="group flex items-center gap-2 px-6 py-3 rounded-xl bg-[#c9a84c] hover:bg-[#b8943a] text-white font-semibold transition-all shadow-lg shadow-[#c9a84c]/25">
-              Termin buchen
-              <ChevronRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
-            </a>
-            <a href="#about" className="px-6 py-3 rounded-xl border border-[#2d2820] hover:border-slate-500 text-[#d4c4a8] hover:text-white font-medium transition-all">
-              Mehr erfahren
-            </a>
-          </div>
-          <div style={{ animationDelay: '0.45s' }} className="ms-anim mt-16 flex justify-center">
-            <div className="relative">
-              <div className="absolute inset-0 rounded-full bg-[#c9a84c]/15" />
-              <div className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-[#231e15] ring-2 ring-[#c9a84c]/50 flex items-center justify-center">
-                <User size={56} className="text-[#c9a84c] sm:hidden" />
-                <User size={72} className="text-[#c9a84c] hidden sm:block" />
-              </div>
+      <section className="relative min-h-screen overflow-hidden pt-16">
+        {/* Background photo */}
+        <div className="absolute inset-0">
+          <img
+            src="/assets/MarcelSpahrHeader.jpg"
+            alt="Marcel Spahr – KI-Unternehmensberater Bern"
+            className="w-full h-full object-cover object-top"
+          />
+          {/* Gradient: subtle top-dark for nav readability → transparent mid → strong dark at bottom */}
+          <div className="absolute inset-0" style={{
+            background: 'linear-gradient(to bottom, rgba(12,10,6,0.45) 0%, rgba(12,10,6,0.10) 22%, rgba(12,10,6,0.15) 48%, rgba(12,10,6,0.72) 66%, rgba(12,10,6,0.94) 80%, #0c0a06 93%)'
+          }} />
+        </div>
+
+        {/* Text – positioned in lower portion, over the dark fade */}
+        <div className="absolute bottom-0 left-0 right-0 z-10 pb-16 sm:pb-24">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+            <div className="ms-anim-scale mb-5 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#c9a84c]/40 bg-[#c9a84c]/10 text-[#d4b86a] text-sm font-medium backdrop-blur-sm">
+              <Bot size={14} /> Kreativer KI-Unternehmensberater · Bern, Schweiz
+            </div>
+            <h1 style={{ animationDelay: '0.1s' }} className="ms-anim text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight tracking-tight drop-shadow-lg">
+              KI-Intelligenz trifft Kreativität
+            </h1>
+            <p style={{ animationDelay: '0.2s' }} className="ms-anim mt-5 text-lg sm:text-xl text-[#d4c4a8] max-w-2xl mx-auto leading-relaxed drop-shadow">
+              Kreativer KI-Unternehmensberater & Wirtschaftsinformatiker für Schweizer KMU – ich automatisiere, optimiere und digitalisiere deinen Betrieb.
+            </p>
+            <div style={{ animationDelay: '0.3s' }} className="ms-anim mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+              <a href="#contact" className="group flex items-center gap-2 px-6 py-3 rounded-xl bg-[#c9a84c] hover:bg-[#b8943a] text-[#0c0a06] font-bold transition-all shadow-lg shadow-[#c9a84c]/30">
+                Termin buchen
+                <ChevronRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
+              </a>
+              <a href="#about" className="px-6 py-3 rounded-xl border border-[#f4edd8]/25 hover:border-[#f4edd8]/60 text-[#f4edd8] font-medium transition-all backdrop-blur-sm">
+                Mehr erfahren
+              </a>
             </div>
           </div>
         </div>
