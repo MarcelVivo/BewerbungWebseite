@@ -97,7 +97,7 @@ export default function HomePage() {
             <div>
               <p className="text-lg text-[#d4c4a8] leading-relaxed">{t.about.text}</p>
               <div className="mt-8 flex gap-4">
-                <a href="https://www.linkedin.com/in/marcelspahr" target="_blank" rel="noreferrer"
+                <a href="https://www.linkedin.com/in/marcel-spahr-901568304" target="_blank" rel="noreferrer"
                   className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#2d2820] hover:border-[#c9a84c] text-[#a89880] hover:text-[#c9a84c] text-sm transition-all">
                   <ExternalLink size={16} /> {t.about.linkedin}
                 </a>

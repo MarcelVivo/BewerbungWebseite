@@ -72,7 +72,7 @@ const jsonLd = [
       addressRegion: 'BE',
       addressCountry: 'CH',
     },
-    sameAs: ['https://www.linkedin.com/in/marcelspahr'],
+    sameAs: ['https://www.linkedin.com/in/marcel-spahr-901568304'],
     knowsAbout: [
       'Künstliche Intelligenz', 'KI-Agenten', 'Prozessautomatisierung',
       'Business Analyse', 'Wirtschaftsinformatik', 'Digital Marketing',
