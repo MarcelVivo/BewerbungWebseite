@@ -4,6 +4,7 @@ import {
   GraduationCap, Globe, Lightbulb, Mail, MapPin, Phone,
   ChevronRight, ExternalLink, FileText, Star,
   CheckCircle, Zap, Users, Award, User,
+  MessageSquare, Search, Compass, Wrench, Heart,
 } from 'lucide-react';
 import HomeNavBar from './HomeNavBar';
 import ContactFormClient from './ContactFormClient';
@@ -85,6 +86,51 @@ const USP_POINTS = [
   { icon: Users,       title: 'Kundennähe & Empathie',     desc: '15 Jahre im direkten Kundenkontakt bei Swisscom haben mein Gespür für Menschen geschärft.' },
   { icon: CheckCircle, title: 'Ganzheitlicher Ansatz',     desc: 'Von der Analyse über das Konzept bis zur Umsetzung – alles aus einer Hand.' },
   { icon: Award,       title: 'Kontinuierliches Lernen',   desc: 'HF Wirtschaftsinformatik, SAFe, Scrum, KI-Zertifikate – ich bilde mich laufend weiter.' },
+];
+
+// ── Process Steps ─────────────────────────────────────────
+
+const PROCESS_STEPS = [
+  {
+    icon:    MessageSquare,
+    num:     '01',
+    title:   'Erstgespräch',
+    badge:   'Kostenlos',
+    tagline: 'Kennenlernen & Ziele verstehen',
+    desc:    'Wir sprechen 30 Minuten über dein Unternehmen, deine aktuellen Herausforderungen und was du erreichen möchtest. Ohne Verpflichtung – ich höre zu, bevor ich etwas vorschlage.',
+  },
+  {
+    icon:    Search,
+    num:     '02',
+    title:   'Analyse',
+    badge:   'Woche 1–2',
+    tagline: 'Verstehen, wo du stehst',
+    desc:    'Ich analysiere deine Prozesse, Daten und Potenziale. Damit wir von Anfang an das Richtige angehen – und keine Zeit mit falschen Lösungen verlieren.',
+  },
+  {
+    icon:    Compass,
+    num:     '03',
+    title:   'Konzept & Strategie',
+    badge:   'Woche 2–3',
+    tagline: 'Den richtigen Weg definieren',
+    desc:    'Ich entwickle einen massgeschneiderten Plan mit konkreten Massnahmen, Zeitplan und realistischen Ergebnissen – transparent und gemeinsam mit dir validiert.',
+  },
+  {
+    icon:    Wrench,
+    num:     '04',
+    title:   'Umsetzung',
+    badge:   'ab Woche 3',
+    tagline: 'Konkret und zügig handeln',
+    desc:    'Die definierten Massnahmen werden professionell umgesetzt – ob KI-Agent, Prozessoptimierung oder Marketing-Strategie. Du wirst dabei laufend informiert und einbezogen.',
+  },
+  {
+    icon:    Heart,
+    num:     '05',
+    title:   'Begleitung',
+    badge:   'Dauerhaft',
+    tagline: 'Langfristig an deiner Seite',
+    desc:    'Ich bleibe dein Ansprechpartner. Ob Fragen, neue Ideen oder Anpassungen – ich bin für dich da und sorge dafür, dass die Ergebnisse nachhaltig wirken.',
+  },
 ];
 
 // ── Page ──────────────────────────────────────────────────
@@ -263,6 +309,81 @@ export default function HomePage() {
                 </div>
               );
             })}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Vorgehen / Prozess ── */}
+      <section id="prozess" className="py-24 px-4 sm:px-6 bg-[#0c0e14]">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-16">
+            <span className="inline-block border border-[#2d3144] text-slate-400 text-xs font-semibold uppercase tracking-widest px-4 py-1.5 rounded-full mb-5">Ablauf</span>
+            <h2 className="text-3xl sm:text-4xl font-bold">
+              <span className="text-white">So arbeiten </span>
+              <span className="text-[#6366f1]">wir zusammen</span>
+            </h2>
+            <p className="mt-3 text-slate-400 max-w-xl mx-auto">
+              Ein strukturierter, transparenter Prozess – damit du immer weisst, was als Nächstes kommt.
+            </p>
+          </div>
+
+          {/* Timeline */}
+          <div className="relative">
+            {/* Vertical line – desktop only */}
+            <div className="hidden md:block absolute left-1/2 top-6 bottom-6 w-px bg-[#2d3144] -translate-x-1/2 z-0" />
+
+            <div className="space-y-4 md:space-y-0">
+              {PROCESS_STEPS.map((step, i) => {
+                const isLeft = i % 2 === 0;
+                const Icon  = step.icon;
+                const card  = (
+                  <div className="rounded-xl border border-[#2d3144] bg-[#1a1d27] p-5 hover:border-[#6366f1]/40 transition-colors">
+                    <div className="flex items-start gap-3 mb-3">
+                      <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-[#6366f1]/10 flex items-center justify-center text-[#818cf8]">
+                        <Icon size={17} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-semibold text-white">{step.title}</span>
+                          <span className="text-[11px] text-slate-500 bg-[#252836] px-2 py-0.5 rounded-full">{step.badge}</span>
+                        </div>
+                        <p className="text-xs font-medium mt-0.5 text-[#818cf8]">{step.tagline}</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-slate-400 leading-relaxed">{step.desc}</p>
+                  </div>
+                );
+
+                return (
+                  <div key={i} className="md:py-3">
+                    {/* Mobile */}
+                    <div className="flex items-start gap-3 md:hidden">
+                      <div className="flex-shrink-0 mt-1 w-8 h-8 rounded-full border border-[#6366f1]/50 bg-[#0f1117] flex items-center justify-center">
+                        <span className="text-[10px] font-bold text-[#6366f1]">{step.num}</span>
+                      </div>
+                      <div className="flex-1">{card}</div>
+                    </div>
+
+                    {/* Desktop zigzag */}
+                    <div className="hidden md:grid grid-cols-[1fr_80px_1fr] items-center gap-6">
+                      <div>{isLeft  ? card : null}</div>
+                      <div className="flex justify-center relative z-10">
+                        <div className="w-12 h-12 rounded-full border-2 border-[#6366f1]/50 bg-[#0f1117] flex items-center justify-center shadow-lg shadow-[#6366f1]/10">
+                          <span className="text-sm font-bold text-[#6366f1]">{step.num}</span>
+                        </div>
+                      </div>
+                      <div>{!isLeft ? card : null}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="mt-12 text-center">
+            <a href="#contact" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#6366f1] hover:bg-[#5254cc] text-white font-semibold transition-all shadow-lg shadow-[#6366f1]/25">
+              Jetzt Erstgespräch buchen <ChevronRight size={16} />
+            </a>
           </div>
         </div>
       </section>

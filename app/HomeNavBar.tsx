@@ -7,6 +7,7 @@ const NAV_LINKS = [
   { href: '#about',     label: 'Über mich' },
   { href: '#services',  label: 'Leistungen' },
   { href: '#portfolio', label: 'Portfolio' },
+  { href: '#prozess',   label: 'Ablauf' },
   { href: '#contact',   label: 'Kontakt' },
 ];
 
