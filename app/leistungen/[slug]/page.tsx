@@ -212,7 +212,7 @@ function VisualWorkshop({ color }: { color: string }) {
     {
       num: '01',
       title: 'KI-Grundlagen & Tools',
-      items: ['Was ist KI / ChatGPT / Copilot?', 'Wie schreibe ich gute Prompts?', 'Dos & Don'ts im Alltag', 'Live-Demo mit euren Beispielen'],
+      items: ['Was ist KI / ChatGPT / Copilot?', 'Wie schreibe ich gute Prompts?', 'Dos & Don’ts im Alltag', 'Live-Demo mit euren Beispielen'],
       duration: '1.5 Stunden',
     },
     {
