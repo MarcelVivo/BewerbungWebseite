@@ -34,10 +34,12 @@ export async function POST(request: Request) {
       console.error('[kontakt] DB exception:', dbErr);
     }
 
-    // E-Mail-Benachrichtigung via Resend (nur wenn API Key gesetzt ist)
+    // E-Mail-Benachrichtigungen via Resend (nur wenn API Key gesetzt ist)
     if (process.env.RESEND_API_KEY) {
+      const resend = new Resend(process.env.RESEND_API_KEY);
+
+      // 1. Benachrichtigung an Marcel
       try {
-        const resend = new Resend(process.env.RESEND_API_KEY);
         await resend.emails.send({
           from: 'noreply@marcelspahr.ch',
           to:   'kontakt@marcelspahr.ch',
@@ -82,8 +84,52 @@ export async function POST(request: Request) {
           `,
         });
       } catch (emailErr) {
-        // E-Mail-Fehler nicht an Client zurückgeben — Anfrage ist trotzdem gespeichert
-        console.error('Resend error:', emailErr);
+        console.error('Resend error (Marcel):', emailErr);
+      }
+
+      // 2. Automatische Bestätigung an Kunde
+      try {
+        await resend.emails.send({
+          from: 'Marcel Spahr <kontakt@marcelspahr.ch>',
+          to:   email,
+          subject: 'Vielen Dank für Ihre Anfrage – Marcel Spahr',
+          html: `
+            <div style="font-family:sans-serif;max-width:600px;margin:0 auto;background:#ffffff;color:#1e293b;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0">
+              <div style="background:#6366f1;padding:28px 32px">
+                <h1 style="margin:0;color:white;font-size:22px;font-weight:700">Vielen Dank, ${name}!</h1>
+                <p style="margin:6px 0 0;color:#c7d2fe;font-size:14px">Ihre Anfrage ist bei mir eingegangen.</p>
+              </div>
+              <div style="padding:32px">
+                <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#334155">
+                  Guten Tag ${name},
+                </p>
+                <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#334155">
+                  vielen Dank für Ihre Nachricht. Ich habe Ihre Anfrage erhalten und melde mich innerhalb von
+                  <strong>2 Arbeitstagen</strong> persönlich bei Ihnen.
+                </p>
+                <div style="background:#f8fafc;border-radius:8px;padding:20px;border-left:3px solid #6366f1;margin:24px 0">
+                  <p style="margin:0 0 8px;color:#64748b;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;font-weight:600">Ihre Nachricht</p>
+                  <p style="margin:0;color:#475569;font-size:14px;line-height:1.7;white-space:pre-wrap">${message}</p>
+                </div>
+                <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#334155">
+                  Bei dringenden Anliegen können Sie mich direkt unter
+                  <a href="mailto:kontakt@marcelspahr.ch" style="color:#6366f1;text-decoration:none;font-weight:600">kontakt@marcelspahr.ch</a>
+                  erreichen.
+                </p>
+                <p style="margin:0;font-size:15px;line-height:1.7;color:#334155">
+                  Freundliche Grüsse<br/>
+                  <strong>Marcel Spahr</strong><br/>
+                  <span style="color:#64748b;font-size:13px">KI-Berater & Wirtschaftsinformatiker · Bern, Schweiz</span>
+                </p>
+              </div>
+              <div style="padding:16px 32px;background:#f8fafc;border-top:1px solid #e2e8f0;text-align:center">
+                <a href="https://www.marcelspahr.ch" style="color:#6366f1;font-size:13px;text-decoration:none">www.marcelspahr.ch</a>
+              </div>
+            </div>
+          `,
+        });
+      } catch (emailErr) {
+        console.error('Resend error (Kunde):', emailErr);
       }
     }
 
