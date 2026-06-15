@@ -10,10 +10,10 @@ const inter = Inter({
 
 export const metadata = {
   title: {
-    default: 'Marcel Spahr – Kreativer KI-Unternehmensberater Schweiz',
+    default: 'Marcel Spahr – KI & Digitalisierungsberater Schweiz',
     template: '%s | Marcel Spahr',
   },
-  description: 'Marcel Spahr – Kreativer KI-Unternehmensberater & Wirtschaftsinformatiker für Schweizer KMU. KI-Agenten, Prozessautomatisierung, Business Analyse und Digital Marketing. Bern, Schweiz.',
+  description: 'Marcel Spahr – KI & Digitalisierungsberater für Schweizer KMU. KI-Agenten, Prozessautomatisierung, Business Analyse und Digital Marketing. Bern, Schweiz.',
   keywords: [
     'KI-Unternehmensberater Schweiz',
     'kreativer KI-Unternehmensberater',
@@ -31,8 +31,8 @@ export const metadata = {
   creator: 'Marcel Spahr',
   metadataBase: new URL('https://www.marcelspahr.ch'),
   openGraph: {
-    title: 'Marcel Spahr – Kreativer KI-Unternehmensberater Schweiz',
-    description: 'KI-Unternehmensberater & Wirtschaftsinformatiker für Schweizer KMU – KI-Agenten, Automatisierung, Prozessoptimierung und Digital Marketing. Bern, Schweiz.',
+    title: 'Marcel Spahr – KI & Digitalisierungsberater Schweiz',
+    description: 'KI & Digitalisierungsberater für Schweizer KMU – KI-Agenten, Automatisierung, Prozessoptimierung und Digital Marketing. Bern, Schweiz.',
     url: 'https://www.marcelspahr.ch',
     siteName: 'Marcel Spahr',
     locale: 'de_CH',
@@ -41,8 +41,8 @@ export const metadata = {
   },
   twitter: {
     card: 'summary',
-    title: 'Marcel Spahr – Kreativer KI-Unternehmensberater Schweiz',
-    description: 'KI-Unternehmensberater & Wirtschaftsinformatiker für Schweizer KMU.',
+    title: 'Marcel Spahr – KI & Digitalisierungsberater Schweiz',
+    description: 'KI & Digitalisierungsberater für Schweizer KMU. Bern, Schweiz.',
     images: ['https://www.marcelspahr.ch/assets/portrait.jpg'],
   },
   robots: {
@@ -61,8 +61,8 @@ const jsonLd = [
     name: 'Marcel Spahr',
     url: 'https://www.marcelspahr.ch',
     image: 'https://www.marcelspahr.ch/assets/portrait.jpg',
-    jobTitle: 'Kreativer KI-Unternehmensberater & Wirtschaftsinformatiker',
-    description: 'Kreativer KI-Unternehmensberater mit 15 Jahren Erfahrung bei Swisscom. Spezialisiert auf KI-Agenten, Prozessautomatisierung und Digitalisierung für Schweizer KMU.',
+    jobTitle: 'KI & Digitalisierungsberater | Wirtschaftsinformatiker',
+    description: 'KI & Digitalisierungsberater mit 15 Jahren Erfahrung bei Swisscom. Spezialisiert auf KI-Agenten, Prozessautomatisierung und Digitalisierung für Schweizer KMU.',
     telephone: '+41795110911',
     email: 'kontakt@marcelspahr.ch',
     address: {
@@ -89,10 +89,10 @@ const jsonLd = [
   {
     '@context': 'https://schema.org',
     '@type': 'ProfessionalService',
-    name: 'Marcel Spahr – KI-Unternehmensberater',
+    name: 'Marcel Spahr – KI & Digitalisierungsberater',
     url: 'https://www.marcelspahr.ch',
     image: 'https://www.marcelspahr.ch/assets/portrait.jpg',
-    description: 'Kreativer KI-Unternehmensberater für Schweizer KMU. KI-Agenten, Prozessautomatisierung, Business Analyse, Digital Marketing und Website-Optimierung.',
+    description: 'KI & Digitalisierungsberater für Schweizer KMU. KI-Agenten, Prozessautomatisierung, Business Analyse, Digital Marketing und Website-Optimierung.',
     telephone: '+41795110911',
     email: 'kontakt@marcelspahr.ch',
     address: {
