@@ -24,36 +24,40 @@ export default function LoginPage() {
     }
   }
 
+  const inputCls = 'w-full rounded-lg bg-[#1c1912] border border-[#2d2820] focus:border-[#c9a84c] focus:ring-1 focus:ring-[#c9a84c] outline-none px-3 py-2 text-[#f4edd8] placeholder-[#7a6d5a] text-sm transition-colors';
+
   return (
-    <main className="min-h-screen flex items-center justify-center p-4 bg-ms-50">
-      <form onSubmit={onSubmit} className="bg-white/95 border border-sky-100 shadow-lg rounded-2xl p-8 w-full max-w-md space-y-4">
+    <main className="min-h-screen flex items-center justify-center p-4 bg-[#0c0a06]">
+      <form onSubmit={onSubmit} className="border border-[#2d2820] bg-[#1c1912] shadow-xl rounded-2xl p-8 w-full max-w-md space-y-4">
         <div className="flex flex-col items-center text-center space-y-3">
-          <div className="w-24 h-24 rounded-full bg-sky-100 border-2 border-sky-200 flex items-center justify-center">
-            <User size={44} className="text-sky-600" />
+          <div className="w-20 h-20 rounded-full border-2 border-[#c9a84c]/40 bg-[#c9a84c]/10 flex items-center justify-center">
+            <User size={40} className="text-[#c9a84c]" />
           </div>
-          <div className="text-lg font-semibold text-slate-900">Marcel Spahr</div>
-          <div className="text-sm text-slate-600">Herzlich willkommen auf meiner persönlichen Bewerbungsseite</div>
+          <div className="text-lg font-semibold text-[#f4edd8]">Marcel Spahr</div>
+          <div className="text-sm text-[#a89880]">Herzlich willkommen</div>
         </div>
         <div className="space-y-1 text-center">
-          <div className="text-base font-semibold text-slate-900">Geschützter Bewerbungsbereich</div>
-          <div className="text-sm text-slate-600">Bitte mit den Logindaten anmelden, um meinen Lebenslauf, Diplome und Projektdokumente einzusehen.</div>
-          <div className="text-xs text-slate-500">(Der Zugang dauert nur wenige Sekunden.)</div>
+          <div className="text-base font-semibold text-[#f4edd8]">Geschützter Bereich</div>
+          <div className="text-sm text-[#a89880]">Bitte mit den Logindaten anmelden, um Lebenslauf, Diplome und Projektdokumente einzusehen.</div>
         </div>
         <div className="space-y-3">
-          <label className="block text-sm font-medium text-slate-700">Benutzername</label>
-          <input className="w-full rounded-lg border border-slate-300 focus:border-ms-600 focus:ring-ms-600 px-3 py-2" value={username} onChange={(e)=>setUsername(e.target.value)} required />
-          <label className="block text-sm font-medium text-slate-700">Passwort</label>
-          <input type="password" className="w-full rounded-lg border border-slate-300 focus:border-ms-600 focus:ring-ms-600 px-3 py-2" value={password} onChange={(e)=>setPassword(e.target.value)} required />
+          <label className="block text-sm font-medium text-[#d4c4a8]">Benutzername</label>
+          <input className={inputCls} value={username} onChange={(e) => setUsername(e.target.value)} required />
+          <label className="block text-sm font-medium text-[#d4c4a8]">Passwort</label>
+          <input type="password" className={inputCls} value={password} onChange={(e) => setPassword(e.target.value)} required />
         </div>
-        {error && <div className="text-red-600 text-sm">{error}</div>}
+        {error && <div className="text-[#c4897a] text-sm bg-[#c4897a]/10 rounded-lg px-3 py-2">{error}</div>}
         <button
-          className="w-full rounded-lg bg-ms-600 hover:bg-ms-700 text-white py-3 font-semibold shadow-md shadow-sky-200 text-center"
+          className="w-full rounded-lg bg-[#c9a84c] hover:bg-[#b8943a] text-[#0c0a06] py-3 font-bold shadow-lg shadow-[#c9a84c]/20 transition-all"
           type="submit"
-          style={{ backgroundColor: '#0284c7' }}
         >
-          Bewerbungsunterlagen öffnen
+          Einloggen
         </button>
-        <div className="text-xs text-slate-500 text-center">Falls nicht bekannt, können Benutzername und Passwort unter <a className="underline text-ms-700" href="mailto:kontakt@marcelspahr.ch">kontakt@marcelspahr.ch</a> angefordert werden</div>
+        <div className="text-xs text-[#7a6d5a] text-center">
+          Falls nicht bekannt, können Zugangsdaten unter{' '}
+          <a className="underline text-[#c9a84c]" href="mailto:kontakt@marcelspahr.ch">kontakt@marcelspahr.ch</a>{' '}
+          angefordert werden.
+        </div>
       </form>
     </main>
   );

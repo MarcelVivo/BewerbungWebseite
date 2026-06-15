@@ -2,16 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
-/* CSS Custom Properties – Repliziert das bisherige CDN-Tailwind-Config */
+/* ── Palette A: Noir & Or ──────────────────────────────── */
 :root {
-  --ms-50:  #f0f8ff;
-  --ms-100: #e0f2fe;
-  --ms-200: #bae6fd;
-  --ms-300: #7dd3fc;
-  --ms-400: #38bdf8;
-  --ms-500: #0ea5e9;
-  --ms-600: #0284c7;
-  --ms-700: #0369a1;
+  --gold:         #c9a84c;
+  --gold-hover:   #b8943a;
+  --gold-light:   #d4b86a;
+  --gold-pale:    #e8d090;
+  --gold-ghost:   #f0e0a8;
+  --bg-base:      #0c0a06;
+  --bg-alt:       #100d09;
+  --surface:      #1c1912;
+  --surface-hover:#231e15;
+  --surface-badge:#221e14;
+  --border:       #2d2820;
+  --text-primary: #f4edd8;
+  --text-secondary:#d4c4a8;
+  --text-muted:   #a89880;
+  --text-faint:   #7a6d5a;
+}
+
+/* Subtle warm background gradient */
+body {
+  background:
+    radial-gradient(ellipse 70% 45% at 15% 5%, #c9a84c0b 0%, transparent 65%),
+    radial-gradient(ellipse 50% 35% at 85% 90%, #8b6f3a07 0%, transparent 60%),
+    #0c0a06;
 }
 
 /* Page animations – no JS needed, runs immediately from CSS */

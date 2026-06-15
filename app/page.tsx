@@ -33,42 +33,42 @@ const PORTFOLIO = [
     title: 'Swiss COVID Certificate App',
     desc: 'Software-Architektur und technische Dokumentation der schweizweiten COVID-Zertifikats-App.',
     url: '/assets/SWISS_COVID_CERT_APP_SoftwareArchitektur.pdf',
-    color: '#6366f1',
+    color: '#a896c8',
   },
   {
     tag: 'Requirements Engineering',
     title: 'Software & Requirements Engineering',
     desc: 'Abschlussarbeit zu modernen Requirements-Engineering-Methoden: User Stories, BPMN und agile Anforderungserfassung.',
     url: '/assets/FinalArbeitSoftwareundRequirementsEngineering.pdf',
-    color: '#06b6d4',
+    color: '#7aada8',
   },
   {
     tag: 'Digital Marketing',
     title: "Olivia's Olivenpaste",
     desc: 'Vollständige Digital-Marketing-Strategie für ein Schweizer KMU: Markenaufbau, Social-Media-Konzept und Content-Plan.',
     url: '/assets/OliviasOlivenpaste_MarcelSpahr.pdf',
-    color: '#22c55e',
+    color: '#8fb58a',
   },
   {
     tag: 'Event & Marketing',
     title: '90s Love Mobile – Streetparade',
     desc: 'Konzeption und Vermarktung eines Love Mobiles an der Streetparade Zürich – von Sponsoring bis Social-Media-Kampagne.',
     url: '/assets/90sLoveMobileProjektarbeit_Digital Marketing-Final.pdf',
-    color: '#f59e0b',
+    color: '#c4926a',
   },
   {
     tag: 'Leadership',
     title: 'Persönliches Führungshandbuch',
     desc: 'Reflexion eigener Führungsprinzipien und Entwicklung eines persönlichen Führungsansatzes basierend auf modernen Leadership-Theorien.',
     url: '/assets/Personliches_Fuhrungshandbuch_MarcelSpahr.pdf',
-    color: '#ec4899',
+    color: '#c4897a',
   },
   {
     tag: 'Prozessoptimierung',
     title: 'Digitalisierung @ Swisscom',
     desc: '15 Jahre Mitgestaltung der digitalen Transformation: Prozessautomatisierung, Reporting-Pipelines und Stakeholder-Management.',
     url: null,
-    color: '#8b5cf6',
+    color: '#7a9bb5',
   },
 ];
 
@@ -137,37 +137,37 @@ const PROCESS_STEPS = [
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-[#0f1117] text-slate-100">
+    <div className="min-h-screen bg-[#0c0a06] text-[#f4edd8]">
       <HomeNavBar />
 
       {/* ── Hero ── */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
-        <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(ellipse 60% 55% at 15% 15%, #6366f118 0%, transparent 70%), radial-gradient(ellipse 50% 45% at 85% 85%, #06b6d40d 0%, transparent 70%)' }} />
+        <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(ellipse 60% 55% at 15% 15%, #c9a84c0b 0%, transparent 70%), radial-gradient(ellipse 50% 45% at 85% 85%, #8b6f3a0d 0%, transparent 70%)' }} />
         <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 text-center">
-          <div className="ms-anim-scale mb-6 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#6366f1]/40 bg-[#6366f1]/10 text-[#a5b4fc] text-sm font-medium">
+          <div className="ms-anim-scale mb-6 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#c9a84c]/40 bg-[#c9a84c]/10 text-[#d4b86a] text-sm font-medium">
             <Bot size={14} /> Kreativer KI-Unternehmensberater · Bern, Schweiz
           </div>
           <h1 style={{ animationDelay: '0.1s' }} className="ms-anim text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight tracking-tight">
             KI-Intelligenz trifft Kreativität
           </h1>
-          <p style={{ animationDelay: '0.2s' }} className="ms-anim mt-6 text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
+          <p style={{ animationDelay: '0.2s' }} className="ms-anim mt-6 text-lg sm:text-xl text-[#a89880] max-w-2xl mx-auto leading-relaxed">
             Kreativer KI-Unternehmensberater & Wirtschaftsinformatiker für Schweizer KMU – ich automatisiere, optimiere und digitalisiere deinen Betrieb.
           </p>
           <div style={{ animationDelay: '0.3s' }} className="ms-anim mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a href="#contact" className="group flex items-center gap-2 px-6 py-3 rounded-xl bg-[#6366f1] hover:bg-[#5254cc] text-white font-semibold transition-all shadow-lg shadow-[#6366f1]/25">
+            <a href="#contact" className="group flex items-center gap-2 px-6 py-3 rounded-xl bg-[#c9a84c] hover:bg-[#b8943a] text-white font-semibold transition-all shadow-lg shadow-[#c9a84c]/25">
               Termin buchen
               <ChevronRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
             </a>
-            <a href="#about" className="px-6 py-3 rounded-xl border border-[#2d3144] hover:border-slate-500 text-slate-300 hover:text-white font-medium transition-all">
+            <a href="#about" className="px-6 py-3 rounded-xl border border-[#2d2820] hover:border-slate-500 text-[#d4c4a8] hover:text-white font-medium transition-all">
               Mehr erfahren
             </a>
           </div>
           <div style={{ animationDelay: '0.45s' }} className="ms-anim mt-16 flex justify-center">
             <div className="relative">
-              <div className="absolute inset-0 rounded-full bg-[#6366f1]/15" />
-              <div className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-[#1e2235] ring-2 ring-[#6366f1]/50 flex items-center justify-center">
-                <User size={56} className="text-[#6366f1] sm:hidden" />
-                <User size={72} className="text-[#6366f1] hidden sm:block" />
+              <div className="absolute inset-0 rounded-full bg-[#c9a84c]/15" />
+              <div className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-[#231e15] ring-2 ring-[#c9a84c]/50 flex items-center justify-center">
+                <User size={56} className="text-[#c9a84c] sm:hidden" />
+                <User size={72} className="text-[#c9a84c] hidden sm:block" />
               </div>
             </div>
           </div>
@@ -178,21 +178,21 @@ export default function HomePage() {
       <section id="about" className="py-24 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <span className="text-[#6366f1] text-sm font-semibold tracking-widest uppercase">About</span>
+            <span className="text-[#c9a84c] text-sm font-semibold tracking-widest uppercase">About</span>
             <h2 className="mt-2 text-3xl sm:text-4xl font-bold text-white">Über mich</h2>
           </div>
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <p className="text-lg text-slate-300 leading-relaxed">
+              <p className="text-lg text-[#d4c4a8] leading-relaxed">
                 Ich bin Marcel Spahr – der Wirtschaftsinformatiker, der denkt wie ein Kreativdirektor. Bei Swisscom habe ich 15 Jahre lang gelernt, wie grosse Unternehmen funktionieren. Heute bringe ich dieses Wissen zu Schweizer KMU – gepaart mit modernster KI, Prozessautomatisierung und einer Leidenschaft für Innovation.
               </p>
               <div className="mt-8 flex gap-4">
                 <a href="https://www.linkedin.com/in/marcelspahr" target="_blank" rel="noreferrer"
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#2d3144] hover:border-[#6366f1] text-slate-400 hover:text-[#6366f1] text-sm transition-all">
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#2d2820] hover:border-[#c9a84c] text-[#a89880] hover:text-[#c9a84c] text-sm transition-all">
                   <ExternalLink size={16} /> LinkedIn
                 </a>
                 <a href="mailto:kontakt@marcelspahr.ch"
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#2d3144] hover:border-[#6366f1] text-slate-400 hover:text-[#6366f1] text-sm transition-all">
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#2d2820] hover:border-[#c9a84c] text-[#a89880] hover:text-[#c9a84c] text-sm transition-all">
                   <Mail size={16} /> E-Mail
                 </a>
               </div>
@@ -204,8 +204,8 @@ export default function HomePage() {
                 { label: 'Spezialisierung', value: 'KI-Berater seit 2022' },
                 { label: 'Kreativ',         value: 'Grafiker & Werbetechniker' },
               ].map((f, i) => (
-                <div key={i} className="rounded-xl border border-[#2d3144] bg-[#252836] p-5">
-                  <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">{f.label}</div>
+                <div key={i} className="rounded-xl border border-[#2d2820] bg-[#221e14] p-5">
+                  <div className="text-xs text-[#7a6d5a] uppercase tracking-wider mb-1">{f.label}</div>
                   <div className="text-sm font-semibold text-white leading-snug">{f.value}</div>
                 </div>
               ))}
@@ -215,10 +215,10 @@ export default function HomePage() {
       </section>
 
       {/* ── Services ── */}
-      <section id="services" className="py-24 px-4 sm:px-6 bg-[#0c0e14]">
+      <section id="services" className="py-24 px-4 sm:px-6 bg-[#100d09]">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <span className="text-[#6366f1] text-sm font-semibold tracking-widest uppercase">Services</span>
+            <span className="text-[#c9a84c] text-sm font-semibold tracking-widest uppercase">Services</span>
             <h2 className="mt-2 text-3xl sm:text-4xl font-bold text-white">Leistungen</h2>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -226,13 +226,13 @@ export default function HomePage() {
               const Icon = s.icon;
               return (
                 <a key={i} href={`/leistungen/${s.slug}`}
-                  className="group h-full rounded-xl border border-[#2d3144] bg-[#1a1d27] p-6 hover:border-[#6366f1]/50 hover:bg-[#1e2035] transition-all block">
-                  <div className="mb-4 inline-flex p-2.5 rounded-lg bg-[#6366f1]/10 text-[#818cf8] group-hover:bg-[#6366f1]/20 transition-colors">
+                  className="group h-full rounded-xl border border-[#2d2820] bg-[#1c1912] p-6 hover:border-[#c9a84c]/50 hover:bg-[#231e15] transition-all block">
+                  <div className="mb-4 inline-flex p-2.5 rounded-lg bg-[#c9a84c]/10 text-[#d4b86a] group-hover:bg-[#c9a84c]/20 transition-colors">
                     <Icon size={20} />
                   </div>
                   <h3 className="font-semibold text-white mb-2 leading-snug">{s.title}</h3>
-                  <p className="text-sm text-slate-400 leading-relaxed">{s.desc}</p>
-                  <div className="mt-4 flex items-center gap-1 text-xs text-[#6366f1] opacity-0 group-hover:opacity-100 transition-opacity font-medium">
+                  <p className="text-sm text-[#a89880] leading-relaxed">{s.desc}</p>
+                  <div className="mt-4 flex items-center gap-1 text-xs text-[#c9a84c] opacity-0 group-hover:opacity-100 transition-opacity font-medium">
                     Mehr erfahren <ChevronRight size={12} />
                   </div>
                 </a>
@@ -246,13 +246,13 @@ export default function HomePage() {
       <section id="portfolio" className="py-24 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <span className="text-[#6366f1] text-sm font-semibold tracking-widest uppercase">Portfolio</span>
+            <span className="text-[#c9a84c] text-sm font-semibold tracking-widest uppercase">Portfolio</span>
             <h2 className="mt-2 text-3xl sm:text-4xl font-bold text-white">Portfolio</h2>
-            <p className="mt-3 text-slate-400">Ausgewählte Projekte & Arbeiten</p>
+            <p className="mt-3 text-[#a89880]">Ausgewählte Projekte & Arbeiten</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {PORTFOLIO.map((p, i) => (
-              <div key={i} className="group h-full flex flex-col rounded-xl border border-[#2d3144] bg-[#1a1d27] overflow-hidden hover:border-[#6366f1]/40 transition-all">
+              <div key={i} className="group h-full flex flex-col rounded-xl border border-[#2d2820] bg-[#1c1912] overflow-hidden hover:border-[#c9a84c]/40 transition-all">
                 <div className="h-1.5 w-full" style={{ background: p.color }} />
                 <div className="flex-1 p-6 flex flex-col gap-3">
                   <span className="inline-block text-xs font-semibold px-2.5 py-1 rounded-full border"
@@ -260,10 +260,10 @@ export default function HomePage() {
                     {p.tag}
                   </span>
                   <h3 className="font-bold text-white leading-snug">{p.title}</h3>
-                  <p className="text-sm text-slate-400 leading-relaxed flex-1">{p.desc}</p>
+                  <p className="text-sm text-[#a89880] leading-relaxed flex-1">{p.desc}</p>
                   {p.url ? (
                     <a href={p.url} target="_blank" rel="noreferrer"
-                      className="mt-2 inline-flex items-center gap-2 text-sm font-medium text-[#818cf8] hover:text-[#6366f1] transition-colors">
+                      className="mt-2 inline-flex items-center gap-2 text-sm font-medium text-[#d4b86a] hover:text-[#c9a84c] transition-colors">
                       <FileText size={14} /> Dokument ansehen
                     </a>
                   ) : (
@@ -279,18 +279,18 @@ export default function HomePage() {
       </section>
 
       {/* ── Warum Marcel ── */}
-      <section id="references" className="py-24 px-4 sm:px-6 bg-[#0c0e14]">
+      <section id="references" className="py-24 px-4 sm:px-6 bg-[#100d09]">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <span className="text-[#6366f1] text-sm font-semibold tracking-widest uppercase">Referenzen</span>
+            <span className="text-[#c9a84c] text-sm font-semibold tracking-widest uppercase">Referenzen</span>
             <h2 className="mt-2 text-3xl sm:text-4xl font-bold text-white">Warum Marcel?</h2>
-            <p className="mt-3 text-slate-400">Was mich von anderen unterscheidet</p>
+            <p className="mt-3 text-[#a89880]">Was mich von anderen unterscheidet</p>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-16">
             {STATS.map((s, i) => (
-              <div key={i} className="rounded-xl border border-[#2d3144] bg-[#1a1d27] p-6 text-center">
-                <div className="text-3xl font-bold text-[#6366f1] mb-1">{s.value}</div>
-                <div className="text-sm text-slate-400">{s.label}</div>
+              <div key={i} className="rounded-xl border border-[#2d2820] bg-[#1c1912] p-6 text-center">
+                <div className="text-3xl font-bold text-[#c9a84c] mb-1">{s.value}</div>
+                <div className="text-sm text-[#a89880]">{s.label}</div>
               </div>
             ))}
           </div>
@@ -298,13 +298,13 @@ export default function HomePage() {
             {USP_POINTS.map((p, i) => {
               const Icon = p.icon;
               return (
-                <div key={i} className="flex gap-4 rounded-xl border border-[#2d3144] bg-[#1a1d27] p-6 hover:border-[#6366f1]/40 transition-all">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-[#6366f1]/10 flex items-center justify-center text-[#818cf8]">
+                <div key={i} className="flex gap-4 rounded-xl border border-[#2d2820] bg-[#1c1912] p-6 hover:border-[#c9a84c]/40 transition-all">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-[#c9a84c]/10 flex items-center justify-center text-[#d4b86a]">
                     <Icon size={20} />
                   </div>
                   <div>
                     <h3 className="font-semibold text-white mb-1">{p.title}</h3>
-                    <p className="text-sm text-slate-400 leading-relaxed">{p.desc}</p>
+                    <p className="text-sm text-[#a89880] leading-relaxed">{p.desc}</p>
                   </div>
                 </div>
               );
@@ -314,15 +314,15 @@ export default function HomePage() {
       </section>
 
       {/* ── Vorgehen / Prozess ── */}
-      <section id="prozess" className="py-24 px-4 sm:px-6 bg-[#0c0e14]">
+      <section id="prozess" className="py-24 px-4 sm:px-6 bg-[#100d09]">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
-            <span className="inline-block border border-[#2d3144] text-slate-400 text-xs font-semibold uppercase tracking-widest px-4 py-1.5 rounded-full mb-5">Ablauf</span>
+            <span className="inline-block border border-[#2d2820] text-[#a89880] text-xs font-semibold uppercase tracking-widest px-4 py-1.5 rounded-full mb-5">Ablauf</span>
             <h2 className="text-3xl sm:text-4xl font-bold">
               <span className="text-white">So arbeiten </span>
-              <span className="text-[#6366f1]">wir zusammen</span>
+              <span className="text-[#c9a84c]">wir zusammen</span>
             </h2>
-            <p className="mt-3 text-slate-400 max-w-xl mx-auto">
+            <p className="mt-3 text-[#a89880] max-w-xl mx-auto">
               Ein strukturierter, transparenter Prozess – damit du immer weisst, was als Nächstes kommt.
             </p>
           </div>
@@ -330,27 +330,27 @@ export default function HomePage() {
           {/* Timeline */}
           <div className="relative">
             {/* Vertical line – desktop only */}
-            <div className="hidden md:block absolute left-1/2 top-6 bottom-6 w-px bg-[#2d3144] -translate-x-1/2 z-0" />
+            <div className="hidden md:block absolute left-1/2 top-6 bottom-6 w-px bg-[#2d2820] -translate-x-1/2 z-0" />
 
             <div className="space-y-4 md:space-y-0">
               {PROCESS_STEPS.map((step, i) => {
                 const isLeft = i % 2 === 0;
                 const Icon  = step.icon;
                 const card  = (
-                  <div className="rounded-xl border border-[#2d3144] bg-[#1a1d27] p-5 hover:border-[#6366f1]/40 transition-colors">
+                  <div className="rounded-xl border border-[#2d2820] bg-[#1c1912] p-5 hover:border-[#c9a84c]/40 transition-colors">
                     <div className="flex items-start gap-3 mb-3">
-                      <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-[#6366f1]/10 flex items-center justify-center text-[#818cf8]">
+                      <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-[#c9a84c]/10 flex items-center justify-center text-[#d4b86a]">
                         <Icon size={17} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-semibold text-white">{step.title}</span>
-                          <span className="text-[11px] text-slate-500 bg-[#252836] px-2 py-0.5 rounded-full">{step.badge}</span>
+                          <span className="text-[11px] text-[#7a6d5a] bg-[#221e14] px-2 py-0.5 rounded-full">{step.badge}</span>
                         </div>
-                        <p className="text-xs font-medium mt-0.5 text-[#818cf8]">{step.tagline}</p>
+                        <p className="text-xs font-medium mt-0.5 text-[#d4b86a]">{step.tagline}</p>
                       </div>
                     </div>
-                    <p className="text-sm text-slate-400 leading-relaxed">{step.desc}</p>
+                    <p className="text-sm text-[#a89880] leading-relaxed">{step.desc}</p>
                   </div>
                 );
 
@@ -358,8 +358,8 @@ export default function HomePage() {
                   <div key={i} className="md:py-3">
                     {/* Mobile */}
                     <div className="flex items-start gap-3 md:hidden">
-                      <div className="flex-shrink-0 mt-1 w-8 h-8 rounded-full border border-[#6366f1]/50 bg-[#0f1117] flex items-center justify-center">
-                        <span className="text-[10px] font-bold text-[#6366f1]">{step.num}</span>
+                      <div className="flex-shrink-0 mt-1 w-8 h-8 rounded-full border border-[#c9a84c]/50 bg-[#0c0a06] flex items-center justify-center">
+                        <span className="text-[10px] font-bold text-[#c9a84c]">{step.num}</span>
                       </div>
                       <div className="flex-1">{card}</div>
                     </div>
@@ -368,8 +368,8 @@ export default function HomePage() {
                     <div className="hidden md:grid grid-cols-[1fr_80px_1fr] items-center gap-6">
                       <div>{isLeft  ? card : null}</div>
                       <div className="flex justify-center relative z-10">
-                        <div className="w-12 h-12 rounded-full border-2 border-[#6366f1]/50 bg-[#0f1117] flex items-center justify-center shadow-lg shadow-[#6366f1]/10">
-                          <span className="text-sm font-bold text-[#6366f1]">{step.num}</span>
+                        <div className="w-12 h-12 rounded-full border-2 border-[#c9a84c]/50 bg-[#0c0a06] flex items-center justify-center shadow-lg shadow-[#c9a84c]/10">
+                          <span className="text-sm font-bold text-[#c9a84c]">{step.num}</span>
                         </div>
                       </div>
                       <div>{!isLeft ? card : null}</div>
@@ -381,7 +381,7 @@ export default function HomePage() {
           </div>
 
           <div className="mt-12 text-center">
-            <a href="#contact" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#6366f1] hover:bg-[#5254cc] text-white font-semibold transition-all shadow-lg shadow-[#6366f1]/25">
+            <a href="#contact" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#c9a84c] hover:bg-[#b8943a] text-white font-semibold transition-all shadow-lg shadow-[#c9a84c]/25">
               Jetzt Erstgespräch buchen <ChevronRight size={16} />
             </a>
           </div>
@@ -392,7 +392,7 @@ export default function HomePage() {
       <section id="contact" className="py-24 px-4 sm:px-6">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
-            <span className="text-[#6366f1] text-sm font-semibold tracking-widest uppercase">Contact</span>
+            <span className="text-[#c9a84c] text-sm font-semibold tracking-widest uppercase">Contact</span>
             <h2 className="mt-2 text-3xl sm:text-4xl font-bold text-white">Kontakt</h2>
           </div>
           <div className="grid md:grid-cols-[1fr_1.4fr] gap-10">
@@ -403,13 +403,13 @@ export default function HomePage() {
                 { Icon: Mail,   text: 'kontakt@marcelspahr.ch',  href: 'mailto:kontakt@marcelspahr.ch' },
               ].map(({ Icon, text, href }, i) => (
                 <div key={i} className="flex items-center gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-[#6366f1]/10 flex items-center justify-center text-[#818cf8]">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-[#c9a84c]/10 flex items-center justify-center text-[#d4b86a]">
                     <Icon size={18} />
                   </div>
                   {href ? (
-                    <a href={href} className="text-slate-300 hover:text-white transition-colors text-sm">{text}</a>
+                    <a href={href} className="text-[#d4c4a8] hover:text-white transition-colors text-sm">{text}</a>
                   ) : (
-                    <span className="text-slate-300 text-sm">{text}</span>
+                    <span className="text-[#d4c4a8] text-sm">{text}</span>
                   )}
                 </div>
               ))}
@@ -457,7 +457,7 @@ export default function HomePage() {
         />
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-12">
-            <span className="text-[#6366f1] text-sm font-semibold tracking-widest uppercase">FAQ</span>
+            <span className="text-[#c9a84c] text-sm font-semibold tracking-widest uppercase">FAQ</span>
             <h2 className="mt-2 text-3xl sm:text-4xl font-bold text-white">Häufige Fragen</h2>
           </div>
           <div className="space-y-3">
@@ -483,13 +483,13 @@ export default function HomePage() {
                 a: 'Die meisten Projekte laufen hybrid: Kick-off und wichtige Workshops gerne persönlich in Bern oder direkt bei dir vor Ort, der Rest effizient remote. Ich arbeite mit Kunden in der gesamten Deutschschweiz zusammen.',
               },
             ].map((item, i) => (
-              <details key={i} className="group rounded-xl border border-[#2d3144] bg-[#1a1d27] overflow-hidden">
-                <summary className="flex items-center justify-between gap-4 px-6 py-4 cursor-pointer list-none hover:bg-[#1e2235] transition-colors">
+              <details key={i} className="group rounded-xl border border-[#2d2820] bg-[#1c1912] overflow-hidden">
+                <summary className="flex items-center justify-between gap-4 px-6 py-4 cursor-pointer list-none hover:bg-[#231e15] transition-colors">
                   <span className="font-medium text-white text-sm sm:text-base">{item.q}</span>
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full border border-[#2d3144] flex items-center justify-center text-[#6366f1] text-lg leading-none group-open:rotate-45 transition-transform duration-200">+</span>
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full border border-[#2d2820] flex items-center justify-center text-[#c9a84c] text-lg leading-none group-open:rotate-45 transition-transform duration-200">+</span>
                 </summary>
                 <div className="px-6 pb-5 pt-1">
-                  <p className="text-sm text-slate-400 leading-relaxed">{item.a}</p>
+                  <p className="text-sm text-[#a89880] leading-relaxed">{item.a}</p>
                 </div>
               </details>
             ))}
@@ -498,12 +498,12 @@ export default function HomePage() {
       </section>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-[#2d3144] bg-[#0c0e14] py-8 px-4">
+      <footer className="border-t border-[#2d2820] bg-[#100d09] py-8 px-4">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <span className="text-sm text-slate-500">© 2026 Marcel Spahr</span>
+          <span className="text-sm text-[#7a6d5a]">© 2026 Marcel Spahr</span>
           <div className="flex items-center gap-6">
-            <a href="/impressum" className="text-sm text-slate-500 hover:text-slate-300 transition-colors">Impressum</a>
-            <a href="/datenschutz" className="text-sm text-slate-500 hover:text-slate-300 transition-colors">Datenschutz</a>
+            <a href="/impressum" className="text-sm text-[#7a6d5a] hover:text-[#d4c4a8] transition-colors">Impressum</a>
+            <a href="/datenschutz" className="text-sm text-[#7a6d5a] hover:text-[#d4c4a8] transition-colors">Datenschutz</a>
           </div>
         </div>
       </footer>

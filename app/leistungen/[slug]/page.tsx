@@ -39,8 +39,8 @@ const ICON_MAP: Record<string, React.ElementType> = {
 
 function VisualKiAgenten({ color }: { color: string }) {
   return (
-    <div className="rounded-2xl border border-[#2d3144] bg-[#0f1117] p-6 space-y-3">
-      <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-4">Live-Demo: Kunde schreibt, Agent antwortet</p>
+    <div className="rounded-2xl border border-[#2d2820] bg-[#0c0a06] p-6 space-y-3">
+      <p className="text-xs text-[#7a6d5a] uppercase tracking-wider font-semibold mb-4">Live-Demo: Kunde schreibt, Agent antwortet</p>
       {[
         { from: 'Kunde', text: 'Guten Tag, ich möchte eine Bestellung stornieren. Bestellnummer 48291.', align: 'left' },
         { from: 'KI-Agent', text: '✅ Bestellung #48291 gefunden. Stornierung wird sofort verarbeitet. Sie erhalten eine Bestätigung per E-Mail. Rückerstattung innerhalb von 3–5 Werktagen.', align: 'right' },
@@ -51,7 +51,7 @@ function VisualKiAgenten({ color }: { color: string }) {
           <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
             msg.align === 'right'
               ? 'text-white rounded-br-sm'
-              : 'bg-[#1e2235] text-slate-300 rounded-bl-sm'
+              : 'bg-[#231e15] text-[#d4c4a8] rounded-bl-sm'
           }`} style={msg.align === 'right' ? { background: color } : {}}>
             <span className="block text-[10px] font-semibold mb-1 opacity-70">{msg.from}</span>
             {msg.text}
@@ -71,14 +71,13 @@ function VisualBusinessAnalyse({ color }: { color: string }) {
   return (
     <div className="grid sm:grid-cols-2 gap-4">
       {cols.map((col, i) => (
-        <div key={i} className={`rounded-2xl border p-5 space-y-3 ${
-          i === 1 ? 'border-[#06b6d4]/40 bg-[#06b6d408]' : 'border-[#2d3144] bg-[#1a1d27]'
-        }`}>
+        <div key={i} className="rounded-2xl border p-5 space-y-3"
+          style={i === 1 ? { borderColor: `${color}40`, background: `${color}08` } : { borderColor: '#2d2820', background: '#1c1912' }}>
           <p className="font-semibold text-sm" style={{ color: i === 1 ? color : '#64748b' }}>{col.label}</p>
           {col.items.map((item, j) => (
             <div key={j} className="flex items-start gap-2 text-sm">
               <span className="mt-0.5">{i === 1 ? '✓' : '✗'}</span>
-              <span className={i === 1 ? 'text-slate-300' : 'text-slate-500'}>{item}</span>
+              <span className={i === 1 ? 'text-[#d4c4a8]' : 'text-[#7a6d5a]'}>{item}</span>
             </div>
           ))}
         </div>
@@ -108,7 +107,7 @@ function VisualBpmn({ color }: { color: string }) {
           {before.map(b => (
             <div key={b.step} className="flex items-center gap-3 text-sm">
               <span className="flex-shrink-0 w-6 h-6 rounded-full bg-red-500/20 text-red-400 text-xs flex items-center justify-center font-bold">{b.step}</span>
-              <span className="flex-1 text-slate-400">{b.text}</span>
+              <span className="flex-1 text-[#a89880]">{b.text}</span>
               <span className="text-xs text-red-400">{b.time}</span>
             </div>
           ))}
@@ -122,7 +121,7 @@ function VisualBpmn({ color }: { color: string }) {
               <span className="flex-shrink-0 w-6 h-6 rounded-full text-xs flex items-center justify-center font-bold" style={{ background: `${color}30`, color }}>
                 {a.step}
               </span>
-              <span className="flex-1 text-slate-300">{a.text}</span>
+              <span className="flex-1 text-[#d4c4a8]">{a.text}</span>
               <span className="text-xs" style={{ color }}>{a.time}</span>
             </div>
           ))}
@@ -142,22 +141,22 @@ function VisualMarketing({ color }: { color: string }) {
     { label: 'Kunden',       value: '6 neue Aufträge',     pct: 10 },
   ];
   return (
-    <div className="rounded-2xl border border-[#2d3144] bg-[#1a1d27] p-6">
-      <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-5">LinkedIn-Funnel · Monatsdurchschnitt nach 6 Monaten</p>
+    <div className="rounded-2xl border border-[#2d2820] bg-[#1c1912] p-6">
+      <p className="text-xs text-[#7a6d5a] uppercase tracking-wider font-semibold mb-5">LinkedIn-Funnel · Monatsdurchschnitt nach 6 Monaten</p>
       <div className="space-y-3">
         {stages.map((s, i) => (
           <div key={i} className="space-y-1">
             <div className="flex justify-between text-sm">
-              <span className="text-slate-300">{s.label}</span>
-              <span className="text-slate-400">{s.value}</span>
+              <span className="text-[#d4c4a8]">{s.label}</span>
+              <span className="text-[#a89880]">{s.value}</span>
             </div>
-            <div className="h-2 bg-[#2d3144] rounded-full overflow-hidden">
+            <div className="h-2 bg-[#2d2820] rounded-full overflow-hidden">
               <div className="h-full rounded-full transition-all" style={{ width: `${s.pct}%`, background: color, opacity: 1 - i * 0.1 }} />
             </div>
           </div>
         ))}
       </div>
-      <p className="mt-5 text-xs text-slate-500">Organisch, ohne bezahltes Advertising. Nur durch konsistenten, strategischen Content.</p>
+      <p className="mt-5 text-xs text-[#7a6d5a]">Organisch, ohne bezahltes Advertising. Nur durch konsistenten, strategischen Content.</p>
     </div>
   );
 }
@@ -174,16 +173,16 @@ function VisualVideo({ color }: { color: string }) {
     <div className="space-y-3">
       {phases.map((p, i) => (
         <div key={i} className="flex items-center gap-4">
-          <div className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-xl bg-[#1e2235]">{p.icon}</div>
-          <div className="flex-1 rounded-xl border border-[#2d3144] bg-[#1a1d27] px-4 py-3">
+          <div className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-xl bg-[#231e15]">{p.icon}</div>
+          <div className="flex-1 rounded-xl border border-[#2d2820] bg-[#1c1912] px-4 py-3">
             <div className="flex items-center justify-between mb-0.5">
               <span className="font-semibold text-sm text-white">{p.label}</span>
               <span className="text-xs" style={{ color }}>{p.days}</span>
             </div>
-            <span className="text-xs text-slate-400">{p.desc}</span>
+            <span className="text-xs text-[#a89880]">{p.desc}</span>
           </div>
           {i < phases.length - 1 && (
-            <div className="absolute ml-5 mt-10 w-0.5 h-3 bg-[#2d3144]" />
+            <div className="absolute ml-5 mt-10 w-0.5 h-3 bg-[#2d2820]" />
           )}
         </div>
       ))}
@@ -204,8 +203,8 @@ function VisualKanban({ color }: { color: string }) {
         <div key={ci} className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-wider px-1" style={{ color: colors[ci] }}>{col.title}</p>
           {col.tasks.map((t, ti) => (
-            <div key={ti} className="rounded-lg border border-[#2d3144] bg-[#1e2235] px-3 py-2.5">
-              <p className="text-xs text-slate-300 leading-snug">{t}</p>
+            <div key={ti} className="rounded-lg border border-[#2d2820] bg-[#231e15] px-3 py-2.5">
+              <p className="text-xs text-[#d4c4a8] leading-snug">{t}</p>
             </div>
           ))}
         </div>
@@ -238,17 +237,17 @@ function VisualWorkshop({ color }: { color: string }) {
   return (
     <div className="grid sm:grid-cols-3 gap-4">
       {modules.map((m, i) => (
-        <div key={i} className="rounded-xl border border-[#2d3144] bg-[#1a1d27] p-5 space-y-3">
+        <div key={i} className="rounded-xl border border-[#2d2820] bg-[#1c1912] p-5 space-y-3">
           <div className="flex items-center gap-3">
             <span className="text-2xl font-bold" style={{ color }}>{m.num}</span>
             <div>
               <p className="font-semibold text-white text-sm leading-snug">{m.title}</p>
-              <p className="text-xs text-slate-500">{m.duration}</p>
+              <p className="text-xs text-[#7a6d5a]">{m.duration}</p>
             </div>
           </div>
           <ul className="space-y-1.5">
             {m.items.map((item, j) => (
-              <li key={j} className="flex items-start gap-2 text-xs text-slate-400">
+              <li key={j} className="flex items-start gap-2 text-xs text-[#a89880]">
                 <span className="mt-0.5 flex-shrink-0" style={{ color }}>›</span>
                 {item}
               </li>
@@ -268,24 +267,24 @@ function VisualWebsite({ color }: { color: string }) {
   ];
   return (
     <div className="space-y-4">
-      <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Lighthouse-Score Vergleich</p>
+      <p className="text-xs text-[#7a6d5a] uppercase tracking-wider font-semibold">Lighthouse-Score Vergleich</p>
       {scores.map((s, i) => (
-        <div key={i} className="rounded-xl border border-[#2d3144] bg-[#1a1d27] p-4">
+        <div key={i} className="rounded-xl border border-[#2d2820] bg-[#1c1912] p-4">
           <p className="text-sm font-semibold text-white mb-3">{s.label}</p>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-xs text-slate-500 mb-1">Vorher</p>
+              <p className="text-xs text-[#7a6d5a] mb-1">Vorher</p>
               <div className="flex items-center gap-2">
-                <div className="flex-1 h-2.5 bg-[#2d3144] rounded-full overflow-hidden">
+                <div className="flex-1 h-2.5 bg-[#2d2820] rounded-full overflow-hidden">
                   <div className="h-full rounded-full bg-red-500" style={{ width: `${s.before}%` }} />
                 </div>
                 <span className="text-sm font-bold text-red-400 w-7">{s.before}</span>
               </div>
             </div>
             <div>
-              <p className="text-xs text-slate-500 mb-1">Nachher</p>
+              <p className="text-xs text-[#7a6d5a] mb-1">Nachher</p>
               <div className="flex items-center gap-2">
-                <div className="flex-1 h-2.5 bg-[#2d3144] rounded-full overflow-hidden">
+                <div className="flex-1 h-2.5 bg-[#2d2820] rounded-full overflow-hidden">
                   <div className="h-full rounded-full" style={{ width: `${s.after}%`, background: color }} />
                 </div>
                 <span className="text-sm font-bold w-7" style={{ color }}>{s.after}</span>
@@ -307,20 +306,20 @@ function VisualRoadmap({ color }: { color: string }) {
   ];
   return (
     <div className="relative">
-      <div className="absolute left-[22px] top-4 bottom-4 w-0.5 bg-[#2d3144]" />
+      <div className="absolute left-[22px] top-4 bottom-4 w-0.5 bg-[#2d2820]" />
       <div className="space-y-4">
         {phases.map((p, i) => (
           <div key={i} className="relative flex gap-4 pl-2">
             <div className="flex-shrink-0 relative z-10 w-9 h-9 rounded-full border-2 flex items-center justify-center text-sm font-bold"
-              style={{ borderColor: color, background: '#0f1117', color }}>
+              style={{ borderColor: color, background: '#0c0a06', color }}>
               {i + 1}
             </div>
-            <div className="flex-1 rounded-xl border border-[#2d3144] bg-[#1a1d27] p-4 pt-2.5">
+            <div className="flex-1 rounded-xl border border-[#2d2820] bg-[#1c1912] p-4 pt-2.5">
               <div className="flex items-center justify-between mb-1">
                 <p className="font-semibold text-white">{p.title}</p>
                 <span className="text-xs" style={{ color }}>{p.week}</span>
               </div>
-              <p className="text-sm text-slate-400 leading-relaxed">{p.desc}</p>
+              <p className="text-sm text-[#a89880] leading-relaxed">{p.desc}</p>
             </div>
           </div>
         ))}
@@ -368,22 +367,22 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#0f1117] text-slate-100">
+    <div className="min-h-screen bg-[#0c0a06] text-[#f4edd8]">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
       />
 
       {/* ── Nav ── */}
-      <header className="fixed top-0 inset-x-0 z-50 border-b border-[#2d3144] bg-[#0f1117]">
+      <header className="fixed top-0 inset-x-0 z-50 border-b border-[#2d2820] bg-[#0c0a06]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link href="/" className="font-bold text-white text-lg tracking-tight hover:opacity-80 transition-opacity">
             Marcel Spahr
           </Link>
           <nav className="hidden md:flex items-center gap-6">
-            <Link href="/#services"  className="text-sm text-slate-400 hover:text-white transition-colors">Leistungen</Link>
-            <Link href="/#portfolio" className="text-sm text-slate-400 hover:text-white transition-colors">Portfolio</Link>
-            <Link href="/#about"     className="text-sm text-slate-400 hover:text-white transition-colors">Über mich</Link>
+            <Link href="/#services"  className="text-sm text-[#a89880] hover:text-white transition-colors">Leistungen</Link>
+            <Link href="/#portfolio" className="text-sm text-[#a89880] hover:text-white transition-colors">Portfolio</Link>
+            <Link href="/#about"     className="text-sm text-[#a89880] hover:text-white transition-colors">Über mich</Link>
             <a href="#contact" className="ml-2 px-4 py-1.5 rounded-lg text-white text-sm font-medium transition-colors" style={{ background: s.color }}>
               Kostenlos anfragen
             </a>
@@ -397,7 +396,7 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
           background: `radial-gradient(ellipse 50% 40% at 20% 30%, ${s.color}12 0%, transparent 70%)`
         }} />
         <div className="relative max-w-4xl mx-auto">
-          <Link href="/#services" className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-white transition-colors mb-8 group">
+          <Link href="/#services" className="inline-flex items-center gap-1.5 text-sm text-[#a89880] hover:text-white transition-colors mb-8 group">
             <ArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform" />
             Alle Leistungen
           </Link>
@@ -412,7 +411,7 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight tracking-tight">
                 {s.title}
               </h1>
-              <p className="mt-3 text-lg sm:text-xl text-slate-400">{s.subtitle}</p>
+              <p className="mt-3 text-lg sm:text-xl text-[#a89880]">{s.subtitle}</p>
             </div>
           </div>
         </div>
@@ -421,20 +420,20 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
       {/* ── Intro ── */}
       <section className="py-12 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto">
-          <div className="rounded-2xl border border-[#2d3144] bg-[#1a1d27] p-8">
+          <div className="rounded-2xl border border-[#2d2820] bg-[#1c1912] p-8">
             <h2 className="text-xl font-bold text-white mb-4">Was bedeutet das für dich?</h2>
-            <p className="text-slate-300 leading-relaxed text-lg">{s.intro}</p>
+            <p className="text-[#d4c4a8] leading-relaxed text-lg">{s.intro}</p>
           </div>
         </div>
       </section>
 
       {/* ── Visual / Example ── */}
-      <section className="py-12 px-4 sm:px-6 bg-[#0c0e14]">
+      <section className="py-12 px-4 sm:px-6 bg-[#100d09]">
         <div className="max-w-4xl mx-auto">
           <div className="mb-8">
             <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: s.color }}>Beispiel aus der Praxis</span>
             <h2 className="mt-1 text-2xl font-bold text-white">{s.exampleTitle}</h2>
-            <p className="mt-2 text-slate-400 leading-relaxed">{s.exampleText}</p>
+            <p className="mt-2 text-[#a89880] leading-relaxed">{s.exampleText}</p>
           </div>
           <ServiceVisual slug={s.slug} color={s.color} />
         </div>
@@ -449,14 +448,14 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
           </div>
           <div className="grid sm:grid-cols-2 gap-5">
             {s.process.map((step, i) => (
-              <div key={i} className="relative rounded-xl border border-[#2d3144] bg-[#1a1d27] p-6 hover:border-[#6366f1]/30 transition-colors">
+              <div key={i} className="relative rounded-xl border border-[#2d2820] bg-[#1c1912] p-6 hover:border-[#c9a84c]/30 transition-colors">
                 <div className="flex items-center gap-3 mb-3">
                   <span className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold" style={{ background: `${s.color}20`, color: s.color }}>
                     {i + 1}
                   </span>
                   <h3 className="font-semibold text-white">{step.title}</h3>
                 </div>
-                <p className="text-sm text-slate-400 leading-relaxed">{step.desc}</p>
+                <p className="text-sm text-[#a89880] leading-relaxed">{step.desc}</p>
               </div>
             ))}
           </div>
@@ -464,7 +463,7 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
       </section>
 
       {/* ── Deliverables ── */}
-      <section className="py-16 px-4 sm:px-6 bg-[#0c0e14]">
+      <section className="py-16 px-4 sm:px-6 bg-[#100d09]">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-10">
             <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: s.color }}>Ergebnis</span>
@@ -472,9 +471,9 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {s.deliverables.map((d, i) => (
-              <div key={i} className="flex items-center gap-3 rounded-xl border border-[#2d3144] bg-[#1a1d27] px-4 py-3">
+              <div key={i} className="flex items-center gap-3 rounded-xl border border-[#2d2820] bg-[#1c1912] px-4 py-3">
                 <span className="text-xl flex-shrink-0">{d.emoji}</span>
-                <span className="text-sm text-slate-300 font-medium">{d.text}</span>
+                <span className="text-sm text-[#d4c4a8] font-medium">{d.text}</span>
               </div>
             ))}
           </div>
@@ -484,13 +483,13 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
       {/* ── CTA / Kontakt ── */}
       <section id="contact" className="py-20 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto">
-          <div className="rounded-3xl border border-[#2d3144] bg-[#1a1d27] overflow-hidden">
+          <div className="rounded-3xl border border-[#2d2820] bg-[#1c1912] overflow-hidden">
             <div className="px-8 pt-10 pb-6 text-center" style={{ background: `linear-gradient(135deg, ${s.color}15 0%, transparent 60%)` }}>
               <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4" style={{ background: `${s.color}20` }}>
                 <CheckCircle size={28} style={{ color: s.color }} />
               </div>
               <h2 className="text-2xl sm:text-3xl font-bold text-white">Kostenlose Erstberatung</h2>
-              <p className="mt-3 text-slate-400 max-w-xl mx-auto">
+              <p className="mt-3 text-[#a89880] max-w-xl mx-auto">
                 Interessiert an <strong className="text-white">{s.title}</strong>?  Schreib mir – ich melde mich innerhalb von 2 Arbeitstagen und wir schauen gemeinsam, was für dich Sinn macht. Unverbindlich.
               </p>
             </div>
@@ -504,15 +503,15 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
       </section>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-[#2d3144] bg-[#0c0e14] py-8 px-4">
+      <footer className="border-t border-[#2d2820] bg-[#100d09] py-8 px-4">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <Link href="/" className="text-sm text-slate-400 hover:text-white transition-colors flex items-center gap-1.5">
+          <Link href="/" className="text-sm text-[#a89880] hover:text-white transition-colors flex items-center gap-1.5">
             <ArrowLeft size={13} /> Zurück zur Startseite
           </Link>
           <div className="flex items-center gap-6">
-            <span className="text-sm text-slate-500">© 2026 Marcel Spahr</span>
-            <a href="/impressum"  className="text-sm text-slate-500 hover:text-slate-300 transition-colors">Impressum</a>
-            <a href="/datenschutz" className="text-sm text-slate-500 hover:text-slate-300 transition-colors">Datenschutz</a>
+            <span className="text-sm text-[#7a6d5a]">© 2026 Marcel Spahr</span>
+            <a href="/impressum"  className="text-sm text-[#7a6d5a] hover:text-[#d4c4a8] transition-colors">Impressum</a>
+            <a href="/datenschutz" className="text-sm text-[#7a6d5a] hover:text-[#d4c4a8] transition-colors">Datenschutz</a>
           </div>
         </div>
       </footer>
