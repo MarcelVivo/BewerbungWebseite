@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useRef, FormEvent } from 'react';
+import { useState, useEffect, useRef, FormEvent } from 'react';
 import NextImage from 'next/image';
-import { motion, useInView } from 'framer-motion';
 import {
   Bot, BarChart3, Workflow, Megaphone, Video, FolderKanban,
   GraduationCap, Globe, Lightbulb, Mail, MapPin, Phone,
@@ -227,20 +226,29 @@ const T = {
 
 type Lang = keyof typeof T;
 
-// ── Animation ─────────────────────────────────────────────
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 32 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: 'easeOut' } },
-};
+// ── Animation – lightweight IntersectionObserver, no library ─
 
 function FadeUp({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: '-60px' });
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.unobserve(el); } },
+      { rootMargin: '-50px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
   return (
-    <motion.div ref={ref} variants={fadeUp} initial="hidden" animate={inView ? 'visible' : 'hidden'} transition={{ delay }} className={className}>
+    <div
+      ref={ref}
+      className={`transition-all duration-500 ease-out ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-7'} ${className}`}
+      style={delay && visible ? { transitionDelay: `${delay}s` } : undefined}
+    >
       {children}
-    </motion.div>
+    </div>
   );
 }
 
@@ -278,7 +286,7 @@ function NavBar({ lang, setLang, t }: { lang: Lang; setLang: (l: Lang) => void; 
         </button>
       </div>
       {open && (
-        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="md:hidden bg-[#1a1d27] border-t border-[#2d3144] px-4 py-4 space-y-3">
+        <div className="md:hidden bg-[#1a1d27] border-t border-[#2d3144] px-4 py-4 space-y-3 animate-[ms-fade-up_0.2s_ease-out_both]">
           {links.map(l => (
             <a key={l.href} href={l.href} className="block text-sm text-slate-300 hover:text-white" onClick={() => setOpen(false)}>{l.label}</a>
           ))}
@@ -286,7 +294,7 @@ function NavBar({ lang, setLang, t }: { lang: Lang; setLang: (l: Lang) => void; 
           <button onClick={() => setLang(lang === 'de' ? 'en' : 'de')} className="text-xs text-slate-500">
             {lang === 'de' ? 'Switch to English' : 'Auf Deutsch wechseln'}
           </button>
-        </motion.div>
+        </div>
       )}
     </header>
   );
@@ -302,27 +310,26 @@ function HeroSection({ t }: { t: typeof T['de'] }) {
         <div className="absolute -bottom-32 -right-32 w-[500px] h-[500px] rounded-full bg-[#06b6d4]/10 blur-[120px]" />
       </div>
       <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 text-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6 }}
-          className="mb-6 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#6366f1]/40 bg-[#6366f1]/10 text-[#a5b4fc] text-sm font-medium"
+        <div
+          className="ms-anim-scale mb-6 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#6366f1]/40 bg-[#6366f1]/10 text-[#a5b4fc] text-sm font-medium"
         >
           <Bot size={14} /> KI-Berater & Wirtschaftsinformatiker
-        </motion.div>
-        <motion.h1
-          initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1 }}
-          className="text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight tracking-tight"
+        </div>
+        <h1
+          style={{ animationDelay: '0.1s' }}
+          className="ms-anim text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight tracking-tight"
         >
           {t.hero.headline}
-        </motion.h1>
-        <motion.p
-          initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.2 }}
-          className="mt-6 text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed"
+        </h1>
+        <p
+          style={{ animationDelay: '0.2s' }}
+          className="ms-anim mt-6 text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed"
         >
           {t.hero.subline}
-        </motion.p>
-        <motion.div
-          initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.3 }}
-          className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
+        </p>
+        <div
+          style={{ animationDelay: '0.3s' }}
+          className="ms-anim mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
         >
           <a href="#contact" className="group flex items-center gap-2 px-6 py-3 rounded-xl bg-[#6366f1] hover:bg-[#5254cc] text-white font-semibold transition-all shadow-lg shadow-[#6366f1]/25">
             {t.hero.cta_primary}
@@ -331,16 +338,16 @@ function HeroSection({ t }: { t: typeof T['de'] }) {
           <a href="#about" className="px-6 py-3 rounded-xl border border-[#2d3144] hover:border-slate-500 text-slate-300 hover:text-white font-medium transition-all">
             {t.hero.cta_secondary}
           </a>
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.5 }}
-          className="mt-16 flex justify-center"
+        </div>
+        <div
+          style={{ animationDelay: '0.45s' }}
+          className="ms-anim mt-16 flex justify-center"
         >
           <div className="relative">
             <div className="absolute inset-0 rounded-full bg-[#6366f1]/30 blur-xl scale-110" />
             <NextImage src="/assets/portrait2.jpg" alt="Marcel Spahr" width={144} height={144} priority className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-full object-cover ring-2 ring-[#6366f1]/50" />
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
