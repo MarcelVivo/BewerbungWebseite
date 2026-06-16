@@ -2,8 +2,8 @@
 
 import {
   Bot, BarChart3, Workflow, Megaphone, Video, FolderKanban,
-  GraduationCap, Globe, Lightbulb, Mail, MapPin,
-  ChevronRight, Star,
+  GraduationCap, Globe, Lightbulb, Mail, MapPin, Phone,
+  ChevronRight, ExternalLink, Star,
   CheckCircle, Zap, Users, Award,
   MessageSquare, Search, Compass, Wrench, Heart,
 } from 'lucide-react';
