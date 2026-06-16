@@ -39,15 +39,13 @@ export const T = {
       ],
     },
     portfolio: {
-      label: 'Portfolio', heading: 'Portfolio', subheading: 'Ausgewählte Projekte & Arbeiten',
-      viewDoc: 'Dokument ansehen', internal: 'Intern / auf Anfrage',
+      label: 'Portfolio', heading: 'Ausgewählte Projekte', subheading: 'Einblicke in meine Arbeit – von Enterprise-Projekten bis zu KMU-Mandaten.',
+      viewProject: 'Projekt ansehen', expertiseLabel: 'Vollständige Expertise einsehen',
       items: [
-        { tag: 'Software Engineering', title: 'Swiss COVID Certificate App', desc: 'Software-Architektur und technische Dokumentation der schweizweiten COVID-Zertifikats-App.' },
-        { tag: 'Requirements Engineering', title: 'Software & Requirements Engineering', desc: 'Abschlussarbeit zu modernen Requirements-Engineering-Methoden: User Stories, BPMN und agile Anforderungserfassung.' },
-        { tag: 'Digital Marketing', title: "Olivia's Olivenpaste", desc: 'Vollständige Digital-Marketing-Strategie für ein Schweizer KMU: Markenaufbau, Social-Media-Konzept und Content-Plan.' },
-        { tag: 'Event & Marketing', title: '90s Love Mobile – Streetparade', desc: 'Konzeption und Vermarktung eines Love Mobiles an der Streetparade Zürich – von Sponsoring bis Social-Media-Kampagne.' },
-        { tag: 'Leadership', title: 'Persönliches Führungshandbuch', desc: 'Reflexion eigener Führungsprinzipien und Entwicklung eines persönlichen Führungsansatzes basierend auf modernen Leadership-Theorien.' },
-        { tag: 'Prozessoptimierung', title: 'Digitalisierung @ Swisscom', desc: '15 Jahre Mitgestaltung der digitalen Transformation: Prozessautomatisierung, Reporting-Pipelines und Stakeholder-Management.' },
+        { tag: 'Software Engineering', title: 'Swiss COVID Certificate App', desc: 'Softwarearchitektur und technische Spezifikation für eine nationale Infrastruktur mit Millionen von Nutzern.' },
+        { tag: 'Prozessoptimierung', title: 'Digitalisierung @ Swisscom', desc: '15 Jahre Mitgestaltung der digitalen Transformation bei einem der grössten Schweizer Technologiekonzerne.' },
+        { tag: 'Digital Marketing', title: "Olivia's Olivenpaste", desc: 'Vollständige Digital-Marketing-Strategie für ein Schweizer KMU: Markenidentität, Social-Media und Content-Plan.' },
+        { tag: 'Requirements Engineering', title: 'Software & Requirements Engineering', desc: 'Professionelle Anforderungsanalyse für ein reales IT-Projekt – vollständig nach Industriestandard.' },
       ],
     },
     why: {
@@ -135,15 +133,13 @@ export const T = {
       ],
     },
     portfolio: {
-      label: 'Portfolio', heading: 'Portfolio', subheading: 'Selected Projects & Work',
-      viewDoc: 'View document', internal: 'Internal / on request',
+      label: 'Portfolio', heading: 'Selected Projects', subheading: 'Insights into my work – from enterprise projects to SME mandates.',
+      viewProject: 'View project', expertiseLabel: 'View full expertise',
       items: [
-        { tag: 'Software Engineering', title: 'Swiss COVID Certificate App', desc: "Software architecture and technical documentation for Switzerland's nationwide COVID certificate app." },
-        { tag: 'Requirements Engineering', title: 'Software & Requirements Engineering', desc: 'Final thesis on modern requirements engineering methods: user stories, BPMN, and agile requirements gathering.' },
-        { tag: 'Digital Marketing', title: "Olivia's Olive Paste", desc: 'Complete digital marketing strategy for a Swiss SME: brand building, social media concept, and content plan.' },
-        { tag: 'Event & Marketing', title: '90s Love Mobile – Street Parade', desc: 'Design and marketing of a Love Mobile at the Zurich Street Parade – from sponsoring to social media campaign.' },
-        { tag: 'Leadership', title: 'Personal Leadership Handbook', desc: 'Reflection on personal leadership principles and development of a leadership approach based on modern leadership theories.' },
-        { tag: 'Process Optimization', title: 'Digitalization @ Swisscom', desc: '15 years co-shaping digital transformation: process automation, reporting pipelines, and stakeholder management.' },
+        { tag: 'Software Engineering', title: 'Swiss COVID Certificate App', desc: 'Software architecture and technical specification for a national infrastructure serving millions of users.' },
+        { tag: 'Process Optimization', title: 'Digitalization @ Swisscom', desc: '15 years co-shaping digital transformation at one of Switzerland\'s largest technology groups.' },
+        { tag: 'Digital Marketing', title: "Olivia's Olive Paste", desc: 'Complete digital marketing strategy for a Swiss SME: brand identity, social media, and content plan.' },
+        { tag: 'Requirements Engineering', title: 'Software & Requirements Engineering', desc: 'Professional requirements analysis for a real IT project – fully to industry standard.' },
       ],
     },
     why: {

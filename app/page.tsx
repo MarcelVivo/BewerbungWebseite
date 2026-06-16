@@ -2,11 +2,12 @@
 
 import {
   Bot, BarChart3, Workflow, Megaphone, Video, FolderKanban,
-  GraduationCap, Globe, Lightbulb, Mail, MapPin, Phone,
-  ChevronRight, ExternalLink, FileText, Star,
+  GraduationCap, Globe, Lightbulb, Mail, MapPin,
+  ChevronRight, Star,
   CheckCircle, Zap, Users, Award,
   MessageSquare, Search, Compass, Wrench, Heart,
 } from 'lucide-react';
+import Link from 'next/link';
 import HomeNavBar from './HomeNavBar';
 import ContactFormClient from './ContactFormClient';
 import { useLanguage } from './LanguageContext';
@@ -29,12 +30,10 @@ const SERVICE_META = [
 ];
 
 const PORTFOLIO_META = [
-  { url: '/assets/SWISS_COVID_CERT_APP_SoftwareArchitektur.pdf', color: '#a896c8' },
-  { url: '/assets/FinalArbeitSoftwareundRequirementsEngineering.pdf', color: '#7aada8' },
-  { url: '/assets/OliviasOlivenpaste_MarcelSpahr.pdf', color: '#8fb58a' },
-  { url: '/assets/90sLoveMobileProjektarbeit_Digital Marketing-Final.pdf', color: '#c4926a' },
-  { url: '/assets/Personliches_Fuhrungshandbuch_MarcelSpahr.pdf', color: '#c4897a' },
-  { url: null, color: '#7a9bb5' },
+  { slug: 'covid-certificate',         color: '#a896c8' },
+  { slug: 'digitalisierung-swisscom',  color: '#7a9bb5' },
+  { slug: 'olivias-olivenpaste',       color: '#8fb58a' },
+  { slug: 'requirements-engineering',  color: '#7aada8' },
 ];
 
 const USP_ICONS = [Zap, Users, CheckCircle, Award];
@@ -151,45 +150,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Portfolio ── */}
-      <section id="portfolio" className="py-24 px-4 sm:px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <span className="text-[#c9a84c] text-sm font-semibold tracking-widest uppercase">{t.portfolio.label}</span>
-            <h2 className="mt-2 text-3xl sm:text-4xl font-bold text-white">{t.portfolio.heading}</h2>
-            <p className="mt-3 text-[#a89880]">{t.portfolio.subheading}</p>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {t.portfolio.items.map((item, i) => {
-              const meta = PORTFOLIO_META[i];
-              return (
-                <div key={i} className="group h-full flex flex-col rounded-xl border border-[#2d2820] bg-[#1c1912] overflow-hidden hover:border-[#c9a84c]/40 transition-all">
-                  <div className="h-1.5 w-full" style={{ background: meta.color }} />
-                  <div className="flex-1 p-6 flex flex-col gap-3">
-                    <span className="inline-block text-xs font-semibold px-2.5 py-1 rounded-full border"
-                      style={{ color: meta.color, borderColor: `${meta.color}40`, background: `${meta.color}15` }}>
-                      {item.tag}
-                    </span>
-                    <h3 className="font-bold text-white leading-snug">{item.title}</h3>
-                    <p className="text-sm text-[#a89880] leading-relaxed flex-1">{item.desc}</p>
-                    {meta.url ? (
-                      <a href={meta.url} target="_blank" rel="noreferrer"
-                        className="mt-2 inline-flex items-center gap-2 text-sm font-medium text-[#d4b86a] hover:text-[#c9a84c] transition-colors">
-                        <FileText size={14} /> {t.portfolio.viewDoc}
-                      </a>
-                    ) : (
-                      <span className="mt-2 inline-flex items-center gap-2 text-sm text-[#7a6d5a]">
-                        <Star size={14} /> {t.portfolio.internal}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
       {/* ── Warum Marcel ── */}
       <section id="references" className="py-24 px-4 sm:px-6 bg-[#100d09]">
         <div className="max-w-6xl mx-auto">
@@ -219,6 +179,43 @@ export default function HomePage() {
                     <p className="text-sm text-[#a89880] leading-relaxed">{p.desc}</p>
                   </div>
                 </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Portfolio ── */}
+      <section id="portfolio" className="py-24 px-4 sm:px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <span className="text-[#c9a84c] text-sm font-semibold tracking-widest uppercase">{t.portfolio.label}</span>
+            <h2 className="mt-2 text-3xl sm:text-4xl font-bold text-white">{t.portfolio.heading}</h2>
+            <p className="mt-3 text-[#a89880]">{t.portfolio.subheading}</p>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-6">
+            {t.portfolio.items.map((item, i) => {
+              const meta = PORTFOLIO_META[i];
+              return (
+                <Link
+                  key={i}
+                  href={`/portfolio/${meta.slug}`}
+                  className="group h-full flex flex-col rounded-xl border border-[#2d2820] bg-[#1c1912] overflow-hidden hover:border-[#c9a84c]/40 hover:bg-[#1c1912]/80 transition-all"
+                >
+                  <div className="h-1 w-full" style={{ background: meta.color }} />
+                  <div className="flex-1 p-6 flex flex-col gap-3">
+                    <span className="inline-block text-xs font-semibold px-2.5 py-1 rounded-full border w-fit"
+                      style={{ color: meta.color, borderColor: `${meta.color}40`, background: `${meta.color}15` }}>
+                      {item.tag}
+                    </span>
+                    <h3 className="font-bold text-white leading-snug">{item.title}</h3>
+                    <p className="text-sm text-[#a89880] leading-relaxed flex-1">{item.desc}</p>
+                    <div className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-[#d4b86a] group-hover:text-[#c9a84c] transition-colors">
+                      {t.portfolio.viewProject}
+                      <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+                    </div>
+                  </div>
+                </Link>
               );
             })}
           </div>
