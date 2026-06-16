@@ -196,9 +196,9 @@ export default function ExpertisePage() {
             {/* Profile card */}
             <Card>
               <div className="h-16 -mx-6 -mt-6 mb-4 rounded-t-xl" style={{ background: 'linear-gradient(135deg, #c9a84c 0%, #b8943a 100%)' }} />
-              <div className="-mt-12 mb-3 w-20 h-20 rounded-full border-4 border-[#1c1912] overflow-hidden flex-shrink-0 shadow-lg shadow-black/40">
+              <div className="-mt-12 mb-3 w-40 h-40 rounded-full border-4 border-[#1c1912] overflow-hidden flex-shrink-0 shadow-lg shadow-black/40">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/assets/portrait.jpg" alt="Marcel Spahr" className="w-full h-full object-cover object-top" />
+                <img src="/assets/MarcelSpahrOffice.PNG" alt="Marcel Spahr" className="w-full h-full object-cover object-top" />
               </div>
               <h1 className="text-lg font-bold text-white">Marcel Spahr</h1>
               <p className="text-[#c9a84c] text-sm font-medium">Wirtschaftsinformatiker & KI-Berater</p>
