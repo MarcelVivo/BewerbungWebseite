@@ -51,29 +51,35 @@ export default function HomePage() {
       <HomeNavBar />
 
       {/* ── Hero ── */}
-      <section className="relative min-h-screen overflow-hidden pt-16">
-        <div className="absolute inset-0">
+      <section className="overflow-hidden pt-16 flex flex-col">
+        {/* Bildzone — Gesicht klar sichtbar */}
+        <div className="relative" style={{ minHeight: '60vh' }}>
           <img
             src="/assets/MarcelSpahrHeader.jpg"
             alt="Marcel Spahr – KI-Unternehmensberater Bern"
-            className="w-full h-full object-cover object-top"
+            className="absolute inset-0 w-full h-full object-cover object-top"
           />
           <div className="absolute inset-0" style={{
-            background: 'linear-gradient(to bottom, rgba(12,10,6,0.45) 0%, rgba(12,10,6,0.10) 22%, rgba(12,10,6,0.15) 48%, rgba(12,10,6,0.72) 66%, rgba(12,10,6,0.94) 80%, #0c0a06 93%)'
+            background: 'linear-gradient(to bottom, rgba(12,10,6,0.40) 0%, rgba(12,10,6,0.05) 20%, rgba(12,10,6,0.05) 55%, rgba(12,10,6,0.82) 85%, #0c0a06 100%)'
           }} />
-        </div>
-        <div className="absolute bottom-0 left-0 right-0 z-10 pb-16 sm:pb-24">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
-            <div className="ms-anim-scale mb-5 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#c9a84c]/40 bg-[#c9a84c]/10 text-[#d4b86a] text-sm font-medium backdrop-blur-sm">
+          {/* Badge am unteren Bildrand */}
+          <div className="absolute bottom-7 inset-x-0 z-10 flex justify-center">
+            <div className="ms-anim-scale inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#c9a84c]/40 bg-[#c9a84c]/10 text-[#d4b86a] text-sm font-medium backdrop-blur-sm">
               <Bot size={14} /> {t.hero.badge}
             </div>
-            <p style={{ animationDelay: '0.08s' }} className="ms-anim mb-4 text-base sm:text-lg font-medium italic text-[#c9a84c] tracking-wide drop-shadow">
+          </div>
+        </div>
+
+        {/* Textzone — dunkler Hintergrund, nahtlos */}
+        <div className="bg-[#0c0a06] pt-8 pb-16 sm:pb-24">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+            <p className="ms-anim mb-4 text-base sm:text-lg font-medium italic text-[#c9a84c] tracking-wide">
               {t.hero.tagline}
             </p>
-            <h1 style={{ animationDelay: '0.15s' }} className="ms-anim text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight tracking-tight drop-shadow-lg">
+            <h1 style={{ animationDelay: '0.1s' }} className="ms-anim text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight tracking-tight">
               {t.hero.title}
             </h1>
-            <p style={{ animationDelay: '0.2s' }} className="ms-anim mt-5 text-lg sm:text-xl text-[#d4c4a8] max-w-2xl mx-auto leading-relaxed drop-shadow">
+            <p style={{ animationDelay: '0.2s' }} className="ms-anim mt-5 text-lg sm:text-xl text-[#d4c4a8] max-w-2xl mx-auto leading-relaxed">
               {t.hero.subtitle}
             </p>
             <div style={{ animationDelay: '0.3s' }} className="ms-anim mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
