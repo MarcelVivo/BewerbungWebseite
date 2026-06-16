@@ -53,7 +53,7 @@ export default function HomePage() {
       {/* ── Hero ── */}
       <section className="overflow-hidden pt-16 flex flex-col">
         {/* Bildzone — Gesicht klar sichtbar */}
-        <div className="relative" style={{ minHeight: '60vh' }}>
+        <div className="relative" style={{ minHeight: '46vh' }}>
           <img
             src="/assets/MarcelSpahrHeader.jpg"
             alt="Marcel Spahr – KI-Unternehmensberater Bern"
