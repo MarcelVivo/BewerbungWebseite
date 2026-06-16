@@ -51,38 +51,32 @@ export default function HomePage() {
       <HomeNavBar />
 
       {/* ── Hero ── */}
-      <section className="overflow-hidden pt-16 flex flex-col">
-        {/* Bildzone — Gesicht klar sichtbar */}
-        <div className="relative" style={{ minHeight: '46vh' }}>
+      <section className="relative min-h-screen overflow-hidden pt-16">
+        <div className="absolute inset-0">
           <img
             src="/assets/MarcelSpahrHeader.jpg"
             alt="Marcel Spahr – KI-Unternehmensberater Bern"
-            className="absolute inset-0 w-full h-full object-cover object-top"
+            className="w-full h-full object-cover object-top"
           />
           <div className="absolute inset-0" style={{
-            background: 'linear-gradient(to bottom, rgba(12,10,6,0.40) 0%, rgba(12,10,6,0.05) 20%, rgba(12,10,6,0.05) 55%, rgba(12,10,6,0.82) 85%, #0c0a06 100%)'
+            background: 'linear-gradient(to bottom, rgba(12,10,6,0.35) 0%, rgba(12,10,6,0.05) 20%, rgba(12,10,6,0.08) 50%, rgba(12,10,6,0.70) 68%, rgba(12,10,6,0.92) 82%, #0c0a06 95%)'
           }} />
-          {/* Badge am unteren Bildrand */}
-          <div className="absolute bottom-7 inset-x-0 z-10 flex justify-center">
-            <div className="ms-anim-scale inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#c9a84c]/40 bg-[#c9a84c]/10 text-[#d4b86a] text-sm font-medium backdrop-blur-sm">
+        </div>
+        <div className="absolute bottom-0 left-0 right-0 z-10 pb-10 sm:pb-14">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+            <div className="ms-anim-scale mb-3 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#c9a84c]/40 bg-[#c9a84c]/10 text-[#d4b86a] text-sm font-medium backdrop-blur-sm">
               <Bot size={14} /> {t.hero.badge}
             </div>
-          </div>
-        </div>
-
-        {/* Textzone — dunkler Hintergrund, nahtlos */}
-        <div className="bg-[#0c0a06] pt-8 pb-16 sm:pb-24">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
-            <p className="ms-anim mb-4 text-base sm:text-lg font-medium italic text-[#c9a84c] tracking-wide">
+            <p style={{ animationDelay: '0.08s' }} className="ms-anim mb-3 text-sm sm:text-base font-medium italic text-[#c9a84c] tracking-wide drop-shadow">
               {t.hero.tagline}
             </p>
-            <h1 style={{ animationDelay: '0.1s' }} className="ms-anim text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight tracking-tight">
+            <h1 style={{ animationDelay: '0.15s' }} className="ms-anim text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight tracking-tight drop-shadow-lg">
               {t.hero.title}
             </h1>
-            <p style={{ animationDelay: '0.2s' }} className="ms-anim mt-5 text-lg sm:text-xl text-[#d4c4a8] max-w-2xl mx-auto leading-relaxed">
+            <p style={{ animationDelay: '0.2s' }} className="ms-anim mt-4 text-base sm:text-lg text-[#d4c4a8] max-w-2xl mx-auto leading-relaxed drop-shadow">
               {t.hero.subtitle}
             </p>
-            <div style={{ animationDelay: '0.3s' }} className="ms-anim mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div style={{ animationDelay: '0.3s' }} className="ms-anim mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
               <a href="#contact" className="group flex items-center gap-2 px-6 py-3 rounded-xl bg-[#c9a84c] hover:bg-[#b8943a] text-[#0c0a06] font-bold transition-all shadow-lg shadow-[#c9a84c]/30">
                 {t.hero.cta}
                 <ChevronRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
