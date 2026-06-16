@@ -15,7 +15,7 @@ export const T = {
     },
     about: {
       label: 'About', heading: 'Über mich',
-      text: 'Ich bin Marcel Spahr – der Wirtschaftsinformatiker, der denkt wie ein Kreativdirektor. Bei Swisscom habe ich 15 Jahre lang gelernt, wie grosse Unternehmen funktionieren. Heute bringe ich dieses Wissen zu Schweizer KMU – gepaart mit modernster KI, Prozessautomatisierung und einer Leidenschaft für Innovation.',
+      text: 'Ich bin Marcel Spahr – Wirtschaftsinformatiker, Kreativdenker und KI-Experte. 15 Jahre Praxiserfahrung in einem der grössten Schweizer Technologieunternehmen haben mir eines gezeigt: KI allein reicht nicht. Erst die Kombination aus menschlicher Empathie, strategischem Big-Picture-Denken und den richtigen KI-Werkzeugen erzielt Ergebnisse, die wirklich halten. Ich denke jede Lösung bis zum Ende – ohne Lücken, ohne Stolpersteine.',
       facts: [
         { label: 'Ausbildung', value: 'HF Wirtschaftsinformatik 2026' },
         { label: 'Erfahrung', value: '15 Jahre Swisscom' },
@@ -51,7 +51,7 @@ export const T = {
       ],
     },
     why: {
-      label: 'Referenzen', heading: 'Warum Marcel?', subheading: 'Was mich von anderen unterscheidet',
+      label: 'Referenzen', heading: 'Warum Marcel?', subheading: 'KI ist mächtig. Aber erst der Mensch dahinter macht den Unterschied.',
       stats: [
         { value: '15+', label: 'Jahre Berufserfahrung' },
         { value: '50+', label: 'Projekte umgesetzt' },
@@ -59,15 +59,15 @@ export const T = {
         { value: '2026', label: 'HF Wirtschaftsinformatik' },
       ],
       usp: [
-        { title: 'Technologie & Kreativität', desc: 'Ich verbinde technisches Know-how mit kreativem Denken – selten in einer Person vereint.' },
-        { title: 'Kundennähe & Empathie', desc: '15 Jahre im direkten Kundenkontakt bei Swisscom haben mein Gespür für Menschen geschärft.' },
-        { title: 'Ganzheitlicher Ansatz', desc: 'Von der Analyse über das Konzept bis zur Umsetzung – alles aus einer Hand.' },
-        { title: 'Kontinuierliches Lernen', desc: 'HF Wirtschaftsinformatik, SAFe, Scrum, KI-Zertifikate – ich bilde mich laufend weiter.' },
+        { title: 'KI als Werkzeug – ich als Dirigent', desc: 'KI automatisiert und skaliert. Aber wissen, wo KI wirklich hilft und wo nicht – das braucht Erfahrung, Urteilsvermögen und strategisches Denken. Genau das bringe ich mit.' },
+        { title: 'Empathie & Menschlichkeit', desc: 'Was kein Algorithmus kann: echtes Zuhören, Vertrauen aufbauen, Probleme erspüren bevor sie entstehen. 15 Jahre direkte Kundennähe – das ist mein menschlicher Vorteil.' },
+        { title: 'Big Picture – zu Ende gedacht', desc: 'Ich sehe das Gesamtbild und denke jede Lösung konsequent bis zum Schluss durch. Keine Lücken, keine Überraschungen – nur Ergebnisse, die wirklich funktionieren.' },
+        { title: 'Immer am Puls der Zeit', desc: 'KI entwickelt sich täglich weiter. Ich auch: HF Wirtschaftsinformatik, SAFe, Scrum, KI-Zertifikate – damit du immer die aktuellsten Lösungen erhältst.' },
       ],
     },
     process: {
       label: 'Ablauf', heading1: 'So arbeiten ', heading2: 'wir zusammen',
-      subheading: 'Ein strukturierter, transparenter Prozess – damit du immer weisst, was als Nächstes kommt.',
+      subheading: 'Mensch und KI Hand in Hand – strukturiert, transparent und wirklich zu Ende gedacht.',
       cta: 'Jetzt Erstgespräch buchen',
       steps: [
         { num: '01', title: 'Erstgespräch', badge: 'Kostenlos', tagline: 'Kennenlernen & Ziele verstehen', desc: 'Wir sprechen 30 Minuten über dein Unternehmen, deine aktuellen Herausforderungen und was du erreichen möchtest. Ohne Verpflichtung – ich höre zu, bevor ich etwas vorschlage.' },
@@ -87,8 +87,8 @@ export const T = {
     faq: {
       label: 'FAQ', heading: 'Häufige Fragen',
       items: [
-        { q: 'Was macht ein kreativer KI-Unternehmensberater?', a: 'Ein kreativer KI-Unternehmensberater verbindet technisches KI-Know-how mit strategischem Denken und kreativem Problemlösen. Ich analysiere dein Unternehmen, identifiziere konkrete KI-Potenziale und begleite die Umsetzung – von der Strategie über die Konzeption bis zum laufenden, automatisierten System.' },
-        { q: 'Für welche Unternehmen ist KI-Beratung geeignet?', a: 'KI-Beratung eignet sich für jedes KMU, das wiederkehrende Prozesse hat, Zeit sparen möchte oder digital wachsen will – unabhängig von der Branche. Ob Handwerksbetrieb, Beratungsunternehmen oder Online-Shop: KI lässt sich fast überall sinnvoll einsetzen und bringt messbare Ergebnisse.' },
+        { q: 'Was macht ein kreativer KI-Unternehmensberater?', a: 'Ein kreativer KI-Unternehmensberater verbindet KI-Technologie mit menschlicher Empathie, Kreativität und jahrelanger Praxiserfahrung. KI ist ein mächtiges Instrument – aber ohne die richtige menschliche Führung bleibt sie wirkungslos. Ich erkenne, wo KI wirklich hilft, denke Lösungen bis zum Ende und sorge dafür, dass die Ergebnisse nicht nur funktionieren, sondern nachhaltig wirken.' },
+        { q: 'Kann KI allein mein KMU optimieren?', a: 'Nein – und das ist der entscheidende Punkt. KI kann automatisieren, analysieren und skalieren. Aber das strategische Gespür für das grosse Ganze, Empathie für Kunden und Mitarbeitende und die Erfahrung, Lösungen wirklich zu Ende zu denken – das bleibt menschlich. Erst die Fusion aus Mensch und KI liefert Ergebnisse, die wirklich halten und dein Unternehmen zukunftssicher machen.' },
         { q: 'Was kostet eine KI-Beratung bei Marcel Spahr?', a: 'Die Erstberatung ist kostenlos und unverbindlich. Konkrete Projekte werden individuell nach Aufwand und Projektumfang berechnet. Kontaktiere mich für ein unverbindliches Angebot – ich melde mich innerhalb von 2 Arbeitstagen.' },
         { q: 'Wie lange dauert ein typisches KI-Projekt?', a: 'Ein erster Quick Win – zum Beispiel ein einfacher KI-Agent oder ein optimierter Prozess – ist oft innerhalb von 2 bis 4 Wochen umgesetzt. Grössere Projekte wie eine vollständige KI-Roadmap dauern 2 bis 3 Monate. Ich arbeite mit klaren Meilensteinen und regelmässigen Status-Updates.' },
         { q: 'Arbeitet Marcel Spahr auch remote oder nur in Bern?', a: 'Die meisten Projekte laufen hybrid: Kick-off und wichtige Workshops gerne persönlich in Bern oder direkt bei dir vor Ort, der Rest effizient remote. Ich arbeite mit Kunden in der gesamten Deutschschweiz zusammen.' },
@@ -111,7 +111,7 @@ export const T = {
     },
     about: {
       label: 'About', heading: 'About Me',
-      text: "I'm Marcel Spahr – the business informatics specialist who thinks like a creative director. At Swisscom, I spent 15 years learning how large corporations operate. Today I bring this knowledge to Swiss SMEs – combined with state-of-the-art AI, process automation, and a passion for innovation.",
+      text: "I'm Marcel Spahr – business informatics specialist, creative thinker, and AI expert. 15 years of hands-on experience at one of Switzerland's largest tech companies taught me one thing above all: AI alone is not enough. Only the fusion of human empathy, strategic big-picture thinking, and the right AI tools produces results that truly last. I think every solution through to the very end – no gaps, no stumbling blocks.",
       facts: [
         { label: 'Education', value: 'HF Business Informatics 2026' },
         { label: 'Experience', value: '15 Years at Swisscom' },
@@ -147,7 +147,7 @@ export const T = {
       ],
     },
     why: {
-      label: 'References', heading: 'Why Marcel?', subheading: 'What sets me apart',
+      label: 'References', heading: 'Why Marcel?', subheading: 'AI is powerful. But the human behind it makes all the difference.',
       stats: [
         { value: '15+', label: 'Years of Experience' },
         { value: '50+', label: 'Projects Delivered' },
@@ -155,15 +155,15 @@ export const T = {
         { value: '2026', label: 'HF Business Informatics' },
       ],
       usp: [
-        { title: 'Technology & Creativity', desc: 'I combine technical expertise with creative thinking – a rare combination in one person.' },
-        { title: 'Client Focus & Empathy', desc: '15 years of direct client contact at Swisscom have sharpened my instinct for people.' },
-        { title: 'Holistic Approach', desc: 'From analysis through concept to implementation – everything from one source.' },
-        { title: 'Continuous Learning', desc: 'HF Business Informatics, SAFe, Scrum, AI certificates – I continuously develop my skills.' },
+        { title: 'AI as Tool – Me as Conductor', desc: 'AI automates and scales. But knowing where AI truly helps and where it doesn\'t – that requires experience, judgement, and strategic thinking. That\'s exactly what I bring.' },
+        { title: 'Empathy & Human Touch', desc: 'What no algorithm can do: truly listening, building trust, sensing problems before they arise. 15 years of direct client contact – that\'s my human advantage.' },
+        { title: 'Big Picture – Thought Through', desc: 'I see the whole picture and think every solution consistently through to the end. No gaps, no surprises – only results that truly work.' },
+        { title: 'Always at the Cutting Edge', desc: 'AI evolves daily. So do I: HF Business Informatics, SAFe, Scrum, AI certificates – so you always get the most current solutions.' },
       ],
     },
     process: {
       label: 'Process', heading1: 'How we work ', heading2: 'together',
-      subheading: 'A structured, transparent process – so you always know what comes next.',
+      subheading: 'Human and AI hand in hand – structured, transparent, and truly thought through to the end.',
       cta: 'Book your initial call now',
       steps: [
         { num: '01', title: 'Initial Call', badge: 'Free', tagline: 'Getting acquainted & understanding goals', desc: 'We talk for 30 minutes about your business, your current challenges, and what you want to achieve. No commitment – I listen before suggesting anything.' },
@@ -183,8 +183,8 @@ export const T = {
     faq: {
       label: 'FAQ', heading: 'Frequently Asked Questions',
       items: [
-        { q: 'What does a creative AI business consultant do?', a: 'A creative AI business consultant combines technical AI expertise with strategic thinking and creative problem-solving. I analyze your business, identify concrete AI potentials, and guide implementation – from strategy through concept to the running, automated system.' },
-        { q: 'Which companies benefit from AI consulting?', a: 'AI consulting is suitable for any SME with recurring processes, that wants to save time, or wants to grow digitally – regardless of industry. Whether a trade business, consulting firm, or online shop: AI can be meaningfully applied almost anywhere and delivers measurable results.' },
+        { q: 'What does a creative AI business consultant do?', a: 'A creative AI business consultant fuses AI technology with human empathy, creativity, and years of practical experience. AI is a powerful instrument – but without the right human guidance, it remains ineffective. I identify where AI truly helps, think solutions through to the very end, and ensure results don\'t just work – they last.' },
+        { q: 'Can AI alone optimise my business?', a: 'No – and that\'s the crucial point. AI can automate, analyse, and scale. But the strategic sense for the big picture, empathy for customers and employees, and the experience to truly think solutions through to the end – that remains human. Only the fusion of human and AI delivers results that truly hold up and make your business future-proof.' },
         { q: 'What does AI consulting with Marcel Spahr cost?', a: "The initial consultation is free and non-binding. Concrete projects are individually priced based on scope and effort. Contact me for a no-obligation quote – I'll respond within 2 business days." },
         { q: 'How long does a typical AI project take?', a: 'A first quick win – for example a simple AI agent or an optimized process – is often implemented within 2 to 4 weeks. Larger projects such as a complete AI roadmap take 2 to 3 months. I work with clear milestones and regular status updates.' },
         { q: 'Does Marcel Spahr work remotely or only in Bern?', a: 'Most projects run hybrid: kickoff and important workshops in person in Bern or at your location, the rest efficiently remote. I work with clients across German-speaking Switzerland and beyond.' },
