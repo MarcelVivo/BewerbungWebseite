@@ -67,7 +67,10 @@ export default function HomePage() {
             <div className="ms-anim-scale mb-5 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#c9a84c]/40 bg-[#c9a84c]/10 text-[#d4b86a] text-sm font-medium backdrop-blur-sm">
               <Bot size={14} /> {t.hero.badge}
             </div>
-            <h1 style={{ animationDelay: '0.1s' }} className="ms-anim text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight tracking-tight drop-shadow-lg">
+            <p style={{ animationDelay: '0.08s' }} className="ms-anim mb-4 text-base sm:text-lg font-medium italic text-[#c9a84c] tracking-wide drop-shadow">
+              {t.hero.tagline}
+            </p>
+            <h1 style={{ animationDelay: '0.15s' }} className="ms-anim text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight tracking-tight drop-shadow-lg">
               {t.hero.title}
             </h1>
             <p style={{ animationDelay: '0.2s' }} className="ms-anim mt-5 text-lg sm:text-xl text-[#d4c4a8] max-w-2xl mx-auto leading-relaxed drop-shadow">

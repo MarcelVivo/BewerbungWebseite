@@ -7,9 +7,10 @@ export const T = {
       process: 'Ablauf', contact: 'Kontakt', book: 'Termin buchen',
     },
     hero: {
-      badge: 'Kreativer KI-Unternehmensberater · Bern, Schweiz',
-      title: 'KI-Intelligenz trifft Kreativität',
-      subtitle: 'Kreativer KI-Unternehmensberater & Wirtschaftsinformatiker für Schweizer KMU – ich automatisiere, optimiere und digitalisiere deinen Betrieb.',
+      badge: 'KI-Unternehmensberater · 15 Jahre Swisscom · Bern',
+      tagline: 'KI ist das Instrument — der Mensch der Dirigent.',
+      title: 'Menschliche Erfahrung. KI-Präzision.',
+      subtitle: 'KI automatisiert – aber Kreativität, Empathie und strategisches Denken im grossen Ganzen bleiben menschlich. Mit 15 Jahren Swisscom-Erfahrung und modernsten KI-Werkzeugen optimiere ich dein KMU bis ins kleinste Detail: Prozesse, Automatisierung, Marketing, Website. Wirklich zu Ende gedacht – ohne Stolpersteine.',
       cta: 'Termin buchen', more: 'Mehr erfahren',
     },
     about: {
@@ -102,9 +103,10 @@ export const T = {
       process: 'Process', contact: 'Contact', book: 'Book a Call',
     },
     hero: {
-      badge: 'Creative AI Business Consultant · Bern, Switzerland',
-      title: 'AI Intelligence meets Creativity',
-      subtitle: 'Creative AI consultant & business informatics specialist for Swiss SMEs – I automate, optimize, and digitalize your business.',
+      badge: 'AI Business Consultant · 15 years Swisscom · Bern',
+      tagline: 'AI is the instrument — the human the conductor.',
+      title: 'Human Experience. AI Precision.',
+      subtitle: 'AI automates – but creativity, empathy, and strategic big-picture thinking remain human. With 15 years at Swisscom and the latest AI tools, I optimise your SME down to the last detail: processes, automation, marketing, website. Truly thought through to the end – no stumbling blocks.',
       cta: 'Book a Call', more: 'Learn more',
     },
     about: {
