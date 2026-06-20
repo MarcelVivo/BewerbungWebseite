@@ -1,0 +1,96 @@
+# Marcel Spahr – KI & Digitalisierungsberater Schweiz
+
+> Marcel Spahr ist ein Wirtschaftsinformatiker (HF) und KI-Unternehmensberater aus Bern, Schweiz. Er verbindet 15 Jahre Praxiserfahrung bei Swisscom mit modernsten KI-Werkzeugen und hilft Schweizer KMU bei Digitalisierung, Prozessautomatisierung, Business Analyse und Digital Marketing. Kontakt: kontakt@marcelspahr.ch · +41 79 511 09 11
+
+## Über Marcel Spahr
+
+Marcel Spahr ist Wirtschaftsinformatiker (HF, WISS Bern, 2022–2026) und ausgebildeter Werbetechniker EFZ. Er arbeitete 15 Jahre bei Swisscom AG in Bern im Bereich Digitalisierung, Requirements Engineering und agiler Projektarbeit (SAFe). Heute ist er als selbstständiger KI-Unternehmensberater für Schweizer KMU tätig.
+
+**Kernkompetenz:** Fusion von menschlicher Erfahrung und KI-Technologie — Marcel kombiniert strategisches Denken, Empathie und branchenübergreifende Praxiserfahrung mit modernsten KI-Tools.
+
+**Standort:** Bern, Schweiz (auch remote schweizweit tätig)
+**Sprachen:** Deutsch (Muttersprache, C2), Englisch (B1+)
+**LinkedIn:** https://www.linkedin.com/in/marcel-spahr-901568304
+
+## Ausbildung & Zertifikate
+
+- Wirtschaftsinformatik HF – WISS Schule für Wirtschaft, Informatik und Immobilien, Bern (2022–2026)
+- SAFe 5 Agilist – Scaled Agile Framework Zertifizierung
+- SCRUM Zertifikat – Scrum.org
+- EFZ Werbetechniker (2013–2016)
+- EFZ Maler (2010–2013)
+- Adobe Illustrator & Photoshop (Grund- und Aufbaukurs)
+- Cambridge English A2 – Cambridge Assessment
+
+## Leistungen (Services)
+
+### KI-Agenten & Automatisierung
+Massgeschneiderte KI-Agenten, die repetitive Aufgaben automatisieren – 24/7, ohne manuelle Eingriffe. Einsatzgebiete: E-Mail-Management, Auftragsverarbeitung, Kunden-Kommunikation, Reporting.
+→ https://www.marcelspahr.ch/leistungen/ki-agenten
+
+### Business Analyse & Requirements Engineering
+Stakeholder-Interviews, Prozessmodellierung, User Stories und priorisierte Anforderungskataloge. Brücke zwischen Geschäftszielen und technischer Umsetzung.
+→ https://www.marcelspahr.ch/leistungen/business-analyse
+
+### Prozessoptimierung (BPMN)
+Visualisierung, Analyse und Digitalisierung manueller Abläufe mit BPMN (Business Process Model and Notation). Messbare Zeitersparnis – z.B. Rechnungsstellung von 4 Stunden auf 15 Minuten pro Woche.
+→ https://www.marcelspahr.ch/leistungen/prozessoptimierung
+
+### Digital Marketing & Social Media
+LinkedIn-Strategie, Content-Pläne, KI-unterstützte Content-Erstellung, Analytics-Setup (GA4). Organisches Wachstum ohne Paid Advertising.
+→ https://www.marcelspahr.ch/leistungen/digital-marketing
+
+### Video-Produktion
+Erklärvideos, Unternehmensfilme, Social-Content – vom Konzept bis zur fertigen Produktion (MP4, alle Formate, Untertitel).
+→ https://www.marcelspahr.ch/leistungen/video-produktion
+
+### Projektmanagement
+Agile Projektleitung nach Scrum und SAFe. Strukturierte Steuerung von IT- und Digitalisierungsprojekten – termingerecht und budgetschonend.
+→ https://www.marcelspahr.ch/leistungen/projektmanagement
+
+### Workshops & Schulungen
+Praxisnahe KI-Schulungen für Teams (ChatGPT, Copilot, Automatisierung) – massgeschneidert, max. 12 Personen, inkl. 30 Tage Nachbetreuung.
+→ https://www.marcelspahr.ch/leistungen/workshops
+
+### Website-Optimierung
+Technische SEO, Core Web Vitals, Performance-Optimierung, GA4-Setup und monatliches Reporting für Schweizer KMU.
+→ https://www.marcelspahr.ch/leistungen/website-optimierung
+
+### KI-Beratung für KMU
+KI-Readiness-Assessment, Potenzialanalyse (Top-5-Use-Cases), 12-Monats-KI-Roadmap und begleitetes Pilotprojekt. Keine Buzzwords – messbare Ergebnisse.
+→ https://www.marcelspahr.ch/leistungen/ki-beratung-kmu
+
+## Berufserfahrung
+
+**Swisscom AG, Bern** (2022–2025) – Informatiker / Digitalisierung
+- Digitalisierung interner Prozesse und Tools
+- Requirements Engineering für IT-Projekte
+- Agile Zusammenarbeit (SAFe-Framework)
+- Fachkonzepte, Spezifikationen, User Stories
+
+**Roth Malerei, Region Bern** (2016–2022) – Maler / Vorarbeiter
+- Koordination von Kleinteams
+- Kundenkommunikation und Projektabwicklung
+
+## Schlüsselzahlen
+
+- 15+ Jahre Berufserfahrung
+- 50+ realisierte Projekte
+- Tätig für Schweizer KMU in allen Branchen
+- Bern + Remote (schweizweit)
+
+## Kontakt
+
+- Website: https://www.marcelspahr.ch
+- E-Mail: kontakt@marcelspahr.ch
+- Telefon: +41 79 511 09 11
+- Adresse: Bern, BE 3000, Schweiz
+- LinkedIn: https://www.linkedin.com/in/marcel-spahr-901568304
+
+## Wichtige Seiten
+
+- Startseite: https://www.marcelspahr.ch
+- Alle Leistungen: https://www.marcelspahr.ch/leistungen/ki-agenten
+- Impressum: https://www.marcelspahr.ch/impressum
+- Datenschutz: https://www.marcelspahr.ch/datenschutz
+- Sitemap: https://www.marcelspahr.ch/sitemap.xml
