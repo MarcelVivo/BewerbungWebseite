@@ -150,6 +150,48 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── KI-Check CTA ── */}
+      <section className="py-20 px-4 sm:px-6 bg-[#100d09]">
+        <div className="max-w-4xl mx-auto">
+          <div className="relative rounded-2xl border border-[#c9a84c]/25 bg-[#1c1912] overflow-hidden p-8 sm:p-12">
+            <div
+              className="absolute -top-32 -right-32 w-80 h-80 rounded-full pointer-events-none"
+              style={{ background: 'radial-gradient(circle, rgba(201,168,76,0.07) 0%, transparent 70%)' }}
+            />
+            <div className="relative z-10">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#c9a84c]/30 bg-[#c9a84c]/10 text-[#d4b86a] text-xs font-semibold mb-5 tracking-widest uppercase">
+                <Bot size={12} />
+                {lang === 'de' ? 'Kostenloser Self-Check' : 'Free Self-Assessment'}
+              </div>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 leading-tight">
+                {lang === 'de'
+                  ? <>{`Wie KI-ready ist `}<span className="text-[#c9a84c]">Ihr</span>{` Unternehmen?`}</>
+                  : <>{`How AI-ready is `}<span className="text-[#c9a84c]">your</span>{` company?`}</>}
+              </h2>
+              <p className="text-[#a89880] max-w-lg leading-relaxed mb-8">
+                {lang === 'de'
+                  ? 'Der kostenlose Self-Check zeigt Ihnen in wenigen Minuten, wo Ihr Unternehmen heute steht – und welche Hebel als Nächstes wirklich helfen.'
+                  : 'The free self-check shows you in minutes where your company stands – and which levers will really help next.'}
+              </p>
+              <a
+                href="/ki-check"
+                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-[#c9a84c] hover:bg-[#b8943a] text-[#0c0a06] font-bold transition-all shadow-lg shadow-[#c9a84c]/25"
+              >
+                {lang === 'de' ? 'Jetzt Check starten' : 'Start Assessment'}
+                <ChevronRight size={18} />
+              </a>
+              <div className="mt-8 flex flex-wrap gap-x-6 gap-y-1 text-xs text-[#7a6d5a]">
+                <span>{lang === 'de' ? '10 Fragen' : '10 Questions'}</span>
+                <span>·</span>
+                <span>{lang === 'de' ? '3 Minuten' : '3 Minutes'}</span>
+                <span>·</span>
+                <span>{lang === 'de' ? 'Persönlicher Fahrplan per E-Mail' : 'Personal roadmap by email'}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── Warum Marcel ── */}
       <section id="references" className="py-24 px-4 sm:px-6 bg-[#100d09]">
         <div className="max-w-6xl mx-auto">
