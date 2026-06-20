@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
+import { createClient } from '@supabase/supabase-js';
 
 type CheckPayload = {
   answers: Record<string, string | string[]>;
@@ -127,6 +128,37 @@ export async function POST(req: Request) {
     }
 
     const { readinessLabel, readinessDesc, top3 } = generateReport(answers);
+
+    // ── Supabase: Kunden-Eintrag anlegen ──────────────────────────────────
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      try {
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL,
+          process.env.SUPABASE_SERVICE_ROLE_KEY,
+        );
+        const notizLines = [
+          `KI-Check Anfrage`,
+          `Reifegrad: ${readinessLabel}`,
+          answers['industry']          ? `Branche: ${label(answers['industry'])}` : null,
+          answers['team-size']         ? `Teamgrösse: ${label(answers['team-size'])}` : null,
+          answers['time-wasters']      ? `Zeitfresser: ${label(answers['time-wasters'])}` : null,
+          answers['ai-status']         ? `KI-Status: ${label(answers['ai-status'])}` : null,
+          answers['top-priority']      ? `Top-Priorität: ${label(answers['top-priority'])}` : null,
+        ].filter(Boolean).join('\n');
+
+        await supabase.from('kunden').insert({
+          kontaktperson: name,
+          firmenname:    firma || null,
+          email:         email || null,
+          telefon:       telefon || null,
+          branche:       (answers['industry'] as string) || null,
+          status:        'anfrage',
+          notizen:       notizLines,
+        });
+      } catch (dbErr) {
+        console.error('[ki-check] Supabase insert:', dbErr);
+      }
+    }
 
     if (process.env.RESEND_API_KEY) {
       const resend = new Resend(process.env.RESEND_API_KEY);

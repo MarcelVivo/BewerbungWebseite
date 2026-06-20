@@ -8,9 +8,10 @@ import { Search, Plus, X, Pencil, Trash2, Building2, User, Mail, Phone } from 'l
 // ── Helpers ───────────────────────────────────────────────
 
 const STATUS_LABEL: Record<KundenStatus, string> = {
-  lead: 'Lead', interessent: 'Interessent', kunde: 'Kunde', inaktiv: 'Inaktiv',
+  anfrage: 'Anfrage', lead: 'Lead', interessent: 'Interessent', kunde: 'Kunde', inaktiv: 'Inaktiv',
 };
 const STATUS_COLOR: Record<KundenStatus, string> = {
+  anfrage:     'bg-amber-900/60 text-amber-300',
   lead:        'bg-slate-700 text-slate-300',
   interessent: 'bg-blue-900/60 text-blue-300',
   kunde:       'bg-green-900/60 text-green-300',

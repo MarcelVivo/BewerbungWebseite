@@ -1,4 +1,4 @@
-export type KundenStatus    = 'lead' | 'interessent' | 'kunde' | 'inaktiv';
+export type KundenStatus    = 'anfrage' | 'lead' | 'interessent' | 'kunde' | 'inaktiv';
 export type RechnungStatus  = 'entwurf' | 'gesendet' | 'bezahlt' | 'ueberfaellig' | 'storniert';
 export type RechnungTyp     = 'angebot' | 'rechnung' | 'mahnung';
 export type DealStatus      = 'lead' | 'erstgespraech' | 'angebot' | 'verhandlung' | 'gewonnen' | 'verloren';
