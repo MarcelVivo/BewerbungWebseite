@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Download, Mail, MapPin, Briefcase, GraduationCap, Award,
-  Code2, FileText, LogOut, ChevronRight, Shield, Star,
+  Code2, FileText, LogOut, ChevronRight, Shield, Star, Layers,
 } from 'lucide-react';
 
 const SKILLS_TECH = [
@@ -28,51 +28,83 @@ const SKILLS_BUSINESS = [
 const EXPERIENCE = [
   {
     firma: 'Swisscom AG',
-    rolle: 'Informatiker / Digitalisierung',
-    zeitraum: '2022 – 2025',
+    rolle: 'Digitalisierung / Business Analyst',
+    zeitraum: '2021 – 2025',
     ort: 'Bern, Schweiz',
     punkte: [
-      'Mitarbeit bei der Digitalisierung interner Prozesse und Tools',
-      'Requirements Engineering für neue IT-Projekte',
-      'Enge Zusammenarbeit mit Entwicklungsteams im agilen Umfeld (SAFe)',
-      'Erstellung von Fachkonzepten, Spezifikationen und User Stories',
+      'Mitgestaltung der Digitalisierung und Automatisierung interner Prozesse mit Fokus auf Effizienz, Datenqualität und Kundenerlebnis',
+      'Optimierung von Datenbereitstellung und Reporting-Pipelines; enge Abstimmung mit Fachbereichen und IT',
+      'Anforderungsmanagement: Priorisierung von Backlogs, Erstellung von Use Cases und Stakeholder-Kommunikation (Scrum / SAFe)',
+      'Erfolgsanalysen, Kennzahlenmonitoring und strukturierte Weiterentwicklung digitaler Abläufe',
     ],
     zeugnis: '/assets/ArbeitszeugnisSwisscomMarcelSpahr2025.pdf',
   },
   {
-    firma: 'Roth Malerei',
-    rolle: 'Maler / Vorarbeiter',
-    zeitraum: '2016 – 2022',
-    ort: 'Region Bern',
+    firma: 'Swisscom Schweiz AG',
+    rolle: 'IT-Systemadministration & Sales Support',
+    zeitraum: '2015 – 2021',
+    ort: 'Bern, Schweiz',
     punkte: [
-      'Ausführung anspruchsvoller Malerarbeiten und Renovationen',
-      'Koordination von Kleinteams und Qualitätskontrolle',
-      'Kundenkommunikation und Projektabwicklung vor Ort',
+      'Betreuung und Weiterentwicklung von Systemen und Abläufen im Privatkundenumfeld (1st/2nd Level)',
+      'Technische Analyse komplexer Störungen sowie Erarbeitung nachhaltiger Lösungen',
+      'Unterstützung von Sales- und Retention-Prozessen; Mitarbeit an Tool- und Workflow-Optimierungen',
+      'Einarbeitung und Schulung neuer Mitarbeitender; Sicherstellung hoher Qualitätsstandards',
     ],
-    zeugnis: '/assets/ArbeitszeugnisRothMalerei.pdf',
+  },
+  {
+    firma: 'Swisscom Schweiz AG',
+    rolle: 'Kundenservice Technik & Administration',
+    zeitraum: '2008 – 2015',
+    ort: 'Bern, Schweiz',
+    punkte: [
+      'Technische Kundenbetreuung (1st/2nd Level) bei komplexen ICT-Anfragen im B2C-Bereich',
+      'Fehleranalyse, Eskalationsmanagement und nachhaltige Problemlösungen',
+      'Hohe Serviceorientierung und effiziente Kommunikation im Kundenkontakt',
+    ],
+  },
+  {
+    firma: 'Frontwort AG Zürich / Seka Schriften Thun',
+    rolle: 'Werbetechniker',
+    zeitraum: '2007 – 2008',
+    ort: 'Zürich / Thun',
+    punkte: [
+      'Umsetzung von Projekten zu Fussball EM 08 sowie Redesign der Swisscom Shops schweizweit',
+    ],
+  },
+];
+
+const SIDE_ACTIVITIES = [
+  {
+    firma: 'KI Digital Agentur – marcelspahr.ch',
+    rolle: 'Inhaber / KI-Berater für KMU',
+    zeitraum: '2024 – heute',
+    ort: 'Bern, Schweiz',
+    punkte: [
+      'KI-gestützte digitale Lösungen für Schweizer KMU: Webseiten, Automatisierungen, Content-Strategien',
+      'Beratung zu ChatGPT, Claude AI, n8n, Canva AI und weiteren KI-Tools',
+    ],
+  },
+  {
+    firma: 'Cube Club Bern',
+    rolle: 'Inhaber & Geschäftsführer',
+    zeitraum: '2018 – 2020',
+    ort: 'Bern, Schweiz',
+    punkte: [
+      'Operative Leitung, Organisation und wirtschaftliche Verantwortung',
+    ],
   },
 ];
 
 const EDUCATION = [
   {
-    abschluss: 'Wirtschaftsinformatik (HF)',
-    schule: 'WISS – Schule für Wirtschaft, Informatik und Immobilien',
-    zeitraum: '2022 – 2025',
-    detail: 'Schwerpunkte: Software Engineering, Business Analysis, Datenbankdesign, IT-Projektmanagement',
-  },
-  {
-    abschluss: 'Werbetechniker EFZ',
-    schule: 'Berufsfachschule',
-    zeitraum: '2013 – 2016',
-    detail: 'Grafik, Kommunikation, Digitalmedien, Drucktechnik',
-    zeugnis: '/assets/FaehigkeitszeugnisWerbetechniker.pdf',
-  },
-  {
-    abschluss: 'Maler EFZ',
-    schule: 'Berufsfachschule',
-    zeitraum: '2010 – 2013',
-    detail: 'Fachpraxis, Materialkunde, Kundenprojekte',
-    zeugnis: '/assets/FaehigkeitszeugnisMaler.pdf',
+    abschluss: 'Wirtschaftsinformatiker HF',
+    schule: 'Feusi Bildungszentrum Bern',
+    zeitraum: '2023 – 2026',
+    punkte: [
+      'Vertiefung in Prozessmanagement, Requirements Engineering, SQL, Scrum, digitale Transformation',
+      'Geschäftsprozessmodellierung (BPMN), IT-Architekturen, Datenanalyse/Reporting, IT-Service-Management',
+    ],
+    note: 'Notendurchschnitt: 5.5 · Abschluss: Sommer 2026',
   },
 ];
 
@@ -151,6 +183,40 @@ function SectionHeading({ icon: Icon, title }: { icon: React.ElementType; title:
   );
 }
 
+function ExperienceCard({ job }: { job: typeof EXPERIENCE[0] }) {
+  return (
+    <Card>
+      <div className="flex items-start justify-between gap-4 mb-4">
+        <div>
+          <h3 className="font-bold text-white">{job.rolle}</h3>
+          <p className="text-[#c9a84c] font-medium text-sm">{job.firma}</p>
+          <p className="text-[#7a6d5a] text-xs mt-0.5 flex items-center gap-1">
+            <MapPin size={10} /> {job.ort} · {job.zeitraum}
+          </p>
+        </div>
+        {'zeugnis' in job && job.zeugnis && (
+          <a
+            href={job.zeugnis as string}
+            target="_blank"
+            rel="noopener"
+            className="flex items-center gap-1.5 text-xs text-[#a89880] hover:text-[#c9a84c] bg-[#100d09] hover:bg-[#c9a84c]/10 px-3 py-1.5 rounded-lg border border-[#2d2820] hover:border-[#c9a84c]/30 transition-all flex-shrink-0"
+          >
+            <FileText size={11} /> Zeugnis
+          </a>
+        )}
+      </div>
+      <ul className="space-y-2">
+        {job.punkte.map((p, j) => (
+          <li key={j} className="flex items-start gap-2.5 text-sm text-[#a89880]">
+            <span className="mt-2 w-1.5 h-1.5 rounded-full bg-[#c9a84c]/60 flex-shrink-0" />
+            {p}
+          </li>
+        ))}
+      </ul>
+    </Card>
+  );
+}
+
 export default function ExpertisePage() {
   const router = useRouter();
 
@@ -163,6 +229,7 @@ export default function ExpertisePage() {
   const NAV = [
     { id: 'profil', label: 'Profil' },
     { id: 'erfahrung', label: 'Erfahrung' },
+    { id: 'nebenberuflich', label: 'Nebenberuflich' },
     { id: 'ausbildung', label: 'Ausbildung' },
     { id: 'skills', label: 'Skills' },
     { id: 'zertifikate', label: 'Zertifikate' },
@@ -273,16 +340,16 @@ export default function ExpertisePage() {
             <SectionHeading icon={Star} title="Über mich" />
             <Card>
               <p className="text-[#d4c4a8] leading-relaxed mb-4">
-                Ich bin Wirtschaftsinformatiker (HF) mit 15 Jahren Praxiserfahrung und bringe eine seltene Kombination mit: technisches IT-Know-how, unternehmerisches Denken und kreatives Designverständnis aus meiner Ausbildung als Werbetechniker.
+                Kreativer Wirtschaftsinformatiker mit über 15 Jahren Erfahrung bei Swisscom. Technisches Know-how mit kreativen Ideen zu verknüpfen, ist meine Leidenschaft.
               </p>
               <p className="text-[#d4c4a8] leading-relaxed mb-4">
-                Mein Fokus liegt auf der Fusion von Mensch und KI: Ich glaube, dass KI allein nicht ausreicht. Erst meine jahrelange Praxiserfahrung, Empathie und das strategische Denken im grossen Ganzen kombiniert mit modernsten KI-Werkzeugen erzielen Ergebnisse, die wirklich halten.
+                Mit fundierter Erfahrung in Digitalisierung, Prozessautomatisierung und Stakeholder-Management schaffe ich nachhaltige Lösungen. Mein Talent für strategische Planung, Datenanalyse und KI-gestützte Innovation treibt mich an, Wissen kontinuierlich weiterzuentwickeln.
               </p>
               <p className="text-[#d4c4a8] leading-relaxed">
-                Bei Swisscom sammelte ich Erfahrungen in Digitalisierung, Requirements Engineering und agiler Projektarbeit (SAFe). Heute setze ich dieses Wissen als KI-Unternehmensberater für Schweizer KMU ein – wirklich zu Ende gedacht, ohne Stolpersteine.
+                Als selbständiger KI-Berater unterstütze ich Schweizer KMU dabei, KI-Werkzeuge gewinnbringend einzusetzen – wirklich zu Ende gedacht, ohne Stolpersteine.
               </p>
               <div className="mt-5 flex flex-wrap gap-2">
-                {['KI-Beratung', 'Business Analysis', 'Requirements Engineering', 'Prozessoptimierung', 'Agile / SAFe', 'Digital Marketing', 'Next.js / React', 'Supabase'].map(tag => (
+                {['KI-Beratung', 'Business Analysis', 'Requirements Engineering', 'Prozessautomatisierung', 'Agile / SAFe', 'Datenanalyse', 'Next.js / React', 'Supabase'].map(tag => (
                   <span key={tag} className="px-2.5 py-1 bg-[#c9a84c]/10 text-[#d4b86a] rounded-full text-xs font-medium border border-[#c9a84c]/20">
                     {tag}
                   </span>
@@ -291,68 +358,48 @@ export default function ExpertisePage() {
             </Card>
           </section>
 
-          {/* Erfahrung */}
+          {/* Berufserfahrung */}
           <section id="erfahrung" className="scroll-mt-6">
             <SectionHeading icon={Briefcase} title="Berufserfahrung" />
             <div className="space-y-4">
               {EXPERIENCE.map((job, i) => (
-                <Card key={i}>
-                  <div className="flex items-start justify-between gap-4 mb-4">
-                    <div>
-                      <h3 className="font-bold text-white">{job.rolle}</h3>
-                      <p className="text-[#c9a84c] font-medium text-sm">{job.firma}</p>
-                      <p className="text-[#7a6d5a] text-xs mt-0.5 flex items-center gap-1">
-                        <MapPin size={10} /> {job.ort} · {job.zeitraum}
-                      </p>
-                    </div>
-                    {job.zeugnis && (
-                      <a
-                        href={job.zeugnis}
-                        target="_blank"
-                        rel="noopener"
-                        className="flex items-center gap-1.5 text-xs text-[#a89880] hover:text-[#c9a84c] bg-[#100d09] hover:bg-[#c9a84c]/10 px-3 py-1.5 rounded-lg border border-[#2d2820] hover:border-[#c9a84c]/30 transition-all flex-shrink-0"
-                      >
-                        <FileText size={11} /> Zeugnis
-                      </a>
-                    )}
-                  </div>
-                  <ul className="space-y-2">
-                    {job.punkte.map((p, j) => (
-                      <li key={j} className="flex items-start gap-2.5 text-sm text-[#a89880]">
-                        <span className="mt-2 w-1.5 h-1.5 rounded-full bg-[#c9a84c]/60 flex-shrink-0" />
-                        {p}
-                      </li>
-                    ))}
-                  </ul>
-                </Card>
+                <ExperienceCard key={i} job={job} />
+              ))}
+            </div>
+          </section>
+
+          {/* Nebenberufliche Tätigkeiten */}
+          <section id="nebenberuflich" className="scroll-mt-6">
+            <SectionHeading icon={Layers} title="Nebenberufliche Tätigkeiten" />
+            <div className="space-y-4">
+              {SIDE_ACTIVITIES.map((job, i) => (
+                <ExperienceCard key={i} job={job} />
               ))}
             </div>
           </section>
 
           {/* Ausbildung */}
           <section id="ausbildung" className="scroll-mt-6">
-            <SectionHeading icon={GraduationCap} title="Ausbildung" />
+            <SectionHeading icon={GraduationCap} title="Aktuelle Weiterbildung" />
             <div className="space-y-4">
               {EDUCATION.map((edu, i) => (
                 <Card key={i}>
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <h3 className="font-bold text-white">{edu.abschluss}</h3>
-                      <p className="text-[#c9a84c] font-medium text-sm">{edu.schule}</p>
-                      <p className="text-[#7a6d5a] text-xs mt-0.5">{edu.zeitraum}</p>
-                      <p className="text-[#a89880] text-sm mt-2">{edu.detail}</p>
-                    </div>
-                    {edu.zeugnis && (
-                      <a
-                        href={edu.zeugnis}
-                        target="_blank"
-                        rel="noopener"
-                        className="flex items-center gap-1.5 text-xs text-[#a89880] hover:text-[#c9a84c] bg-[#100d09] hover:bg-[#c9a84c]/10 px-3 py-1.5 rounded-lg border border-[#2d2820] hover:border-[#c9a84c]/30 transition-all flex-shrink-0"
-                      >
-                        <FileText size={11} /> Zeugnis
-                      </a>
-                    )}
-                  </div>
+                  <h3 className="font-bold text-white">{edu.abschluss}</h3>
+                  <p className="text-[#c9a84c] font-medium text-sm">{edu.schule}</p>
+                  <p className="text-[#7a6d5a] text-xs mt-0.5">{edu.zeitraum}</p>
+                  <ul className="mt-3 space-y-2">
+                    {edu.punkte.map((p, j) => (
+                      <li key={j} className="flex items-start gap-2.5 text-sm text-[#a89880]">
+                        <span className="mt-2 w-1.5 h-1.5 rounded-full bg-[#c9a84c]/60 flex-shrink-0" />
+                        {p}
+                      </li>
+                    ))}
+                  </ul>
+                  {edu.note && (
+                    <p className="mt-3 text-xs text-[#c9a84c] font-medium bg-[#c9a84c]/10 border border-[#c9a84c]/20 rounded-lg px-3 py-2">
+                      {edu.note}
+                    </p>
+                  )}
                 </Card>
               ))}
             </div>
