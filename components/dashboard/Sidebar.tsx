@@ -8,7 +8,7 @@ import {
   FolderKanban, Timer, Receipt, FileText, Calendar,
   Bot, FolderOpen, BarChart3, Settings,
   ChevronLeft, ChevronRight, LogOut, Briefcase,
-  Search, Command, MessageSquare,
+  Search, Command, MessageSquare, ClipboardList,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
@@ -47,10 +47,11 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: 'TOOLS',
     items: [
-      { label: 'Kalender',    href: '/dashboard/kalender',    icon: Calendar },
-      { label: 'KI-Agenten',  href: '/dashboard/ki-agenten',  icon: Bot },
-      { label: 'Dokumente',   href: '/dashboard/dokumente',   icon: FolderOpen },
-      { label: 'Bewerbungen', href: '/dashboard/bewerbungen', icon: Briefcase },
+      { label: 'RE-Interview',  href: '/dashboard/re-interview', icon: ClipboardList },
+      { label: 'Kalender',      href: '/dashboard/kalender',     icon: Calendar },
+      { label: 'KI-Agenten',   href: '/dashboard/ki-agenten',   icon: Bot },
+      { label: 'Dokumente',     href: '/dashboard/dokumente',    icon: FolderOpen },
+      { label: 'Bewerbungen',   href: '/dashboard/bewerbungen',  icon: Briefcase },
     ],
   },
   {
