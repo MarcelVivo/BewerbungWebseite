@@ -5,34 +5,39 @@ import Link from 'next/link';
 import {
   ChevronRight, ChevronLeft, Check, Plus, X,
   CheckCircle2, Mail, Phone, Building2, User,
+  Sparkles, Home, Code2, Landmark, HardHat, HeartPulse,
+  UtensilsCrossed, ShoppingBag, Users, BookOpen, Settings,
+  Globe, RefreshCw, Zap, TrendingUp, Bot, Smartphone,
+  ShoppingCart, GraduationCap, Wrench,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
 // ── Data ─────────────────────────────────────────────────────
 
-const BRANCHEN = [
-  { label: 'Beauty & Wellness', icon: '💆' },
-  { label: 'Immobilien', icon: '🏠' },
-  { label: 'IT & Software', icon: '💻' },
-  { label: 'Finanzwesen', icon: '💰' },
-  { label: 'Baubranche', icon: '🏗️' },
-  { label: 'Gesundheit & Medizin', icon: '🏥' },
-  { label: 'Gastronomie & Food', icon: '🍽️' },
-  { label: 'E-Commerce & Retail', icon: '🛍️' },
-  { label: 'NGO & Verein', icon: '🤝' },
-  { label: 'Bildung & Training', icon: '📚' },
-  { label: 'Sonstiges', icon: '⚙️' },
+const BRANCHEN: { label: string; icon: LucideIcon }[] = [
+  { label: 'Beauty & Wellness',    icon: Sparkles },
+  { label: 'Immobilien',           icon: Home },
+  { label: 'IT & Software',        icon: Code2 },
+  { label: 'Finanzwesen',          icon: Landmark },
+  { label: 'Baubranche',           icon: HardHat },
+  { label: 'Gesundheit & Medizin', icon: HeartPulse },
+  { label: 'Gastronomie & Food',   icon: UtensilsCrossed },
+  { label: 'E-Commerce & Retail',  icon: ShoppingBag },
+  { label: 'NGO & Verein',         icon: Users },
+  { label: 'Bildung & Training',   icon: BookOpen },
+  { label: 'Sonstiges',            icon: Settings },
 ];
 
-const PROJEKTTYPEN = [
-  { label: 'Neue Website', icon: '🌐', desc: 'Professioneller Online-Auftritt von Grund auf' },
-  { label: 'Website Redesign', icon: '🔄', desc: 'Bestehende Website modernisieren' },
-  { label: 'Prozessoptimierung', icon: '⚡', desc: 'Abläufe digitalisieren & automatisieren' },
-  { label: 'Marketing Strategie', icon: '📈', desc: 'Mehr Sichtbarkeit & qualifizierte Leads' },
-  { label: 'KI-Integration', icon: '🤖', desc: 'KI-Tools in Ihr Unternehmen integrieren' },
-  { label: 'App / Plattform', icon: '📱', desc: 'Massgeschneiderte Software-Lösung' },
-  { label: 'E-Commerce Shop', icon: '🛒', desc: 'Online verkaufen & Zahlungen abwickeln' },
-  { label: 'Workshop / Training', icon: '🎓', desc: 'Schulung für Ihr Team' },
-  { label: 'Sonstiges', icon: '🔧', desc: 'Anderes Projekt' },
+const PROJEKTTYPEN: { label: string; icon: LucideIcon; desc: string }[] = [
+  { label: 'Neue Website',        icon: Globe,         desc: 'Professioneller Online-Auftritt von Grund auf' },
+  { label: 'Website Redesign',    icon: RefreshCw,     desc: 'Bestehende Website modernisieren' },
+  { label: 'Prozessoptimierung',  icon: Zap,           desc: 'Abläufe digitalisieren & automatisieren' },
+  { label: 'Marketing Strategie', icon: TrendingUp,    desc: 'Mehr Sichtbarkeit & qualifizierte Leads' },
+  { label: 'KI-Integration',      icon: Bot,           desc: 'KI-Tools in Ihr Unternehmen integrieren' },
+  { label: 'App / Plattform',     icon: Smartphone,    desc: 'Massgeschneiderte Software-Lösung' },
+  { label: 'E-Commerce Shop',     icon: ShoppingCart,  desc: 'Online verkaufen & Zahlungen abwickeln' },
+  { label: 'Workshop / Training', icon: GraduationCap, desc: 'Schulung für Ihr Team' },
+  { label: 'Sonstiges',           icon: Wrench,        desc: 'Anderes Projekt' },
 ];
 
 const ANF_SEGMENT: Record<string, string[]> = {
@@ -274,21 +279,28 @@ export default function AnfragePage() {
               <div>
                 <h3 className="text-sm font-semibold text-white mb-3">In welcher Branche sind Sie tätig? *</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {BRANCHEN.map(b => (
-                    <button
-                      key={b.label}
-                      type="button"
-                      onClick={() => set('branche', b.label)}
-                      className={`flex items-center gap-2.5 px-3 py-3 rounded-xl border text-sm font-medium transition-all text-left ${
-                        form.branche === b.label
-                          ? 'bg-[#c9a84c]/20 border-[#c9a84c] text-white'
-                          : 'bg-[#100d09] border-[#2d2820] text-[#a89880] hover:border-[#c9a84c]/40 hover:text-[#f4edd8]'
-                      }`}
-                    >
-                      <span className="text-lg flex-shrink-0">{b.icon}</span>
-                      <span className="leading-tight text-xs">{b.label}</span>
-                    </button>
-                  ))}
+                  {BRANCHEN.map(b => {
+                    const selected = form.branche === b.label;
+                    return (
+                      <button
+                        key={b.label}
+                        type="button"
+                        onClick={() => set('branche', b.label)}
+                        className={`flex items-center gap-2.5 px-3 py-3 rounded-xl border text-sm font-medium transition-all text-left ${
+                          selected
+                            ? 'bg-[#c9a84c]/20 border-[#c9a84c] text-white'
+                            : 'bg-[#100d09] border-[#2d2820] text-[#a89880] hover:border-[#c9a84c]/40 hover:text-[#f4edd8]'
+                        }`}
+                      >
+                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
+                          selected ? 'bg-[#c9a84c]/30 text-[#c9a84c]' : 'bg-[#c9a84c]/10 text-[#c9a84c]/50'
+                        }`}>
+                          <b.icon size={14} />
+                        </div>
+                        <span className="leading-tight text-xs">{b.label}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -299,24 +311,31 @@ export default function AnfragePage() {
             <div className="space-y-4">
               <h2 className="text-lg font-bold text-white mb-5">Was planen Sie? *</h2>
               <div className="grid sm:grid-cols-2 gap-3">
-                {PROJEKTTYPEN.map(p => (
-                  <button
-                    key={p.label}
-                    type="button"
-                    onClick={() => set('projekttyp', p.label)}
-                    className={`flex items-start gap-3 px-4 py-4 rounded-xl border text-left transition-all ${
-                      form.projekttyp === p.label
-                        ? 'bg-[#c9a84c]/20 border-[#c9a84c] text-white'
-                        : 'bg-[#100d09] border-[#2d2820] text-[#a89880] hover:border-[#c9a84c]/40 hover:text-[#f4edd8]'
-                    }`}
-                  >
-                    <span className="text-2xl flex-shrink-0 mt-0.5">{p.icon}</span>
-                    <div>
-                      <p className="font-semibold text-sm">{p.label}</p>
-                      <p className="text-xs opacity-70 mt-0.5 leading-relaxed">{p.desc}</p>
-                    </div>
-                  </button>
-                ))}
+                {PROJEKTTYPEN.map(p => {
+                  const selected = form.projekttyp === p.label;
+                  return (
+                    <button
+                      key={p.label}
+                      type="button"
+                      onClick={() => set('projekttyp', p.label)}
+                      className={`flex items-start gap-3 px-4 py-4 rounded-xl border text-left transition-all ${
+                        selected
+                          ? 'bg-[#c9a84c]/20 border-[#c9a84c] text-white'
+                          : 'bg-[#100d09] border-[#2d2820] text-[#a89880] hover:border-[#c9a84c]/40 hover:text-[#f4edd8]'
+                      }`}
+                    >
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
+                        selected ? 'bg-[#c9a84c]/30 text-[#c9a84c]' : 'bg-[#c9a84c]/10 text-[#c9a84c]/50'
+                      }`}>
+                        <p.icon size={18} />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm">{p.label}</p>
+                        <p className="text-xs opacity-70 mt-0.5 leading-relaxed">{p.desc}</p>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
