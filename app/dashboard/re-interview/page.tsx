@@ -7,8 +7,36 @@ import {
   ChevronRight, ChevronLeft, Check, Plus, X, Sparkles,
   ClipboardList, Star, Users, Target, Zap, DollarSign,
   Clock, FileText, AlertCircle, CheckCircle2, Circle, Copy,
+  Inbox, ExternalLink, Mail, Phone, Building2, Calendar,
 } from 'lucide-react';
 import type { Kunde } from '@/lib/types';
+
+// ── RE Anfragen Types ────────────────────────────────────────
+
+type ReAnfrageStatus = 'neu' | 'kontaktiert' | 'in_bearbeitung' | 'abgeschlossen';
+
+interface ReAnfrage {
+  id: string;
+  name: string;
+  email: string;
+  firma?: string;
+  telefon?: string;
+  branche: string;
+  projekttyp: string;
+  anforderungen: { text: string; prio: 'must' | 'nice' }[];
+  budget?: string;
+  zeitrahmen?: string;
+  notizen?: string;
+  status: ReAnfrageStatus;
+  created_at: string;
+}
+
+const STATUS_CFG: Record<ReAnfrageStatus, { label: string; cls: string }> = {
+  neu:            { label: 'Neu',            cls: 'bg-blue-900/60 text-blue-300' },
+  kontaktiert:    { label: 'Kontaktiert',    cls: 'bg-yellow-900/60 text-yellow-300' },
+  in_bearbeitung: { label: 'In Bearbeitung', cls: 'bg-purple-900/60 text-purple-300' },
+  abgeschlossen:  { label: 'Abgeschlossen',  cls: 'bg-green-900/60 text-green-300' },
+};
 
 // ── Static Data ─────────────────────────────────────────────
 
@@ -838,12 +866,139 @@ export default function ReInterviewPage() {
     );
   }
 
+  // ── Anfragen (public submissions) ────────────────────────
+
+  const [activeTab, setActiveTab] = useState<'interview' | 'anfragen'>('interview');
+  const [anfragen, setAnfragen] = useState<ReAnfrage[]>([]);
+  const [anfragenLoading, setAnfragenLoading] = useState(false);
+  const [anfragenLoaded, setAnfragenLoaded] = useState(false);
+
+  async function loadAnfragen() {
+    setAnfragenLoading(true);
+    const { data } = await createClient()
+      .from('re_anfragen')
+      .select('*')
+      .order('created_at', { ascending: false });
+    setAnfragen((data ?? []) as ReAnfrage[]);
+    setAnfragenLoading(false);
+    setAnfragenLoaded(true);
+  }
+
+  async function updateAnfrageStatus(id: string, status: ReAnfrageStatus) {
+    await createClient().from('re_anfragen').update({ status }).eq('id', id);
+    setAnfragen(prev => prev.map(a => a.id === id ? { ...a, status } : a));
+  }
+
+  function handleTabChange(tab: 'interview' | 'anfragen') {
+    setActiveTab(tab);
+    if (tab === 'anfragen' && !anfragenLoaded) loadAnfragen();
+  }
+
+  function renderAnfragen() {
+    if (anfragenLoading) return <div className="py-16 text-center text-slate-500 text-sm">Lädt…</div>;
+    if (anfragen.length === 0) return (
+      <div className="py-16 text-center">
+        <Inbox size={40} className="mx-auto mb-3 text-slate-600" />
+        <p className="text-slate-400 text-sm">Noch keine Anfragen über die Website eingegangen.</p>
+        <a href="/anfrage" target="_blank" rel="noopener" className="mt-4 inline-flex items-center gap-1.5 text-[#6366f1] text-sm hover:underline">
+          <ExternalLink size={13} /> Anfrage-Seite öffnen
+        </a>
+      </div>
+    );
+
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm text-slate-400">{anfragen.length} Anfrage{anfragen.length !== 1 ? 'n' : ''}</span>
+          <a href="/anfrage" target="_blank" rel="noopener"
+            className="flex items-center gap-1.5 text-xs text-[#6366f1] hover:text-[#a5b4fc] transition-colors">
+            <ExternalLink size={12} /> Formular ansehen
+          </a>
+        </div>
+        {anfragen.map(a => {
+          const must = a.anforderungen?.filter(x => x.prio === 'must') ?? [];
+          const nice = a.anforderungen?.filter(x => x.prio === 'nice') ?? [];
+          return (
+            <div key={a.id} className="rounded-xl border border-[#2d3144] bg-[#1a1d27] overflow-hidden">
+              <div className="p-5">
+                <div className="flex items-start justify-between gap-4 mb-3">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-bold text-white">{a.name}</h3>
+                      {a.firma && <span className="text-xs text-slate-500">· {a.firma}</span>}
+                    </div>
+                    <div className="flex flex-wrap gap-3 text-xs text-slate-500">
+                      <a href={`mailto:${a.email}`} className="flex items-center gap-1 hover:text-[#6366f1] transition-colors">
+                        <Mail size={11} />{a.email}
+                      </a>
+                      {a.telefon && <a href={`tel:${a.telefon}`} className="flex items-center gap-1 hover:text-[#6366f1] transition-colors"><Phone size={11} />{a.telefon}</a>}
+                      <span className="flex items-center gap-1"><Calendar size={11} />{new Date(a.created_at).toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                  </div>
+                  <select
+                    value={a.status}
+                    onChange={e => updateAnfrageStatus(a.id, e.target.value as ReAnfrageStatus)}
+                    className={`text-xs px-2 py-1 rounded-full font-medium border-0 outline-none cursor-pointer ${STATUS_CFG[a.status].cls}`}
+                  >
+                    {(Object.keys(STATUS_CFG) as ReAnfrageStatus[]).map(s => (
+                      <option key={s} value={s} className="bg-[#0f1117] text-white">{STATUS_CFG[s].label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex flex-wrap gap-2 mb-3">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-[#252836] border border-[#2d3144] text-slate-300">{a.branche}</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-[#6366f1]/10 border border-[#6366f1]/20 text-[#a5b4fc]">{a.projekttyp}</span>
+                  {a.budget && <span className="text-xs px-2 py-0.5 rounded-full bg-[#252836] text-slate-400">💰 {a.budget}</span>}
+                  {a.zeitrahmen && <span className="text-xs px-2 py-0.5 rounded-full bg-[#252836] text-slate-400">⏱ {a.zeitrahmen}</span>}
+                </div>
+
+                {must.length > 0 && (
+                  <div className="mb-2">
+                    <p className="text-xs text-slate-600 mb-1">Must-have:</p>
+                    <div className="flex flex-wrap gap-1">
+                      {must.map(x => <span key={x.text} className="text-xs px-2 py-0.5 rounded-full bg-green-900/20 border border-green-800/30 text-green-300">★ {x.text}</span>)}
+                    </div>
+                  </div>
+                )}
+                {nice.length > 0 && (
+                  <div className="mb-2">
+                    <p className="text-xs text-slate-600 mb-1">Nice-to-have:</p>
+                    <div className="flex flex-wrap gap-1">
+                      {nice.map(x => <span key={x.text} className="text-xs px-2 py-0.5 rounded-full bg-yellow-900/20 border border-yellow-800/30 text-yellow-300">◇ {x.text}</span>)}
+                    </div>
+                  </div>
+                )}
+                {a.notizen && (
+                  <p className="mt-2 text-xs text-slate-500 bg-[#0f1117] rounded-lg px-3 py-2 leading-relaxed">{a.notizen}</p>
+                )}
+
+                <div className="mt-4 flex gap-2">
+                  <a href={`mailto:${a.email}?subject=Ihre Projektanfrage – ${a.projekttyp}`}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#6366f1] hover:bg-[#5254cc] text-white text-xs font-medium transition-colors">
+                    <Mail size={12} /> Antworten
+                  </a>
+                  {a.telefon && (
+                    <a href={`tel:${a.telefon}`}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#252836] hover:bg-[#2d3144] text-slate-300 text-xs font-medium transition-colors">
+                      <Phone size={12} /> Anrufen
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
   // ── Layout ───────────────────────────────────────────────
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-6">
         <div className="flex items-center gap-3 mb-1">
           <div className="w-8 h-8 rounded-lg bg-[#6366f1]/20 flex items-center justify-center">
             <ClipboardList size={16} className="text-[#a5b4fc]" />
@@ -853,6 +1008,40 @@ export default function ReInterviewPage() {
         <p className="text-sm text-slate-400">Strukturiertes Kundeninterview für Requirements Engineering</p>
       </div>
 
+      {/* Tabs */}
+      <div className="flex gap-1 mb-8 border-b border-[#2d3144]">
+        {[
+          { key: 'interview', label: 'Neues Interview', icon: ClipboardList },
+          { key: 'anfragen',  label: 'Eingehende Anfragen', icon: Inbox,
+            badge: anfragen.filter(a => a.status === 'neu').length || undefined },
+        ].map(t => (
+          <button
+            key={t.key}
+            onClick={() => handleTabChange(t.key as 'interview' | 'anfragen')}
+            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px ${
+              activeTab === t.key
+                ? 'border-[#6366f1] text-white'
+                : 'border-transparent text-slate-500 hover:text-slate-300'
+            }`}
+          >
+            <t.icon size={14} />
+            {t.label}
+            {t.badge ? (
+              <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-blue-500 text-white text-[10px] font-bold flex items-center justify-center">
+                {t.badge}
+              </span>
+            ) : null}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab: Anfragen */}
+      {activeTab === 'anfragen' && (
+        <div>{renderAnfragen()}</div>
+      )}
+
+      {/* Tab: Interview Stepper */}
+      {activeTab === 'interview' && (<>
       {/* Stepper */}
       <div className="flex items-center gap-1 mb-8 overflow-x-auto pb-1">
         {STEPS.map((s, i) => {
@@ -920,6 +1109,7 @@ export default function ReInterviewPage() {
           )}
         </div>
       )}
+      </>)}
     </div>
   );
 }
