@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import {
   ChevronRight, ChevronLeft, Check, Plus, X, Sparkles,
   ClipboardList, Star, Users, Target, Zap, DollarSign,
-  Clock, FileText, AlertCircle, CheckCircle2, Circle,
+  Clock, FileText, AlertCircle, CheckCircle2, Circle, Copy,
 } from 'lucide-react';
 import type { Kunde } from '@/lib/types';
 
@@ -215,6 +215,7 @@ export default function ReInterviewPage() {
   const [customAnfInput, setCustomAnfInput] = useState('');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     createClient().from('kunden').select('id,kontaktperson,firmenname').order('kontaktperson')
@@ -269,6 +270,72 @@ export default function ReInterviewPage() {
     if (!iv.projekttitel) {
       set('projekttitel', `${iv.projekttyp} – ${iv.kundenName}`);
     }
+  }
+
+  function generatePrompt(): string {
+    const must = iv.anforderungen.filter(a => a.prio === 'must');
+    const nice = iv.anforderungen.filter(a => a.prio === 'nice');
+
+    const lines: string[] = [
+      `Du bist ein erfahrener Software-Architekt und KI-Berater. Ich habe soeben ein Requirements-Engineering-Interview mit einem Kunden durchgeführt und folgende Anforderungen aufgenommen. Analysiere diese und erstelle daraus einen konkreten Umsetzungsplan.`,
+      ``,
+      `## Kundenkontext`,
+      `- **Kunde:** ${iv.kundenName || 'n.d.'}`,
+      `- **Branche:** ${iv.branche || 'n.d.'}`,
+      `- **Projekttyp:** ${iv.projekttyp || 'n.d.'}`,
+    ];
+
+    if (iv.istSituation.length > 0) {
+      lines.push(``, `## Ist-Situation`);
+      lines.push(`**Aktuell vorhanden:** ${iv.istSituation.join(', ')}`);
+    }
+    if (iv.gutLaueft) lines.push(`**Was gut läuft:** ${iv.gutLaueft}`);
+    if (iv.schmerzpunkte.length > 0) lines.push(`**Schmerzpunkte:** ${iv.schmerzpunkte.join(', ')}`);
+    if (iv.schmerzpunkteText) lines.push(`**Details:** ${iv.schmerzpunkteText}`);
+
+    if (must.length > 0) {
+      lines.push(``, `## Must-have Anforderungen _(zwingend umzusetzen)_`);
+      must.forEach(a => lines.push(`- ${a.text}`));
+    }
+    if (nice.length > 0) {
+      lines.push(``, `## Nice-to-have Anforderungen _(bei Budget/Zeit möglich)_`);
+      nice.forEach(a => lines.push(`- ${a.text}`));
+    }
+    if (iv.anforderungenText) lines.push(``, `**Weitere Anforderungen:** ${iv.anforderungenText}`);
+
+    if (iv.nfAnforderungen.length > 0) {
+      lines.push(``, `## Nicht-funktionale Anforderungen`);
+      iv.nfAnforderungen.forEach(n => lines.push(`- ${n}`));
+    }
+
+    lines.push(``, `## Rahmenbedingungen`);
+    if (iv.budget) lines.push(`- **Budget:** ${iv.budget}`);
+    if (iv.zeitrahmen) lines.push(`- **Zeitrahmen:** ${iv.zeitrahmen}`);
+    if (iv.deadline) lines.push(`- **Deadline:** ${new Date(iv.deadline).toLocaleDateString('de-CH')}`);
+    if (iv.stakeholder) lines.push(`- **Stakeholder:** ${iv.stakeholder}`);
+    if (iv.techEinschraenkungen) lines.push(`- **Technische Einschränkungen:** ${iv.techEinschraenkungen}`);
+    if (iv.notizen) lines.push(``, `## Zusatznotizen aus dem Interview`, iv.notizen);
+
+    lines.push(
+      ``,
+      `---`,
+      ``,
+      `Bitte erstelle basierend auf diesen Anforderungen:`,
+      ``,
+      `1. **Projektbeschreibung** – Kurze, klare Zusammenfassung des Projekts und Ziels`,
+      `2. **Technische Architektur** – Empfohlener Tech-Stack und Systemaufbau`,
+      `3. **Epics & User Stories** – Priorisierte Aufgabenliste (Must-haves zuerst)`,
+      `4. **Grober Zeitplan** – Meilensteine basierend auf Zeitrahmen und Budget`,
+      `5. **Offene Fragen** – Was muss noch geklärt werden, bevor mit der Umsetzung gestartet werden kann?`,
+    );
+
+    return lines.join('\n');
+  }
+
+  async function copyPrompt() {
+    await navigator.clipboard.writeText(generatePrompt());
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
   }
 
   async function createProject() {
@@ -718,6 +785,31 @@ export default function ReInterviewPage() {
                 </div>
               </div>
             )}
+
+            {/* Claude Code Prompt */}
+            <div className="rounded-xl border border-[#06b6d4]/30 bg-[#06b6d4]/5 p-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-bold text-[#67e8f9] uppercase tracking-widest flex items-center gap-2">
+                  <Sparkles size={12} /> Claude Code Prompt
+                </p>
+                <button
+                  onClick={copyPrompt}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                    copied
+                      ? 'bg-green-500/20 border-green-500/40 text-green-300'
+                      : 'bg-[#06b6d4]/10 border-[#06b6d4]/30 text-[#67e8f9] hover:bg-[#06b6d4]/20'
+                  }`}
+                >
+                  {copied ? <><Check size={12} /> Kopiert!</> : <><Copy size={12} /> Prompt kopieren</>}
+                </button>
+              </div>
+              <p className="text-xs text-slate-500">
+                Dieser Prompt fasst alle Anforderungen strukturiert zusammen – direkt in Claude Code einfügen.
+              </p>
+              <pre className="text-xs text-slate-300 bg-[#0f1117] rounded-lg border border-[#2d3144] p-4 overflow-auto max-h-64 whitespace-pre-wrap leading-relaxed font-mono">
+                {generatePrompt()}
+              </pre>
+            </div>
 
             {/* Projekt erstellen */}
             <div className="rounded-xl border border-[#6366f1]/30 bg-[#6366f1]/5 p-5 space-y-3">
