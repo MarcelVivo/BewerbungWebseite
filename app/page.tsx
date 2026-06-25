@@ -5,7 +5,7 @@ import {
   GraduationCap, Globe, Lightbulb, Mail, MapPin, Phone,
   ChevronRight, ExternalLink, Star,
   CheckCircle, Zap, Users, Award,
-  MessageSquare, Search, Compass, Wrench, Heart,
+  MessageSquare, Search, Compass, Wrench, Heart, ClipboardList,
 } from 'lucide-react';
 import Link from 'next/link';
 import HomeNavBar from './HomeNavBar';
@@ -150,44 +150,100 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── KI-Check CTA ── */}
+      {/* ── CTA Duo: Projektanfrage + KI-Check ── */}
       <section className="py-20 px-4 sm:px-6 bg-[#100d09]">
-        <div className="max-w-4xl mx-auto">
-          <div className="relative rounded-2xl border border-[#c9a84c]/25 bg-[#1c1912] overflow-hidden p-8 sm:p-12">
-            <div
-              className="absolute -top-32 -right-32 w-80 h-80 rounded-full pointer-events-none"
-              style={{ background: 'radial-gradient(circle, rgba(201,168,76,0.07) 0%, transparent 70%)' }}
-            />
-            <div className="relative z-10">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#c9a84c]/30 bg-[#c9a84c]/10 text-[#d4b86a] text-xs font-semibold mb-5 tracking-widest uppercase">
-                <Bot size={12} />
-                {lang === 'de' ? 'Kostenloser Self-Check' : 'Free Self-Assessment'}
-              </div>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 leading-tight">
-                {lang === 'de'
-                  ? <>{`Wie KI-ready ist `}<span className="text-[#c9a84c]">Ihr</span>{` Unternehmen?`}</>
-                  : <>{`How AI-ready is `}<span className="text-[#c9a84c]">your</span>{` company?`}</>}
-              </h2>
-              <p className="text-[#a89880] max-w-lg leading-relaxed mb-8">
-                {lang === 'de'
-                  ? 'Der kostenlose Self-Check zeigt Ihnen in wenigen Minuten, wo Ihr Unternehmen heute steht – und welche Hebel als Nächstes wirklich helfen.'
-                  : 'The free self-check shows you in minutes where your company stands – and which levers will really help next.'}
-              </p>
-              <a
-                href="/ki-check"
-                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-[#c9a84c] hover:bg-[#b8943a] text-[#0c0a06] font-bold transition-all shadow-lg shadow-[#c9a84c]/25"
-              >
-                {lang === 'de' ? 'Jetzt Check starten' : 'Start Assessment'}
-                <ChevronRight size={18} />
-              </a>
-              <div className="mt-8 flex flex-wrap gap-x-6 gap-y-1 text-xs text-[#7a6d5a]">
-                <span>{lang === 'de' ? '10 Fragen' : '10 Questions'}</span>
-                <span>·</span>
-                <span>{lang === 'de' ? '3 Minuten' : '3 Minutes'}</span>
-                <span>·</span>
-                <span>{lang === 'de' ? 'Persönlicher Fahrplan per E-Mail' : 'Personal roadmap by email'}</span>
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-10">
+            <span className="text-[#c9a84c] text-sm font-semibold tracking-widest uppercase">
+              {lang === 'de' ? 'Nächster Schritt' : 'Next Step'}
+            </span>
+            <h2 className="mt-2 text-2xl sm:text-3xl font-bold text-white">
+              {lang === 'de' ? 'Wie kann ich Ihnen helfen?' : 'How can I help you?'}
+            </h2>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-5">
+
+            {/* Projektanfrage – primary */}
+            <div className="relative rounded-2xl border border-[#c9a84c]/50 bg-[#1c1912] overflow-hidden p-7 flex flex-col">
+              <div
+                className="absolute -top-24 -left-24 w-64 h-64 rounded-full pointer-events-none"
+                style={{ background: 'radial-gradient(circle, rgba(201,168,76,0.10) 0%, transparent 70%)' }}
+              />
+              <div className="relative z-10 flex flex-col flex-1">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#c9a84c]/40 bg-[#c9a84c]/10 text-[#d4b86a] text-xs font-semibold mb-5 tracking-widest uppercase w-fit">
+                  <ClipboardList size={12} />
+                  {lang === 'de' ? 'Projekt starten' : 'Start a Project'}
+                </div>
+                <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 leading-tight">
+                  {lang === 'de'
+                    ? <>{`Bereit loszulegen? `}<span className="text-[#c9a84c]">Anfrage stellen.</span></>
+                    : <>{`Ready to go? `}<span className="text-[#c9a84c]">Submit a request.</span></>}
+                </h3>
+                <p className="text-[#a89880] leading-relaxed mb-6 flex-1">
+                  {lang === 'de'
+                    ? 'Beschreiben Sie Ihr Projekt in 4 strukturierten Schritten – ich melde mich innerhalb von 24 Stunden persönlich bei Ihnen.'
+                    : 'Describe your project in 4 structured steps – I will get back to you personally within 24 hours.'}
+                </p>
+                <div className="space-y-4">
+                  <a
+                    href="/anfrage"
+                    className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-[#c9a84c] hover:bg-[#b8943a] text-[#0c0a06] font-bold transition-all shadow-lg shadow-[#c9a84c]/25"
+                  >
+                    {lang === 'de' ? 'Projektanfrage starten' : 'Start Project Request'}
+                    <ChevronRight size={18} />
+                  </a>
+                  <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-[#7a6d5a]">
+                    <span>{lang === 'de' ? '4 Schritte' : '4 Steps'}</span>
+                    <span>·</span>
+                    <span>{lang === 'de' ? '5 Minuten' : '5 Minutes'}</span>
+                    <span>·</span>
+                    <span>{lang === 'de' ? 'Antwort innerhalb 24h' : 'Reply within 24h'}</span>
+                  </div>
+                </div>
               </div>
             </div>
+
+            {/* KI-Check – secondary */}
+            <div className="relative rounded-2xl border border-[#2d2820] bg-[#1c1912] overflow-hidden p-7 flex flex-col hover:border-[#c9a84c]/30 transition-colors">
+              <div
+                className="absolute -top-24 -right-24 w-64 h-64 rounded-full pointer-events-none"
+                style={{ background: 'radial-gradient(circle, rgba(201,168,76,0.05) 0%, transparent 70%)' }}
+              />
+              <div className="relative z-10 flex flex-col flex-1">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#c9a84c]/25 bg-[#c9a84c]/8 text-[#d4b86a] text-xs font-semibold mb-5 tracking-widest uppercase w-fit">
+                  <Bot size={12} />
+                  {lang === 'de' ? 'Kostenloser Self-Check' : 'Free Self-Assessment'}
+                </div>
+                <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 leading-tight">
+                  {lang === 'de'
+                    ? <>{'Wie KI-ready ist '}<span className="text-[#c9a84c]">Ihr</span>{' Unternehmen?'}</>
+                    : <>{'How AI-ready is '}<span className="text-[#c9a84c]">your</span>{' company?'}</>}
+                </h3>
+                <p className="text-[#a89880] leading-relaxed mb-6 flex-1">
+                  {lang === 'de'
+                    ? 'Der kostenlose Self-Check zeigt Ihnen in wenigen Minuten, wo Ihr Unternehmen heute steht – und welche Hebel als Nächstes wirklich helfen.'
+                    : 'The free self-check shows you in minutes where your company stands – and which levers will really help next.'}
+                </p>
+                <div className="space-y-4">
+                  <a
+                    href="/ki-check"
+                    className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl border border-[#c9a84c]/50 hover:border-[#c9a84c] hover:bg-[#c9a84c]/10 text-[#c9a84c] font-bold transition-all"
+                  >
+                    {lang === 'de' ? 'Jetzt Check starten' : 'Start Assessment'}
+                    <ChevronRight size={18} />
+                  </a>
+                  <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-[#7a6d5a]">
+                    <span>{lang === 'de' ? '10 Fragen' : '10 Questions'}</span>
+                    <span>·</span>
+                    <span>{lang === 'de' ? '3 Minuten' : '3 Minutes'}</span>
+                    <span>·</span>
+                    <span>{lang === 'de' ? 'Persönlicher Fahrplan per E-Mail' : 'Personal roadmap by email'}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
