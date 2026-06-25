@@ -40,3 +40,15 @@ body {
 }
 .ms-anim        { animation: ms-fade-up    0.65s ease-out both; }
 .ms-anim-scale  { animation: ms-fade-scale 0.6s  ease-out both; }
+
+/* ── Logo animations ───────────────────────────────────── */
+@keyframes logo-shimmer {
+  0%, 18%   { transform: translateX(-180%); }
+  62%, 100% { transform: translateX(520%); }
+}
+@keyframes badge-glow {
+  0%, 100%  { box-shadow: none; border-color: rgba(201,168,76,0.38); }
+  32%, 60%  { box-shadow: 0 0 9px rgba(201,168,76,0.30); border-color: rgba(201,168,76,0.78); }
+}
+.logo-shimmer { animation: logo-shimmer 5s ease-in-out infinite; }
+.badge-glow   { animation: badge-glow   5s ease-in-out infinite; }

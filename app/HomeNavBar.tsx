@@ -21,7 +21,23 @@ export default function HomeNavBar() {
   return (
     <header className="fixed top-0 inset-x-0 z-50 border-b border-[#2d2820] bg-[#0c0a06]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        <span className="font-bold text-[#f4edd8] text-lg tracking-tight">Marcel Spahr</span>
+        {/* ── Logo ── */}
+        <a href="/" aria-label="Marcel Spahr – Startseite" className="group flex items-center gap-2.5 select-none">
+          {/* Monogram badge */}
+          <div className="badge-glow relative w-7 h-7 border rounded-[3px] flex items-center justify-center flex-shrink-0 bg-[#c9a84c]/5">
+            <span className="text-[11px] font-bold tracking-tight text-[#c9a84c] leading-none">MS</span>
+          </div>
+          {/* Name with shimmer */}
+          <div className="relative overflow-hidden leading-none">
+            <span className="block text-[13px] font-semibold tracking-[0.13em] uppercase text-[#c9a84c]">
+              Marcel Spahr
+            </span>
+            <span
+              className="logo-shimmer pointer-events-none absolute inset-y-0 w-8 bg-gradient-to-r from-transparent via-[#f0e0a8]/55 to-transparent"
+              aria-hidden="true"
+            />
+          </div>
+        </a>
         <nav className="hidden md:flex items-center gap-6">
           {NAV_LINKS.map(l => (
             <a key={l.href} href={l.href} className="text-sm text-[#a89880] hover:text-[#f4edd8] transition-colors">{l.label}</a>
