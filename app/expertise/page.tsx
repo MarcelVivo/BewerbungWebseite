@@ -109,7 +109,7 @@ const EDUCATION = [
 ];
 
 const CERTS = [
-  { name: 'IREB CPRE Foundation Level', org: 'SAQ / IREB', file: '/assets/IREB_Zertifikat_Spahr_Marcel.pdf' },
+  { name: 'IREB CPRE Foundation Level', org: 'IREB', file: '/assets/IREB_Zertifikat_Spahr_Marcel.pdf' },
   { name: 'SAFe 5 Agilist', org: 'Scaled Agile', file: '/assets/SAFeZertifikatMarcelSpahr.pdf' },
   { name: 'SCRUM Zertifikat', org: 'Scrum.org', file: '/assets/SCRUMZertifikat.pdf' },
   { name: 'Cambridge English A2', org: 'Cambridge Assessment', file: '/assets/CambridgeEnglischA2ZertifikatMarcelSpahr.pdf' },
