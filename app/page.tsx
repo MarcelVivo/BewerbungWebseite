@@ -90,7 +90,7 @@ export default function HomePage() {
 
       {/* ── Hero ── */}
       <section className="relative min-h-screen overflow-hidden pt-16">
-        <div className="absolute inset-0">
+        <div className="absolute inset-x-0 bottom-0 top-16 sm:inset-0">
           <img
             src="/assets/MarcelSpahrHeader.jpg"
             alt="Marcel Spahr – KI-Unternehmensberater Bern"
