@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import {
   Bot, BarChart3, Workflow, Megaphone, Video, FolderKanban,
   GraduationCap, Globe, Lightbulb, Mail, MapPin, Phone,
@@ -39,6 +40,44 @@ const PORTFOLIO_META = [
 const USP_ICONS = [Zap, Users, CheckCircle, Award];
 const PROCESS_ICONS = [MessageSquare, Search, Compass, Wrench, Heart];
 
+const CINEMATIC_QUOTES = [
+  'KI ersetzt keine Menschen. Sie ersetzt Unternehmen, die sie ignorieren.',
+  'Die besten Ergebnisse entstehen dort, wo menschliche Intelligenz auf künstliche Intelligenz trifft.',
+  'Wer KI nur nutzt, spart Zeit. Wer sie versteht, gewinnt Zukunft.',
+  'KI denkt schnell. Der Mensch denkt richtig. Gemeinsam entsteht Exzellenz.',
+  'KI kann Daten verstehen. Menschen verstehen Menschen.',
+];
+
+function CinematicQuotes() {
+  const [state, setState] = useState({ index: 0, gen: 0 });
+
+  useEffect(() => {
+    const t = setTimeout(
+      () => setState(s => ({ index: (s.index + 1) % CINEMATIC_QUOTES.length, gen: s.gen + 1 })),
+      7600,
+    );
+    return () => clearTimeout(t);
+  }, [state.gen]);
+
+  return (
+    <div className="absolute top-[20%] sm:top-[26%] right-3 sm:right-[4%] left-[42%] sm:left-auto sm:w-[min(290px,32vw)] z-10 pointer-events-none">
+      <div key={state.gen} className="cinematic-quote">
+        <p
+          className="text-[#ede8dc] text-[0.73rem] sm:text-[0.82rem] leading-[1.75] font-light italic tracking-wide text-right"
+          style={{ textShadow: '0 2px 14px rgba(0,0,0,0.96), 0 1px 4px rgba(0,0,0,0.88)' }}
+        >
+          <span className="text-[#c9a84c] not-italic">„</span>
+          {CINEMATIC_QUOTES[state.index]}
+          <span className="text-[#c9a84c] not-italic">“</span>
+        </p>
+        <div className="mt-2.5 flex justify-end">
+          <div className="h-px w-10 bg-gradient-to-l from-[#c9a84c]/55 to-transparent" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Page ──────────────────────────────────────────────────────
 
 export default function HomePage() {
@@ -61,6 +100,7 @@ export default function HomePage() {
             background: 'linear-gradient(to bottom, rgba(12,10,6,0.35) 0%, rgba(12,10,6,0.05) 20%, rgba(12,10,6,0.08) 50%, rgba(12,10,6,0.70) 68%, rgba(12,10,6,0.92) 82%, #0c0a06 95%)'
           }} />
         </div>
+        <CinematicQuotes />
         <div className="absolute bottom-0 left-0 right-0 z-10 pb-10 sm:pb-14">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
             <div className="ms-anim-scale mb-3 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#c9a84c]/40 bg-[#c9a84c]/10 text-[#d4b86a] text-sm font-medium backdrop-blur-sm">

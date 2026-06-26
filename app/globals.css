@@ -52,3 +52,16 @@ body {
 }
 .logo-shimmer { animation: logo-shimmer 5s ease-in-out infinite; }
 .badge-glow   { animation: badge-glow   5s ease-in-out infinite; }
+
+/* ── Cinematic rotating quotes ─────────────────────────── */
+@keyframes ms-cinematic-quote {
+  0%   { opacity: 0; transform: scale(1.000); }
+  10%  { opacity: 1; }
+  82%  { opacity: 1; transform: scale(1.055); }
+  93%  { opacity: 0; transform: scale(1.062); }
+  100% { opacity: 0; transform: scale(1.062); }
+}
+.cinematic-quote {
+  animation: ms-cinematic-quote 8s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  transform-origin: center;
+}
