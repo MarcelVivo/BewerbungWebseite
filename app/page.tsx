@@ -60,7 +60,7 @@ function CinematicQuotes() {
   }, [state.gen]);
 
   return (
-    <div className="absolute top-[20%] sm:top-[26%] right-3 sm:right-[4%] left-[42%] sm:left-auto sm:w-[min(290px,32vw)] z-10 pointer-events-none">
+    <div className="absolute top-[20%] sm:top-[26%] right-3 sm:right-[10%] left-[42%] sm:left-auto sm:w-[min(290px,32vw)] z-10 pointer-events-none">
       <div key={state.gen} className="cinematic-quote">
         <p
           className="text-[#ede8dc] text-[0.73rem] sm:text-[0.82rem] leading-[1.75] font-light italic tracking-wide text-right"
