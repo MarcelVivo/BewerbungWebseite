@@ -60,7 +60,7 @@ function CinematicQuotes() {
   }, [state.gen]);
 
   return (
-    <div className="absolute top-[20%] sm:top-[26%] right-3 sm:right-[20%] left-[42%] sm:left-auto sm:w-[min(290px,32vw)] z-10 pointer-events-none">
+    <div className="hidden sm:block absolute sm:top-[26%] sm:right-[20%] sm:w-[min(290px,32vw)] z-10 pointer-events-none">
       <div key={state.gen} className="cinematic-quote">
         <p
           className="text-[#ede8dc] text-[0.73rem] sm:text-[0.82rem] leading-[1.75] font-light italic tracking-wide text-right"
@@ -94,7 +94,7 @@ export default function HomePage() {
           <img
             src="/assets/MarcelSpahrHeader.jpg"
             alt="Marcel Spahr – KI-Unternehmensberater Bern"
-            className="w-full h-full object-cover object-top"
+            className="w-full h-full object-contain object-top sm:object-cover"
           />
           <div className="absolute inset-0" style={{
             background: 'linear-gradient(to bottom, rgba(12,10,6,0.35) 0%, rgba(12,10,6,0.05) 20%, rgba(12,10,6,0.08) 50%, rgba(12,10,6,0.70) 68%, rgba(12,10,6,0.92) 82%, #0c0a06 95%)'
