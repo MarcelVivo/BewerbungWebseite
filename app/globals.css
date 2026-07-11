@@ -556,7 +556,7 @@ body {
   flex-direction: column;
   align-items: flex-start;
   gap: 0.52rem;
-  min-width: min(27rem, 76vw);
+  min-width: min(42rem, 82vw);
   padding: 0.2rem 0 0.15rem 1.05rem;
   text-align: left;
 }
@@ -680,7 +680,7 @@ body {
 
 .spiral-intro-title {
   color: #fff;
-  font-size: clamp(0.95rem, 2.1vw, 2.4rem);
+  font-size: clamp(2.05rem, 5.1vw, 5.35rem);
   font-weight: 900;
   line-height: 0.9;
   letter-spacing: -0.055em;
