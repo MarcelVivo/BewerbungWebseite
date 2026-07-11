@@ -40,7 +40,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var sprite=softSprite();
 
   var world=new THREE.Group(); scene.add(world);
-  var BRAIN_BASE_Y=.82;
+  var BRAIN_BASE_Y=.12;
   var brain=new THREE.Group(); brain.position.y=BRAIN_BASE_Y; brain.scale.setScalar(3.64); world.add(brain);
   var introTextGroup=new THREE.Group(); world.add(introTextGroup);
   var introSprites=[];
