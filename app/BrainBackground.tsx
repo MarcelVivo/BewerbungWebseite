@@ -81,7 +81,7 @@ export default function BrainBackground() {
   var scatterN=pts.length;
   brain.add(dbgHide('scatter',pointsObj(ppos,pcol,.072,1)));
 
-  var lpos=[], lcol=[], wpos=[], pairs=[], walkPaths=[];
+  var lpos=[], lcol=[], wpos=[], wcol=[], pairs=[], walkPaths=[];
   BR.walks.forEach(function(flat){
     cc.copy(golds[Math.floor(Math.random()*golds.length)]);
     var cnt=flat.length/3, base=pts.length, path=[];
@@ -89,6 +89,8 @@ export default function BrainBackground() {
       var x=flat[k*3],y=flat[k*3+1],z=flat[k*3+2];
       pts.push(new THREE.Vector3(x,y,z));
       wpos.push(x,y,z);
+      var fw=taperFade(y);
+      wcol.push(cc.r*fw,cc.g*fw,cc.b*fw);
       path.push(new THREE.Vector3(x,y,z));
       if(k>0){
         var px=flat[(k-1)*3],py=flat[(k-1)*3+1],pz=flat[(k-1)*3+2];
@@ -100,11 +102,167 @@ export default function BrainBackground() {
     }
     if(path.length>3) walkPaths.push(path);
   });
+
+  // --- Nervenstrang: wächst direkt aus dem Stumpf-Ring des Gehirn-Meshes und
+  // wird in dieselben Puffer (lpos/lcol/wpos/wcol) wie das Gehirn geschrieben.
+  // Gehirn und Nervenstrang sind dadurch buchstäblich ein einziges
+  // THREE.LineSegments- und ein einziges THREE.Points-Objekt, keine zwei
+  // getrennten 3D-Objekte mehr. ---
+  var SBASE_X=BR.stumpCenter[0], SBASE_Y=BR.stumpCenter[1], SBASE_Z=BR.stumpCenter[2];
+  var roots=[];
+  for(var ri=0;ri<BR.stumpRing.length;ri+=3){
+    roots.push(new THREE.Vector3(BR.stumpRing[ri],BR.stumpRing[ri+1],BR.stumpRing[ri+2]));
+  }
+  var SP={ fibers:120, length:8.75, rStr:0.038, gather:0.16, taper:0.18,
+           curve:0.025, twist:2.1, jitter:0.014, rungs:0.66, ptSize:0.021, spacing:0.045,
+           ringSpread:1, offX:0, offY:0, offZ:0,
+           topBend:0, topBendExtent:0.08, topFunnel:0.28, topFunnelExtent:0.22 };
+  function rnd(){return Math.random();}
+  function smooth(x){x=x<0?0:x>1?1:x;return x*x*(3-2*x);}
+  var STRAND_ON = !(typeof window!=='undefined' && new URLSearchParams(window.location.search).get('nostrand')==='1');
+  var HAIR_COUNT=isMobile?36:64, HAIR_SEGS=40;
+  var sBase=[], sMeta=[], sFibers=[], vc=0;
+  var wobbleLineRefs=[], wobblePtsRefs=[];
+  function genStrandInto(outPos,outCol,outPtsPos,outPtsCol){
+    sBase=[]; sMeta=[]; sFibers=[]; vc=0; wobbleLineRefs=[]; wobblePtsRefs=[];
+    var N=Math.max(20,Math.round(SP.length/SP.spacing));
+    for(var cr=0;cr<roots.length;cr++){
+      var rr=roots[cr], rn=roots[(cr+1)%roots.length]||rr;
+      cc.copy(golds[cr%golds.length]);
+      outPos.push(rr.x,rr.y,rr.z,rn.x,rn.y,rn.z);
+      outCol.push(cc.r,cc.g,cc.b,cc.r,cc.g,cc.b);
+      var sx=SBASE_X+(rr.x-SBASE_X)*0.42;
+      var sz=SBASE_Z+(rr.z-SBASE_Z)*0.42;
+      var sy=rr.y-0.18;
+      outPos.push(rr.x,rr.y,rr.z,sx,sy,sz);
+      outCol.push(cc.r,cc.g,cc.b,cc.r,cc.g,cc.b);
+      outPtsPos.push(rr.x,rr.y,rr.z,sx,sy,sz);
+      outPtsCol.push(cc.r,cc.g,cc.b,cc.r,cc.g,cc.b);
+    }
+    var rootOrder=roots.map(function(_,ix){return ix;});
+    for(var sh=rootOrder.length-1;sh>0;sh--){ var jx=Math.floor(rnd()*(sh+1)); var tmp=rootOrder[sh]; rootOrder[sh]=rootOrder[jx]; rootOrder[jx]=tmp; }
+    for(var f=0;f<SP.fibers;f++){
+      // cycle evenly through every point on the stump ring (shuffled per build)
+      // instead of random picks, so fibers spread all the way around it
+      var rawRoot=roots.length?roots[rootOrder[f%rootOrder.length]]:new THREE.Vector3(SBASE_X,-0.6,SBASE_Z);
+      var root=new THREE.Vector3(
+        SBASE_X+(rawRoot.x-SBASE_X)*SP.ringSpread+SP.offX,
+        rawRoot.y+SP.offY,
+        SBASE_Z+(rawRoot.z-SBASE_Z)*SP.ringSpread+SP.offZ
+      );
+      var relX=root.x-SBASE_X-SP.offX, relZ=root.z-SBASE_Z-SP.offZ;
+      var a0=rnd()*6.283, tw=(rnd()-0.5)*SP.twist;
+      var endF=(f%4)?0.9+0.1*rnd():0.6+0.3*rnd();
+      var steps=Math.round(N*endF), base=vc;
+      sFibers.push({start:base, len:steps});
+      var fiberCol=golds[Math.floor(rnd()*golds.length)];
+      for(var r=0;r<steps;r++){
+        var tv=r/N;
+        var ang=a0+tv*tw;
+        var bundleScale=1-SP.taper*tv;
+        var swirl=SP.rStr*smooth(Math.min(1,tv/Math.max(SP.gather,.001)));
+        var funnelEnv=1-smooth(Math.min(1,tv/Math.max(SP.topFunnelExtent,.001)));
+        var funnelFactor=1+SP.topFunnel*funnelEnv;
+        var bendEnv=1-smooth(Math.min(1,tv/Math.max(SP.topBendExtent,.001)));
+        var cx=SBASE_X+SP.offX+relX*bundleScale*funnelFactor+SP.curve*Math.sin(tv*2.1)+Math.cos(ang)*swirl+SP.topBend*bendEnv;
+        var cz=SBASE_Z+SP.offZ+relZ*bundleScale*funnelFactor+0.7*SP.curve*Math.sin(tv*1.6+1.0)+Math.sin(ang)*swirl;
+        var cy=root.y - r*SP.spacing;
+        var px=cx+(rnd()-0.5)*SP.jitter, py=cy+(rnd()-0.5)*SP.jitter, pz=cz+(rnd()-0.5)*SP.jitter;
+        var v=vc;
+        sBase.push(px,py,pz);
+        sMeta.push(tv,a0);
+        cc.copy(fiberCol);
+        var ptOff=outPtsPos.length;
+        outPtsPos.push(px,py,pz);
+        outPtsCol.push(cc.r,cc.g,cc.b);
+        wobblePtsRefs.push({off:ptOff,srcV:v});
+        if(r>0){
+          var pi=(v-1)*3;
+          var lnOff=outPos.length;
+          outPos.push(sBase[pi],sBase[pi+1],sBase[pi+2],px,py,pz);
+          outCol.push(cc.r,cc.g,cc.b,cc.r,cc.g,cc.b);
+          wobbleLineRefs.push({off:lnOff,srcV:v-1});
+          wobbleLineRefs.push({off:lnOff+3,srcV:v});
+        }
+        vc++;
+      }
+    }
+    var stepsSpan=Math.round(SP.length/SP.spacing);
+    for(var i2=0;i2<vc;i2+=2){
+      var j2=i2+stepsSpan;
+      if(j2>=0&&j2<vc&&sMeta[i2*2]>SP.gather&&Math.abs(sBase[i2*3+1]-sBase[j2*3+1])<0.1){
+        var dx=sBase[i2*3]-sBase[j2*3], dz=sBase[i2*3+2]-sBase[j2*3+2];
+        if(Math.sqrt(dx*dx+dz*dz)<0.05&&rnd()<SP.rungs){
+          cc.copy(golds[Math.floor(rnd()*golds.length)]);
+          var rOff=outPos.length;
+          outPos.push(sBase[i2*3],sBase[i2*3+1],sBase[i2*3+2],sBase[j2*3],sBase[j2*3+1],sBase[j2*3+2]);
+          outCol.push(cc.r,cc.g,cc.b,cc.r,cc.g,cc.b);
+          wobbleLineRefs.push({off:rOff,srcV:i2});
+          wobbleLineRefs.push({off:rOff+3,srcV:j2});
+        }
+      }
+    }
+    // Haar-ähnliche Faserstruktur um den Stumpf: viele einzelne, sanft
+    // wellenförmige Stränge, statisch (ohne Wobble-Animation).
+    for(var h=0;h<HAIR_COUNT;h++){
+      var rawRootH=roots.length?roots[h%roots.length]:new THREE.Vector3(SBASE_X,-0.6,SBASE_Z);
+      var rootH=new THREE.Vector3(
+        SBASE_X+(rawRootH.x-SBASE_X)*SP.ringSpread+SP.offX,
+        rawRootH.y+SP.offY,
+        SBASE_Z+(rawRootH.z-SBASE_Z)*SP.ringSpread+SP.offZ
+      );
+      var relXH=rootH.x-SBASE_X-SP.offX, relZH=rootH.z-SBASE_Z-SP.offZ;
+      var freq1=0.7+rnd()*1.1, freq2=2.2+rnd()*2.2;
+      var amp1=0.03+rnd()*0.045, amp2=0.008+rnd()*0.016;
+      var ph1=rnd()*6.283, ph2=rnd()*6.283;
+      var hairLen=SP.length*(0.65+0.35*rnd());
+      cc.copy(golds[Math.floor(rnd()*golds.length)]);
+      var prevX=0,prevY=0,prevZ=0;
+      for(var s=0;s<=HAIR_SEGS;s++){
+        var tvh=s/HAIR_SEGS;
+        var bundleScaleH=1-SP.taper*tvh;
+        var wx=Math.sin(tvh*freq1*Math.PI+ph1)*amp1+Math.sin(tvh*freq2*Math.PI+ph2)*amp2;
+        var wz=Math.cos(tvh*freq1*Math.PI+ph1*1.3)*amp1*0.7+Math.cos(tvh*freq2*Math.PI+ph2)*amp2*0.7;
+        var cxh=SBASE_X+SP.offX+relXH*bundleScaleH+wx;
+        var czh=SBASE_Z+SP.offZ+relZH*bundleScaleH+wz;
+        var cyh=rootH.y-tvh*hairLen;
+        var b=.55+.45*(0.5+0.5*Math.sin(tvh*freq1*Math.PI+ph1));
+        if(s>0){
+          outPos.push(prevX,prevY,prevZ,cxh,cyh,czh);
+          outCol.push(cc.r*b,cc.g*b,cc.b*b,cc.r*b,cc.g*b,cc.b*b);
+        }
+        prevX=cxh; prevY=cyh; prevZ=czh;
+      }
+    }
+  }
+
+  var baseLinePos=lpos.slice(), baseLineCol=lcol.slice();
+  var baseWPos=wpos.slice(), baseWCol=wcol.slice();
+  if(STRAND_ON) genStrandInto(lpos,lcol,wpos,wcol);
+
   var lgeo=new THREE.BufferGeometry();
   lgeo.setAttribute('position',new THREE.Float32BufferAttribute(lpos,3));
   lgeo.setAttribute('color',new THREE.Float32BufferAttribute(lcol,3));
-  brain.add(dbgHide('walks',new THREE.LineSegments(lgeo,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:.52,blending:THREE.NormalBlending,depthWrite:false}))));
-  brain.add(dbgHide('wpts',pointsObj(wpos,null,.044,.6)));
+  var linesObj=new THREE.LineSegments(lgeo,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:.52,blending:THREE.NormalBlending,depthWrite:false}));
+  brain.add(dbgHide('walks',linesObj));
+  var wptsObj=pointsObj(wpos,wcol,.044,.6);
+  brain.add(dbgHide('wpts',wptsObj));
+
+  function rebuildStrand(){
+    var newLPos=baseLinePos.slice(), newLCol=baseLineCol.slice();
+    var newWPos=baseWPos.slice(), newWCol=baseWCol.slice();
+    if(STRAND_ON) genStrandInto(newLPos,newLCol,newWPos,newWCol);
+    var ng=new THREE.BufferGeometry();
+    ng.setAttribute('position',new THREE.Float32BufferAttribute(newLPos,3));
+    ng.setAttribute('color',new THREE.Float32BufferAttribute(newLCol,3));
+    linesObj.geometry.dispose();
+    linesObj.geometry=ng;
+    var nwg=new THREE.BufferGeometry();
+    nwg.setAttribute('position',new THREE.Float32BufferAttribute(newWPos,3));
+    nwg.setAttribute('color',new THREE.Float32BufferAttribute(newWCol,3));
+    wptsObj.geometry.dispose();
+    wptsObj.geometry=nwg;
+  }
 
   var deg=new Uint8Array(scatterN), xpos=[];
   for(i=0;i<scatterN;i++){
@@ -217,7 +375,7 @@ export default function BrainBackground() {
     this.mat=new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
     this.line=new THREE.Line(g4,this.mat);
     this.line.frustumCulled=false;
-    (kind==='strand'?strand:brain).add(this.line);
+    brain.add(this.line);
     this.active=false;
     this.wait=2+Math.random()*5;
   }
@@ -246,7 +404,7 @@ export default function BrainBackground() {
       var j0=Math.max(0,Math.min(N-1,Math.floor(idxFloat)));
       var j1=Math.min(N-1,j0+1);
       var lt2=idxFloat-j0;
-      var base=this.fiber.start, pa2=sAttr.array;
+      var base=this.fiber.start, pa2=sBase;
       var ax=pa2[(base+j0)*3],ay=pa2[(base+j0)*3+1],az=pa2[(base+j0)*3+2];
       var bx=pa2[(base+j1)*3],by=pa2[(base+j1)*3+1],bz=pa2[(base+j1)*3+2];
       gx=ax+(bx-ax)*lt2; gy=ay+(by-ay)*lt2; gz=az+(bz-az)*lt2;
@@ -375,135 +533,6 @@ export default function BrainBackground() {
   var nerveBolts=[], NBN=isMobile?12:26;
   for(i=0;i<NBN;i++) nerveBolts.push(new NerveBolt());
 
-  var strand=new THREE.Group(); brain.add(strand);
-  if (typeof window!=='undefined' && new URLSearchParams(window.location.search).get('nostrand')==='1') strand.visible=false;
-  // Ansatzpunkt exakt am echten, abgeschnittenen Stumpf der GLB-Mesh (nicht geschätzt)
-  var SBASE_X=BR.stumpCenter[0], SBASE_Y=BR.stumpCenter[1], SBASE_Z=BR.stumpCenter[2];
-  var sBase=[], sMeta=[], vc=0, sAttr=null, sLine=null, sPts=null, sFibers=[];
-  var roots=[];
-  for(var ri=0;ri<BR.stumpRing.length;ri+=3){
-    roots.push(new THREE.Vector3(BR.stumpRing[ri],BR.stumpRing[ri+1],BR.stumpRing[ri+2]));
-  }
-  var SP={ fibers:36, length:8.75, rStr:0.02, gather:0.2, taper:0.15,
-           curve:0.03, twist:1.2, jitter:0.004, rungs:0.5, ptSize:0.01, spacing:0.036,
-           ringSpread:1, offX:0, offY:0, offZ:0,
-           topBend:0, topBendExtent:0.25, topFunnel:0, topFunnelExtent:0.15 };
-  function rnd(){return Math.random();}
-  function smooth(x){x=x<0?0:x>1?1:x;return x*x*(3-2*x);}
-  function buildStrand(){
-    if(sLine){strand.remove(sLine);sLine.geometry.dispose();}
-    if(sPts){strand.remove(sPts);sPts.geometry.dispose();}
-    sBase=[]; sMeta=[]; sFibers=[]; var col=[], idx=[]; vc=0;
-    var N=Math.max(20,Math.round(SP.length/SP.spacing));
-    var rootOrder=roots.map(function(_,ix){return ix;});
-    for(var sh=rootOrder.length-1;sh>0;sh--){ var jx=Math.floor(rnd()*(sh+1)); var tmp=rootOrder[sh]; rootOrder[sh]=rootOrder[jx]; rootOrder[jx]=tmp; }
-    for(var f=0;f<SP.fibers;f++){
-      // cycle evenly through every point on the stump ring (shuffled per build)
-      // instead of random picks, so fibers spread all the way around it
-      var rawRoot=roots.length?roots[rootOrder[f%rootOrder.length]]:new THREE.Vector3(SBASE_X,-0.6,SBASE_Z);
-      var root=new THREE.Vector3(
-        SBASE_X+(rawRoot.x-SBASE_X)*SP.ringSpread+SP.offX,
-        rawRoot.y+SP.offY,
-        SBASE_Z+(rawRoot.z-SBASE_Z)*SP.ringSpread+SP.offZ
-      );
-      // this fiber's own position relative to the ring center — kept for the
-      // whole fiber length (instead of snapping to the center) so the strand
-      // stays exactly as wide as the ring it grows out of, one continuous
-      // object instead of a wide ring sitting on top of a thin bundle
-      var relX=root.x-SBASE_X-SP.offX, relZ=root.z-SBASE_Z-SP.offZ;
-      var a0=rnd()*6.283, tw=(rnd()-0.5)*SP.twist;
-      var endF=(f%4)?0.9+0.1*rnd():0.6+0.3*rnd();
-      var steps=Math.round(N*endF), base=vc;
-      sFibers.push({start:base, len:steps});
-      for(var r=0;r<steps;r++){
-        var tv=r/N;
-        var ang=a0+tv*tw;
-        var bundleScale=1-SP.taper*tv; // whole bundle narrows gently, doesn't collapse to a point
-        var swirl=SP.rStr*smooth(Math.min(1,tv/Math.max(SP.gather,.001)));
-        // top-only funnel: extra flare right at the ring that settles back to
-        // the normal bundle width within topFunnelExtent
-        var funnelEnv=1-smooth(Math.min(1,tv/Math.max(SP.topFunnelExtent,.001)));
-        var funnelFactor=1+SP.topFunnel*funnelEnv;
-        // top-only bend: the whole bundle leans sideways right at the ring,
-        // straightening out again within topBendExtent
-        var bendEnv=1-smooth(Math.min(1,tv/Math.max(SP.topBendExtent,.001)));
-        var cx=SBASE_X+SP.offX+relX*bundleScale*funnelFactor+SP.curve*Math.sin(tv*2.1)+Math.cos(ang)*swirl+SP.topBend*bendEnv;
-        var cz=SBASE_Z+SP.offZ+relZ*bundleScale*funnelFactor+0.7*SP.curve*Math.sin(tv*1.6+1.0)+Math.sin(ang)*swirl;
-        var cy=root.y - r*SP.spacing;
-        sBase.push(cx+(rnd()-0.5)*SP.jitter, cy+(rnd()-0.5)*SP.jitter, cz+(rnd()-0.5)*SP.jitter);
-        sMeta.push(tv,a0);
-        cc.copy(golds[Math.floor(rnd()*golds.length)]);
-        col.push(cc.r,cc.g,cc.b);
-        if(r>0) idx.push(base+r-1,base+r);
-        vc++;
-      }
-    }
-    for(var i2=0;i2<vc;i2+=2){
-      var j2=i2+steps2(i2);
-      if(j2>=0&&j2<vc&&sMeta[i2*2]>SP.gather&&Math.abs(sBase[i2*3+1]-sBase[j2*3+1])<0.1){
-        var dx=sBase[i2*3]-sBase[j2*3], dz=sBase[i2*3+2]-sBase[j2*3+2];
-        if(Math.sqrt(dx*dx+dz*dz)<0.05&&rnd()<SP.rungs) idx.push(i2,j2);
-      }
-    }
-    sAttr=new THREE.BufferAttribute(new Float32Array(sBase),3);
-    var gP=new THREE.BufferGeometry(); gP.setAttribute('position',sAttr);
-    gP.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
-    var gL=new THREE.BufferGeometry(); gL.setAttribute('position',sAttr);
-    gL.setAttribute('color',new THREE.Float32BufferAttribute(col.slice(),3)); gL.setIndex(idx);
-    sLine=new THREE.LineSegments(gL,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:.42,blending:THREE.AdditiveBlending,depthWrite:false}));
-    sPts=new THREE.Points(gP,new THREE.PointsMaterial({size:SP.ptSize*1.25,map:sprite,transparent:true,opacity:.55,vertexColors:true,blending:THREE.AdditiveBlending,depthWrite:false}));
-    strand.add(sLine); strand.add(sPts);
-  }
-  function steps2(i){ return i+Math.round(SP.length/SP.spacing); }
-  buildStrand();
-
-  // --- Haar-ähnliche Faserstruktur um den Stumpf: viele einzelne, sanft
-  // wellenförmige Stränge, die vertikal um den Trunk herum verlaufen
-  // (Referenzbild: dichtes Bündel leicht gewellter Fasern statt gerader
-  // Linien). Eigene Gruppe, eigene sanfte Wellen pro Faser, NormalBlending
-  // statt additiv, damit sie nicht wieder zu einem hellen Klumpen verschmelzen.
-  var hairGroup=new THREE.Group(); strand.add(hairGroup);
-  var hairLines=[];
-  var HAIR_COUNT=isMobile?36:64, HAIR_SEGS=40;
-  function buildHair(){
-    hairLines.forEach(function(l){ hairGroup.remove(l); l.geometry.dispose(); });
-    hairLines=[];
-    for(var h=0;h<HAIR_COUNT;h++){
-      var rawRoot=roots.length?roots[h%roots.length]:new THREE.Vector3(SBASE_X,-0.6,SBASE_Z);
-      var root=new THREE.Vector3(
-        SBASE_X+(rawRoot.x-SBASE_X)*SP.ringSpread+SP.offX,
-        rawRoot.y+SP.offY,
-        SBASE_Z+(rawRoot.z-SBASE_Z)*SP.ringSpread+SP.offZ
-      );
-      var relX=root.x-SBASE_X-SP.offX, relZ=root.z-SBASE_Z-SP.offZ;
-      var freq1=0.7+rnd()*1.1, freq2=2.2+rnd()*2.2;
-      var amp1=0.03+rnd()*0.045, amp2=0.008+rnd()*0.016;
-      var ph1=rnd()*6.283, ph2=rnd()*6.283;
-      var hairLen=SP.length*(0.65+0.35*rnd());
-      var pos=new Float32Array((HAIR_SEGS+1)*3), col=new Float32Array((HAIR_SEGS+1)*3);
-      cc.copy(golds[Math.floor(rnd()*golds.length)]);
-      for(var s=0;s<=HAIR_SEGS;s++){
-        var tv=s/HAIR_SEGS;
-        var bundleScale=1-SP.taper*tv;
-        var wx=Math.sin(tv*freq1*Math.PI+ph1)*amp1+Math.sin(tv*freq2*Math.PI+ph2)*amp2;
-        var wz=Math.cos(tv*freq1*Math.PI+ph1*1.3)*amp1*0.7+Math.cos(tv*freq2*Math.PI+ph2)*amp2*0.7;
-        var cx=SBASE_X+SP.offX+relX*bundleScale+wx;
-        var cz=SBASE_Z+SP.offZ+relZ*bundleScale+wz;
-        var cy=root.y-tv*hairLen;
-        pos[s*3]=cx; pos[s*3+1]=cy; pos[s*3+2]=cz;
-        var b=.55+.45*(0.5+0.5*Math.sin(tv*freq1*Math.PI+ph1));
-        col[s*3]=cc.r*b; col[s*3+1]=cc.g*b; col[s*3+2]=cc.b*b;
-      }
-      var gH=new THREE.BufferGeometry();
-      gH.setAttribute('position',new THREE.BufferAttribute(pos,3));
-      gH.setAttribute('color',new THREE.BufferAttribute(col,3));
-      var lineH=new THREE.Line(gH,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:.4,blending:THREE.NormalBlending,depthWrite:false}));
-      hairGroup.add(lineH);
-      hairLines.push(lineH);
-    }
-  }
-  buildHair();
-
   // --- Tuning-Panel: Regler für die Nervenstrang-Parameter, nur mit ?tune=1
   // in der URL sichtbar. Werte lassen sich live anpassen und als Code-
   // Snippet kopieren, um sie mir zu schicken. ---
@@ -592,8 +621,7 @@ export default function BrainBackground() {
       input.oninput=function(){
         SP[key]=parseFloat(input.value);
         labVal.textContent=SP[key].toFixed(3);
-        buildStrand();
-        buildHair();
+        rebuildStrand();
       };
       row.appendChild(lab); row.appendChild(input);
       tunePanel.appendChild(row);
@@ -624,7 +652,7 @@ export default function BrainBackground() {
   var goldenPulses=[], strandPulses=[];
   var GPN=isMobile?2:4, SPULN=isMobile?2:3;
   for(i=0;i<GPN;i++) goldenPulses.push(new GlidePulse('golden'));
-  for(i=0;i<SPULN;i++) strandPulses.push(new GlidePulse('strand'));
+  if(STRAND_ON&&sFibers.length) for(i=0;i<SPULN;i++) strandPulses.push(new GlidePulse('strand'));
 
   var d1=[], d2b=[];
   for(i=0;i<(isMobile?70:170);i++) d1.push((Math.random()-.5)*14, 4-Math.random()*22, -3+Math.random()*5);
@@ -650,13 +678,28 @@ export default function BrainBackground() {
       if (!reduced) {
         t += dt;
         for (var si = 0; si < sparks.length; si++) sparks[si].update(dt);
-        var pa = sAttr.array;
-        for (var v = 0; v < vc; v++) {
-          var tv = sMeta[v * 2], ph = sMeta[v * 2 + 1];
-          pa[v * 3]     = sBase[v * 3]     + Math.sin(t * 1.1 + tv * 9 + ph) * 0.06 * tv * tv;
-          pa[v * 3 + 2] = sBase[v * 3 + 2] + Math.cos(t * 0.9 + tv * 7 + ph) * 0.05 * tv * tv;
+        if (vc > 0) {
+          var linePosArr = linesObj.geometry.attributes.position.array;
+          var ptsPosArr = wptsObj.geometry.attributes.position.array;
+          var wobX = new Float32Array(vc), wobZ = new Float32Array(vc);
+          for (var v = 0; v < vc; v++) {
+            var tv = sMeta[v * 2], ph = sMeta[v * 2 + 1];
+            wobX[v] = Math.sin(t * 1.1 + tv * 9 + ph) * 0.06 * tv * tv;
+            wobZ[v] = Math.cos(t * 0.9 + tv * 7 + ph) * 0.05 * tv * tv;
+          }
+          for (var wr = 0; wr < wobbleLineRefs.length; wr++) {
+            var refL = wobbleLineRefs[wr], svL = refL.srcV, oL = refL.off;
+            linePosArr[oL]     = sBase[svL * 3]     + wobX[svL];
+            linePosArr[oL + 2] = sBase[svL * 3 + 2] + wobZ[svL];
+          }
+          linesObj.geometry.attributes.position.needsUpdate = true;
+          for (var wp = 0; wp < wobblePtsRefs.length; wp++) {
+            var refP = wobblePtsRefs[wp], svP = refP.srcV, oP = refP.off;
+            ptsPosArr[oP]     = sBase[svP * 3]     + wobX[svP];
+            ptsPosArr[oP + 2] = sBase[svP * 3 + 2] + wobZ[svP];
+          }
+          wptsObj.geometry.attributes.position.needsUpdate = true;
         }
-        sAttr.needsUpdate = true;
         for (var gi = 0; gi < goldenPulses.length; gi++) goldenPulses[gi].update(dt);
         for (var pi = 0; pi < strandPulses.length; pi++) strandPulses[pi].update(dt);
         for (var ni = 0; ni < nerveBolts.length; ni++) nerveBolts[ni].update(dt);
