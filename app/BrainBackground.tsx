@@ -117,6 +117,9 @@ export default function BrainBackground() {
            curve:0.016, twist:1.45, jitter:0.009, rungs:0.62, ptSize:0.021, spacing:0.045,
            ringSpread:1, offX:0, offY:0, offZ:0,
            topBend:0, topBendExtent:0.08, topFunnel:0.9, topFunnelExtent:0.36 };
+  var BT={ bridgeFibers:isMobile?82:156, bridgeLift:0.52, bridgeDepth:0.46, bridgeDepthRand:0.62,
+           bridgeEndRadius:0.026, bridgeCenterPull:0.38, bridgeSideSwing:0.018,
+           bridgeWave:0.012, bridgeSegs:10, mainRootLift:0.56 };
   function rnd(){return Math.random();}
   function smooth(x){x=x<0?0:x>1?1:x;return x*x*(3-2*x);}
   function stumpAnchor(rawRoot, liftMax){
@@ -136,24 +139,24 @@ export default function BrainBackground() {
   var sBase=[], sMeta=[], sFibers=[], vc=0;
   var wobbleLineRefs=[], wobblePtsRefs=[];
   function pushOrganicBridge(outPos,outCol,outPtsPos,outPtsCol,count){
-    var segs=10;
+    var segs=Math.max(4,Math.round(BT.bridgeSegs));
     for(var bf=0;bf<count;bf++){
       var raw=roots.length?roots[bf%roots.length]:new THREE.Vector3(SBASE_X,SBASE_Y,SBASE_Z);
-      var start=stumpAnchor(raw,0.52);
+      var start=stumpAnchor(raw,BT.bridgeLift);
       var side=bf%2===0?1:-1;
-      var endY=SBASE_Y-0.46-rnd()*0.62;
-      var endR=0.008+rnd()*0.026;
+      var endY=SBASE_Y-BT.bridgeDepth-rnd()*BT.bridgeDepthRand;
+      var endR=0.008+rnd()*BT.bridgeEndRadius;
       var endA=rnd()*6.283;
       var end=new THREE.Vector3(
         SBASE_X+SP.offX+Math.cos(endA)*endR,
         endY,
         SBASE_Z+SP.offZ+Math.sin(endA)*endR
       );
-      var ctrl1=start.clone().lerp(new THREE.Vector3(SBASE_X,SBASE_Y-0.12,SBASE_Z),0.38);
+      var ctrl1=start.clone().lerp(new THREE.Vector3(SBASE_X,SBASE_Y-0.12,SBASE_Z),BT.bridgeCenterPull);
       ctrl1.x+=(rnd()-0.5)*0.034;
       ctrl1.z+=(rnd()-0.5)*0.034;
       var ctrl2=end.clone().lerp(start,0.22);
-      ctrl2.x+=side*(0.018+rnd()*0.02);
+      ctrl2.x+=side*(BT.bridgeSideSwing+rnd()*0.02);
       ctrl2.z+=(rnd()-0.5)*0.032;
       cc.copy(golds[bf%golds.length]);
       var prev=start.clone();
@@ -161,7 +164,7 @@ export default function BrainBackground() {
       outPtsCol.push(cc.r,cc.g,cc.b);
       for(var bs=1;bs<=segs;bs++){
         var t=bs/segs, it=1-t;
-        var wave=Math.sin(t*Math.PI)*(0.012+0.012*rnd());
+        var wave=Math.sin(t*Math.PI)*(BT.bridgeWave+BT.bridgeWave*rnd());
         var cur=new THREE.Vector3(
           it*it*it*start.x+3*it*it*t*ctrl1.x+3*it*t*t*ctrl2.x+t*t*t*end.x+Math.sin(t*6.283+bf)*wave,
           it*it*it*start.y+3*it*it*t*ctrl1.y+3*it*t*t*ctrl2.y+t*t*t*end.y,
@@ -206,14 +209,14 @@ export default function BrainBackground() {
       outPtsPos.push(inner.x,inner.y,inner.z,lower.x,lower.y,lower.z);
       outPtsCol.push(cc.r,cc.g,cc.b,cc.r,cc.g,cc.b);
     }
-    pushOrganicBridge(outPos,outCol,outPtsPos,outPtsCol,isMobile?82:156);
+    pushOrganicBridge(outPos,outCol,outPtsPos,outPtsCol,Math.max(0,Math.round(BT.bridgeFibers)));
     var rootOrder=roots.map(function(_,ix){return ix;});
     for(var sh=rootOrder.length-1;sh>0;sh--){ var jx=Math.floor(rnd()*(sh+1)); var tmp=rootOrder[sh]; rootOrder[sh]=rootOrder[jx]; rootOrder[jx]=tmp; }
     for(var f=0;f<SP.fibers;f++){
       // cycle evenly through every point on the stump ring (shuffled per build)
       // instead of random picks, so fibers spread all the way around it
       var rawRoot=roots.length?roots[rootOrder[f%rootOrder.length]]:new THREE.Vector3(SBASE_X,-0.6,SBASE_Z);
-      var root=stumpAnchor(rawRoot,0.56);
+      var root=stumpAnchor(rawRoot,BT.mainRootLift);
       var relX=root.x-SBASE_X-SP.offX, relZ=root.z-SBASE_Z-SP.offZ;
       var a0=rnd()*6.283, tw=(rnd()-0.5)*SP.twist;
       var endF=(f%4)?0.9+0.1*rnd():0.6+0.3*rnd();
@@ -600,6 +603,31 @@ export default function BrainBackground() {
   // Snippet kopieren, um sie mir zu schicken. ---
   var tunePanel=null;
   if (typeof window!=='undefined' && new URLSearchParams(window.location.search).get('tune')==='1') {
+    function sectionLabel(text){
+      var s=document.createElement('div');
+      s.textContent=text;
+      s.style.cssText='margin:12px 0 7px;color:#ffcf4a;font-weight:bold;letter-spacing:.08em;text-transform:uppercase;';
+      tunePanel.appendChild(s);
+    }
+    function addSlider(def,target){
+      var key=def[0], label=def[1], min=def[2], max=def[3], step=def[4];
+      var row=document.createElement('div'); row.style.cssText='margin-bottom:6px;';
+      var lab=document.createElement('div');
+      lab.style.cssText='display:flex;justify-content:space-between;margin-bottom:2px;';
+      var labName=document.createElement('span'); labName.textContent=label;
+      var labVal=document.createElement('span'); labVal.textContent=String(target[key]);
+      lab.appendChild(labName); lab.appendChild(labVal);
+      var input=document.createElement('input');
+      input.type='range'; input.min=String(min); input.max=String(max); input.step=String(step);
+      input.value=String(target[key]); input.style.cssText='width:100%;accent-color:#ffb000;';
+      input.oninput=function(){
+        target[key]=parseFloat(input.value);
+        labVal.textContent=target[key].toFixed(step>=1?0:3);
+        rebuildStrand();
+      };
+      row.appendChild(lab); row.appendChild(input);
+      tunePanel.appendChild(row);
+    }
     var SLIDERS=[
       ['fibers','Fasern',10,150,1],
       ['length','Länge',2,15,0.05],
@@ -620,6 +648,18 @@ export default function BrainBackground() {
       ['topBendExtent','Neigung Reichweite',0.02,0.6,0.01],
       ['topFunnel','Trichterform oben',-0.9,3,0.02],
       ['topFunnelExtent','Trichter Reichweite',0.02,0.5,0.01]
+    ];
+    var BRIDGE_SLIDERS=[
+      ['bridgeFibers','Verbindungsfasern',0,260,1],
+      ['bridgeLift','Start im Stumpf',0,1.2,0.01],
+      ['bridgeDepth','Andock-Tiefe',0.05,1.4,0.01],
+      ['bridgeDepthRand','Tiefen-Streuung',0,1.4,0.01],
+      ['bridgeEndRadius','Bündel-Radius unten',0,0.12,0.002],
+      ['bridgeCenterPull','Einzug zur Mitte',0,1,0.01],
+      ['bridgeSideSwing','Seitenschwung',0,0.12,0.002],
+      ['bridgeWave','Wellenbewegung',0,0.06,0.001],
+      ['bridgeSegs','Kurvensegmente',4,24,1],
+      ['mainRootLift','Hauptstrang Start-Höhe',0,1.2,0.01]
     ];
     tunePanel=document.createElement('div');
     tunePanel.style.cssText='position:fixed;top:80px;right:10px;z-index:99999;'
@@ -669,25 +709,10 @@ export default function BrainBackground() {
       window.addEventListener('touchmove',function(e){ if(dragging){ var t=e.touches[0]; onMove(t.clientX,t.clientY); } },{passive:true});
       window.addEventListener('touchend',onUp);
     })(title,tunePanel);
-    SLIDERS.forEach(function(def){
-      var key=def[0], label=def[1], min=def[2], max=def[3], step=def[4];
-      var row=document.createElement('div'); row.style.cssText='margin-bottom:6px;';
-      var lab=document.createElement('div');
-      lab.style.cssText='display:flex;justify-content:space-between;margin-bottom:2px;';
-      var labName=document.createElement('span'); labName.textContent=label;
-      var labVal=document.createElement('span'); labVal.textContent=String(SP[key]);
-      lab.appendChild(labName); lab.appendChild(labVal);
-      var input=document.createElement('input');
-      input.type='range'; input.min=String(min); input.max=String(max); input.step=String(step);
-      input.value=String(SP[key]); input.style.cssText='width:100%;';
-      input.oninput=function(){
-        SP[key]=parseFloat(input.value);
-        labVal.textContent=SP[key].toFixed(3);
-        rebuildStrand();
-      };
-      row.appendChild(lab); row.appendChild(input);
-      tunePanel.appendChild(row);
-    });
+    sectionLabel('Gehirn-Verbindung');
+    BRIDGE_SLIDERS.forEach(function(def){ addSlider(def,BT); });
+    sectionLabel('Hauptstrang');
+    SLIDERS.forEach(function(def){ addSlider(def,SP); });
     var copyBtn=document.createElement('button');
     copyBtn.textContent='Werte kopieren';
     copyBtn.style.cssText='margin-top:8px;width:100%;padding:6px;background:#ffb000;color:#000;'
@@ -696,12 +721,18 @@ export default function BrainBackground() {
     out.style.cssText='width:100%;height:110px;margin-top:6px;font:10px/1.3 monospace;background:#111;color:#0f0;'
       +'border:1px solid #444;border-radius:4px;padding:4px;';
     copyBtn.onclick=function(){
-      var snippet='{ fibers:'+SP.fibers+', length:'+SP.length+', rStr:'+SP.rStr+', gather:'+SP.gather
+      var snippet='SP={ fibers:'+SP.fibers+', length:'+SP.length+', rStr:'+SP.rStr+', gather:'+SP.gather
         +', taper:'+SP.taper+', curve:'+SP.curve+', twist:'+SP.twist+', jitter:'+SP.jitter
         +', rungs:'+SP.rungs+', ptSize:'+SP.ptSize+', spacing:'+SP.spacing
         +', ringSpread:'+SP.ringSpread+', offX:'+SP.offX+', offY:'+SP.offY+', offZ:'+SP.offZ
         +', topBend:'+SP.topBend+', topBendExtent:'+SP.topBendExtent
-        +', topFunnel:'+SP.topFunnel+', topFunnelExtent:'+SP.topFunnelExtent+' }';
+        +', topFunnel:'+SP.topFunnel+', topFunnelExtent:'+SP.topFunnelExtent+' }\\n'
+        +'BT={ bridgeFibers:'+BT.bridgeFibers+', bridgeLift:'+BT.bridgeLift+', bridgeDepth:'+BT.bridgeDepth
+        +', bridgeDepthRand:'+BT.bridgeDepthRand+', bridgeEndRadius:'+BT.bridgeEndRadius
+        +', bridgeCenterPull:'+BT.bridgeCenterPull+', bridgeSideSwing:'+BT.bridgeSideSwing
+        +', bridgeWave:'+BT.bridgeWave+', bridgeSegs:'+BT.bridgeSegs
+        +', mainRootLift:'+BT.mainRootLift+' }\\n'
+        +'stumpCenter=['+SBASE_X+','+SBASE_Y+','+SBASE_Z+']';
       out.value=snippet;
       out.select();
       if(navigator.clipboard) navigator.clipboard.writeText(snippet).catch(function(){});
