@@ -858,7 +858,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="hero-bottom-copy absolute inset-x-0 bottom-16 z-10 pb-10 sm:pb-16 lg:pb-20">
+        <div className="hero-bottom-copy absolute inset-x-0 bottom-32 z-10 pb-10 sm:pb-16 lg:pb-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <div className="hero-copy hero-copy-centered ms-anim" style={{ animationDelay: '0.12s' }}>
               <p className="max-w-lg mx-auto text-base sm:text-lg text-[#d8ccb3] leading-relaxed">
