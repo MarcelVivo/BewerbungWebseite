@@ -45,7 +45,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var introTextGroup=new THREE.Group(); world.add(introTextGroup);
   var introSprites=[];
   var HELIX_STEP=4.2;
-  var TEXT_START_Y=-2.35;
+  var TEXT_START_Y=-5;
   var placeholderCards=[1,2,3,4].map(function(number){
     return {code:'P'+number,title:'Platzhalter'+number,body:'Weitere Inhalte folgen.',accent:'#d6b75a'};
   });
