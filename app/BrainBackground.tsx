@@ -498,8 +498,32 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   }
 
   var satelliteBrains=[];
-  function addSatelliteBrain(x,y,z,phase){
+  function tintSatelliteBrain(satellite,colorHex){
+    var tintColor=new THREE.Color(colorHex);
+    satellite.traverse(function(part){
+      if(part.geometry&&part.geometry.attributes&&part.geometry.attributes.color){
+        var tintedGeometry=part.geometry.clone();
+        var colorAttribute=tintedGeometry.attributes.color;
+        for(var colorIndex=0;colorIndex<colorAttribute.count;colorIndex++){
+          var brightness=Math.max(colorAttribute.getX(colorIndex),colorAttribute.getY(colorIndex),colorAttribute.getZ(colorIndex));
+          colorAttribute.setXYZ(colorIndex,tintColor.r*brightness,tintColor.g*brightness,tintColor.b*brightness);
+        }
+        colorAttribute.needsUpdate=true;
+        part.geometry=tintedGeometry;
+      }
+      if(part.material){
+        var tintedMaterial=part.material.clone();
+        if(tintedMaterial.color){
+          if(tintedMaterial.vertexColors) tintedMaterial.color.set(0xffffff);
+          else tintedMaterial.color.copy(tintColor);
+        }
+        part.material=tintedMaterial;
+      }
+    });
+  }
+  function addSatelliteBrain(x,y,z,phase,colorHex){
     var satellite=brain.clone(true);
+    tintSatelliteBrain(satellite,colorHex);
     satellite.scale.setScalar(1.32);
     satellite.position.set(x,y,z);
     satellite.rotation.set(BASE_X,BASE_Y,0);
@@ -507,8 +531,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     world.add(satellite);
     satelliteBrains.push(satellite);
   }
-  addSatelliteBrain(-5.7,-.62,-.7,.35);
-  addSatelliteBrain(5.7,-.44,-.9,2.7);
+  addSatelliteBrain(-5.7,-.62,-.7,.35,'#c28cff');
+  addSatelliteBrain(5.7,-.44,-.9,2.7,'#5fb4ff');
 
   function Spark(){
     var g3=new THREE.BufferGeometry();
