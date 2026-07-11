@@ -65,12 +65,12 @@ export default function BrainBackground({ introTexts = [] }: BrainBackgroundProp
     var texture=new THREE.CanvasTexture(textCanvas);
     texture.colorSpace=THREE.SRGBColorSpace;
     texture.minFilter=THREE.LinearFilter;
-    var material=new THREE.SpriteMaterial({map:texture,transparent:true,depthWrite:false,depthTest:true,opacity:.98});
-    var textSprite=new THREE.Sprite(material);
+    var material=new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false,depthTest:true,opacity:.98,side:THREE.FrontSide});
+    var textSprite=new THREE.Mesh(new THREE.PlaneGeometry(5.65,1.88),material);
     var textAngle=index*Math.PI*2/Math.max(1,introTexts.length);
     var textRadius=2.65;
     textSprite.position.set(Math.sin(textAngle)*textRadius,-.8-index*4.2,Math.cos(textAngle)*textRadius);
-    textSprite.scale.set(5.65,1.88,1);
+    textSprite.rotation.y=textAngle;
     textSprite.userData={baseY:textSprite.position.y,phase:index*1.37};
     introTextGroup.add(textSprite);
     introSprites.push(textSprite);
