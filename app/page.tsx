@@ -82,15 +82,14 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
         const visible = Math.max(0, 1 - Math.abs(y) / 690);
         const frontFocus = Math.max(0, (front + 0.18) / 1.18);
         const opacity = Math.max(0, Math.min(1, visible * frontFocus));
-        const scale = 0.78 + 0.22 * Math.max(0, Math.min(1, visible * frontFocus));
 
-        item.style.transform = `translate3d(-50%, -50%, 0) rotateY(${angle}deg) translateZ(${radius}px) translate3d(0, ${y}px, 0) scale(${scale})`;
+        item.style.transform = `translate3d(-50%, -50%, 0) rotateY(${angle}deg) translateZ(${radius}px) translate3d(0, ${y}px, 0) scale(1)`;
         item.style.opacity = String(opacity);
         item.style.zIndex = String(Math.round(1000 + front * 120 + visible * 240));
       });
 
       strandAnchors.forEach((strand, i) => {
-        const strandIndex = i;
+        const strandIndex = i + 0.5;
         const angle = strandIndex * spiralAngleStep - currentProgress * rotationTravel;
         const rad = (angle * Math.PI) / 180;
         const y = strandIndex * verticalStep - currentProgress * totalTravel + spiralYOffset;
@@ -99,7 +98,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
         const frontFocus = Math.max(0, (front + 0.1) / 1.1);
         const opacity = Math.max(0, Math.min(0.82, visible * frontFocus * 0.82));
 
-        strand.style.transform = `translate3d(-50%, -50%, 0) rotateY(${angle}deg) translateZ(${radius - 18}px) translate3d(0, ${y}px, 0)`;
+        strand.style.transform = `translate3d(-50%, -50%, 0) rotateY(${angle}deg) translateZ(${radius - 24}px) translate3d(0, ${y}px, 0)`;
         strand.dataset.strandOpacity = String(opacity);
         strand.style.zIndex = String(Math.round(960 + front * 80 + visible * 120));
       });
@@ -418,7 +417,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
             ))}
           </svg>
 
-          {introCards.map((_, i) => (
+          {introCards.slice(0, -1).map((_, i) => (
             <div
               key={`intro-strand-${i}`}
               data-spiral-strand-anchor
@@ -434,7 +433,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
             const front = Math.cos(rad);
             const visible = Math.max(0, 1 - Math.abs(y) / 690);
             const frontFocus = Math.max(0, (front + 0.18) / 1.18);
-            const scale = 0.78 + 0.22 * Math.max(0, Math.min(1, visible * frontFocus));
+            const scale = 1;
             const isIntro = card.kind === 'intro';
             const isService = card.kind === 'service';
             const opacity = Math.max(0, Math.min(1, visible * frontFocus));
