@@ -82,7 +82,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     texture.colorSpace=THREE.SRGBColorSpace;
     texture.minFilter=THREE.LinearFilter;
     var material=new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false,depthTest:true,opacity:.98,side:THREE.FrontSide});
-    var textSprite=new THREE.Mesh(new THREE.PlaneGeometry(5.65,1.88),material);
+    var textSprite=new THREE.Mesh(new THREE.PlaneGeometry(3.77,1.25),material);
     var textAngle=helixAngle(index);
     var textRadius=2.65;
     textSprite.position.set(Math.sin(textAngle)*textRadius,TEXT_START_Y-index*HELIX_STEP,Math.cos(textAngle)*textRadius);
@@ -133,7 +133,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     texture.colorSpace=THREE.SRGBColorSpace;
     texture.minFilter=THREE.LinearFilter;
     var material=new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false,depthTest:true,opacity:.98,side:THREE.FrontSide});
-    var cardMesh=new THREE.Mesh(new THREE.PlaneGeometry(4.85,2.73),material);
+    var cardMesh=new THREE.Mesh(new THREE.PlaneGeometry(3.23,1.82),material);
     var cardAngle=helixAngle(worldIndex);
     cardMesh.position.set(Math.sin(cardAngle)*1.68,-2.2-index*4.2,Math.cos(cardAngle)*1.68);
     cardMesh.position.y=TEXT_START_Y-worldIndex*HELIX_STEP;
