@@ -44,6 +44,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var brain=new THREE.Group(); brain.position.y=BRAIN_BASE_Y; brain.scale.setScalar(2.73); world.add(brain);
   var introTextGroup=new THREE.Group(); world.add(introTextGroup);
   var introSprites=[];
+  var floatingObjects=[];
   var HELIX_STEP=4.2;
   var TEXT_START_Y=-5;
   var placeholderCards=[1,2,3,4].map(function(number){
@@ -54,6 +55,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var cameraTargetEnd=TEXT_START_Y-(totalWorldStops-1)*HELIX_STEP-2.1;
   var cameraTravel=cameraTargetStart-cameraTargetEnd;
   var SCENE_MOTION=false;
+  var OBJECT_FLOATING=true;
   var lastCameraFov=camera.fov;
 
   function helixAngle(worldIndex){
@@ -102,9 +104,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var textRadius=2.65;
     textSprite.position.set(Math.sin(textAngle)*textRadius,TEXT_START_Y-index*HELIX_STEP,Math.cos(textAngle)*textRadius);
     textSprite.rotation.y=textAngle;
-    textSprite.userData={baseY:textSprite.position.y,phase:index*1.37};
+    textSprite.userData={baseX:textSprite.position.x,baseY:textSprite.position.y,baseZ:textSprite.position.z,baseRotY:textAngle,phase:index*1.37};
     introTextGroup.add(textSprite);
     introSprites.push(textSprite);
+    floatingObjects.push(textSprite);
   }
 
   introTexts.forEach(buildIntroSprite);
@@ -153,7 +156,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     cardMesh.position.set(Math.sin(cardAngle)*1.68,-2.2-index*4.2,Math.cos(cardAngle)*1.68);
     cardMesh.position.y=TEXT_START_Y-worldIndex*HELIX_STEP;
     cardMesh.rotation.y=cardAngle;
+    cardMesh.userData={baseX:cardMesh.position.x,baseY:cardMesh.position.y,baseZ:cardMesh.position.z,baseRotY:cardAngle,phase:worldIndex*1.37+.52};
     introTextGroup.add(cardMesh);
+    floatingObjects.push(cardMesh);
   }
 
   serviceCards.forEach(function(card,index){ buildServiceCard(card,index,introTexts.length+index); });
@@ -877,16 +882,29 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       rafId = requestAnimationFrame(tick);
       if (!documentVisible) return;
       var dt = Math.min((now - last) / 1000 || 0.016, 0.05); last = now;
-      if (!reduced && SCENE_MOTION) t += dt;
+      if (!reduced && (SCENE_MOTION || OBJECT_FLOATING)) t += dt;
       brain.rotation.y = BASE_Y;
       brain.rotation.x = BASE_X;
       brain.rotation.z = 0;
       stumpCenterOffset.copy(stumpCenterLocal).applyEuler(brain.rotation).multiplyScalar(brain.scale.x);
       brain.position.x = -stumpCenterOffset.x;
       brain.position.z = -stumpCenterOffset.z;
-      brain.position.y = BRAIN_BASE_Y + Math.sin(t*.58)*.058;
+      brain.position.y = BRAIN_BASE_Y;
       strandInverseRotation.setFromEuler(brain.rotation).invert();
       worldVerticalInStrandLocal.set(0,1,0).applyQuaternion(strandInverseRotation);
+      if (!reduced && OBJECT_FLOATING) {
+        for (var floatingIndex=0;floatingIndex<floatingObjects.length;floatingIndex++) {
+          var floatingObject=floatingObjects[floatingIndex];
+          var floatingData=floatingObject.userData;
+          var floatingTime=t*.42+floatingData.phase;
+          floatingObject.position.x=floatingData.baseX+Math.sin(floatingTime)*.09+Math.sin(floatingTime*1.91+1.2)*.028;
+          floatingObject.position.y=floatingData.baseY+Math.cos(floatingTime*1.18+.4)*.105;
+          floatingObject.position.z=floatingData.baseZ+Math.sin(floatingTime*1.47+2.1)*.075;
+          floatingObject.rotation.x=Math.sin(floatingTime*1.06)*.014;
+          floatingObject.rotation.y=floatingData.baseRotY+Math.cos(floatingTime*.92)*.022;
+          floatingObject.rotation.z=Math.sin(floatingTime*1.31+1.6)*.012;
+        }
+      }
       if (!reduced && SCENE_MOTION) {
         for (var si = 0; si < sparks.length; si++) sparks[si].update(dt);
         if (vc > 0 && now - lastWobbleUpdate > 32) {
