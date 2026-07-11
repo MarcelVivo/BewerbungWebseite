@@ -708,7 +708,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     this.core=new THREE.Sprite(this.coreMat);
     this.haloMat=new THREE.SpriteMaterial({map:sprite,color:0x168cff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
     this.halo=new THREE.Sprite(this.haloMat);
-    brain.add(this.halo); brain.add(this.core);
+    var arcGeometry=new THREE.BufferGeometry();
+    this.arcArr=new Float32Array(6*3);
+    arcGeometry.setAttribute('position',new THREE.BufferAttribute(this.arcArr,3));
+    this.arcMat=new THREE.LineBasicMaterial({color:0x8edcff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
+    this.arc=new THREE.Line(arcGeometry,this.arcMat);
+    this.arc.frustumCulled=false;
+    brain.add(this.arc); brain.add(this.halo); brain.add(this.core);
     this.active=false;
     this.wait=Math.random()*1.6;
     this.life=0;
@@ -754,6 +760,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       this.active=false;
       this.coreMat.opacity=0;
       this.haloMat.opacity=0;
+      this.arcMat.opacity=0;
       this.wait=.28+Math.random()*1.35;
       return;
     }
@@ -775,6 +782,20 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     this.halo.scale.set(haloScale,haloScale,1);
     this.coreMat.opacity=.55*envelope;
     this.haloMat.opacity=.11*envelope;
+    var directionX=this.to.x-this.from.x, directionY=this.to.y-this.from.y, directionZ=this.to.z-this.from.z;
+    var directionLength=Math.sqrt(directionX*directionX+directionY*directionY+directionZ*directionZ)||1;
+    directionX/=directionLength; directionY/=directionLength; directionZ/=directionLength;
+    for(var arcIndex=0;arcIndex<6;arcIndex++){
+      var arcStep=arcIndex/5;
+      var trailDistance=arcStep*.15;
+      var flickerAmount=arcIndex===0?0:.011*(1-arcStep)*envelope;
+      var flickerPhase=this.elapsed*58+arcIndex*4.37;
+      this.arcArr[arcIndex*3]=this.position.x-directionX*trailDistance+Math.sin(flickerPhase)*flickerAmount;
+      this.arcArr[arcIndex*3+1]=this.position.y-directionY*trailDistance+Math.cos(flickerPhase*1.23)*flickerAmount;
+      this.arcArr[arcIndex*3+2]=this.position.z-directionZ*trailDistance+Math.sin(flickerPhase*.81+1.5)*flickerAmount;
+    }
+    this.arc.geometry.attributes.position.needsUpdate=true;
+    this.arcMat.opacity=(.18+.38*Math.abs(Math.sin(this.elapsed*37)))*envelope;
   };
   var blueOrbs=[], BON=isMobile?5:12;
   for(i=0;i<BON;i++) blueOrbs.push(new BlueOrb());
