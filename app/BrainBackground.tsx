@@ -882,7 +882,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       rafId = requestAnimationFrame(tick);
       if (!documentVisible) return;
       var dt = Math.min((now - last) / 1000 || 0.016, 0.05); last = now;
-      if (!reduced && (SCENE_MOTION || OBJECT_FLOATING)) t += dt;
+      if (SCENE_MOTION || OBJECT_FLOATING) t += dt;
       brain.rotation.y = BASE_Y;
       brain.rotation.x = BASE_X;
       brain.rotation.z = 0;
@@ -892,17 +892,17 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       brain.position.y = BRAIN_BASE_Y;
       strandInverseRotation.setFromEuler(brain.rotation).invert();
       worldVerticalInStrandLocal.set(0,1,0).applyQuaternion(strandInverseRotation);
-      if (!reduced && OBJECT_FLOATING) {
+      if (OBJECT_FLOATING) {
         for (var floatingIndex=0;floatingIndex<floatingObjects.length;floatingIndex++) {
           var floatingObject=floatingObjects[floatingIndex];
           var floatingData=floatingObject.userData;
           var floatingTime=t*.42+floatingData.phase;
-          floatingObject.position.x=floatingData.baseX+Math.sin(floatingTime)*.09+Math.sin(floatingTime*1.91+1.2)*.028;
-          floatingObject.position.y=floatingData.baseY+Math.cos(floatingTime*1.18+.4)*.105;
-          floatingObject.position.z=floatingData.baseZ+Math.sin(floatingTime*1.47+2.1)*.075;
-          floatingObject.rotation.x=Math.sin(floatingTime*1.06)*.014;
-          floatingObject.rotation.y=floatingData.baseRotY+Math.cos(floatingTime*.92)*.022;
-          floatingObject.rotation.z=Math.sin(floatingTime*1.31+1.6)*.012;
+          floatingObject.position.x=floatingData.baseX+Math.sin(floatingTime)*.17+Math.sin(floatingTime*1.91+1.2)*.055;
+          floatingObject.position.y=floatingData.baseY+Math.cos(floatingTime*1.18+.4)*.18;
+          floatingObject.position.z=floatingData.baseZ+Math.sin(floatingTime*1.47+2.1)*.14;
+          floatingObject.rotation.x=Math.sin(floatingTime*1.06)*.026;
+          floatingObject.rotation.y=floatingData.baseRotY+Math.cos(floatingTime*.92)*.04;
+          floatingObject.rotation.z=Math.sin(floatingTime*1.31+1.6)*.022;
         }
       }
       if (!reduced && SCENE_MOTION) {
