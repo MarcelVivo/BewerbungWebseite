@@ -144,34 +144,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   serviceCards.forEach(function(card,index){ buildServiceCard(card,index,introTexts.length+index); });
   placeholderCards.forEach(function(card,index){ buildServiceCard(card,index,introTexts.length+serviceCards.length+index); });
 
-  var secondaryEnergy=new THREE.Group(); world.add(secondaryEnergy);
-  var secondaryEnergyLines=[];
-  [0x65c6ff,0x9f83ff,0x55e7c4].forEach(function(color,lineIndex){
-    var positions=[];
-    var segments=isMobile?130:230;
-    for(var segment=0;segment<=segments;segment++){
-      var progress=segment/segments;
-      var energyAngle=progress*Math.PI*10+lineIndex*Math.PI*2/3;
-      var energyRadius=.36+Math.sin(progress*Math.PI*3+lineIndex)*.11;
-      positions.push(
-        Math.cos(energyAngle)*energyRadius,
-        .15-progress*21,
-        Math.sin(energyAngle)*energyRadius
-      );
-    }
-    var energyGeometry=new THREE.BufferGeometry();
-    energyGeometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
-    var energyMaterial=new THREE.LineBasicMaterial({
-      color:color,
-      transparent:true,
-      opacity:.18,
-      blending:THREE.AdditiveBlending,
-      depthWrite:false,
-    });
-    var energyLine=new THREE.Line(energyGeometry,energyMaterial);
-    secondaryEnergy.add(energyLine);
-    secondaryEnergyLines.push(energyLine);
-  });
   var BASE_Y=Math.PI/2+0.15, BASE_X=0.22; /* Front, leicht nach vorne geneigt: Oberseite mit Hirnstruktur sichtbar */
   var GOLD={
     deep:new THREE.Color(0xff8a00),
@@ -954,10 +926,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var cameraRadius=9.2-sf*0.8;
       world.rotation.y = 0;
       world.position.y = 0;
-      secondaryEnergy.rotation.y = 0;
-      secondaryEnergyLines.forEach(function(energyLine,lineIndex){
-        energyLine.material.opacity=.13+Math.sin(t*.8+lineIndex*1.8)*.045;
-      });
       camera.position.set(Math.sin(orbit)*cameraRadius, cameraY, Math.cos(orbit)*cameraRadius);
       camera.lookAt(0, lookY, 0);
       renderer.render(scene, camera);
