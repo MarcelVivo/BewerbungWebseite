@@ -56,6 +56,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var cameraTravel=cameraTargetStart-cameraTargetEnd;
   var SCENE_MOTION=false;
   var OBJECT_FLOATING=true;
+  var NEURAL_ACTIVITY=true;
   var lastCameraFov=camera.fov;
 
   function helixAngle(worldIndex){
@@ -627,13 +628,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var gh=new THREE.BufferGeometry();
     this.headArr=new Float32Array(3);
     gh.setAttribute('position',new THREE.BufferAttribute(this.headArr,3));
-    this.headMat=new THREE.PointsMaterial({size:.16,map:sprite,transparent:true,opacity:0,color:0x9fe0ff,blending:THREE.AdditiveBlending,depthWrite:false});
+    this.headMat=new THREE.PointsMaterial({size:.075,map:sprite,transparent:true,opacity:0,color:0x9fe0ff,blending:THREE.AdditiveBlending,depthWrite:false});
     this.headPt=new THREE.Points(gh,this.headMat);
     this.headPt.frustumCulled=false;
     brain.add(this.headPt);
     this.trail=[];
     this.alive=false;
-    this.wait=Math.random()*2;
+    this.wait=Math.random()*1.2;
   }
   NerveBolt.prototype.startChain=function(){
     var s=0, tries=0;
@@ -699,7 +700,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     this.headArr[0]=head.x; this.headArr[1]=head.y; this.headArr[2]=head.z;
     this.headPt.geometry.attributes.position.needsUpdate=true;
   };
-  var nerveBolts=[], NBN=isMobile?12:26;
+  var nerveBolts=[], NBN=isMobile?16:42;
   for(i=0;i<NBN;i++) nerveBolts.push(new NerveBolt());
 
   // --- Tuning-Panel: Regler für die Nervenstrang-Parameter, nur mit ?tune=1
@@ -938,7 +939,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         }
         for (var gi = 0; gi < goldenPulses.length; gi++) goldenPulses[gi].update(dt);
         for (var pi = 0; pi < strandPulses.length; pi++) strandPulses[pi].update(dt);
-        for (var ni = 0; ni < nerveBolts.length; ni++) nerveBolts[ni].update(dt);
+      }
+      if (NEURAL_ACTIVITY) {
+        for (var neuralIndex = 0; neuralIndex < nerveBolts.length; neuralIndex++) nerveBolts[neuralIndex].update(dt);
       }
       nodesP.material.opacity = .95;
       var railSlowdown=cameraRailSlowdown(scrollP);
