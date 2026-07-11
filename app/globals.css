@@ -612,6 +612,46 @@ body {
     0 8px 34px rgba(0,0,0,0.92);
 }
 
+.spiral-orbit-strand {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(24rem, 34vw);
+  height: 1.15rem;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.spiral-orbit-strand span {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(214,183,90,0.86), rgba(95,180,255,0.56), rgba(94,230,196,0.5), transparent);
+  box-shadow:
+    0 0 10px rgba(214,183,90,0.22),
+    0 0 18px rgba(95,180,255,0.12);
+}
+
+.spiral-orbit-strand span:nth-child(1) {
+  transform: translateY(-0.34rem) rotateZ(1.6deg);
+}
+
+.spiral-orbit-strand span:nth-child(2) {
+  transform: translateY(0) rotateZ(-0.8deg);
+  opacity: 0.86;
+}
+
+.spiral-orbit-strand span:nth-child(3) {
+  transform: translateY(0.34rem) rotateZ(1.2deg);
+  opacity: 0.62;
+}
+
 .spiral-intro-rule {
   display: block;
   width: min(9rem, 38vw);
