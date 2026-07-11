@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import {
   Bot, BarChart3, Workflow, FolderKanban,
   GraduationCap, Globe, Lightbulb, Mail, MapPin, Phone,
@@ -827,11 +827,14 @@ function ProcessTimeline({ lang }: { lang: 'de' | 'en' }) {
 export default function HomePage() {
   const { lang } = useLanguage();
   const t = T[lang];
+  const introWorldTexts = useMemo(() => lang === 'de'
+    ? ['Ich baue\ndie passende Lösung.', 'für\nDein Unternehmen', 'Deine\nHerausforderung.', 'Meine\nLösung.', 'Alles individuell.\nAlles aus einem Guss.']
+    : ['I build\nthe right solution.', 'for\nyour company', 'Your\nchallenge.', 'My\nsolution.', 'Fully custom.\nBuilt as one system.'], [lang]);
 
   return (
     <div className="min-h-screen bg-[#0c0a06] text-[#f4edd8]">
       <HomeNavBar />
-      <BrainBackground />
+      <BrainBackground introTexts={introWorldTexts} />
 
       {/* ── Hero ── */}
       <section className="home-hero relative z-10 min-h-screen overflow-hidden pt-16">
