@@ -72,9 +72,9 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       items.forEach((item, i) => {
         const angle = i * spiralAngleStep - currentProgress * rotationTravel;
         const rad = (angle * Math.PI) / 180;
-        const y = i * verticalStep - currentProgress * totalTravel + spiralYOffset;
+        const y = spiralYOffset + Math.sin(rad) * spiralAmplitudeY;
         const front = Math.cos(rad);
-        const visible = Math.max(0, 1 - Math.abs(y) / 690);
+        const visible = Math.max(0, 1 - Math.abs(y - spiralYOffset) / (spiralAmplitudeY * 1.08));
         const frontFocus = Math.max(0, (front + 0.18) / 1.18);
         const opacity = Math.max(0, Math.min(1, visible * frontFocus));
         const scale = 0.78 + 0.22 * Math.max(0, Math.min(1, visible * frontFocus));
@@ -87,9 +87,9 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       orbitStrands.forEach((strand, i) => {
         const angle = i * spiralAngleStep - currentProgress * rotationTravel;
         const rad = (angle * Math.PI) / 180;
-        const y = i * verticalStep - currentProgress * totalTravel + spiralYOffset;
+        const y = spiralYOffset + Math.sin(rad) * spiralAmplitudeY;
         const front = Math.cos(rad);
-        const visible = Math.max(0, 1 - Math.abs(y) / 720);
+        const visible = Math.max(0, 1 - Math.abs(y - spiralYOffset) / (spiralAmplitudeY * 1.08));
         const frontFocus = Math.max(0, (front + 0.08) / 1.08);
         const opacity = Math.max(0, Math.min(0.78, visible * frontFocus * 0.78));
 
@@ -264,7 +264,8 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
   const totalTravel = introCards.length * verticalStep + 780;
   const radius = 520;
   const spiralAngleStep = 58;
-  const spiralYOffset = -180;
+  const spiralYOffset = -70;
+  const spiralAmplitudeY = 315;
   const rotationTravel = (spiralAngleStep * totalTravel) / verticalStep;
   const progress = 0;
 
@@ -291,9 +292,9 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
           {introCards.map((card, i) => {
             const angle = i * spiralAngleStep - progress * rotationTravel;
             const rad = (angle * Math.PI) / 180;
-            const y = i * verticalStep - progress * totalTravel + spiralYOffset;
+            const y = spiralYOffset + Math.sin(rad) * spiralAmplitudeY;
             const front = Math.cos(rad);
-            const visible = Math.max(0, 1 - Math.abs(y) / 690);
+            const visible = Math.max(0, 1 - Math.abs(y - spiralYOffset) / (spiralAmplitudeY * 1.08));
             const frontFocus = Math.max(0, (front + 0.18) / 1.18);
             const scale = 0.78 + 0.22 * Math.max(0, Math.min(1, visible * frontFocus));
             const isIntro = card.kind === 'intro';
