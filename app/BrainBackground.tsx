@@ -44,6 +44,20 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var brain=new THREE.Group(); brain.position.y=BRAIN_BASE_Y; brain.scale.setScalar(2.73); world.add(brain);
   var introTextGroup=new THREE.Group(); world.add(introTextGroup);
   var introSprites=[];
+  var HELIX_STEP=4.2;
+  var TEXT_START_Y=-2.35;
+  var placeholderCards=[1,2,3,4].map(function(number){
+    return {code:'P'+number,title:'Platzhalter'+number,body:'Weitere Inhalte folgen.',accent:'#d6b75a'};
+  });
+  var totalWorldStops=introTexts.length+serviceCards.length+placeholderCards.length;
+  var cameraTargetStart=0;
+  var cameraTargetEnd=TEXT_START_Y-(totalWorldStops-1)*HELIX_STEP-2.1;
+  var cameraTravel=cameraTargetStart-cameraTargetEnd;
+
+  function helixAngle(worldIndex){
+    var stopY=TEXT_START_Y-worldIndex*HELIX_STEP;
+    return Math.PI*2*(cameraTargetStart-stopY)/cameraTravel;
+  }
 
   function buildIntroSprite(label,index){
     var textCanvas=document.createElement('canvas');
@@ -69,9 +83,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     texture.minFilter=THREE.LinearFilter;
     var material=new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false,depthTest:true,opacity:.98,side:THREE.FrontSide});
     var textSprite=new THREE.Mesh(new THREE.PlaneGeometry(5.65,1.88),material);
-    var textAngle=index*Math.PI*2/Math.max(1,introTexts.length);
+    var textAngle=helixAngle(index);
     var textRadius=2.65;
-    textSprite.position.set(Math.sin(textAngle)*textRadius,-.8-index*4.2,Math.cos(textAngle)*textRadius);
+    textSprite.position.set(Math.sin(textAngle)*textRadius,TEXT_START_Y-index*HELIX_STEP,Math.cos(textAngle)*textRadius);
     textSprite.rotation.y=textAngle;
     textSprite.userData={baseY:textSprite.position.y,phase:index*1.37};
     introTextGroup.add(textSprite);
@@ -80,7 +94,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
 
   if(!isMobile) introTexts.forEach(buildIntroSprite);
 
-  function buildServiceCard(card,index){
+  function buildServiceCard(card,index,worldIndex){
     var cardCanvas=document.createElement('canvas');
     cardCanvas.width=1536; cardCanvas.height=864;
     var context=cardCanvas.getContext('2d');
@@ -120,13 +134,17 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     texture.minFilter=THREE.LinearFilter;
     var material=new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false,depthTest:true,opacity:.98,side:THREE.FrontSide});
     var cardMesh=new THREE.Mesh(new THREE.PlaneGeometry(4.85,2.73),material);
-    var cardAngle=index*Math.PI*2/Math.max(1,serviceCards.length);
+    var cardAngle=helixAngle(worldIndex);
     cardMesh.position.set(Math.sin(cardAngle)*1.68,-2.2-index*4.2,Math.cos(cardAngle)*1.68);
+    cardMesh.position.y=TEXT_START_Y-worldIndex*HELIX_STEP;
     cardMesh.rotation.y=cardAngle;
     introTextGroup.add(cardMesh);
   }
 
-  if(!isMobile) serviceCards.forEach(buildServiceCard);
+  if(!isMobile) {
+    serviceCards.forEach(function(card,index){ buildServiceCard(card,index,introTexts.length+index); });
+    placeholderCards.forEach(function(card,index){ buildServiceCard(card,index,introTexts.length+serviceCards.length+index); });
+  }
 
   var secondaryEnergy=new THREE.Group(); world.add(secondaryEnergy);
   var secondaryEnergyLines=[];
@@ -917,7 +935,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       scrollP = targetScrollP;
       var sf = isMobile ? scrollP * 0.1 : scrollP;
       var orbit = sf * Math.PI * 2;
-      var cameraY=2.6-sf*21;
+      var lookY=cameraTargetStart-sf*cameraTravel;
+      var cameraY=lookY+3.4;
       var cameraRadius=9.2-sf*0.8;
       world.rotation.y = 0;
       world.position.y = 0;
@@ -928,7 +947,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         energyLine.material.opacity=.13+Math.sin(t*.8+lineIndex*1.8)*.045;
       });
       camera.position.set(Math.sin(orbit)*cameraRadius, cameraY, Math.cos(orbit)*cameraRadius);
-      camera.lookAt(0, cameraY-3.4, 0);
+      camera.lookAt(0, lookY, 0);
       renderer.render(scene, camera);
     }
     rafId = requestAnimationFrame(tick);

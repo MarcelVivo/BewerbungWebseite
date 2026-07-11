@@ -258,7 +258,7 @@ body::before {
 
 .spiral-section {
   margin-top: 0;
-  min-height: 520vh;
+  min-height: 840vh;
   background:
     radial-gradient(ellipse 38% 42% at 50% 4%, rgba(201,168,76,0.09), transparent 72%),
     radial-gradient(ellipse 40% 36% at 76% 52%, rgba(95,180,255,0.035), transparent 72%),
