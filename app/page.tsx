@@ -851,7 +851,7 @@ export default function HomePage() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <div className="hero-copy hero-copy-centered ms-anim">
               <h1 className="max-w-xl mx-auto text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-[0.96] tracking-[-0.055em]">
-                {lang === 'de' ? 'Digitale Lösungen aus einem Flow.' : 'Digital solutions built as one system.'}
+                {lang === 'de' ? 'Ich entwickle digitale Lösungen, die Unternehmen voranbringen.' : 'Digital solutions built as one system.'}
               </h1>
             </div>
           </div>
