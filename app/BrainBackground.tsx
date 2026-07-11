@@ -242,7 +242,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   function rnd(){return Math.random();}
   function smooth(x){x=x<0?0:x>1?1:x;return x*x*(3-2*x);}
   var STRAND_ON = !(typeof window!=='undefined' && new URLSearchParams(window.location.search).get('nostrand')==='1');
-  var HAIR_COUNT=isMobile?36:64, HAIR_SEGS=40;
   var sBase=[], sMeta=[], sFibers=[], vc=0;
   var wobbleLineRefs=[], wobblePtsRefs=[];
   var wobbleX=new Float32Array(0), wobbleZ=new Float32Array(0);
@@ -350,40 +349,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           wobbleLineRefs.push({off:rOff,srcV:i2});
           wobbleLineRefs.push({off:rOff+3,srcV:j2});
         }
-      }
-    }
-    // Haar-ähnliche Faserstruktur um den Stumpf: viele einzelne, sanft
-    // wellenförmige Stränge, statisch (ohne Wobble-Animation).
-    for(var h=0;h<HAIR_COUNT;h++){
-      var rawRootH=roots.length?roots[h%roots.length]:new THREE.Vector3(SBASE_X,-0.6,SBASE_Z);
-      var rootH=new THREE.Vector3(
-        SBASE_X+(rawRootH.x-SBASE_X)*SP.ringSpread+mx,
-        rawRootH.y+my,
-        SBASE_Z+(rawRootH.z-SBASE_Z)*SP.ringSpread+mz
-      );
-      var relXH=rootH.x-SBASE_X-mx, relZH=rootH.z-SBASE_Z-mz;
-      var freq1=0.7+rnd()*1.1, freq2=2.2+rnd()*2.2;
-      var amp1=0.03+rnd()*0.045, amp2=0.008+rnd()*0.016;
-      var ph1=rnd()*6.283, ph2=rnd()*6.283;
-      var hairLen=SP.length*(0.65+0.35*rnd());
-      cc.copy(golds[Math.floor(rnd()*golds.length)]);
-      var prevX=0,prevY=0,prevZ=0;
-      for(var s=0;s<=HAIR_SEGS;s++){
-        var tvh=s/HAIR_SEGS;
-        var bundleScaleH=1-SP.taper*tvh;
-        var droopH=SP.droop*tvh*tvh;
-        var wx=Math.sin(tvh*freq1*Math.PI+ph1)*amp1+Math.sin(tvh*freq2*Math.PI+ph2)*amp2;
-        var wz=Math.cos(tvh*freq1*Math.PI+ph1*1.3)*amp1*0.7+Math.cos(tvh*freq2*Math.PI+ph2)*amp2*0.7;
-        var cxh=SBASE_X+mx+relXH*bundleScaleH+wx+droopH*DROOP_DX;
-        var czh=SBASE_Z+mz+relZH*bundleScaleH+wz+droopH*DROOP_DZ;
-        var cyh=rootH.y-tvh*hairLen;
-        var endFadeH=1-smooth(Math.max(0,(tvh-0.86)/0.14));
-        var b=(.55+.45*(0.5+0.5*Math.sin(tvh*freq1*Math.PI+ph1)))*(0.3+0.7*endFadeH);
-        if(s>0){
-          outPos.push(prevX,prevY,prevZ,cxh,cyh,czh);
-          outCol.push(cc.r*b,cc.g*b,cc.b*b,cc.r*b,cc.g*b,cc.b*b);
-        }
-        prevX=cxh; prevY=cyh; prevZ=czh;
       }
     }
   }
