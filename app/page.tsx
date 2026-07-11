@@ -845,7 +845,7 @@ export default function HomePage() {
 
       {/* ── Hero ── */}
       <section className="home-hero relative z-10 min-h-screen overflow-hidden pt-16">
-        <div className="absolute inset-0 z-10 flex items-center pt-16">
+        <div className="hero-top-copy absolute inset-x-0 top-20 sm:top-24 lg:top-28 z-10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <div className="hero-copy hero-copy-centered ms-anim">
               <p className="mb-4 text-xs font-bold uppercase tracking-[0.28em] text-[#c9a84c]">
@@ -854,7 +854,14 @@ export default function HomePage() {
               <h1 className="max-w-xl mx-auto text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-[0.96] tracking-[-0.055em]">
                 {lang === 'de' ? 'Digitale Lösungen aus einem Guss.' : 'Digital solutions built as one system.'}
               </h1>
-              <p className="mt-5 max-w-lg mx-auto text-base sm:text-lg text-[#d8ccb3] leading-relaxed">
+            </div>
+          </div>
+        </div>
+
+        <div className="hero-bottom-copy absolute inset-x-0 bottom-0 z-10 pb-10 sm:pb-16 lg:pb-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6">
+            <div className="hero-copy hero-copy-centered ms-anim" style={{ animationDelay: '0.12s' }}>
+              <p className="max-w-lg mx-auto text-base sm:text-lg text-[#d8ccb3] leading-relaxed">
                 {lang === 'de'
                   ? 'Websites, Systeme, Datenbanken, Automatisierung und KI – sauber geplant, schnell umgesetzt und langfristig tragfähig.'
                   : 'Websites, systems, databases, automation and AI — clearly planned, fast to build and made to last.'}
