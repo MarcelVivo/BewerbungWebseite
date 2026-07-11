@@ -113,143 +113,101 @@ export default function BrainBackground() {
   for(var ri=0;ri<BR.stumpRing.length;ri+=3){
     roots.push(new THREE.Vector3(BR.stumpRing[ri],BR.stumpRing[ri+1],BR.stumpRing[ri+2]));
   }
-  var SP={ fibers:120, length:8.75, rStr:0.022, gather:0.2, taper:0.24,
-           curve:0.016, twist:1.45, jitter:0.009, rungs:0.62, ptSize:0.021, spacing:0.045,
-           ringSpread:1, offX:0, offY:0, offZ:0,
-           topBend:0, topBendExtent:0.08, topFunnel:0.9, topFunnelExtent:0.36 };
-  var BT={ bridgeFibers:isMobile?82:156, bridgeLift:0.52, bridgeDepth:0.46, bridgeDepthRand:0.62,
-           bridgeEndRadius:0.026, bridgeCenterPull:0.38, bridgeSideSwing:0.018,
-           bridgeWave:0.012, bridgeSegs:10, mainRootLift:0.56 };
-  var MP={ moveLeft:0, moveRight:0, moveForward:0, moveBack:0, moveVertical:0 };
+  var SP={ length:9.05, rStr:0.08, gather:0.25, taper:0.24,
+           curve:0.025, twist:5.2, jitter:0, rungs:0.68, ptSize:0.03, spacing:0.06,
+           ringSpread:0.1, offX:0, offY:0, offZ:0,
+           droop:1.5, frayStart:0.98, fraySpread:0.12 };
+  // Trichter: jede Faser startet an einem echten goldenen Vertex im Stumpf-
+  // Bereich und läuft über eine kurze, sanft gekrümmte Kurve zu einem
+  // Konvergenzpunkt auf der Mittelachse, bevor sie in das bestehende
+  // Bündel (Taper/Droop/Fray) übergeht.
+  var FN={ count:300, anchorRadius:0.59, funnelHeight:0.19, funnelSegs:3, convergePull:0.65, randomness:1 };
+  var MP={ moveLeft:0, moveRight:0, moveForward:0, moveBack:0, moveVertical:0.01 };
   function moveX(){ return SP.offX + MP.moveRight - MP.moveLeft; }
   function moveY(){ return SP.offY + MP.moveVertical; }
   function moveZ(){ return SP.offZ + MP.moveForward - MP.moveBack; }
   function rnd(){return Math.random();}
   function smooth(x){x=x<0?0:x>1?1:x;return x*x*(3-2*x);}
-  function stumpAnchor(rawRoot, liftMax){
-    var radial=Math.sqrt(rnd())*0.88;
-    var angle=rnd()*6.283;
-    var ringDx=rawRoot.x-SBASE_X, ringDz=rawRoot.z-SBASE_Z;
-    var ringR=Math.max(0.001,Math.sqrt(ringDx*ringDx+ringDz*ringDz));
-    var sideJitter=ringR*0.16*rnd();
-    return new THREE.Vector3(
-      SBASE_X+ringDx*radial+Math.cos(angle)*sideJitter,
-      rawRoot.y+rnd()*liftMax,
-      SBASE_Z+ringDz*radial+Math.sin(angle)*sideJitter
-    );
-  }
   var STRAND_ON = !(typeof window!=='undefined' && new URLSearchParams(window.location.search).get('nostrand')==='1');
   var HAIR_COUNT=isMobile?36:64, HAIR_SEGS=40;
   var sBase=[], sMeta=[], sFibers=[], vc=0;
   var wobbleLineRefs=[], wobblePtsRefs=[];
-  function pushOrganicBridge(outPos,outCol,outPtsPos,outPtsCol,count){
-    var segs=Math.max(4,Math.round(BT.bridgeSegs));
-    for(var bf=0;bf<count;bf++){
-      var raw=roots.length?roots[bf%roots.length]:new THREE.Vector3(SBASE_X,SBASE_Y,SBASE_Z);
-      var mx=moveX(), my=moveY(), mz=moveZ();
-      var start=stumpAnchor(raw,BT.bridgeLift);
-      start.x+=mx; start.y+=my; start.z+=mz;
-      var side=bf%2===0?1:-1;
-      var endY=SBASE_Y+my-BT.bridgeDepth-rnd()*BT.bridgeDepthRand;
-      var endR=0.008+rnd()*BT.bridgeEndRadius;
-      var endA=rnd()*6.283;
-      var end=new THREE.Vector3(
-        SBASE_X+mx+Math.cos(endA)*endR,
-        endY,
-        SBASE_Z+mz+Math.sin(endA)*endR
-      );
-      var ctrl1=start.clone().lerp(new THREE.Vector3(SBASE_X+mx,SBASE_Y+my-0.12,SBASE_Z+mz),BT.bridgeCenterPull);
-      ctrl1.x+=(rnd()-0.5)*0.034;
-      ctrl1.z+=(rnd()-0.5)*0.034;
-      var ctrl2=end.clone().lerp(start,0.22);
-      ctrl2.x+=side*(BT.bridgeSideSwing+rnd()*0.02);
-      ctrl2.z+=(rnd()-0.5)*0.032;
-      cc.copy(golds[bf%golds.length]);
-      var prev=start.clone();
-      outPtsPos.push(prev.x,prev.y,prev.z);
-      outPtsCol.push(cc.r,cc.g,cc.b);
-      for(var bs=1;bs<=segs;bs++){
-        var t=bs/segs, it=1-t;
-        var wave=Math.sin(t*Math.PI)*(BT.bridgeWave+BT.bridgeWave*rnd());
-        var cur=new THREE.Vector3(
-          it*it*it*start.x+3*it*it*t*ctrl1.x+3*it*t*t*ctrl2.x+t*t*t*end.x+Math.sin(t*6.283+bf)*wave,
-          it*it*it*start.y+3*it*it*t*ctrl1.y+3*it*t*t*ctrl2.y+t*t*t*end.y,
-          it*it*it*start.z+3*it*it*t*ctrl1.z+3*it*t*t*ctrl2.z+t*t*t*end.z+Math.cos(t*6.283+bf)*wave*0.72
-        );
-        var glow=0.62+0.38*smooth(t);
-        outPos.push(prev.x,prev.y,prev.z,cur.x,cur.y,cur.z);
-        outCol.push(cc.r*glow,cc.g*glow,cc.b*glow,cc.r*glow,cc.g*glow,cc.b*glow);
-        outPtsPos.push(cur.x,cur.y,cur.z);
-        outPtsCol.push(cc.r*glow,cc.g*glow,cc.b*glow);
-        prev=cur;
-      }
-    }
-  }
+  // gemeinsame Durchhang-Richtung (Schwerkraft): leicht nach vorne/unten,
+  // nicht rein vertikal, wirkt organischer als ein reiner Y-Fall
+  var DROOP_DX=0.18, DROOP_DZ=0.55;
   function genStrandInto(outPos,outCol,outPtsPos,outPtsCol){
     sBase=[]; sMeta=[]; sFibers=[]; vc=0; wobbleLineRefs=[]; wobblePtsRefs=[];
     var N=Math.max(20,Math.round(SP.length/SP.spacing));
     var mx=moveX(), my=moveY(), mz=moveZ();
-    for(var cr=0;cr<roots.length;cr++){
-      var rr=roots[cr], rn=roots[(cr+1)%roots.length]||rr;
-      cc.copy(golds[cr%golds.length]);
-      outPos.push(rr.x+mx,rr.y+my,rr.z+mz,rn.x+mx,rn.y+my,rn.z+mz);
-      outCol.push(cc.r,cc.g,cc.b,cc.r,cc.g,cc.b);
-      var sx=SBASE_X+mx+(rr.x-SBASE_X)*0.42;
-      var sz=SBASE_Z+mz+(rr.z-SBASE_Z)*0.42;
-      var sy=rr.y+my-0.18;
-      outPos.push(rr.x+mx,rr.y+my,rr.z+mz,sx,sy,sz);
-      outCol.push(cc.r,cc.g,cc.b,cc.r,cc.g,cc.b);
-      outPtsPos.push(rr.x+mx,rr.y+my,rr.z+mz,sx,sy,sz);
-      outPtsCol.push(cc.r,cc.g,cc.b,cc.r,cc.g,cc.b);
-    }
-    for(var ca=0;ca<Math.min(SP.fibers, roots.length*3);ca++){
-      var ringRoot=roots.length?roots[ca%roots.length]:new THREE.Vector3(SBASE_X,-0.6,SBASE_Z);
-      var inner=stumpAnchor(ringRoot,0.32);
-      inner.x+=mx; inner.y+=my; inner.z+=mz;
-      var lower=new THREE.Vector3(
-        SBASE_X+mx+(inner.x-(SBASE_X+mx))*0.62,
-        ringRoot.y+my-0.18-rnd()*0.18,
-        SBASE_Z+mz+(inner.z-(SBASE_Z+mz))*0.62
-      );
-      cc.copy(golds[ca%golds.length]);
-      outPos.push(inner.x,inner.y,inner.z,lower.x,lower.y,lower.z);
-      outCol.push(cc.r,cc.g,cc.b,cc.r,cc.g,cc.b);
-      outPtsPos.push(inner.x,inner.y,inner.z,lower.x,lower.y,lower.z);
-      outPtsCol.push(cc.r,cc.g,cc.b,cc.r,cc.g,cc.b);
-    }
-    pushOrganicBridge(outPos,outCol,outPtsPos,outPtsCol,Math.max(0,Math.round(BT.bridgeFibers)));
-    var rootOrder=roots.map(function(_,ix){return ix;});
-    for(var sh=rootOrder.length-1;sh>0;sh--){ var jx=Math.floor(rnd()*(sh+1)); var tmp=rootOrder[sh]; rootOrder[sh]=rootOrder[jx]; rootOrder[jx]=tmp; }
-    for(var f=0;f<SP.fibers;f++){
-      // cycle evenly through every point on the stump ring (shuffled per build)
-      // instead of random picks, so fibers spread all the way around it
-      var rawRoot=roots.length?roots[rootOrder[f%rootOrder.length]]:new THREE.Vector3(SBASE_X,-0.6,SBASE_Z);
-      var root=stumpAnchor(rawRoot,BT.mainRootLift);
-      root.x+=mx; root.y+=my; root.z+=mz;
-      var relX=root.x-SBASE_X-mx, relZ=root.z-SBASE_Z-mz;
+    // Echte goldene Vertex-Positionen im Stumpf-Bereich (Kugel um SBASE) als
+    // Faser-Ankerpunkte sammeln — keine erfundenen Punkte. Deckt Stumpf-Ring,
+    // Oberfläche und Umgebung in vollen 3D ab (nicht nur eine Ebene).
+    var stumpAnchorPts=pts.filter(function(p){
+      var dx=p.x-SBASE_X, dy=p.y-SBASE_Y, dz=p.z-SBASE_Z;
+      return dx*dx+dy*dy+dz*dz<=FN.anchorRadius*FN.anchorRadius;
+    });
+    if(!stumpAnchorPts.length) stumpAnchorPts=roots.length?roots:[new THREE.Vector3(SBASE_X,SBASE_Y,SBASE_Z)];
+    var anchorOrder=stumpAnchorPts.map(function(_,ix){return ix;});
+    for(var sh=anchorOrder.length-1;sh>0;sh--){ var jx=Math.floor(rnd()*(sh+1)); var tmp=anchorOrder[sh]; anchorOrder[sh]=anchorOrder[jx]; anchorOrder[jx]=tmp; }
+    var fiberCount=FN.count;
+    for(var f=0;f<fiberCount;f++){
+      // Ankerpunkt: ein echter goldener Vertex aus dem Stumpf-Bereich,
+      // gleichmässig durchgemischt über alle verfügbaren Punkte zyklisch.
+      var anchorRaw=stumpAnchorPts[anchorOrder[f%anchorOrder.length]];
+      var anchor=new THREE.Vector3(anchorRaw.x+mx,anchorRaw.y+my,anchorRaw.z+mz);
+      // Konvergenzpunkt auf der Mittelachse, mit leichter Höhen-Streuung pro
+      // Faser (organisch statt mathematisch perfekt)
+      var convY=SBASE_Y+my-FN.funnelHeight*(0.7+rnd()*0.6);
+      var converge=new THREE.Vector3(SBASE_X+mx,convY,SBASE_Z+mz);
+      // Bezier-Kontrollpunkt: zieht die Kurve zur Achse, mit Zufalls-Schwung
+      // statt einer geraden Linie
+      var pull=FN.convergePull*(0.75+rnd()*0.5);
+      var ctrl=anchor.clone().lerp(converge,pull);
+      ctrl.x+=(rnd()-0.5)*FN.randomness*0.3;
+      ctrl.z+=(rnd()-0.5)*FN.randomness*0.3;
+      ctrl.y+=(rnd()-0.5)*FN.randomness*0.08;
+
       var a0=rnd()*6.283, tw=(rnd()-0.5)*SP.twist;
+      var frayJitter=0.4+rnd()*0.6; // per-fiber Streuung fürs Auffransen unten
       var endF=(f%4)?0.9+0.1*rnd():0.6+0.3*rnd();
-      var steps=Math.round(N*endF), base=vc;
+      var bundleSteps=Math.round(N*endF);
+      var funnelSegs=Math.max(3,Math.round(FN.funnelSegs));
+      var steps=funnelSegs+bundleSteps, base=vc;
       sFibers.push({start:base, len:steps});
       var fiberCol=golds[Math.floor(rnd()*golds.length)];
       for(var r=0;r<steps;r++){
-        var tv=r/N;
-        var ang=a0+tv*tw;
-        var bundleScale=1-SP.taper*tv;
-        var swirl=SP.rStr*smooth(Math.min(1,tv/Math.max(SP.gather,.001)));
-        var gatherEnv=smooth(Math.min(1,tv/Math.max(SP.topFunnelExtent,.001)));
-        var throat=smooth(Math.min(1,tv/0.18));
-        var relScale=(1-SP.topFunnel*gatherEnv)*bundleScale;
-        var bendEnv=1-smooth(Math.min(1,tv/Math.max(SP.topBendExtent,.001)));
-        var cx=SBASE_X+mx+relX*relScale+SP.curve*Math.sin(tv*2.1)+Math.cos(ang)*swirl+SP.topBend*bendEnv;
-        var cz=SBASE_Z+mz+relZ*relScale+0.7*SP.curve*Math.sin(tv*1.6+1.0)+Math.sin(ang)*swirl;
-        var cy=root.y - r*SP.spacing;
-        var topFade=0.5+0.5*throat;
-        var px=cx+(rnd()-0.5)*SP.jitter, py=cy+(rnd()-0.5)*SP.jitter, pz=cz+(rnd()-0.5)*SP.jitter;
+        var tv=r/(steps-1); // globaler Fortschritt: 0 am Node-Anker, 1 an der Faserspitze
+        var px,py,pz;
+        if(r<funnelSegs){
+          // Trichter-Phase: quadratische Bezier vom Anker zum Konvergenz-
+          // punkt, sanftes Ease-in statt gerader Linie
+          var ft=smooth(r/funnelSegs);
+          var it=1-ft;
+          px=it*it*anchor.x+2*it*ft*ctrl.x+ft*ft*converge.x;
+          py=it*it*anchor.y+2*it*ft*ctrl.y+ft*ft*converge.y;
+          pz=it*it*anchor.z+2*it*ft*ctrl.z+ft*ft*converge.z;
+        } else {
+          // Bündel-Phase: bestehende Swirl/Taper/Droop/Fray-Formeln, jetzt
+          // ab dem Konvergenzpunkt statt ab dem Ring
+          var br=r-funnelSegs;
+          var btv=bundleSteps>1?br/(bundleSteps-1):0;
+          var ang=a0+btv*tw;
+          var bundleScale=1-SP.taper*btv;
+          var swirl=SP.rStr*smooth(Math.min(1,btv/Math.max(SP.gather,.001)));
+          var frayEnv=smooth(Math.max(0,(btv-SP.frayStart)/Math.max(.001,1-SP.frayStart)));
+          var fraySpread=frayEnv*SP.fraySpread*frayJitter;
+          var droop=SP.droop*btv*btv;
+          px=converge.x+SP.curve*Math.sin(btv*2.1)+Math.cos(ang)*(swirl+fraySpread)+droop*DROOP_DX;
+          pz=converge.z+0.7*SP.curve*Math.sin(btv*1.6+1.0)+Math.sin(ang)*(swirl+fraySpread)+droop*DROOP_DZ;
+          py=converge.y-br*SP.spacing*bundleScale;
+        }
+        // sanftes Ausblenden im letzten Abschnitt statt hartem Ende
+        var endFade=1-smooth(Math.max(0,(tv-0.86)/0.14));
+        px+=(rnd()-0.5)*SP.jitter; py+=(rnd()-0.5)*SP.jitter; pz+=(rnd()-0.5)*SP.jitter;
         var v=vc;
         sBase.push(px,py,pz);
         sMeta.push(tv,a0);
-        cc.copy(fiberCol).multiplyScalar(topFade);
+        cc.copy(fiberCol).multiplyScalar(0.35+0.65*endFade);
         var ptOff=outPtsPos.length;
         outPtsPos.push(px,py,pz);
         outPtsCol.push(cc.r,cc.g,cc.b);
@@ -284,8 +242,11 @@ export default function BrainBackground() {
     // wellenförmige Stränge, statisch (ohne Wobble-Animation).
     for(var h=0;h<HAIR_COUNT;h++){
       var rawRootH=roots.length?roots[h%roots.length]:new THREE.Vector3(SBASE_X,-0.6,SBASE_Z);
-      var rootH=stumpAnchor(rawRootH,0.26);
-      rootH.x+=mx; rootH.y+=my; rootH.z+=mz;
+      var rootH=new THREE.Vector3(
+        SBASE_X+(rawRootH.x-SBASE_X)*SP.ringSpread+mx,
+        rawRootH.y+my,
+        SBASE_Z+(rawRootH.z-SBASE_Z)*SP.ringSpread+mz
+      );
       var relXH=rootH.x-SBASE_X-mx, relZH=rootH.z-SBASE_Z-mz;
       var freq1=0.7+rnd()*1.1, freq2=2.2+rnd()*2.2;
       var amp1=0.03+rnd()*0.045, amp2=0.008+rnd()*0.016;
@@ -296,12 +257,14 @@ export default function BrainBackground() {
       for(var s=0;s<=HAIR_SEGS;s++){
         var tvh=s/HAIR_SEGS;
         var bundleScaleH=1-SP.taper*tvh;
+        var droopH=SP.droop*tvh*tvh;
         var wx=Math.sin(tvh*freq1*Math.PI+ph1)*amp1+Math.sin(tvh*freq2*Math.PI+ph2)*amp2;
         var wz=Math.cos(tvh*freq1*Math.PI+ph1*1.3)*amp1*0.7+Math.cos(tvh*freq2*Math.PI+ph2)*amp2*0.7;
-        var cxh=SBASE_X+mx+relXH*bundleScaleH+wx;
-        var czh=SBASE_Z+mz+relZH*bundleScaleH+wz;
+        var cxh=SBASE_X+mx+relXH*bundleScaleH+wx+droopH*DROOP_DX;
+        var czh=SBASE_Z+mz+relZH*bundleScaleH+wz+droopH*DROOP_DZ;
         var cyh=rootH.y-tvh*hairLen;
-        var b=.55+.45*(0.5+0.5*Math.sin(tvh*freq1*Math.PI+ph1));
+        var endFadeH=1-smooth(Math.max(0,(tvh-0.86)/0.14));
+        var b=(.55+.45*(0.5+0.5*Math.sin(tvh*freq1*Math.PI+ph1)))*(0.3+0.7*endFadeH);
         if(s>0){
           outPos.push(prevX,prevY,prevZ,cxh,cyh,czh);
           outCol.push(cc.r*b,cc.g*b,cc.b*b,cc.r*b,cc.g*b,cc.b*b);
@@ -639,7 +602,6 @@ export default function BrainBackground() {
       tunePanel.appendChild(row);
     }
     var SLIDERS=[
-      ['fibers','Fasern',10,150,1],
       ['length','Länge',2,15,0.05],
       ['rStr','Wirbel-Radius',0,0.08,0.002],
       ['gather','Wirbel-Einsetzpunkt',0.02,0.9,0.01],
@@ -651,10 +613,17 @@ export default function BrainBackground() {
       ['spacing','Punktabstand',0.015,0.06,0.001],
       ['ptSize','Punktgröße',0.004,0.03,0.001],
       ['ringSpread','Ring-Streuung',0.1,4,0.05],
-      ['topBend','Neigung oben',-0.4,0.4,0.005],
-      ['topBendExtent','Neigung Reichweite',0.02,0.6,0.01],
-      ['topFunnel','Trichterform oben',-0.9,3,0.02],
-      ['topFunnelExtent','Trichter Reichweite',0.02,0.5,0.01]
+      ['droop','Schwerkraft-Durchhang',0,1.5,0.01],
+      ['frayStart','Auffransen ab',0.3,0.98,0.01],
+      ['fraySpread','Auffransen-Streuung',0,0.15,0.002]
+    ];
+    var FUNNEL_SLIDERS=[
+      ['count','Faseranzahl',10,300,1],
+      ['anchorRadius','Anker-Radius (Stumpf)',0.1,1.2,0.01],
+      ['funnelHeight','Trichter-Höhe',0.05,0.9,0.01],
+      ['funnelSegs','Trichter-Segmente',3,20,1],
+      ['convergePull','Konvergenz-Stärke',0.1,1,0.01],
+      ['randomness','Zufälligkeit',0,1,0.01]
     ];
     var MOVE_SLIDERS=[
       ['moveLeft','Nach links',0,0.8,0.005],
@@ -662,18 +631,6 @@ export default function BrainBackground() {
       ['moveForward','Nach vorne',0,0.8,0.005],
       ['moveBack','Nach hinten',0,0.8,0.005],
       ['moveVertical','Vertikal hoch/runter',-0.8,0.8,0.005]
-    ];
-    var BRIDGE_SLIDERS=[
-      ['bridgeFibers','Verbindungsfasern',0,260,1],
-      ['bridgeLift','Start im Stumpf',0,1.2,0.01],
-      ['bridgeDepth','Andock-Tiefe',0.05,1.4,0.01],
-      ['bridgeDepthRand','Tiefen-Streuung',0,1.4,0.01],
-      ['bridgeEndRadius','Bündel-Radius unten',0,0.12,0.002],
-      ['bridgeCenterPull','Einzug zur Mitte',0,1,0.01],
-      ['bridgeSideSwing','Seitenschwung',0,0.12,0.002],
-      ['bridgeWave','Wellenbewegung',0,0.06,0.001],
-      ['bridgeSegs','Kurvensegmente',4,24,1],
-      ['mainRootLift','Hauptstrang Start-Höhe',0,1.2,0.01]
     ];
     tunePanel=document.createElement('div');
     tunePanel.style.cssText='position:fixed;top:80px;right:10px;z-index:99999;'
@@ -725,8 +682,8 @@ export default function BrainBackground() {
     })(title,tunePanel);
     sectionLabel('Gesamtposition');
     MOVE_SLIDERS.forEach(function(def){ addSlider(def,MP); });
-    sectionLabel('Gehirn-Verbindung');
-    BRIDGE_SLIDERS.forEach(function(def){ addSlider(def,BT); });
+    sectionLabel('Trichter (Gehirn-Anbindung)');
+    FUNNEL_SLIDERS.forEach(function(def){ addSlider(def,FN); });
     sectionLabel('Hauptstrang');
     SLIDERS.forEach(function(def){ addSlider(def,SP); });
     var copyBtn=document.createElement('button');
@@ -737,17 +694,13 @@ export default function BrainBackground() {
     out.style.cssText='width:100%;height:110px;margin-top:6px;font:10px/1.3 monospace;background:#111;color:#0f0;'
       +'border:1px solid #444;border-radius:4px;padding:4px;';
     copyBtn.onclick=function(){
-      var snippet='SP={ fibers:'+SP.fibers+', length:'+SP.length+', rStr:'+SP.rStr+', gather:'+SP.gather
+      var snippet='SP={ length:'+SP.length+', rStr:'+SP.rStr+', gather:'+SP.gather
         +', taper:'+SP.taper+', curve:'+SP.curve+', twist:'+SP.twist+', jitter:'+SP.jitter
         +', rungs:'+SP.rungs+', ptSize:'+SP.ptSize+', spacing:'+SP.spacing
         +', ringSpread:'+SP.ringSpread+', offX:'+SP.offX+', offY:'+SP.offY+', offZ:'+SP.offZ
-        +', topBend:'+SP.topBend+', topBendExtent:'+SP.topBendExtent
-        +', topFunnel:'+SP.topFunnel+', topFunnelExtent:'+SP.topFunnelExtent+' }\\n'
-        +'BT={ bridgeFibers:'+BT.bridgeFibers+', bridgeLift:'+BT.bridgeLift+', bridgeDepth:'+BT.bridgeDepth
-        +', bridgeDepthRand:'+BT.bridgeDepthRand+', bridgeEndRadius:'+BT.bridgeEndRadius
-        +', bridgeCenterPull:'+BT.bridgeCenterPull+', bridgeSideSwing:'+BT.bridgeSideSwing
-        +', bridgeWave:'+BT.bridgeWave+', bridgeSegs:'+BT.bridgeSegs
-        +', mainRootLift:'+BT.mainRootLift+' }\\n'
+        +', droop:'+SP.droop+', frayStart:'+SP.frayStart+', fraySpread:'+SP.fraySpread+' }\\n'
+        +'FN={ count:'+FN.count+', anchorRadius:'+FN.anchorRadius+', funnelHeight:'+FN.funnelHeight
+        +', funnelSegs:'+FN.funnelSegs+', convergePull:'+FN.convergePull+', randomness:'+FN.randomness+' }\\n'
         +'MP={ moveLeft:'+MP.moveLeft+', moveRight:'+MP.moveRight+', moveForward:'+MP.moveForward
         +', moveBack:'+MP.moveBack+', moveVertical:'+MP.moveVertical+' }\\n'
         +'stumpCenter=['+SBASE_X+','+SBASE_Y+','+SBASE_Z+']';
