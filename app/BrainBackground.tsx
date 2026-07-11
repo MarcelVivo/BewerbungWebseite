@@ -260,6 +260,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   // Bündel (Taper/Droop/Fray) übergeht.
   var FN={ count:isMobile?96:220, anchorRadius:0.59, funnelHeight:0.19, funnelSegs:3, convergePull:0.65, randomness:1 };
   var MP={ moveLeft:0, moveRight:0, moveForward:0, moveBack:0, moveVertical:0.01 };
+  var WIND={ sway:0.04, speed:0.37, wave:0.036, waveFrequency:9 };
   function moveX(){ return SP.offX + MP.moveRight - MP.moveLeft; }
   function moveY(){ return SP.offY + MP.moveVertical; }
   function moveZ(){ return SP.offZ + MP.moveForward - MP.moveBack; }
@@ -727,7 +728,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       s.style.cssText='margin:12px 0 7px;color:#ffcf4a;font-weight:bold;letter-spacing:.08em;text-transform:uppercase;';
       tunePanel.appendChild(s);
     }
-    function addSlider(def,target){
+    function addSlider(def,target,shouldRebuild){
       var key=def[0], label=def[1], min=def[2], max=def[3], step=def[4];
       var row=document.createElement('div'); row.style.cssText='margin-bottom:6px;';
       var lab=document.createElement('div');
@@ -741,7 +742,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       input.oninput=function(){
         target[key]=parseFloat(input.value);
         labVal.textContent=target[key].toFixed(step>=1?0:3);
-        rebuildStrand();
+        if(shouldRebuild!==false) rebuildStrand();
       };
       row.appendChild(lab); row.appendChild(input);
       tunePanel.appendChild(row);
@@ -769,6 +770,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       ['funnelSegs','Trichter-Segmente',3,20,1],
       ['convergePull','Konvergenz-Stärke',0.1,1,0.01],
       ['randomness','Zufälligkeit',0,1,0.01]
+    ];
+    var WIND_SLIDERS=[
+      ['sway','Luftzug-Stärke',0,0.14,0.001],
+      ['speed','Luftzug-Tempo',0.05,1.2,0.01],
+      ['wave','Faser-Wellen',0,0.12,0.001],
+      ['waveFrequency','Wellen-Frequenz',1,16,0.1]
     ];
     var MOVE_SLIDERS=[
       ['moveLeft','Nach links',0,0.8,0.005],
@@ -829,6 +836,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     MOVE_SLIDERS.forEach(function(def){ addSlider(def,MP); });
     sectionLabel('Trichter (Gehirn-Anbindung)');
     FUNNEL_SLIDERS.forEach(function(def){ addSlider(def,FN); });
+    sectionLabel('Luftzug & Wellen');
+    WIND_SLIDERS.forEach(function(def){ addSlider(def,WIND,false); });
     sectionLabel('Hauptstrang');
     SLIDERS.forEach(function(def){ addSlider(def,SP); });
     var copyBtn=document.createElement('button');
@@ -848,6 +857,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         +', funnelSegs:'+FN.funnelSegs+', convergePull:'+FN.convergePull+', randomness:'+FN.randomness+' }\\n'
         +'MP={ moveLeft:'+MP.moveLeft+', moveRight:'+MP.moveRight+', moveForward:'+MP.moveForward
         +', moveBack:'+MP.moveBack+', moveVertical:'+MP.moveVertical+' }\\n'
+        +'WIND={ sway:'+WIND.sway+', speed:'+WIND.speed+', wave:'+WIND.wave+', waveFrequency:'+WIND.waveFrequency+' }\\n'
         +'stumpCenter=['+SBASE_X+','+SBASE_Y+','+SBASE_Z+']';
       out.value=snippet;
       out.select();
@@ -903,12 +913,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           lastWobbleUpdate = now;
           var linePosArr = linesObj.geometry.attributes.position.array;
           var ptsPosArr = wptsObj.geometry.attributes.position.array;
-          var airSwayX=Math.sin(t*.37)*.026+Math.sin(t*.16+1.2)*.014;
-          var airSwayZ=Math.cos(t*.31)*.021+Math.sin(t*.19+.7)*.012;
+          var airSwayX=Math.sin(t*WIND.speed)*WIND.sway*.65+Math.sin(t*WIND.speed*.43+1.2)*WIND.sway*.35;
+          var airSwayZ=Math.cos(t*WIND.speed*.84)*WIND.sway*.52+Math.sin(t*WIND.speed*.51+.7)*WIND.sway*.3;
           for (var v = 0; v < vc; v++) {
             var tv = sMeta[v * 2], ph = sMeta[v * 2 + 1];
-            wobbleX[v] = Math.sin(t * 1.1 + tv * 9 + ph) * 0.036 * tv * tv + airSwayX*tv;
-            wobbleZ[v] = Math.cos(t * 0.9 + tv * 7 + ph) * 0.03 * tv * tv + airSwayZ*tv;
+            wobbleX[v] = Math.sin(t*WIND.speed*2.95+tv*WIND.waveFrequency+ph)*WIND.wave*tv*tv+airSwayX*tv;
+            wobbleZ[v] = Math.cos(t*WIND.speed*2.43+tv*WIND.waveFrequency*.78+ph)*WIND.wave*.82*tv*tv+airSwayZ*tv;
           }
           for (var wr = 0; wr < wobbleLineRefs.length; wr++) {
             var refL = wobbleLineRefs[wr], svL = refL.srcV, oL = refL.off;
