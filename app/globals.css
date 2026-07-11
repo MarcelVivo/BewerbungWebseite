@@ -237,9 +237,7 @@ body {
 .spiral-section {
   margin-top: -34vh;
   min-height: 520vh;
-  background:
-    radial-gradient(ellipse 38% 42% at 50% 4%, rgba(201,168,76,0.06), transparent 72%),
-    linear-gradient(180deg, rgba(12,10,6,0) 0%, rgba(16,13,9,0.72) 14%, rgba(12,10,6,0.72) 88%, rgba(12,10,6,0) 100%);
+  background: radial-gradient(ellipse 38% 42% at 50% 4%, rgba(201,168,76,0.06), transparent 72%);
 }
 
 .spiral-anchor {
@@ -556,7 +554,7 @@ body {
   flex-direction: column;
   align-items: flex-start;
   gap: 0.52rem;
-  min-width: min(27rem, 76vw);
+  min-width: min(30rem, 76vw);
   padding: 0.2rem 0 0.15rem 1.05rem;
   text-align: left;
 }
@@ -680,7 +678,7 @@ body {
 
 .spiral-intro-title {
   color: #fff;
-  font-size: clamp(0.95rem, 2.1vw, 2.4rem);
+  font-size: clamp(1.45rem, 3.15vw, 3.35rem);
   font-weight: 900;
   line-height: 0.9;
   letter-spacing: -0.055em;
@@ -841,9 +839,7 @@ body {
   margin-top: -18vh;
   padding-top: 8rem;
   padding-bottom: 7rem;
-  background:
-    radial-gradient(ellipse 44% 28% at 50% 0%, rgba(201,168,76,0.08), transparent 68%),
-    linear-gradient(180deg, rgba(12,10,6,0), rgba(12,10,6,0.86) 18%, rgba(12,10,6,0.9));
+  background: radial-gradient(ellipse 44% 28% at 50% 0%, rgba(201,168,76,0.08), transparent 68%);
 }
 
 .process-heading {
