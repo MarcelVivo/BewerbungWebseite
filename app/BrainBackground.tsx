@@ -907,9 +907,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         for (var pi = 0; pi < strandPulses.length; pi++) strandPulses[pi].update(dt);
         for (var ni = 0; ni < nerveBolts.length; ni++) nerveBolts[ni].update(dt);
       }
-      brain.rotation.y = BASE_Y;
-      brain.rotation.x = BASE_X;
-      brain.position.y = 1.38;
+      brain.rotation.y = BASE_Y + Math.sin(t*.31)*.018;
+      brain.rotation.x = BASE_X + Math.sin(t*.27+1.1)*.012;
+      brain.rotation.z = Math.sin(t*.34)*.028;
+      brain.position.y = 1.38 + Math.sin(t*.58)*.058;
       nodesP.material.opacity = 0.95 + 0.2 * Math.sin(t * 2.6) + 0.08 * Math.sin(t * 13);
       scrollP = targetScrollP;
       var sf = isMobile ? scrollP * 0.1 : scrollP;
