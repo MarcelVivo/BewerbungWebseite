@@ -713,15 +713,34 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     this.wait=Math.random()*1.6;
     this.life=0;
     this.baseSize=.027+Math.random()*.025;
-    this.node=new THREE.Vector3();
+    this.from=new THREE.Vector3();
+    this.to=new THREE.Vector3();
+    this.position=new THREE.Vector3();
   }
   BlueOrb.prototype.activate=function(){
-    var candidate, tries=0;
-    do { candidate=pts[Math.floor(Math.random()*pts.length)]; tries++; } while(candidate.y<-.25&&tries<30);
-    this.node.copy(candidate);
-    this.life=.32+Math.random()*.58;
+    var start=0, tries=0;
+    do { start=Math.floor(Math.random()*graphAdj.length); tries++; } while((!graphAdj[start].length||pts[start].y<-.25)&&tries<80);
+    if(!graphAdj[start].length){ this.wait=.4+Math.random(); return; }
+    this.cur=start;
+    this.prev=-1;
+    this.hopsLeft=5+Math.floor(Math.random()*8);
+    this.life=.85+Math.random()*1.25;
     this.elapsed=0;
+    this.advanceEdge();
     this.active=true;
+  };
+  BlueOrb.prototype.advanceEdge=function(){
+    var neighbors=graphAdj[this.cur];
+    if(!neighbors.length){ this.hopsLeft=0; return; }
+    var forward=neighbors.filter(function(nodeIndex){ return nodeIndex!==this.prev; },this);
+    var options=forward.length?forward:neighbors;
+    var next=options[Math.floor(Math.random()*options.length)];
+    this.prev=this.cur;
+    this.cur=next;
+    this.from.copy(pts[this.prev]);
+    this.to.copy(pts[this.cur]);
+    this.edgeProgress=0;
+    this.edgeDuration=.1+Math.random()*.14;
   };
   BlueOrb.prototype.update=function(dt){
     if(!this.active){
@@ -738,9 +757,17 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       this.wait=.28+Math.random()*1.35;
       return;
     }
+    this.edgeProgress+=dt/this.edgeDuration;
+    if(this.edgeProgress>=1){
+      this.hopsLeft--;
+      if(this.hopsLeft<=0){
+        this.elapsed=this.life;
+        this.edgeProgress=1;
+      } else this.advanceEdge();
+    }
     var envelope=Math.sin(progress*Math.PI);
-    var jitter=.008*envelope;
-    this.core.position.set(this.node.x+Math.sin(progress*31)*jitter,this.node.y+Math.cos(progress*27)*jitter,this.node.z+Math.sin(progress*23)*jitter);
+    this.position.copy(this.from).lerp(this.to,Math.min(1,this.edgeProgress));
+    this.core.position.copy(this.position);
     this.halo.position.copy(this.core.position);
     var coreScale=this.baseSize*(.7+envelope*1.35);
     var haloScale=coreScale*(3.1+envelope*1.9);
