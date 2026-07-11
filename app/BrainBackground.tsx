@@ -41,8 +41,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
 
   var world=new THREE.Group(); scene.add(world);
   var BRAIN_BASE_Y=.82;
-  var BRAIN_ANCHOR_X=-.282, BRAIN_ANCHOR_Z=-.914;
-  var brain=new THREE.Group(); brain.position.set(BRAIN_ANCHOR_X,BRAIN_BASE_Y,BRAIN_ANCHOR_Z); brain.scale.setScalar(2.73); world.add(brain);
+  var brain=new THREE.Group(); brain.position.y=BRAIN_BASE_Y; brain.scale.setScalar(2.73); world.add(brain);
   var introTextGroup=new THREE.Group(); world.add(introTextGroup);
   var introSprites=[];
   var HELIX_STEP=4.2;
@@ -246,6 +245,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   // THREE.LineSegments- und ein einziges THREE.Points-Objekt, keine zwei
   // getrennten 3D-Objekte mehr. ---
   var SBASE_X=BR.stumpCenter[0], SBASE_Y=BR.stumpCenter[1], SBASE_Z=BR.stumpCenter[2];
+  var stumpCenterLocal=new THREE.Vector3(SBASE_X,SBASE_Y,SBASE_Z);
+  var stumpCenterOffset=new THREE.Vector3();
   var roots=[];
   for(var ri=0;ri<BR.stumpRing.length;ri+=3){
     roots.push(new THREE.Vector3(BR.stumpRing[ri],BR.stumpRing[ri+1],BR.stumpRing[ri+2]));
@@ -932,8 +933,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       brain.rotation.y = BASE_Y + mouseX*.06 + Math.sin(t*.31)*.018;
       brain.rotation.x = BASE_X + mouseY*.035 + Math.sin(t*.27+1.1)*.012;
       brain.rotation.z = Math.sin(t*.34)*.028;
-      brain.position.x = BRAIN_ANCHOR_X;
-      brain.position.z = BRAIN_ANCHOR_Z;
+      stumpCenterOffset.copy(stumpCenterLocal).applyEuler(brain.rotation).multiplyScalar(brain.scale.x);
+      brain.position.x = -stumpCenterOffset.x;
+      brain.position.z = -stumpCenterOffset.z;
       brain.position.y = BRAIN_BASE_Y + Math.sin(t*.58)*.058;
       nodesP.material.opacity = 0.95 + 0.2 * Math.sin(t * 2.6) + 0.08 * Math.sin(t * 13);
       scrollP = targetScrollP;
