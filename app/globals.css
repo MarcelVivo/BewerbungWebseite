@@ -947,15 +947,13 @@ body::before {
   display: none;
 }
 
-@media (min-width: 901px) {
-  .spiral-intro-line,
-  .spiral-continuous-strand,
-  .spiral-strand-anchor,
-  .spiral-service-grid,
-  .spiral-detail-panel {
-    opacity: 0 !important;
-    pointer-events: none !important;
-  }
+.spiral-intro-line,
+.spiral-continuous-strand,
+.spiral-strand-anchor,
+.spiral-service-grid,
+.spiral-detail-panel {
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 /* ── Process timeline ──────────────────────────────────────── */
@@ -1282,17 +1280,17 @@ body::before {
   }
 
   .spiral-section {
-    min-height: auto;
+    min-height: 840vh;
     margin-top: 0;
-    padding: 4rem 0 3.25rem;
+    padding: 0;
   }
 
   .spiral-sticky {
-    display: none;
+    display: block;
   }
 
   .spiral-mobile {
-    display: block;
+    display: none;
   }
 
   .spiral-mobile > div {

@@ -92,7 +92,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     introSprites.push(textSprite);
   }
 
-  if(!isMobile) introTexts.forEach(buildIntroSprite);
+  introTexts.forEach(buildIntroSprite);
 
   function buildServiceCard(card,index,worldIndex){
     var cardCanvas=document.createElement('canvas');
@@ -141,10 +141,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     introTextGroup.add(cardMesh);
   }
 
-  if(!isMobile) {
-    serviceCards.forEach(function(card,index){ buildServiceCard(card,index,introTexts.length+index); });
-    placeholderCards.forEach(function(card,index){ buildServiceCard(card,index,introTexts.length+serviceCards.length+index); });
-  }
+  serviceCards.forEach(function(card,index){ buildServiceCard(card,index,introTexts.length+index); });
+  placeholderCards.forEach(function(card,index){ buildServiceCard(card,index,introTexts.length+serviceCards.length+index); });
 
   var secondaryEnergy=new THREE.Group(); world.add(secondaryEnergy);
   var secondaryEnergyLines=[];
@@ -933,7 +931,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       brain.position.y = BRAIN_BASE_Y + Math.sin(t*.58)*.058;
       nodesP.material.opacity = 0.95 + 0.2 * Math.sin(t * 2.6) + 0.08 * Math.sin(t * 13);
       scrollP = targetScrollP;
-      var sf = isMobile ? scrollP * 0.1 : scrollP;
+      var sf = scrollP;
       var orbit = sf * Math.PI * 2;
       var lookY=cameraTargetStart-sf*cameraTravel;
       var cameraY=lookY+3.4;
