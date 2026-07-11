@@ -113,10 +113,10 @@ export default function BrainBackground() {
   for(var ri=0;ri<BR.stumpRing.length;ri+=3){
     roots.push(new THREE.Vector3(BR.stumpRing[ri],BR.stumpRing[ri+1],BR.stumpRing[ri+2]));
   }
-  var SP={ fibers:120, length:8.75, rStr:0.026, gather:0.22, taper:0.24,
-           curve:0.018, twist:1.65, jitter:0.01, rungs:0.62, ptSize:0.021, spacing:0.045,
+  var SP={ fibers:120, length:8.75, rStr:0.022, gather:0.2, taper:0.24,
+           curve:0.016, twist:1.45, jitter:0.009, rungs:0.62, ptSize:0.021, spacing:0.045,
            ringSpread:1, offX:0, offY:0, offZ:0,
-           topBend:0, topBendExtent:0.08, topFunnel:0.78, topFunnelExtent:0.46 };
+           topBend:0, topBendExtent:0.08, topFunnel:0.9, topFunnelExtent:0.36 };
   function rnd(){return Math.random();}
   function smooth(x){x=x<0?0:x>1?1:x;return x*x*(3-2*x);}
   function stumpAnchor(rawRoot, liftMax){
@@ -135,6 +135,47 @@ export default function BrainBackground() {
   var HAIR_COUNT=isMobile?36:64, HAIR_SEGS=40;
   var sBase=[], sMeta=[], sFibers=[], vc=0;
   var wobbleLineRefs=[], wobblePtsRefs=[];
+  function pushOrganicBridge(outPos,outCol,outPtsPos,outPtsCol,count){
+    var segs=10;
+    for(var bf=0;bf<count;bf++){
+      var raw=roots.length?roots[bf%roots.length]:new THREE.Vector3(SBASE_X,SBASE_Y,SBASE_Z);
+      var start=stumpAnchor(raw,0.52);
+      var side=bf%2===0?1:-1;
+      var endY=SBASE_Y-0.46-rnd()*0.62;
+      var endR=0.008+rnd()*0.026;
+      var endA=rnd()*6.283;
+      var end=new THREE.Vector3(
+        SBASE_X+SP.offX+Math.cos(endA)*endR,
+        endY,
+        SBASE_Z+SP.offZ+Math.sin(endA)*endR
+      );
+      var ctrl1=start.clone().lerp(new THREE.Vector3(SBASE_X,SBASE_Y-0.12,SBASE_Z),0.38);
+      ctrl1.x+=(rnd()-0.5)*0.034;
+      ctrl1.z+=(rnd()-0.5)*0.034;
+      var ctrl2=end.clone().lerp(start,0.22);
+      ctrl2.x+=side*(0.018+rnd()*0.02);
+      ctrl2.z+=(rnd()-0.5)*0.032;
+      cc.copy(golds[bf%golds.length]);
+      var prev=start.clone();
+      outPtsPos.push(prev.x,prev.y,prev.z);
+      outPtsCol.push(cc.r,cc.g,cc.b);
+      for(var bs=1;bs<=segs;bs++){
+        var t=bs/segs, it=1-t;
+        var wave=Math.sin(t*Math.PI)*(0.012+0.012*rnd());
+        var cur=new THREE.Vector3(
+          it*it*it*start.x+3*it*it*t*ctrl1.x+3*it*t*t*ctrl2.x+t*t*t*end.x+Math.sin(t*6.283+bf)*wave,
+          it*it*it*start.y+3*it*it*t*ctrl1.y+3*it*t*t*ctrl2.y+t*t*t*end.y,
+          it*it*it*start.z+3*it*it*t*ctrl1.z+3*it*t*t*ctrl2.z+t*t*t*end.z+Math.cos(t*6.283+bf)*wave*0.72
+        );
+        var glow=0.62+0.38*smooth(t);
+        outPos.push(prev.x,prev.y,prev.z,cur.x,cur.y,cur.z);
+        outCol.push(cc.r*glow,cc.g*glow,cc.b*glow,cc.r*glow,cc.g*glow,cc.b*glow);
+        outPtsPos.push(cur.x,cur.y,cur.z);
+        outPtsCol.push(cc.r*glow,cc.g*glow,cc.b*glow);
+        prev=cur;
+      }
+    }
+  }
   function genStrandInto(outPos,outCol,outPtsPos,outPtsCol){
     sBase=[]; sMeta=[]; sFibers=[]; vc=0; wobbleLineRefs=[]; wobblePtsRefs=[];
     var N=Math.max(20,Math.round(SP.length/SP.spacing));
@@ -165,13 +206,14 @@ export default function BrainBackground() {
       outPtsPos.push(inner.x,inner.y,inner.z,lower.x,lower.y,lower.z);
       outPtsCol.push(cc.r,cc.g,cc.b,cc.r,cc.g,cc.b);
     }
+    pushOrganicBridge(outPos,outCol,outPtsPos,outPtsCol,isMobile?82:156);
     var rootOrder=roots.map(function(_,ix){return ix;});
     for(var sh=rootOrder.length-1;sh>0;sh--){ var jx=Math.floor(rnd()*(sh+1)); var tmp=rootOrder[sh]; rootOrder[sh]=rootOrder[jx]; rootOrder[jx]=tmp; }
     for(var f=0;f<SP.fibers;f++){
       // cycle evenly through every point on the stump ring (shuffled per build)
       // instead of random picks, so fibers spread all the way around it
       var rawRoot=roots.length?roots[rootOrder[f%rootOrder.length]]:new THREE.Vector3(SBASE_X,-0.6,SBASE_Z);
-      var root=stumpAnchor(rawRoot,0.34);
+      var root=stumpAnchor(rawRoot,0.56);
       var relX=root.x-SBASE_X-SP.offX, relZ=root.z-SBASE_Z-SP.offZ;
       var a0=rnd()*6.283, tw=(rnd()-0.5)*SP.twist;
       var endF=(f%4)?0.9+0.1*rnd():0.6+0.3*rnd();
@@ -184,16 +226,18 @@ export default function BrainBackground() {
         var bundleScale=1-SP.taper*tv;
         var swirl=SP.rStr*smooth(Math.min(1,tv/Math.max(SP.gather,.001)));
         var gatherEnv=smooth(Math.min(1,tv/Math.max(SP.topFunnelExtent,.001)));
+        var throat=smooth(Math.min(1,tv/0.18));
         var relScale=(1-SP.topFunnel*gatherEnv)*bundleScale;
         var bendEnv=1-smooth(Math.min(1,tv/Math.max(SP.topBendExtent,.001)));
         var cx=SBASE_X+SP.offX+relX*relScale+SP.curve*Math.sin(tv*2.1)+Math.cos(ang)*swirl+SP.topBend*bendEnv;
         var cz=SBASE_Z+SP.offZ+relZ*relScale+0.7*SP.curve*Math.sin(tv*1.6+1.0)+Math.sin(ang)*swirl;
         var cy=root.y - r*SP.spacing;
+        var topFade=0.5+0.5*throat;
         var px=cx+(rnd()-0.5)*SP.jitter, py=cy+(rnd()-0.5)*SP.jitter, pz=cz+(rnd()-0.5)*SP.jitter;
         var v=vc;
         sBase.push(px,py,pz);
         sMeta.push(tv,a0);
-        cc.copy(fiberCol);
+        cc.copy(fiberCol).multiplyScalar(topFade);
         var ptOff=outPtsPos.length;
         outPtsPos.push(px,py,pz);
         outPtsCol.push(cc.r,cc.g,cc.b);
