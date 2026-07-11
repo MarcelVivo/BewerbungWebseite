@@ -119,6 +119,18 @@ export default function BrainBackground() {
            topBend:0, topBendExtent:0.08, topFunnel:0.28, topFunnelExtent:0.22 };
   function rnd(){return Math.random();}
   function smooth(x){x=x<0?0:x>1?1:x;return x*x*(3-2*x);}
+  function stumpAnchor(rawRoot, liftMax){
+    var radial=Math.sqrt(rnd())*0.88;
+    var angle=rnd()*6.283;
+    var ringDx=rawRoot.x-SBASE_X, ringDz=rawRoot.z-SBASE_Z;
+    var ringR=Math.max(0.001,Math.sqrt(ringDx*ringDx+ringDz*ringDz));
+    var sideJitter=ringR*0.16*rnd();
+    return new THREE.Vector3(
+      SBASE_X+ringDx*radial+Math.cos(angle)*sideJitter,
+      rawRoot.y+rnd()*liftMax,
+      SBASE_Z+ringDz*radial+Math.sin(angle)*sideJitter
+    );
+  }
   var STRAND_ON = !(typeof window!=='undefined' && new URLSearchParams(window.location.search).get('nostrand')==='1');
   var HAIR_COUNT=isMobile?36:64, HAIR_SEGS=40;
   var sBase=[], sMeta=[], sFibers=[], vc=0;
@@ -139,17 +151,27 @@ export default function BrainBackground() {
       outPtsPos.push(rr.x,rr.y,rr.z,sx,sy,sz);
       outPtsCol.push(cc.r,cc.g,cc.b,cc.r,cc.g,cc.b);
     }
+    for(var ca=0;ca<Math.min(SP.fibers, roots.length*3);ca++){
+      var ringRoot=roots.length?roots[ca%roots.length]:new THREE.Vector3(SBASE_X,-0.6,SBASE_Z);
+      var inner=stumpAnchor(ringRoot,0.32);
+      var lower=new THREE.Vector3(
+        SBASE_X+(inner.x-SBASE_X)*0.62,
+        ringRoot.y-0.18-rnd()*0.18,
+        SBASE_Z+(inner.z-SBASE_Z)*0.62
+      );
+      cc.copy(golds[ca%golds.length]);
+      outPos.push(inner.x,inner.y,inner.z,lower.x,lower.y,lower.z);
+      outCol.push(cc.r,cc.g,cc.b,cc.r,cc.g,cc.b);
+      outPtsPos.push(inner.x,inner.y,inner.z,lower.x,lower.y,lower.z);
+      outPtsCol.push(cc.r,cc.g,cc.b,cc.r,cc.g,cc.b);
+    }
     var rootOrder=roots.map(function(_,ix){return ix;});
     for(var sh=rootOrder.length-1;sh>0;sh--){ var jx=Math.floor(rnd()*(sh+1)); var tmp=rootOrder[sh]; rootOrder[sh]=rootOrder[jx]; rootOrder[jx]=tmp; }
     for(var f=0;f<SP.fibers;f++){
       // cycle evenly through every point on the stump ring (shuffled per build)
       // instead of random picks, so fibers spread all the way around it
       var rawRoot=roots.length?roots[rootOrder[f%rootOrder.length]]:new THREE.Vector3(SBASE_X,-0.6,SBASE_Z);
-      var root=new THREE.Vector3(
-        SBASE_X+(rawRoot.x-SBASE_X)*SP.ringSpread+SP.offX,
-        rawRoot.y+SP.offY,
-        SBASE_Z+(rawRoot.z-SBASE_Z)*SP.ringSpread+SP.offZ
-      );
+      var root=stumpAnchor(rawRoot,0.34);
       var relX=root.x-SBASE_X-SP.offX, relZ=root.z-SBASE_Z-SP.offZ;
       var a0=rnd()*6.283, tw=(rnd()-0.5)*SP.twist;
       var endF=(f%4)?0.9+0.1*rnd():0.6+0.3*rnd();
@@ -206,11 +228,7 @@ export default function BrainBackground() {
     // wellenförmige Stränge, statisch (ohne Wobble-Animation).
     for(var h=0;h<HAIR_COUNT;h++){
       var rawRootH=roots.length?roots[h%roots.length]:new THREE.Vector3(SBASE_X,-0.6,SBASE_Z);
-      var rootH=new THREE.Vector3(
-        SBASE_X+(rawRootH.x-SBASE_X)*SP.ringSpread+SP.offX,
-        rawRootH.y+SP.offY,
-        SBASE_Z+(rawRootH.z-SBASE_Z)*SP.ringSpread+SP.offZ
-      );
+      var rootH=stumpAnchor(rawRootH,0.26);
       var relXH=rootH.x-SBASE_X-SP.offX, relZH=rootH.z-SBASE_Z-SP.offZ;
       var freq1=0.7+rnd()*1.1, freq2=2.2+rnd()*2.2;
       var amp1=0.03+rnd()*0.045, amp2=0.008+rnd()*0.016;
