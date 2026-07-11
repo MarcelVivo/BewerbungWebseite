@@ -1070,10 +1070,18 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         for (var pi = 0; pi < strandPulses.length; pi++) strandPulses[pi].update(dt);
       }
       if (NEURAL_ACTIVITY) {
-        for (var neuralIndex = 0; neuralIndex < nerveBolts.length; neuralIndex++) nerveBolts[neuralIndex].update(dt);
-        for (var satelliteNeuralIndex = 0; satelliteNeuralIndex < satelliteNerveBolts.length; satelliteNeuralIndex++) satelliteNerveBolts[satelliteNeuralIndex].update(dt);
-        for (var orbIndex = 0; orbIndex < blueOrbs.length; orbIndex++) blueOrbs[orbIndex].update(dt);
-        for (var satelliteOrbUpdateIndex = 0; satelliteOrbUpdateIndex < satelliteBlueOrbs.length; satelliteBlueOrbs[satelliteOrbUpdateIndex].update(dt);
+        for (var neuralIndex = 0; neuralIndex < nerveBolts.length; neuralIndex++) {
+          nerveBolts[neuralIndex].update(dt);
+        }
+        for (var satelliteNeuralIndex = 0; satelliteNeuralIndex < satelliteNerveBolts.length; satelliteNeuralIndex++) {
+          satelliteNerveBolts[satelliteNeuralIndex].update(dt);
+        }
+        for (var orbIndex = 0; orbIndex < blueOrbs.length; orbIndex++) {
+          blueOrbs[orbIndex].update(dt);
+        }
+        for (var satelliteOrbUpdateIndex = 0; satelliteOrbUpdateIndex < satelliteBlueOrbs.length; satelliteOrbUpdateIndex++) {
+          satelliteBlueOrbs[satelliteOrbUpdateIndex].update(dt);
+        }
       }
       nodesP.material.opacity = .95;
       var railSlowdown=cameraRailSlowdown(scrollP);
