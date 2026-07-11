@@ -120,6 +120,10 @@ export default function BrainBackground() {
   var BT={ bridgeFibers:isMobile?82:156, bridgeLift:0.52, bridgeDepth:0.46, bridgeDepthRand:0.62,
            bridgeEndRadius:0.026, bridgeCenterPull:0.38, bridgeSideSwing:0.018,
            bridgeWave:0.012, bridgeSegs:10, mainRootLift:0.56 };
+  var MP={ moveLeft:0, moveRight:0, moveForward:0, moveBack:0, moveVertical:0 };
+  function moveX(){ return SP.offX + MP.moveRight - MP.moveLeft; }
+  function moveY(){ return SP.offY + MP.moveVertical; }
+  function moveZ(){ return SP.offZ + MP.moveForward - MP.moveBack; }
   function rnd(){return Math.random();}
   function smooth(x){x=x<0?0:x>1?1:x;return x*x*(3-2*x);}
   function stumpAnchor(rawRoot, liftMax){
@@ -142,17 +146,19 @@ export default function BrainBackground() {
     var segs=Math.max(4,Math.round(BT.bridgeSegs));
     for(var bf=0;bf<count;bf++){
       var raw=roots.length?roots[bf%roots.length]:new THREE.Vector3(SBASE_X,SBASE_Y,SBASE_Z);
+      var mx=moveX(), my=moveY(), mz=moveZ();
       var start=stumpAnchor(raw,BT.bridgeLift);
+      start.x+=mx; start.y+=my; start.z+=mz;
       var side=bf%2===0?1:-1;
-      var endY=SBASE_Y-BT.bridgeDepth-rnd()*BT.bridgeDepthRand;
+      var endY=SBASE_Y+my-BT.bridgeDepth-rnd()*BT.bridgeDepthRand;
       var endR=0.008+rnd()*BT.bridgeEndRadius;
       var endA=rnd()*6.283;
       var end=new THREE.Vector3(
-        SBASE_X+SP.offX+Math.cos(endA)*endR,
+        SBASE_X+mx+Math.cos(endA)*endR,
         endY,
-        SBASE_Z+SP.offZ+Math.sin(endA)*endR
+        SBASE_Z+mz+Math.sin(endA)*endR
       );
-      var ctrl1=start.clone().lerp(new THREE.Vector3(SBASE_X,SBASE_Y-0.12,SBASE_Z),BT.bridgeCenterPull);
+      var ctrl1=start.clone().lerp(new THREE.Vector3(SBASE_X+mx,SBASE_Y+my-0.12,SBASE_Z+mz),BT.bridgeCenterPull);
       ctrl1.x+=(rnd()-0.5)*0.034;
       ctrl1.z+=(rnd()-0.5)*0.034;
       var ctrl2=end.clone().lerp(start,0.22);
@@ -182,26 +188,28 @@ export default function BrainBackground() {
   function genStrandInto(outPos,outCol,outPtsPos,outPtsCol){
     sBase=[]; sMeta=[]; sFibers=[]; vc=0; wobbleLineRefs=[]; wobblePtsRefs=[];
     var N=Math.max(20,Math.round(SP.length/SP.spacing));
+    var mx=moveX(), my=moveY(), mz=moveZ();
     for(var cr=0;cr<roots.length;cr++){
       var rr=roots[cr], rn=roots[(cr+1)%roots.length]||rr;
       cc.copy(golds[cr%golds.length]);
-      outPos.push(rr.x,rr.y,rr.z,rn.x,rn.y,rn.z);
+      outPos.push(rr.x+mx,rr.y+my,rr.z+mz,rn.x+mx,rn.y+my,rn.z+mz);
       outCol.push(cc.r,cc.g,cc.b,cc.r,cc.g,cc.b);
-      var sx=SBASE_X+(rr.x-SBASE_X)*0.42;
-      var sz=SBASE_Z+(rr.z-SBASE_Z)*0.42;
-      var sy=rr.y-0.18;
-      outPos.push(rr.x,rr.y,rr.z,sx,sy,sz);
+      var sx=SBASE_X+mx+(rr.x-SBASE_X)*0.42;
+      var sz=SBASE_Z+mz+(rr.z-SBASE_Z)*0.42;
+      var sy=rr.y+my-0.18;
+      outPos.push(rr.x+mx,rr.y+my,rr.z+mz,sx,sy,sz);
       outCol.push(cc.r,cc.g,cc.b,cc.r,cc.g,cc.b);
-      outPtsPos.push(rr.x,rr.y,rr.z,sx,sy,sz);
+      outPtsPos.push(rr.x+mx,rr.y+my,rr.z+mz,sx,sy,sz);
       outPtsCol.push(cc.r,cc.g,cc.b,cc.r,cc.g,cc.b);
     }
     for(var ca=0;ca<Math.min(SP.fibers, roots.length*3);ca++){
       var ringRoot=roots.length?roots[ca%roots.length]:new THREE.Vector3(SBASE_X,-0.6,SBASE_Z);
       var inner=stumpAnchor(ringRoot,0.32);
+      inner.x+=mx; inner.y+=my; inner.z+=mz;
       var lower=new THREE.Vector3(
-        SBASE_X+(inner.x-SBASE_X)*0.62,
-        ringRoot.y-0.18-rnd()*0.18,
-        SBASE_Z+(inner.z-SBASE_Z)*0.62
+        SBASE_X+mx+(inner.x-(SBASE_X+mx))*0.62,
+        ringRoot.y+my-0.18-rnd()*0.18,
+        SBASE_Z+mz+(inner.z-(SBASE_Z+mz))*0.62
       );
       cc.copy(golds[ca%golds.length]);
       outPos.push(inner.x,inner.y,inner.z,lower.x,lower.y,lower.z);
@@ -217,7 +225,8 @@ export default function BrainBackground() {
       // instead of random picks, so fibers spread all the way around it
       var rawRoot=roots.length?roots[rootOrder[f%rootOrder.length]]:new THREE.Vector3(SBASE_X,-0.6,SBASE_Z);
       var root=stumpAnchor(rawRoot,BT.mainRootLift);
-      var relX=root.x-SBASE_X-SP.offX, relZ=root.z-SBASE_Z-SP.offZ;
+      root.x+=mx; root.y+=my; root.z+=mz;
+      var relX=root.x-SBASE_X-mx, relZ=root.z-SBASE_Z-mz;
       var a0=rnd()*6.283, tw=(rnd()-0.5)*SP.twist;
       var endF=(f%4)?0.9+0.1*rnd():0.6+0.3*rnd();
       var steps=Math.round(N*endF), base=vc;
@@ -232,8 +241,8 @@ export default function BrainBackground() {
         var throat=smooth(Math.min(1,tv/0.18));
         var relScale=(1-SP.topFunnel*gatherEnv)*bundleScale;
         var bendEnv=1-smooth(Math.min(1,tv/Math.max(SP.topBendExtent,.001)));
-        var cx=SBASE_X+SP.offX+relX*relScale+SP.curve*Math.sin(tv*2.1)+Math.cos(ang)*swirl+SP.topBend*bendEnv;
-        var cz=SBASE_Z+SP.offZ+relZ*relScale+0.7*SP.curve*Math.sin(tv*1.6+1.0)+Math.sin(ang)*swirl;
+        var cx=SBASE_X+mx+relX*relScale+SP.curve*Math.sin(tv*2.1)+Math.cos(ang)*swirl+SP.topBend*bendEnv;
+        var cz=SBASE_Z+mz+relZ*relScale+0.7*SP.curve*Math.sin(tv*1.6+1.0)+Math.sin(ang)*swirl;
         var cy=root.y - r*SP.spacing;
         var topFade=0.5+0.5*throat;
         var px=cx+(rnd()-0.5)*SP.jitter, py=cy+(rnd()-0.5)*SP.jitter, pz=cz+(rnd()-0.5)*SP.jitter;
@@ -276,7 +285,8 @@ export default function BrainBackground() {
     for(var h=0;h<HAIR_COUNT;h++){
       var rawRootH=roots.length?roots[h%roots.length]:new THREE.Vector3(SBASE_X,-0.6,SBASE_Z);
       var rootH=stumpAnchor(rawRootH,0.26);
-      var relXH=rootH.x-SBASE_X-SP.offX, relZH=rootH.z-SBASE_Z-SP.offZ;
+      rootH.x+=mx; rootH.y+=my; rootH.z+=mz;
+      var relXH=rootH.x-SBASE_X-mx, relZH=rootH.z-SBASE_Z-mz;
       var freq1=0.7+rnd()*1.1, freq2=2.2+rnd()*2.2;
       var amp1=0.03+rnd()*0.045, amp2=0.008+rnd()*0.016;
       var ph1=rnd()*6.283, ph2=rnd()*6.283;
@@ -288,8 +298,8 @@ export default function BrainBackground() {
         var bundleScaleH=1-SP.taper*tvh;
         var wx=Math.sin(tvh*freq1*Math.PI+ph1)*amp1+Math.sin(tvh*freq2*Math.PI+ph2)*amp2;
         var wz=Math.cos(tvh*freq1*Math.PI+ph1*1.3)*amp1*0.7+Math.cos(tvh*freq2*Math.PI+ph2)*amp2*0.7;
-        var cxh=SBASE_X+SP.offX+relXH*bundleScaleH+wx;
-        var czh=SBASE_Z+SP.offZ+relZH*bundleScaleH+wz;
+        var cxh=SBASE_X+mx+relXH*bundleScaleH+wx;
+        var czh=SBASE_Z+mz+relZH*bundleScaleH+wz;
         var cyh=rootH.y-tvh*hairLen;
         var b=.55+.45*(0.5+0.5*Math.sin(tvh*freq1*Math.PI+ph1));
         if(s>0){
@@ -641,13 +651,17 @@ export default function BrainBackground() {
       ['spacing','Punktabstand',0.015,0.06,0.001],
       ['ptSize','Punktgröße',0.004,0.03,0.001],
       ['ringSpread','Ring-Streuung',0.1,4,0.05],
-      ['offX','Versatz X',-0.3,0.3,0.005],
-      ['offY','Versatz Y',-0.3,0.3,0.005],
-      ['offZ','Versatz Z',-0.3,0.3,0.005],
       ['topBend','Neigung oben',-0.4,0.4,0.005],
       ['topBendExtent','Neigung Reichweite',0.02,0.6,0.01],
       ['topFunnel','Trichterform oben',-0.9,3,0.02],
       ['topFunnelExtent','Trichter Reichweite',0.02,0.5,0.01]
+    ];
+    var MOVE_SLIDERS=[
+      ['moveLeft','Nach links',0,0.8,0.005],
+      ['moveRight','Nach rechts',0,0.8,0.005],
+      ['moveForward','Nach vorne',0,0.8,0.005],
+      ['moveBack','Nach hinten',0,0.8,0.005],
+      ['moveVertical','Vertikal hoch/runter',-0.8,0.8,0.005]
     ];
     var BRIDGE_SLIDERS=[
       ['bridgeFibers','Verbindungsfasern',0,260,1],
@@ -709,6 +723,8 @@ export default function BrainBackground() {
       window.addEventListener('touchmove',function(e){ if(dragging){ var t=e.touches[0]; onMove(t.clientX,t.clientY); } },{passive:true});
       window.addEventListener('touchend',onUp);
     })(title,tunePanel);
+    sectionLabel('Gesamtposition');
+    MOVE_SLIDERS.forEach(function(def){ addSlider(def,MP); });
     sectionLabel('Gehirn-Verbindung');
     BRIDGE_SLIDERS.forEach(function(def){ addSlider(def,BT); });
     sectionLabel('Hauptstrang');
@@ -732,6 +748,8 @@ export default function BrainBackground() {
         +', bridgeCenterPull:'+BT.bridgeCenterPull+', bridgeSideSwing:'+BT.bridgeSideSwing
         +', bridgeWave:'+BT.bridgeWave+', bridgeSegs:'+BT.bridgeSegs
         +', mainRootLift:'+BT.mainRootLift+' }\\n'
+        +'MP={ moveLeft:'+MP.moveLeft+', moveRight:'+MP.moveRight+', moveForward:'+MP.moveForward
+        +', moveBack:'+MP.moveBack+', moveVertical:'+MP.moveVertical+' }\\n'
         +'stumpCenter=['+SBASE_X+','+SBASE_Y+','+SBASE_Z+']';
       out.value=snippet;
       out.select();
