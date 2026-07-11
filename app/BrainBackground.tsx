@@ -497,6 +497,19 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     halo(6.2,.22,0); halo(3.7,.3,.1); halo(1.9,.42,.2);
   }
 
+  var satelliteBrains=[];
+  function addSatelliteBrain(x,y,z,phase){
+    var satellite=brain.clone(true);
+    satellite.scale.setScalar(1.32);
+    satellite.position.set(x,y,z);
+    satellite.rotation.set(BASE_X,BASE_Y,0);
+    satellite.userData={baseX:x,baseY:y,baseZ:z,baseRotY:BASE_Y,phase:phase};
+    world.add(satellite);
+    satelliteBrains.push(satellite);
+  }
+  addSatelliteBrain(-5.7,-.62,-.7,.35);
+  addSatelliteBrain(5.7,-.44,-.9,2.7);
+
   function Spark(){
     var g3=new THREE.BufferGeometry();
     this.arr=new Float32Array(7*3);
@@ -613,7 +626,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
 
   // --- Nervenblitze: hüpfen live über das Liniennetz (echte Graph-Kanten),
   // ein kurzer heller Kopf mit ausblassender Schweifspur, folgt zufällig ---
-  function NerveBolt(){
+  function NerveBolt(parentGroup){
     this.maxTrail=10;
     this.stride=5; // Graph-Kanten pro sichtbarem Hop, macht die Bewegung über die feinen Mesh-Kanten sichtbar
     var g5=new THREE.BufferGeometry();
@@ -624,14 +637,14 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     this.mat=new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
     this.line=new THREE.Line(g5,this.mat);
     this.line.frustumCulled=false;
-    brain.add(this.line);
+    parentGroup.add(this.line);
     var gh=new THREE.BufferGeometry();
     this.headArr=new Float32Array(3);
     gh.setAttribute('position',new THREE.BufferAttribute(this.headArr,3));
     this.headMat=new THREE.PointsMaterial({size:.052,map:sprite,transparent:true,opacity:0,color:0x9fe0ff,blending:THREE.AdditiveBlending,depthWrite:false});
     this.headPt=new THREE.Points(gh,this.headMat);
     this.headPt.frustumCulled=false;
-    brain.add(this.headPt);
+    parentGroup.add(this.headPt);
     this.trail=[];
     this.alive=false;
     this.wait=Math.random()*1.2;
@@ -701,9 +714,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     this.headPt.geometry.attributes.position.needsUpdate=true;
   };
   var nerveBolts=[], NBN=isMobile?10:28;
-  for(i=0;i<NBN;i++) nerveBolts.push(new NerveBolt());
+  for(i=0;i<NBN;i++) nerveBolts.push(new NerveBolt(brain));
+  var satelliteNerveBolts=[];
+  satelliteBrains.forEach(function(satellite){
+    for(var satelliteBoltIndex=0;satelliteBoltIndex<(isMobile?3:5);satelliteBoltIndex++) satelliteNerveBolts.push(new NerveBolt(satellite));
+  });
 
-  function BlueOrb(){
+  function BlueOrb(parentGroup){
     this.coreMat=new THREE.SpriteMaterial({map:sprite,color:0xb9ecff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
     this.core=new THREE.Sprite(this.coreMat);
     this.haloMat=new THREE.SpriteMaterial({map:sprite,color:0x168cff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
@@ -714,7 +731,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     this.arcMat=new THREE.LineBasicMaterial({color:0x8edcff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
     this.arc=new THREE.Line(arcGeometry,this.arcMat);
     this.arc.frustumCulled=false;
-    brain.add(this.arc); brain.add(this.halo); brain.add(this.core);
+    parentGroup.add(this.arc); parentGroup.add(this.halo); parentGroup.add(this.core);
     this.active=false;
     this.wait=Math.random()*1.6;
     this.life=0;
@@ -798,7 +815,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     this.arcMat.opacity=(.18+.38*Math.abs(Math.sin(this.elapsed*37)))*envelope;
   };
   var blueOrbs=[], BON=isMobile?5:12;
-  for(i=0;i<BON;i++) blueOrbs.push(new BlueOrb());
+  for(i=0;i<BON;i++) blueOrbs.push(new BlueOrb(brain));
+  var satelliteBlueOrbs=[];
+  satelliteBrains.forEach(function(satellite){
+    for(var satelliteOrbIndex=0;satelliteOrbIndex<(isMobile?1:2);satelliteOrbIndex++) satelliteBlueOrbs.push(new BlueOrb(satellite));
+  });
 
   // --- Tuning-Panel: Regler für die Nervenstrang-Parameter, nur mit ?tune=1
   // in der URL sichtbar. Werte lassen sich live anpassen und als Code-
@@ -991,6 +1012,17 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       brain.position.y = BRAIN_BASE_Y+Math.sin(t*.38)*.11;
       strandInverseRotation.setFromEuler(brain.rotation).invert();
       worldVerticalInStrandLocal.set(0,1,0).applyQuaternion(strandInverseRotation);
+      for (var satelliteIndex=0;satelliteIndex<satelliteBrains.length;satelliteIndex++) {
+        var satelliteBrain=satelliteBrains[satelliteIndex];
+        var satelliteData=satelliteBrain.userData;
+        var satelliteTime=t*.31+satelliteData.phase;
+        satelliteBrain.position.x=satelliteData.baseX+Math.sin(satelliteTime)*.16;
+        satelliteBrain.position.y=satelliteData.baseY+Math.cos(satelliteTime*1.17)*.13;
+        satelliteBrain.position.z=satelliteData.baseZ+Math.sin(satelliteTime*1.43+1.4)*.12;
+        satelliteBrain.rotation.x=BASE_X+Math.sin(satelliteTime*.81)*.025;
+        satelliteBrain.rotation.y=satelliteData.baseRotY-t*.014+Math.cos(satelliteTime*.69)*.03;
+        satelliteBrain.rotation.z=Math.sin(satelliteTime*.92+1.2)*.022;
+      }
       if (OBJECT_FLOATING) {
         for (var floatingIndex=0;floatingIndex<floatingObjects.length;floatingIndex++) {
           var floatingObject=floatingObjects[floatingIndex];
@@ -1039,7 +1071,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       }
       if (NEURAL_ACTIVITY) {
         for (var neuralIndex = 0; neuralIndex < nerveBolts.length; neuralIndex++) nerveBolts[neuralIndex].update(dt);
+        for (var satelliteNeuralIndex = 0; satelliteNeuralIndex < satelliteNerveBolts.length; satelliteNeuralIndex++) satelliteNerveBolts[satelliteNeuralIndex].update(dt);
         for (var orbIndex = 0; orbIndex < blueOrbs.length; orbIndex++) blueOrbs[orbIndex].update(dt);
+        for (var satelliteOrbUpdateIndex = 0; satelliteOrbUpdateIndex < satelliteBlueOrbs.length; satelliteBlueOrbs[satelliteOrbUpdateIndex].update(dt);
       }
       nodesP.material.opacity = .95;
       var railSlowdown=cameraRailSlowdown(scrollP);
