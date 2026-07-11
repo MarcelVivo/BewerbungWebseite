@@ -703,6 +703,55 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var nerveBolts=[], NBN=isMobile?16:42;
   for(i=0;i<NBN;i++) nerveBolts.push(new NerveBolt());
 
+  function BlueOrb(){
+    this.coreMat=new THREE.SpriteMaterial({map:sprite,color:0xb9ecff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
+    this.core=new THREE.Sprite(this.coreMat);
+    this.haloMat=new THREE.SpriteMaterial({map:sprite,color:0x168cff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
+    this.halo=new THREE.Sprite(this.haloMat);
+    brain.add(this.halo); brain.add(this.core);
+    this.active=false;
+    this.wait=Math.random()*1.6;
+    this.life=0;
+    this.baseSize=.045+Math.random()*.045;
+    this.node=new THREE.Vector3();
+  }
+  BlueOrb.prototype.activate=function(){
+    var candidate, tries=0;
+    do { candidate=pts[Math.floor(Math.random()*pts.length)]; tries++; } while(candidate.y<-.25&&tries<30);
+    this.node.copy(candidate);
+    this.life=.32+Math.random()*.58;
+    this.elapsed=0;
+    this.active=true;
+  };
+  BlueOrb.prototype.update=function(dt){
+    if(!this.active){
+      this.wait-=dt;
+      if(this.wait<=0) this.activate();
+      return;
+    }
+    this.elapsed+=dt;
+    var progress=this.elapsed/this.life;
+    if(progress>=1){
+      this.active=false;
+      this.coreMat.opacity=0;
+      this.haloMat.opacity=0;
+      this.wait=.28+Math.random()*1.35;
+      return;
+    }
+    var envelope=Math.sin(progress*Math.PI);
+    var jitter=.008*envelope;
+    this.core.position.set(this.node.x+Math.sin(progress*31)*jitter,this.node.y+Math.cos(progress*27)*jitter,this.node.z+Math.sin(progress*23)*jitter);
+    this.halo.position.copy(this.core.position);
+    var coreScale=this.baseSize*(.7+envelope*1.65);
+    var haloScale=coreScale*(3.8+envelope*2.4);
+    this.core.scale.set(coreScale,coreScale,1);
+    this.halo.scale.set(haloScale,haloScale,1);
+    this.coreMat.opacity=.85*envelope;
+    this.haloMat.opacity=.22*envelope;
+  };
+  var blueOrbs=[], BON=isMobile?8:20;
+  for(i=0;i<BON;i++) blueOrbs.push(new BlueOrb());
+
   // --- Tuning-Panel: Regler für die Nervenstrang-Parameter, nur mit ?tune=1
   // in der URL sichtbar. Werte lassen sich live anpassen und als Code-
   // Snippet kopieren, um sie mir zu schicken. ---
@@ -942,6 +991,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       }
       if (NEURAL_ACTIVITY) {
         for (var neuralIndex = 0; neuralIndex < nerveBolts.length; neuralIndex++) nerveBolts[neuralIndex].update(dt);
+        for (var orbIndex = 0; orbIndex < blueOrbs.length; orbIndex++) blueOrbs[orbIndex].update(dt);
       }
       nodesP.material.opacity = .95;
       var railSlowdown=cameraRailSlowdown(scrollP);
