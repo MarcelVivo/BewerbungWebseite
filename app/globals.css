@@ -846,6 +846,15 @@ body {
     linear-gradient(180deg, rgba(12,10,6,0), rgba(12,10,6,0.86) 18%, rgba(12,10,6,0.9));
 }
 
+/* Ohne eigenen Hintergrund endet der fast blickdichte Hintergrund der
+   vorherigen .process-section abrupt an ihrer Grenze und der Nervenstrang
+   im BrainBackground-Canvas darunter wirkt sichtbar "abgeschnitten".
+   Gleiche Grundfarbe fortsetzen, damit der Übergang nahtlos bleibt. */
+.contact-section,
+.faq-section {
+  background: rgba(12,10,6,0.9);
+}
+
 .process-heading {
   max-width: 48rem;
   margin: 0 auto 5rem;
