@@ -1027,7 +1027,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       if (!documentVisible) return;
       var dt = Math.min((now - last) / 1000 || 0.016, 0.05); last = now;
       if (SCENE_MOTION || OBJECT_FLOATING) t += dt;
-      var brainSway=Math.sin(t*.16)*Math.PI*.25;
+      var brainSway=Math.sin(t*.08)*Math.PI/6;
       brain.rotation.y = BASE_Y+brainSway;
       brain.rotation.x = BASE_X+Math.sin(t*.23)*.012;
       brain.rotation.z = Math.cos(t*.19+1.1)*.014;
