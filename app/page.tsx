@@ -848,9 +848,6 @@ export default function HomePage() {
         <div className="hero-top-copy absolute inset-x-0 top-4 sm:top-8 lg:top-12 z-10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <div className="hero-copy hero-copy-centered ms-anim">
-              <p className="mb-4 text-xs font-bold uppercase tracking-[0.28em] text-[#c9a84c]">
-                Weblösungen · CRM · ERP · KI
-              </p>
               <h1 className="max-w-xl mx-auto text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-[0.96] tracking-[-0.055em]">
                 {lang === 'de' ? 'Digitale Lösungen aus einem Guss.' : 'Digital solutions built as one system.'}
               </h1>
