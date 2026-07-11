@@ -30,27 +30,6 @@ body {
     #0c0a06;
 }
 
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.22;
-  background:
-    linear-gradient(120deg, transparent 0 42%, rgba(255,224,124,0.05) 49%, transparent 56%),
-    radial-gradient(circle at 23% 17%, rgba(255,224,124,0.1) 0 1px, transparent 2px),
-    radial-gradient(circle at 78% 72%, rgba(95,180,255,0.07) 0 1px, transparent 2px);
-  background-size: 100% 100%, 131px 117px, 193px 167px;
-  mix-blend-mode: screen;
-  animation: page-ambience 22s ease-in-out infinite alternate;
-}
-
-@keyframes page-ambience {
-  from { transform: translate3d(-0.4%, -0.3%, 0); opacity: 0.15; }
-  to { transform: translate3d(0.5%, 0.4%, 0); opacity: 0.28; }
-}
-
 /* Page animations – no JS needed, runs immediately from CSS */
 @keyframes ms-fade-up {
   from { opacity: 0; transform: translateY(22px); }
@@ -289,37 +268,6 @@ body::before {
   isolation: isolate;
   transform-style: preserve-3d;
   pointer-events: none;
-}
-
-.spiral-stage::before,
-.spiral-stage::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.spiral-stage::before {
-  z-index: 1;
-  opacity: 0.58;
-  background:
-    radial-gradient(circle at 18% 28%, rgba(255,221,111,0.2) 0 1px, transparent 2px),
-    radial-gradient(circle at 72% 18%, rgba(108,194,255,0.16) 0 1px, transparent 2px),
-    radial-gradient(circle at 82% 71%, rgba(198,140,255,0.14) 0 1px, transparent 2px),
-    radial-gradient(ellipse at center, transparent 38%, rgba(0,0,0,0.32) 100%);
-  background-size: 173px 149px, 241px 199px, 311px 257px, 100% 100%;
-  mix-blend-mode: screen;
-  animation: atmosphere-drift 18s ease-in-out infinite alternate;
-}
-
-.spiral-stage::after {
-  z-index: 2;
-  display: none;
-}
-
-@keyframes atmosphere-drift {
-  from { transform: translate3d(-0.8%, -0.6%, 0) scale(1); }
-  to { transform: translate3d(0.9%, 0.7%, 0) scale(1.04); }
 }
 
 .spiral-card {
