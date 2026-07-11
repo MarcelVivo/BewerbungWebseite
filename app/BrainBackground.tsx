@@ -628,7 +628,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var gh=new THREE.BufferGeometry();
     this.headArr=new Float32Array(3);
     gh.setAttribute('position',new THREE.BufferAttribute(this.headArr,3));
-    this.headMat=new THREE.PointsMaterial({size:.075,map:sprite,transparent:true,opacity:0,color:0x9fe0ff,blending:THREE.AdditiveBlending,depthWrite:false});
+    this.headMat=new THREE.PointsMaterial({size:.052,map:sprite,transparent:true,opacity:0,color:0x9fe0ff,blending:THREE.AdditiveBlending,depthWrite:false});
     this.headPt=new THREE.Points(gh,this.headMat);
     this.headPt.frustumCulled=false;
     brain.add(this.headPt);
@@ -646,7 +646,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     this.hopsLeft=16+Math.floor(Math.random()*14);
     this.hopTimer=.05+Math.random()*.07;
     this.alive=true;
-    this.headMat.opacity=1;
+    this.headMat.opacity=.65;
   };
   NerveBolt.prototype.stepOnce=function(){
     var neigh=graphAdj[this.cur];
@@ -695,12 +695,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     }
     this.line.geometry.attributes.position.needsUpdate=true;
     this.line.geometry.attributes.color.needsUpdate=true;
-    this.mat.opacity=1;
+    this.mat.opacity=.62;
     var head=this.trail[this.trail.length-1];
     this.headArr[0]=head.x; this.headArr[1]=head.y; this.headArr[2]=head.z;
     this.headPt.geometry.attributes.position.needsUpdate=true;
   };
-  var nerveBolts=[], NBN=isMobile?16:42;
+  var nerveBolts=[], NBN=isMobile?10:28;
   for(i=0;i<NBN;i++) nerveBolts.push(new NerveBolt());
 
   function BlueOrb(){
@@ -712,7 +712,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     this.active=false;
     this.wait=Math.random()*1.6;
     this.life=0;
-    this.baseSize=.045+Math.random()*.045;
+    this.baseSize=.027+Math.random()*.025;
     this.node=new THREE.Vector3();
   }
   BlueOrb.prototype.activate=function(){
@@ -742,14 +742,14 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var jitter=.008*envelope;
     this.core.position.set(this.node.x+Math.sin(progress*31)*jitter,this.node.y+Math.cos(progress*27)*jitter,this.node.z+Math.sin(progress*23)*jitter);
     this.halo.position.copy(this.core.position);
-    var coreScale=this.baseSize*(.7+envelope*1.65);
-    var haloScale=coreScale*(3.8+envelope*2.4);
+    var coreScale=this.baseSize*(.7+envelope*1.35);
+    var haloScale=coreScale*(3.1+envelope*1.9);
     this.core.scale.set(coreScale,coreScale,1);
     this.halo.scale.set(haloScale,haloScale,1);
-    this.coreMat.opacity=.85*envelope;
-    this.haloMat.opacity=.22*envelope;
+    this.coreMat.opacity=.55*envelope;
+    this.haloMat.opacity=.11*envelope;
   };
-  var blueOrbs=[], BON=isMobile?8:20;
+  var blueOrbs=[], BON=isMobile?5:12;
   for(i=0;i<BON;i++) blueOrbs.push(new BlueOrb());
 
   // --- Tuning-Panel: Regler für die Nervenstrang-Parameter, nur mit ?tune=1
