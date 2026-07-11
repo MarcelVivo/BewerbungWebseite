@@ -904,6 +904,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       window.removeEventListener('scroll', onScroll);
       document.removeEventListener('visibilitychange', onVisibilityChange);
       renderer.dispose();
+      renderer.forceContextLoss();
       if (tunePanel && tunePanel.parentNode) tunePanel.parentNode.removeChild(tunePanel);
     };
   }, []);
