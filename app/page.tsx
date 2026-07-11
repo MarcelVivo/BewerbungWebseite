@@ -845,11 +845,11 @@ export default function HomePage() {
 
       {/* ── Hero ── */}
       <section className="home-hero relative z-10 min-h-screen overflow-hidden pt-16">
-        <div className="hero-top-copy absolute inset-x-0 top-4 sm:top-8 lg:top-12 z-10">
+        <div className="hero-top-copy absolute inset-x-0 top-10 sm:top-14 lg:top-20 z-10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <div className="hero-copy hero-copy-centered ms-anim">
               <h1 className="max-w-xl mx-auto text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-[0.96] tracking-[-0.055em]">
-                {lang === 'de' ? 'Digitale Lösungen aus einem Guss.' : 'Digital solutions built as one system.'}
+                {lang === 'de' ? 'Digitale Lösungen aus einem Flow.' : 'Digital solutions built as one system.'}
               </h1>
             </div>
           </div>
