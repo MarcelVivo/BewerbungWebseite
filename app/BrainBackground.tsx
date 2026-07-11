@@ -839,7 +839,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       if (!documentVisible) return;
       var dt = Math.min((now - last) / 1000 || 0.016, 0.05); last = now;
       if (!reduced) t += dt;
-      brain.rotation.y = BASE_Y + mouseX*.06 + Math.sin(t*.31)*.018;
+      brain.rotation.y = BASE_Y - t*.035 + mouseX*.06 + Math.sin(t*.31)*.018;
       brain.rotation.x = BASE_X + mouseY*.035 + Math.sin(t*.27+1.1)*.012;
       brain.rotation.z = Math.sin(t*.34)*.028;
       stumpCenterOffset.copy(stumpCenterLocal).applyEuler(brain.rotation).multiplyScalar(brain.scale.x);
