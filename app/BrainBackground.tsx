@@ -1027,7 +1027,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       if (!documentVisible) return;
       var dt = Math.min((now - last) / 1000 || 0.016, 0.05); last = now;
       if (SCENE_MOTION || OBJECT_FLOATING) t += dt;
-      brain.rotation.y = BASE_Y-t*.018;
+      var brainSway=Math.sin(t*.16)*Math.PI*.25;
+      brain.rotation.y = BASE_Y+brainSway;
       brain.rotation.x = BASE_X+Math.sin(t*.23)*.012;
       brain.rotation.z = Math.cos(t*.19+1.1)*.014;
       stumpCenterOffset.copy(stumpCenterLocal).applyEuler(brain.rotation).multiplyScalar(brain.scale.x);
@@ -1044,7 +1045,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         satelliteBrain.position.y=satelliteData.baseY+Math.cos(satelliteTime*1.17)*.13;
         satelliteBrain.position.z=satelliteData.baseZ+Math.sin(satelliteTime*1.43+1.4)*.12;
         satelliteBrain.rotation.x=BASE_X+Math.sin(satelliteTime*.81)*.025;
-        satelliteBrain.rotation.y=satelliteData.baseRotY-t*.014+Math.cos(satelliteTime*.69)*.03;
+        satelliteBrain.rotation.y=satelliteData.baseRotY+brainSway;
         satelliteBrain.rotation.z=Math.sin(satelliteTime*.92+1.2)*.022;
       }
       if (OBJECT_FLOATING) {
