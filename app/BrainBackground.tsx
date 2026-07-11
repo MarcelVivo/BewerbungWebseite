@@ -91,8 +91,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     context.font='900 102px Arial, sans-serif';
     context.shadowColor='rgba(255,199,65,.36)';
     context.shadowBlur=24;
+    var lineOffsets=[[0,78,24],[94,8,116],[28,112,4],[86,0,62],[10,96,38]][index%5];
     textLines.forEach(function(line,lineIndex){
-      context.fillText(line,80,190+lineIndex*112);
+      context.fillText(line,80+(lineOffsets[lineIndex]||0),190+lineIndex*112);
     });
     context.shadowBlur=0;
     var texture=new THREE.CanvasTexture(textCanvas);
