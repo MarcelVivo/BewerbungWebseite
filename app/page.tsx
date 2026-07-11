@@ -374,12 +374,6 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       <div id="prozess-spiral" className="spiral-anchor top-[82%]" />
 
       <div className="spiral-sticky">
-        <div className="spiral-cylinder" aria-hidden>
-          <span />
-          <span />
-          <span />
-        </div>
-
         <div className="spiral-stage">
           <svg
             data-continuous-strand

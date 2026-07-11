@@ -900,49 +900,6 @@ body::before {
   color: #171004 !important;
 }
 
-.spiral-cylinder {
-  position: absolute;
-  inset: 8vh 50% 6vh auto;
-  width: min(68vw, 920px);
-  translate: 50% 0;
-  border-left: 1px solid rgba(201,168,76,0.16);
-  border-right: 1px solid rgba(201,168,76,0.16);
-  border-radius: 999px / 48px;
-  opacity: 0.24;
-  pointer-events: none;
-  transform-style: preserve-3d;
-  mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 86%, transparent);
-}
-
-.spiral-cylinder::before,
-.spiral-cylinder::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background:
-    linear-gradient(90deg, transparent 0 10%, rgba(201,168,76,0.18) 10.3%, transparent 10.8% 49.4%, rgba(201,168,76,0.18) 50%, transparent 50.6% 89%, rgba(201,168,76,0.18) 89.4%, transparent 90%),
-    repeating-linear-gradient(to bottom, rgba(201,168,76,0.13) 0 1px, transparent 1px 92px);
-}
-
-.spiral-cylinder::after {
-  opacity: 0.28;
-  filter: blur(10px);
-}
-
-.spiral-cylinder span {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background: linear-gradient(to bottom, transparent, rgba(201,168,76,0.25), transparent);
-}
-
-.spiral-cylinder span:nth-child(1) { transform: translateX(-230px); }
-.spiral-cylinder span:nth-child(2) { transform: translateX(0); }
-.spiral-cylinder span:nth-child(3) { transform: translateX(230px); }
-
 .spiral-mobile {
   display: none;
 }
