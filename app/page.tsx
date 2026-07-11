@@ -862,7 +862,7 @@ export default function HomePage() {
             <div className="hero-copy hero-copy-centered ms-anim" style={{ animationDelay: '0.12s' }}>
               <p className="max-w-lg mx-auto text-base sm:text-lg text-[#d8ccb3] leading-relaxed">
                 {lang === 'de'
-                  ? 'Websites, Systeme, Datenbanken, Automatisierung und KI – sauber geplant, schnell umgesetzt und langfristig tragfähig.'
+                  ? 'Websites, Software, KI und Automatisierungen. Strategisch geplant, technisch sauber umgesetzt und auf nachhaltiges Wachstum ausgerichtet.'
                   : 'Websites, systems, databases, automation and AI — clearly planned, fast to build and made to last.'}
               </p>
             </div>
