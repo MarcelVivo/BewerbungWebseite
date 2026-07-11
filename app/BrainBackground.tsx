@@ -41,7 +41,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
 
   var world=new THREE.Group(); scene.add(world);
   var BRAIN_BASE_Y=.82;
-  var brain=new THREE.Group(); brain.position.y=BRAIN_BASE_Y; brain.scale.setScalar(2.73); world.add(brain);
+  var brain=new THREE.Group(); brain.position.y=BRAIN_BASE_Y; brain.scale.setScalar(5.46); world.add(brain);
   var introTextGroup=new THREE.Group(); world.add(introTextGroup);
   var introSprites=[];
   var floatingObjects=[];
@@ -884,13 +884,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       if (!documentVisible) return;
       var dt = Math.min((now - last) / 1000 || 0.016, 0.05); last = now;
       if (SCENE_MOTION || OBJECT_FLOATING) t += dt;
-      brain.rotation.y = BASE_Y;
-      brain.rotation.x = BASE_X;
-      brain.rotation.z = 0;
+      brain.rotation.y = BASE_Y-t*.018;
+      brain.rotation.x = BASE_X+Math.sin(t*.23)*.012;
+      brain.rotation.z = Math.cos(t*.19+1.1)*.014;
       stumpCenterOffset.copy(stumpCenterLocal).applyEuler(brain.rotation).multiplyScalar(brain.scale.x);
       brain.position.x = -stumpCenterOffset.x;
       brain.position.z = -stumpCenterOffset.z;
-      brain.position.y = BRAIN_BASE_Y;
+      brain.position.y = BRAIN_BASE_Y+Math.sin(t*.38)*.11;
       strandInverseRotation.setFromEuler(brain.rotation).invert();
       worldVerticalInStrandLocal.set(0,1,0).applyQuaternion(strandInverseRotation);
       if (OBJECT_FLOATING) {
