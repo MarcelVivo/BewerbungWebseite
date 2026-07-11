@@ -113,10 +113,10 @@ export default function BrainBackground() {
   for(var ri=0;ri<BR.stumpRing.length;ri+=3){
     roots.push(new THREE.Vector3(BR.stumpRing[ri],BR.stumpRing[ri+1],BR.stumpRing[ri+2]));
   }
-  var SP={ fibers:120, length:8.75, rStr:0.038, gather:0.16, taper:0.18,
-           curve:0.025, twist:2.1, jitter:0.014, rungs:0.66, ptSize:0.021, spacing:0.045,
+  var SP={ fibers:120, length:8.75, rStr:0.026, gather:0.22, taper:0.24,
+           curve:0.018, twist:1.65, jitter:0.01, rungs:0.62, ptSize:0.021, spacing:0.045,
            ringSpread:1, offX:0, offY:0, offZ:0,
-           topBend:0, topBendExtent:0.08, topFunnel:0.28, topFunnelExtent:0.22 };
+           topBend:0, topBendExtent:0.08, topFunnel:0.78, topFunnelExtent:0.46 };
   function rnd(){return Math.random();}
   function smooth(x){x=x<0?0:x>1?1:x;return x*x*(3-2*x);}
   function stumpAnchor(rawRoot, liftMax){
@@ -183,11 +183,11 @@ export default function BrainBackground() {
         var ang=a0+tv*tw;
         var bundleScale=1-SP.taper*tv;
         var swirl=SP.rStr*smooth(Math.min(1,tv/Math.max(SP.gather,.001)));
-        var funnelEnv=1-smooth(Math.min(1,tv/Math.max(SP.topFunnelExtent,.001)));
-        var funnelFactor=1+SP.topFunnel*funnelEnv;
+        var gatherEnv=smooth(Math.min(1,tv/Math.max(SP.topFunnelExtent,.001)));
+        var relScale=(1-SP.topFunnel*gatherEnv)*bundleScale;
         var bendEnv=1-smooth(Math.min(1,tv/Math.max(SP.topBendExtent,.001)));
-        var cx=SBASE_X+SP.offX+relX*bundleScale*funnelFactor+SP.curve*Math.sin(tv*2.1)+Math.cos(ang)*swirl+SP.topBend*bendEnv;
-        var cz=SBASE_Z+SP.offZ+relZ*bundleScale*funnelFactor+0.7*SP.curve*Math.sin(tv*1.6+1.0)+Math.sin(ang)*swirl;
+        var cx=SBASE_X+SP.offX+relX*relScale+SP.curve*Math.sin(tv*2.1)+Math.cos(ang)*swirl+SP.topBend*bendEnv;
+        var cz=SBASE_Z+SP.offZ+relZ*relScale+0.7*SP.curve*Math.sin(tv*1.6+1.0)+Math.sin(ang)*swirl;
         var cy=root.y - r*SP.spacing;
         var px=cx+(rnd()-0.5)*SP.jitter, py=cy+(rnd()-0.5)*SP.jitter, pz=cz+(rnd()-0.5)*SP.jitter;
         var v=vc;
