@@ -533,8 +533,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     world.add(satellite);
     satelliteBrains.push(satellite);
   }
-  addSatelliteBrain(-5.7,-.62,-.7,.35,'#35c7dc');
-  addSatelliteBrain(5.7,-.44,-.9,2.7,'#b45b9d');
+  addSatelliteBrain(-5.7,-.62,-.7,.35,'#e46d62');
+  addSatelliteBrain(5.7,-.44,-.9,2.7,'#39bfe9');
 
   var satelliteStrands=[];
   var satelliteTargetWorld=new THREE.Vector3();
@@ -549,10 +549,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       fiberShapes.push({
         phaseOffset:(Math.random()-.5)*.22,
         radiusOffset:(Math.random()-.5)*.07,
-        firstDroop:.57+Math.random()*.22,
-        secondDroop:.38+Math.random()*.16,
-        firstSway:(Math.random()-.5)*.13,
-        secondSway:(Math.random()-.5)*.1
+        firstDroop:1.32+Math.random()*.28,
+        secondDroop:1.04+Math.random()*.22,
+        firstSway:(Math.random()-.5)*.2,
+        secondSway:(Math.random()-.5)*.15
       });
     }
     var satelliteLines=satellite.getObjectByName('neural-lines');
@@ -573,8 +573,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       pointColors:satellitePoints.geometry.attributes.color.array
     });
   }
-  useExistingSatelliteStrand(satelliteBrains[0],Math.PI,'#35c7dc',1);
-  useExistingSatelliteStrand(satelliteBrains[1],0,'#b45b9d',-1);
+  useExistingSatelliteStrand(satelliteBrains[0],Math.PI,'#e46d62',1);
+  useExistingSatelliteStrand(satelliteBrains[1],0,'#39bfe9',-1);
 
   function curveExistingSatelliteStrand(strand,flowTime){
     satelliteTargetWorld.copy(stumpCenterLocal);
@@ -585,21 +585,22 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     satelliteWorldZ.set(0,0,1).transformDirection(satelliteInverseMatrix);
     satelliteWorldDown.set(0,-1,0).transformDirection(satelliteInverseMatrix);
     var lineOffset=baseLinePos.length, pointOffset=baseWPos.length;
-    var connectorShare=.19, helixLength=25.5, helixTurns=4.75, helixRotation=flowTime*.075;
+    var connectorShare=.34, helixLength=25.5, helixTurns=4.75, helixRotation=flowTime*.075;
     for(var fiberIndex=0;fiberIndex<sFibers.length;fiberIndex++){
       var fiber=sFibers[fiberIndex], start=fiber.start, fiberShape=strand.fiberShapes[fiberIndex];
       var startX=sBase[start*3], startY=sBase[start*3+1], startZ=sBase[start*3+2];
       var joinAngle=strand.phase+helixRotation+fiberShape.phaseOffset;
-      var joinRadius=.3+fiberShape.radiusOffset;
+      var joinRadius=.4+fiberShape.radiusOffset;
       var joinX=satelliteTargetLocal.x+satelliteWorldX.x*Math.cos(joinAngle)*joinRadius+satelliteWorldZ.x*Math.sin(joinAngle)*joinRadius;
       var joinY=satelliteTargetLocal.y+satelliteWorldX.y*Math.cos(joinAngle)*joinRadius+satelliteWorldZ.y*Math.sin(joinAngle)*joinRadius;
       var joinZ=satelliteTargetLocal.z+satelliteWorldX.z*Math.cos(joinAngle)*joinRadius+satelliteWorldZ.z*Math.sin(joinAngle)*joinRadius;
-      var controlOneX=startX+(joinX-startX)*.28+satelliteWorldDown.x*fiberShape.firstDroop+satelliteWorldZ.x*fiberShape.firstSway;
-      var controlOneY=startY+(joinY-startY)*.28+satelliteWorldDown.y*fiberShape.firstDroop+satelliteWorldZ.y*fiberShape.firstSway;
-      var controlOneZ=startZ+(joinZ-startZ)*.28+satelliteWorldDown.z*fiberShape.firstDroop+satelliteWorldZ.z*fiberShape.firstSway;
-      var controlTwoX=startX+(joinX-startX)*.74+satelliteWorldDown.x*fiberShape.secondDroop+satelliteWorldZ.x*fiberShape.secondSway;
-      var controlTwoY=startY+(joinY-startY)*.74+satelliteWorldDown.y*fiberShape.secondDroop+satelliteWorldZ.y*fiberShape.secondSway;
-      var controlTwoZ=startZ+(joinZ-startZ)*.74+satelliteWorldDown.z*fiberShape.secondDroop+satelliteWorldZ.z*fiberShape.secondSway;
+      var sideSign=startX<joinX?-1:1;
+      var controlOneX=startX+(joinX-startX)*.23+satelliteWorldDown.x*fiberShape.firstDroop+satelliteWorldZ.x*fiberShape.firstSway+satelliteWorldX.x*sideSign*.42;
+      var controlOneY=startY+(joinY-startY)*.23+satelliteWorldDown.y*fiberShape.firstDroop+satelliteWorldZ.y*fiberShape.firstSway+satelliteWorldX.y*sideSign*.42;
+      var controlOneZ=startZ+(joinZ-startZ)*.23+satelliteWorldDown.z*fiberShape.firstDroop+satelliteWorldZ.z*fiberShape.firstSway+satelliteWorldX.z*sideSign*.42;
+      var controlTwoX=startX+(joinX-startX)*.77+satelliteWorldDown.x*fiberShape.secondDroop+satelliteWorldZ.x*fiberShape.secondSway+satelliteWorldX.x*sideSign*.16;
+      var controlTwoY=startY+(joinY-startY)*.77+satelliteWorldDown.y*fiberShape.secondDroop+satelliteWorldZ.y*fiberShape.secondSway+satelliteWorldX.y*sideSign*.16;
+      var controlTwoZ=startZ+(joinZ-startZ)*.77+satelliteWorldDown.z*fiberShape.secondDroop+satelliteWorldZ.z*fiberShape.secondSway+satelliteWorldX.z*sideSign*.16;
       var previousX=startX, previousY=startY, previousZ=startZ;
       var previousR=0, previousG=0, previousB=0;
       for(var step=0;step<fiber.len;step++){
@@ -613,7 +614,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         } else {
           helixProgress=(progress-connectorShare)/(1-connectorShare);
           var helixAngle=strand.phase+helixRotation+helixProgress*Math.PI*2*helixTurns+fiberShape.phaseOffset;
-          var helixRadius=.3+fiberShape.radiusOffset+Math.sin(helixProgress*Math.PI*4+fiberShape.phaseOffset)*.012;
+          var helixRadius=.4+fiberShape.radiusOffset+Math.sin(helixProgress*Math.PI*4+fiberShape.phaseOffset)*.012;
           var centerX=satelliteTargetLocal.x+satelliteWorldDown.x*helixProgress*helixLength;
           var centerY=satelliteTargetLocal.y+satelliteWorldDown.y*helixProgress*helixLength;
           var centerZ=satelliteTargetLocal.z+satelliteWorldDown.z*helixProgress*helixLength;
