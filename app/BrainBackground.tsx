@@ -40,7 +40,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var sprite=softSprite();
 
   var world=new THREE.Group(); scene.add(world);
-  var brain=new THREE.Group(); brain.position.y=1.38; brain.scale.setScalar(2.73); world.add(brain);
+  var BRAIN_BASE_Y=.82;
+  var brain=new THREE.Group(); brain.position.y=BRAIN_BASE_Y; brain.scale.setScalar(2.73); world.add(brain);
   var introTextGroup=new THREE.Group(); world.add(introTextGroup);
   var introSprites=[];
 
@@ -907,10 +908,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         for (var pi = 0; pi < strandPulses.length; pi++) strandPulses[pi].update(dt);
         for (var ni = 0; ni < nerveBolts.length; ni++) nerveBolts[ni].update(dt);
       }
-      brain.rotation.y = BASE_Y + Math.sin(t*.31)*.018;
-      brain.rotation.x = BASE_X + Math.sin(t*.27+1.1)*.012;
+      brain.rotation.y = BASE_Y + mouseX*.06 + Math.sin(t*.31)*.018;
+      brain.rotation.x = BASE_X + mouseY*.035 + Math.sin(t*.27+1.1)*.012;
       brain.rotation.z = Math.sin(t*.34)*.028;
-      brain.position.y = 1.38 + Math.sin(t*.58)*.058;
+      brain.position.x = mouseX*.055;
+      brain.position.y = BRAIN_BASE_Y + Math.sin(t*.58)*.058;
       nodesP.material.opacity = 0.95 + 0.2 * Math.sin(t * 2.6) + 0.08 * Math.sin(t * 13);
       scrollP = targetScrollP;
       var sf = isMobile ? scrollP * 0.1 : scrollP;
