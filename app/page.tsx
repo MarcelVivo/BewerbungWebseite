@@ -47,17 +47,12 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
   const activeLayoutProgressRef = useRef(0);
   const frameRef = useRef(0);
   const lastFrameTimeRef = useRef(0);
-  const lastStrandProgressRef = useRef(-1);
 
   useEffect(() => {
     const section = document.getElementById('solution-spiral');
     if (!section) return;
     const items = Array.from(section.querySelectorAll<HTMLElement>('[data-spiral-item]'));
-    const strandAnchors = Array.from(section.querySelectorAll<HTMLElement>('[data-spiral-strand-anchor]'));
-    const continuousStrand = section.querySelector<SVGSVGElement>('[data-continuous-strand]');
-    const continuousStrandPaths = continuousStrand
-      ? Array.from(continuousStrand.querySelectorAll<SVGPathElement>('[data-strand-path]'))
-      : [];
+    const orbitStrands = Array.from(section.querySelectorAll<HTMLElement>('[data-spiral-orbit-strand]'));
     const serviceItems = Array.from(section.querySelectorAll<HTMLElement>('[data-service-card]'));
 
     const update = () => {
@@ -89,86 +84,19 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
         item.style.zIndex = String(Math.round(1000 + front * 120 + visible * 240));
       });
 
-      strandAnchors.forEach((strand, i) => {
-        const strandIndex = i;
-        const angle = strandIndex * spiralAngleStep - currentProgress * rotationTravel;
+      orbitStrands.forEach((strand, i) => {
+        const angle = i * spiralAngleStep - currentProgress * rotationTravel;
         const rad = (angle * Math.PI) / 180;
-        const y = strandIndex * verticalStep - currentProgress * totalTravel + spiralYOffset;
+        const y = i * verticalStep - currentProgress * totalTravel + spiralYOffset;
         const front = Math.cos(rad);
         const visible = Math.max(0, 1 - Math.abs(y) / 720);
-        const frontFocus = Math.max(0, (front + 0.1) / 1.1);
-        const opacity = Math.max(0, Math.min(0.82, visible * frontFocus * 0.82));
+        const frontFocus = Math.max(0, (front + 0.08) / 1.08);
+        const opacity = Math.max(0, Math.min(0.78, visible * frontFocus * 0.78));
 
-        strand.style.transform = `translate3d(-50%, -50%, 0) rotateY(${angle}deg) translateZ(${radius - 18}px) translate3d(0, ${y}px, 0)`;
-        strand.dataset.strandOpacity = String(opacity);
-        strand.style.zIndex = String(Math.round(960 + front * 80 + visible * 120));
+        strand.style.transform = `translate3d(-50%, -50%, 0) rotateY(${angle}deg) translateZ(${radius - 34}px) translate3d(0, ${y}px, 0) rotateZ(-16deg)`;
+        strand.style.opacity = String(opacity);
+        strand.style.zIndex = String(Math.round(980 + front * 90 + visible * 120));
       });
-
-      if (
-        continuousStrand
-        && continuousStrandPaths.length
-        && strandAnchors.length > 1
-        && Math.abs(currentProgress - lastStrandProgressRef.current) > 0.00035
-      ) {
-        lastStrandProgressRef.current = currentProgress;
-        const strandRect = continuousStrand.getBoundingClientRect();
-        continuousStrand.setAttribute('viewBox', `0 0 ${strandRect.width.toFixed(1)} ${strandRect.height.toFixed(1)}`);
-        const points = strandAnchors.map((anchor) => {
-          const rect = anchor.getBoundingClientRect();
-          return {
-            x: rect.left + rect.width / 2 - strandRect.left,
-            y: rect.top + rect.height / 2 - strandRect.top,
-          };
-        });
-        const first = points[0];
-        const second = points[1];
-        const last = points[points.length - 1];
-        const beforeLast = points[points.length - 2];
-        const extendedPoints = [
-          {
-            x: first.x + (first.x - second.x) * 0.42,
-            y: first.y + (first.y - second.y) * 0.42,
-          },
-          ...points,
-          {
-            x: last.x + (last.x - beforeLast.x) * 0.42,
-            y: last.y + (last.y - beforeLast.y) * 0.42,
-          },
-        ];
-
-        const createPath = (sourcePoints: typeof extendedPoints, offset: number, phase: number) => sourcePoints.reduce((pathData, point, index, allPoints) => {
-          const tv = index / Math.max(1, allPoints.length - 1);
-          const wave = Math.sin(currentProgress * 12 + tv * 6 + phase) * 7 * tv * (1 - tv * 0.18);
-          const taper = 0.32 + Math.sin(Math.PI * tv) * 0.72;
-          const shifted = {
-            x: point.x + offset * taper + wave,
-            y: point.y + Math.cos(currentProgress * 14 + tv * 9 + phase) * 5 * taper,
-          };
-          if (index === 0) return `M ${shifted.x.toFixed(1)} ${shifted.y.toFixed(1)}`;
-          const previous = allPoints[index - 1];
-          const previousTv = (index - 1) / Math.max(1, allPoints.length - 1);
-          const previousTaper = 0.36 + Math.sin(Math.PI * previousTv) * 0.94;
-          const previousWave = Math.sin(currentProgress * 12 + previousTv * 6 + phase) * 7 * previousTv * (1 - previousTv * 0.18);
-          const shiftedPrevious = {
-            x: previous.x + offset * previousTaper + previousWave,
-            y: previous.y + Math.cos(currentProgress * 14 + previousTv * 9 + phase) * 5 * previousTaper,
-          };
-          const controlX = (shiftedPrevious.x + shifted.x) / 2;
-          return `${pathData} C ${controlX.toFixed(1)} ${shiftedPrevious.y.toFixed(1)}, ${controlX.toFixed(1)} ${shifted.y.toFixed(1)}, ${shifted.x.toFixed(1)} ${shifted.y.toFixed(1)}`;
-        }, '');
-        const opacity = Math.max(...strandAnchors.map((anchor) => Number(anchor.dataset.strandOpacity || 0)));
-
-        continuousStrandPaths.forEach((pathElement) => {
-          const role = pathElement.dataset.strandRole || 'fiber';
-          const fiberIndex = Number(pathElement.dataset.fiberIndex || 0);
-          const offset = role === 'glow' || role === 'core'
-            ? 0
-            : (fiberIndex - 5.5) * 2.2 + Math.sin(fiberIndex * 1.7) * 2.2;
-          const phase = fiberIndex * 0.61;
-          pathElement.setAttribute('d', createPath(extendedPoints, offset, phase));
-        });
-        continuousStrand.style.opacity = String(Math.min(0.82, opacity));
-      }
 
       serviceItems.forEach((item, i) => {
         const activeSlug = section.dataset.activeService || '';
@@ -336,7 +264,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
   const totalTravel = introCards.length * verticalStep + 780;
   const radius = 520;
   const spiralAngleStep = 58;
-  const spiralYOffset = 0;
+  const spiralYOffset = -180;
   const rotationTravel = (spiralAngleStep * totalTravel) / verticalStep;
   const progress = 0;
 
@@ -360,73 +288,6 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
         </div>
 
         <div className="spiral-stage">
-          <svg
-            data-continuous-strand
-            className="spiral-continuous-strand"
-            aria-hidden
-            focusable="false"
-          >
-            <defs>
-              <linearGradient id="spiralStrandGlow" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#d6b75a" stopOpacity="0.16" />
-                <stop offset="23%" stopColor="#5fb4ff" stopOpacity="0.12" />
-                <stop offset="47%" stopColor="#c28cff" stopOpacity="0.13" />
-                <stop offset="69%" stopColor="#5ee6c4" stopOpacity="0.12" />
-                <stop offset="100%" stopColor="#d6b75a" stopOpacity="0.14" />
-              </linearGradient>
-              <linearGradient id="spiralStrandA" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#d6b75a" />
-                <stop offset="18%" stopColor="#5ee6c4" />
-                <stop offset="39%" stopColor="#5fb4ff" />
-                <stop offset="63%" stopColor="#c28cff" />
-                <stop offset="82%" stopColor="#d6b75a" />
-                <stop offset="100%" stopColor="#5fb4ff" />
-              </linearGradient>
-              <linearGradient id="spiralStrandB" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#5fb4ff" />
-                <stop offset="21%" stopColor="#d6b75a" />
-                <stop offset="44%" stopColor="#c28cff" />
-                <stop offset="71%" stopColor="#5ee6c4" />
-                <stop offset="100%" stopColor="#d6b75a" />
-              </linearGradient>
-              <linearGradient id="spiralStrandC" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#c28cff" />
-                <stop offset="16%" stopColor="#5fb4ff" />
-                <stop offset="37%" stopColor="#d6b75a" />
-                <stop offset="58%" stopColor="#5ee6c4" />
-                <stop offset="79%" stopColor="#c28cff" />
-                <stop offset="100%" stopColor="#d6b75a" />
-              </linearGradient>
-              <linearGradient id="spiralStrandD" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#5ee6c4" />
-                <stop offset="25%" stopColor="#c28cff" />
-                <stop offset="48%" stopColor="#d6b75a" />
-                <stop offset="66%" stopColor="#5fb4ff" />
-                <stop offset="100%" stopColor="#5ee6c4" />
-              </linearGradient>
-            </defs>
-            <path data-strand-path data-strand-role="glow" className="strand-glow" />
-            <path data-strand-path data-strand-role="core" className="strand-core" />
-            {Array.from({ length: 12 }).map((_, fiberIndex) => (
-              <path
-                key={`strand-fiber-${fiberIndex}`}
-                data-strand-path
-                data-strand-role="fiber"
-                data-fiber-index={fiberIndex}
-                className={`strand-fiber strand-fiber-tone-${fiberIndex % 4} ${fiberIndex % 4 === 0 ? 'strand-fiber-dim' : ''}`}
-              />
-            ))}
-          </svg>
-
-          {introCards.map((_, i) => (
-            <div
-              key={`intro-strand-${i}`}
-              data-spiral-strand-anchor
-              className="spiral-strand-anchor"
-              aria-hidden
-            />
-          ))}
-
           {introCards.map((card, i) => {
             const angle = i * spiralAngleStep - progress * rotationTravel;
             const rad = (angle * Math.PI) / 180;
