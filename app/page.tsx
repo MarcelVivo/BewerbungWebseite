@@ -247,31 +247,31 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
     {
       kind: 'intro',
       code: 'INTRO 01',
-      title: lang === 'de' ? 'Ich baue\ndie passende Lösung.' : 'I build\nthe right solution.',
+      title: lang === 'de' ? 'Alles beginnt\nmit einer Idee.' : 'I build\nthe right solution.',
       icon: Wrench,
     },
     {
       kind: 'intro',
       code: 'INTRO 02',
-      title: lang === 'de' ? 'für\nDein Unternehmen' : 'for\nyour company',
+      title: lang === 'de' ? 'Aus Ideen entstehen\nHerausforderungen.' : 'for\nyour company',
       icon: Users,
     },
     {
       kind: 'intro',
       code: 'INTRO 03',
-      title: lang === 'de' ? 'Deine\nHerausforderung.' : 'Your\nchallenge.',
+      title: lang === 'de' ? 'Aus Herausforderungen\nentstehen Chancen.' : 'Your\nchallenge.',
       icon: Compass,
     },
     {
       kind: 'intro',
       code: 'INTRO 04',
-      title: lang === 'de' ? 'Meine\nLösung.' : 'My\nsolution.',
+      title: lang === 'de' ? 'Ich mache aus Komplexität\neinfache Lösungen.' : 'My\nsolution.',
       icon: Lightbulb,
     },
     {
       kind: 'intro',
       code: 'INTRO 05',
-      title: lang === 'de' ? 'Alles Individuell.\nAlles aus einem Guss.' : 'Fully custom.\nBuilt as one system.',
+      title: lang === 'de' ? 'Digital. Intelligent.\nZukunftssicher.' : 'Fully custom.\nBuilt as one system.',
       icon: Workflow,
     },
     {
@@ -824,7 +824,7 @@ export default function HomePage() {
   const { lang } = useLanguage();
   const t = T[lang];
   const introWorldTexts = useMemo(() => lang === 'de'
-    ? ['Ich baue\ndie passende Lösung.', 'für\nDein Unternehmen', 'Deine\nHerausforderung.', 'Meine\nLösung.', 'Alles individuell.\nAlles aus einem Guss.']
+    ? ['Alles beginnt\nmit einer Idee.', 'Aus Ideen entstehen\nHerausforderungen.', 'Aus Herausforderungen\nentstehen Chancen.', 'Ich mache aus Komplexität\neinfache Lösungen.', 'Digital. Intelligent.\nZukunftssicher.']
     : ['I build\nthe right solution.', 'for\nyour company', 'Your\nchallenge.', 'My\nsolution.', 'Fully custom.\nBuilt as one system.'], [lang]);
   const serviceWorldCards = useMemo(() => lang === 'de'
     ? [
