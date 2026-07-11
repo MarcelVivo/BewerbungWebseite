@@ -247,6 +247,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var SBASE_X=BR.stumpCenter[0], SBASE_Y=BR.stumpCenter[1], SBASE_Z=BR.stumpCenter[2];
   var stumpCenterLocal=new THREE.Vector3(SBASE_X,SBASE_Y,SBASE_Z);
   var stumpCenterOffset=new THREE.Vector3();
+  var strandInverseRotation=new THREE.Quaternion();
+  var worldVerticalInStrandLocal=new THREE.Vector3();
   var roots=[];
   for(var ri=0;ri<BR.stumpRing.length;ri+=3){
     roots.push(new THREE.Vector3(BR.stumpRing[ri],BR.stumpRing[ri+1],BR.stumpRing[ri+2]));
@@ -899,8 +901,17 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       rafId = requestAnimationFrame(tick);
       if (!documentVisible) return;
       var dt = Math.min((now - last) / 1000 || 0.016, 0.05); last = now;
+      if (!reduced) t += dt;
+      brain.rotation.y = BASE_Y + mouseX*.06 + Math.sin(t*.31)*.018;
+      brain.rotation.x = BASE_X + mouseY*.035 + Math.sin(t*.27+1.1)*.012;
+      brain.rotation.z = Math.sin(t*.34)*.028;
+      stumpCenterOffset.copy(stumpCenterLocal).applyEuler(brain.rotation).multiplyScalar(brain.scale.x);
+      brain.position.x = -stumpCenterOffset.x;
+      brain.position.z = -stumpCenterOffset.z;
+      brain.position.y = BRAIN_BASE_Y + Math.sin(t*.58)*.058;
+      strandInverseRotation.setFromEuler(brain.rotation).invert();
+      worldVerticalInStrandLocal.set(0,1,0).applyQuaternion(strandInverseRotation);
       if (!reduced) {
-        t += dt;
         for (var si = 0; si < sparks.length; si++) sparks[si].update(dt);
         if (vc > 0 && now - lastWobbleUpdate > 32) {
           lastWobbleUpdate = now;
@@ -915,14 +926,18 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           }
           for (var wr = 0; wr < wobbleLineRefs.length; wr++) {
             var refL = wobbleLineRefs[wr], svL = refL.srcV, oL = refL.off;
-            linePosArr[oL]     = sBase[svL * 3]     + wobbleX[svL];
-            linePosArr[oL + 2] = sBase[svL * 3 + 2] + wobbleZ[svL];
+            var strandDyL=sBase[svL*3+1]-SBASE_Y;
+            linePosArr[oL]     = SBASE_X+(sBase[svL*3]-SBASE_X)+worldVerticalInStrandLocal.x*strandDyL+wobbleX[svL];
+            linePosArr[oL + 1] = SBASE_Y+worldVerticalInStrandLocal.y*strandDyL;
+            linePosArr[oL + 2] = SBASE_Z+(sBase[svL*3+2]-SBASE_Z)+worldVerticalInStrandLocal.z*strandDyL+wobbleZ[svL];
           }
           linesObj.geometry.attributes.position.needsUpdate = true;
           for (var wp = 0; wp < wobblePtsRefs.length; wp++) {
             var refP = wobblePtsRefs[wp], svP = refP.srcV, oP = refP.off;
-            ptsPosArr[oP]     = sBase[svP * 3]     + wobbleX[svP];
-            ptsPosArr[oP + 2] = sBase[svP * 3 + 2] + wobbleZ[svP];
+            var strandDyP=sBase[svP*3+1]-SBASE_Y;
+            ptsPosArr[oP]     = SBASE_X+(sBase[svP*3]-SBASE_X)+worldVerticalInStrandLocal.x*strandDyP+wobbleX[svP];
+            ptsPosArr[oP + 1] = SBASE_Y+worldVerticalInStrandLocal.y*strandDyP;
+            ptsPosArr[oP + 2] = SBASE_Z+(sBase[svP*3+2]-SBASE_Z)+worldVerticalInStrandLocal.z*strandDyP+wobbleZ[svP];
           }
           wptsObj.geometry.attributes.position.needsUpdate = true;
         }
@@ -930,13 +945,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         for (var pi = 0; pi < strandPulses.length; pi++) strandPulses[pi].update(dt);
         for (var ni = 0; ni < nerveBolts.length; ni++) nerveBolts[ni].update(dt);
       }
-      brain.rotation.y = BASE_Y + mouseX*.06 + Math.sin(t*.31)*.018;
-      brain.rotation.x = BASE_X + mouseY*.035 + Math.sin(t*.27+1.1)*.012;
-      brain.rotation.z = Math.sin(t*.34)*.028;
-      stumpCenterOffset.copy(stumpCenterLocal).applyEuler(brain.rotation).multiplyScalar(brain.scale.x);
-      brain.position.x = -stumpCenterOffset.x;
-      brain.position.z = -stumpCenterOffset.z;
-      brain.position.y = BRAIN_BASE_Y + Math.sin(t*.58)*.058;
       nodesP.material.opacity = 0.95 + 0.2 * Math.sin(t * 2.6) + 0.08 * Math.sin(t * 13);
       scrollP = targetScrollP;
       var sf = scrollP;
