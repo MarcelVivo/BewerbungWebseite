@@ -830,11 +830,24 @@ export default function HomePage() {
   const introWorldTexts = useMemo(() => lang === 'de'
     ? ['Ich baue\ndie passende Lösung.', 'für\nDein Unternehmen', 'Deine\nHerausforderung.', 'Meine\nLösung.', 'Alles individuell.\nAlles aus einem Guss.']
     : ['I build\nthe right solution.', 'for\nyour company', 'Your\nchallenge.', 'My\nsolution.', 'Fully custom.\nBuilt as one system.'], [lang]);
+  const serviceWorldCards = useMemo(() => lang === 'de'
+    ? [
+        { code: '01', title: 'Corporate Design\n& Webauftritt', body: 'Marke, Gestaltung, Wirkung und digitale Präsentation sauber aus einem System gedacht.', accent: '#d6b75a' },
+        { code: '02', title: '2D-/3D-Websites\n& Applikationen', body: 'Moderne Websites und Web-Apps, die hochwertig aussehen und technisch belastbar sind.', accent: '#5fb4ff' },
+        { code: '03', title: 'CRM, ERP\n& Datenbanken', body: 'Individuelle Systeme, exakt auf Abläufe, Teams, Daten und Wachstum abgestimmt.', accent: '#c28cff' },
+        { code: '04', title: 'KI-Automation\n& Prozesse', body: 'Sinnvolle KI-Lösungen, die Arbeit vereinfachen, Prozesse beschleunigen und Qualität sichern.', accent: '#5ee6c4' },
+      ]
+    : [
+        { code: '01', title: 'Corporate design\n& web presence', body: 'Brand, design, impact and digital presentation built as one coherent system.', accent: '#d6b75a' },
+        { code: '02', title: '2D/3D websites\n& applications', body: 'Modern websites and web apps that look premium and hold up technically.', accent: '#5fb4ff' },
+        { code: '03', title: 'CRM, ERP\n& databases', body: 'Custom systems aligned to workflows, teams, data and long-term growth.', accent: '#c28cff' },
+        { code: '04', title: 'AI automation\n& processes', body: 'Practical AI solutions that simplify work, accelerate processes and protect quality.', accent: '#5ee6c4' },
+      ], [lang]);
 
   return (
     <div className="min-h-screen bg-[#0c0a06] text-[#f4edd8]">
       <HomeNavBar />
-      <BrainBackground introTexts={introWorldTexts} />
+      <BrainBackground introTexts={introWorldTexts} serviceCards={serviceWorldCards} />
 
       {/* ── Hero ── */}
       <section className="home-hero relative z-10 min-h-screen overflow-hidden pt-16">

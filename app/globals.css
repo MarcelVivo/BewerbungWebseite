@@ -950,7 +950,9 @@ body::before {
 @media (min-width: 901px) {
   .spiral-intro-line,
   .spiral-continuous-strand,
-  .spiral-strand-anchor {
+  .spiral-strand-anchor,
+  .spiral-service-grid,
+  .spiral-detail-panel {
     opacity: 0 !important;
     pointer-events: none !important;
   }

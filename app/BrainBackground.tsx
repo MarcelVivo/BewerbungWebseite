@@ -6,9 +6,10 @@ import brainData from './brainData.json';
 
 type BrainBackgroundProps = {
   introTexts?: string[];
+  serviceCards?: Array<{ code: string; title: string; body: string; accent: string }>;
 };
 
-export default function BrainBackground({ introTexts = [] }: BrainBackgroundProps) {
+export default function BrainBackground({ introTexts = [], serviceCards = [] }: BrainBackgroundProps) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -76,7 +77,55 @@ export default function BrainBackground({ introTexts = [] }: BrainBackgroundProp
     introSprites.push(textSprite);
   }
 
-  introTexts.forEach(buildIntroSprite);
+  if(!isMobile) introTexts.forEach(buildIntroSprite);
+
+  function buildServiceCard(card,index){
+    var cardCanvas=document.createElement('canvas');
+    cardCanvas.width=1536; cardCanvas.height=864;
+    var context=cardCanvas.getContext('2d');
+    if(!context) return;
+    var cardGradient=context.createLinearGradient(0,0,1536,864);
+    cardGradient.addColorStop(0,'rgba(22,19,11,.94)');
+    cardGradient.addColorStop(1,'rgba(8,7,5,.8)');
+    context.fillStyle=cardGradient;
+    context.fillRect(0,0,1536,864);
+    context.strokeStyle=card.accent+'99';
+    context.lineWidth=4;
+    context.strokeRect(4,4,1528,856);
+    var glow=context.createRadialGradient(220,130,0,220,130,460);
+    glow.addColorStop(0,card.accent+'44');
+    glow.addColorStop(1,'rgba(0,0,0,0)');
+    context.fillStyle=glow;
+    context.fillRect(0,0,1536,864);
+    context.fillStyle=card.accent;
+    context.font='700 30px Arial, sans-serif';
+    context.fillText(card.code,96,100);
+    context.fillStyle='rgba(255,255,255,.98)';
+    context.font='900 82px Arial, sans-serif';
+    card.title.split('\n').forEach(function(line,lineIndex){ context.fillText(line,96,240+lineIndex*94); });
+    context.fillStyle='rgba(245,236,214,.82)';
+    context.font='500 36px Arial, sans-serif';
+    var words=card.body.split(' '), line='', lineY=550;
+    words.forEach(function(word){
+      var candidate=line?line+' '+word:word;
+      if(context.measureText(candidate).width>1280){ context.fillText(line,96,lineY); line=word; lineY+=52; }
+      else line=candidate;
+    });
+    if(line) context.fillText(line,96,lineY);
+    context.fillStyle=card.accent;
+    context.fillRect(96,760,430,4);
+    var texture=new THREE.CanvasTexture(cardCanvas);
+    texture.colorSpace=THREE.SRGBColorSpace;
+    texture.minFilter=THREE.LinearFilter;
+    var material=new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false,depthTest:true,opacity:.98,side:THREE.FrontSide});
+    var cardMesh=new THREE.Mesh(new THREE.PlaneGeometry(4.85,2.73),material);
+    var cardAngle=index*Math.PI*2/Math.max(1,serviceCards.length);
+    cardMesh.position.set(Math.sin(cardAngle)*1.68,-2.2-index*4.2,Math.cos(cardAngle)*1.68);
+    cardMesh.rotation.y=cardAngle;
+    introTextGroup.add(cardMesh);
+  }
+
+  if(!isMobile) serviceCards.forEach(buildServiceCard);
 
   var secondaryEnergy=new THREE.Group(); world.add(secondaryEnergy);
   var secondaryEnergyLines=[];
@@ -858,32 +907,24 @@ export default function BrainBackground({ introTexts = [] }: BrainBackgroundProp
         for (var pi = 0; pi < strandPulses.length; pi++) strandPulses[pi].update(dt);
         for (var ni = 0; ni < nerveBolts.length; ni++) nerveBolts[ni].update(dt);
       }
-      var rotTarget = BASE_Y + mouseX * 0.5 + Math.sin(t * 0.15) * 0.07;
-      brain.rotation.y += (rotTarget - brain.rotation.y) * 0.05;
-      brain.rotation.x += ((BASE_X + mouseY * 0.2) - brain.rotation.x) * 0.05;
-      brain.position.y = 1.38 + Math.sin(t * 0.8) * 0.045;
+      brain.rotation.y = BASE_Y;
+      brain.rotation.x = BASE_X;
+      brain.position.y = 1.38;
       nodesP.material.opacity = 0.95 + 0.2 * Math.sin(t * 2.6) + 0.08 * Math.sin(t * 13);
-      scrollP += (targetScrollP - scrollP) * Math.min(1, dt * 5);
-      var sf = scrollP;
+      scrollP = targetScrollP;
+      var sf = isMobile ? scrollP * 0.1 : scrollP;
       var orbit = sf * Math.PI * 2;
       var cameraY=2.6-sf*21;
       var cameraRadius=9.2-sf*0.8;
-      world.rotation.y += (0-world.rotation.y) * 0.028;
-      world.position.y += (0-world.position.y) * 0.028;
-      farDust.position.x += ((-sf*0.76+mouseX*.045)-farDust.position.x)*0.02;
-      farDust.position.y += ((sf*1.35)-farDust.position.y)*0.02;
-      nearDust.position.x += ((sf*1.12+mouseX*.12)-nearDust.position.x)*0.035;
-      nearDust.position.y += ((-sf*1.75+mouseY*.08)-nearDust.position.y)*0.035;
-      introSprites.forEach(function(textSprite){
-        textSprite.position.y=textSprite.userData.baseY+Math.sin(t*.55+textSprite.userData.phase)*.018;
-      });
-      secondaryEnergy.rotation.y=Math.sin(t*.22)*.08;
+      world.rotation.y = 0;
+      world.position.y = 0;
+      farDust.position.set(0,0,0);
+      nearDust.position.set(0,0,0);
+      secondaryEnergy.rotation.y = 0;
       secondaryEnergyLines.forEach(function(energyLine,lineIndex){
         energyLine.material.opacity=.13+Math.sin(t*.8+lineIndex*1.8)*.045;
       });
-      camera.position.x += ((Math.sin(orbit)*cameraRadius+mouseX*.22)-camera.position.x)*0.035;
-      camera.position.z += ((Math.cos(orbit)*cameraRadius+mouseY*.08)-camera.position.z)*0.035;
-      camera.position.y += (cameraY-camera.position.y)*0.035;
+      camera.position.set(Math.sin(orbit)*cameraRadius, cameraY, Math.cos(orbit)*cameraRadius);
       camera.lookAt(0, cameraY-3.4, 0);
       renderer.render(scene, camera);
     }
