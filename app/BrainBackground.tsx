@@ -59,6 +59,20 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     return Math.PI*2*(cameraTargetStart-stopY)/cameraTravel;
   }
 
+  function cameraFocus(progress){
+    var focusWindow=.032, strongest=0, focusIndex=0;
+    for(var stopIndex=0;stopIndex<totalWorldStops;stopIndex++){
+      var stopY=TEXT_START_Y-stopIndex*HELIX_STEP;
+      var stopProgress=(cameraTargetStart-stopY)/cameraTravel;
+      var distance=Math.abs(progress-stopProgress);
+      if(distance>=focusWindow) continue;
+      var proximity=1-distance/focusWindow;
+      var amount=Math.pow(Math.sin(proximity*Math.PI*.5),1.45);
+      if(amount>strongest){ strongest=amount; focusIndex=stopIndex; }
+    }
+    return { amount:strongest, index:focusIndex };
+  }
+
   function buildIntroSprite(label,index){
     var textCanvas=document.createElement('canvas');
     textCanvas.width=1536; textCanvas.height=512;
@@ -885,14 +899,20 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       nodesP.material.opacity = 0.95 + 0.2 * Math.sin(t * 2.6) + 0.08 * Math.sin(t * 13);
       scrollP = targetScrollP;
       var sf = scrollP;
-      var orbit = sf * Math.PI * 2;
+      var focus=cameraFocus(sf);
+      var focusY=TEXT_START_Y-focus.index*HELIX_STEP;
+      var focusOrbit=helixAngle(focus.index);
+      var orbit=sf*Math.PI*2+(focusOrbit-sf*Math.PI*2)*focus.amount*.72;
       var lookY=cameraTargetStart-sf*cameraTravel;
-      var cameraY=lookY+3.4;
-      var cameraRadius=9.2-sf*0.8;
+      lookY+=((focusY-lookY)*focus.amount);
+      var cameraY=lookY+3.4*(1-focus.amount);
+      var cameraRadius=9.2-sf*.8-2.15*focus.amount;
+      var focusTargetRadius=focus.index<introTexts.length?2.65:1.68;
+      var targetRadius=focusTargetRadius*focus.amount;
       world.rotation.y = 0;
       world.position.y = 0;
       camera.position.set(Math.sin(orbit)*cameraRadius, cameraY, Math.cos(orbit)*cameraRadius);
-      camera.lookAt(0, lookY, 0);
+      camera.lookAt(Math.sin(orbit)*targetRadius, lookY, Math.cos(orbit)*targetRadius);
       renderer.render(scene, camera);
     }
     rafId = requestAnimationFrame(tick);
