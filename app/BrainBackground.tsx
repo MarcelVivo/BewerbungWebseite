@@ -41,7 +41,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
 
   var world=new THREE.Group(); scene.add(world);
   var BRAIN_BASE_Y=.82;
-  var brain=new THREE.Group(); brain.position.y=BRAIN_BASE_Y; brain.scale.setScalar(2.73); world.add(brain);
+  var BRAIN_ANCHOR_X=-.282, BRAIN_ANCHOR_Z=-.914;
+  var brain=new THREE.Group(); brain.position.set(BRAIN_ANCHOR_X,BRAIN_BASE_Y,BRAIN_ANCHOR_Z); brain.scale.setScalar(2.73); world.add(brain);
   var introTextGroup=new THREE.Group(); world.add(introTextGroup);
   var introSprites=[];
   var HELIX_STEP=4.2;
@@ -250,7 +251,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     roots.push(new THREE.Vector3(BR.stumpRing[ri],BR.stumpRing[ri+1],BR.stumpRing[ri+2]));
   }
   var SP={ length:9.05, rStr:0.08, gather:0.25, taper:0.24,
-           curve:0.025, twist:5.2, jitter:0, rungs:0.68, ptSize:0.03, spacing:0.06,
+           curve:0, twist:5.2, jitter:0, rungs:0.68, ptSize:0.03, spacing:0.06,
            ringSpread:0.1, offX:0, offY:0, offZ:0,
            droop:1.5, frayStart:0.98, fraySpread:0.12 };
   // Trichter: jede Faser startet an einem echten goldenen Vertex im Stumpf-
@@ -271,7 +272,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var wobbleX=new Float32Array(0), wobbleZ=new Float32Array(0);
   // gemeinsame Durchhang-Richtung (Schwerkraft): leicht nach vorne/unten,
   // nicht rein vertikal, wirkt organischer als ein reiner Y-Fall
-  var DROOP_DX=0.18, DROOP_DZ=0.55;
+  var DROOP_DX=0, DROOP_DZ=0;
   function genStrandInto(outPos,outCol,outPtsPos,outPtsCol){
     sBase=[]; sMeta=[]; sFibers=[]; vc=0; wobbleLineRefs=[]; wobblePtsRefs=[];
     var N=Math.max(20,Math.round(SP.length/SP.spacing));
@@ -902,10 +903,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           lastWobbleUpdate = now;
           var linePosArr = linesObj.geometry.attributes.position.array;
           var ptsPosArr = wptsObj.geometry.attributes.position.array;
+          var airSwayX=Math.sin(t*.37)*.026+Math.sin(t*.16+1.2)*.014;
+          var airSwayZ=Math.cos(t*.31)*.021+Math.sin(t*.19+.7)*.012;
           for (var v = 0; v < vc; v++) {
             var tv = sMeta[v * 2], ph = sMeta[v * 2 + 1];
-            wobbleX[v] = Math.sin(t * 1.1 + tv * 9 + ph) * 0.06 * tv * tv;
-            wobbleZ[v] = Math.cos(t * 0.9 + tv * 7 + ph) * 0.05 * tv * tv;
+            wobbleX[v] = Math.sin(t * 1.1 + tv * 9 + ph) * 0.036 * tv * tv + airSwayX*tv;
+            wobbleZ[v] = Math.cos(t * 0.9 + tv * 7 + ph) * 0.03 * tv * tv + airSwayZ*tv;
           }
           for (var wr = 0; wr < wobbleLineRefs.length; wr++) {
             var refL = wobbleLineRefs[wr], svL = refL.srcV, oL = refL.off;
@@ -927,7 +930,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       brain.rotation.y = BASE_Y + mouseX*.06 + Math.sin(t*.31)*.018;
       brain.rotation.x = BASE_X + mouseY*.035 + Math.sin(t*.27+1.1)*.012;
       brain.rotation.z = Math.sin(t*.34)*.028;
-      brain.position.x = mouseX*.055;
+      brain.position.x = BRAIN_ANCHOR_X;
+      brain.position.z = BRAIN_ANCHOR_Z;
       brain.position.y = BRAIN_BASE_Y + Math.sin(t*.58)*.058;
       nodesP.material.opacity = 0.95 + 0.2 * Math.sin(t * 2.6) + 0.08 * Math.sin(t * 13);
       scrollP = targetScrollP;
