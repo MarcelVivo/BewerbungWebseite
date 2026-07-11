@@ -531,8 +531,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     world.add(satellite);
     satelliteBrains.push(satellite);
   }
-  addSatelliteBrain(-5.7,-.62,-.7,.35,'#c28cff');
-  addSatelliteBrain(5.7,-.44,-.9,2.7,'#5fb4ff');
+  addSatelliteBrain(-5.7,-.62,-.7,.35,'#b45f68');
+  addSatelliteBrain(5.7,-.44,-.9,2.7,'#4f779e');
 
   function Spark(){
     var g3=new THREE.BufferGeometry();
