@@ -821,8 +821,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     const onScroll = () => {
       var journey=document.getElementById('solution-spiral');
       if(!journey) return;
-      var start=journey.offsetTop;
-      var distance=Math.max(1,journey.offsetHeight-innerHeight);
+      var start=journey.offsetTop-innerHeight;
+      var distance=Math.max(1,journey.offsetHeight);
       targetScrollP=Math.max(0,Math.min(1,(scrollY-start)/distance));
     };
     const onVisibilityChange = () => { documentVisible = document.visibilityState === 'visible'; };
