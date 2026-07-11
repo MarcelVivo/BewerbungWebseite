@@ -121,7 +121,7 @@ export default function BrainBackground() {
   // Bereich und läuft über eine kurze, sanft gekrümmte Kurve zu einem
   // Konvergenzpunkt auf der Mittelachse, bevor sie in das bestehende
   // Bündel (Taper/Droop/Fray) übergeht.
-  var FN={ count:300, anchorRadius:0.59, funnelHeight:0.19, funnelSegs:3, convergePull:0.65, randomness:1 };
+  var FN={ count:isMobile?96:220, anchorRadius:0.59, funnelHeight:0.19, funnelSegs:3, convergePull:0.65, randomness:1 };
   var MP={ moveLeft:0, moveRight:0, moveForward:0, moveBack:0, moveVertical:0.01 };
   function moveX(){ return SP.offX + MP.moveRight - MP.moveLeft; }
   function moveY(){ return SP.offY + MP.moveVertical; }
@@ -729,23 +729,29 @@ export default function BrainBackground() {
   var d1=[], d2b=[];
   for(i=0;i<(isMobile?70:170);i++) d1.push((Math.random()-.5)*14, 4-Math.random()*22, -3+Math.random()*5);
   for(i=0;i<(isMobile?45:115);i++)  d2b.push((Math.random()-.5)*16, 4-Math.random()*22, -4+Math.random()*5);
-  world.add(pointsObj(d1,null,.32,.2));
-  world.add(pointsObj(d2b,null,.78,.13));
+  var farDust=pointsObj(d1,null,.32,.2);
+  var nearDust=pointsObj(d2b,null,.78,.13);
+  world.add(farDust);
+  world.add(nearDust);
 
     var mouseX = 0, mouseY = 0;
     const onMouse = (e) => { mouseX = (e.clientX / innerWidth - 0.5) * 2; mouseY = (e.clientY / innerHeight - 0.5) * 2; };
     const resize = () => { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); };
     var scrollP = 0, targetScrollP = 0;
+    var documentVisible = document.visibilityState === 'visible';
     const onScroll = () => { var max = document.documentElement.scrollHeight - innerHeight; targetScrollP = max > 0 ? scrollY / max : 0; };
+    const onVisibilityChange = () => { documentVisible = document.visibilityState === 'visible'; };
     window.addEventListener('mousemove', onMouse);
     window.addEventListener('resize', resize);
     window.addEventListener('scroll', onScroll, { passive: true });
+    document.addEventListener('visibilitychange', onVisibilityChange);
     resize(); onScroll();
     renderer.render(scene, camera);
 
     var t = 0, last = 0, rafId = 0, lastWobbleUpdate = 0;
     function tick(now) {
       rafId = requestAnimationFrame(tick);
+      if (!documentVisible) return;
       var dt = Math.min((now - last) / 1000 || 0.016, 0.05); last = now;
       if (!reduced) {
         t += dt;
@@ -783,12 +789,17 @@ export default function BrainBackground() {
       nodesP.material.opacity = 0.95 + 0.2 * Math.sin(t * 2.6) + 0.08 * Math.sin(t * 13);
       scrollP += (targetScrollP - scrollP) * Math.min(1, dt * 5);
       var sf = scrollP;
-      world.rotation.y = sf * 0.42;
-      world.position.y = sf * 3.25;
-      camera.position.z += ((9.2 - sf * 0.68) - camera.position.z) * 0.035;
-      camera.position.y += ((0.4 - sf * 0.18) - camera.position.y) * 0.035;
-      camera.lookAt(0, 0.5 + sf * 0.32, 0);
-      camera.position.x += ((mouseX * 0.3) - camera.position.x) * 0.05;
+      var orbit = sf * Math.PI * 0.58;
+      world.rotation.y += (orbit - world.rotation.y) * 0.018;
+      world.position.y += ((sf * 3.45) - world.position.y) * 0.028;
+      farDust.position.x += ((-sf * 0.42 + mouseX * 0.045) - farDust.position.x) * 0.02;
+      farDust.position.y += ((sf * 0.56) - farDust.position.y) * 0.02;
+      nearDust.position.x += ((sf * 0.72 + mouseX * 0.12) - nearDust.position.x) * 0.035;
+      nearDust.position.y += ((-sf * 0.82 + mouseY * 0.08) - nearDust.position.y) * 0.035;
+      camera.position.z += ((9.2 - sf * 0.72 + Math.cos(orbit) * 0.14) - camera.position.z) * 0.035;
+      camera.position.y += ((0.4 - sf * 0.24 + Math.sin(orbit) * 0.1) - camera.position.y) * 0.035;
+      camera.position.x += ((Math.sin(orbit) * 0.62 + mouseX * 0.22) - camera.position.x) * 0.035;
+      camera.lookAt(0.08 * Math.sin(orbit), 0.5 + sf * 0.32, 0);
       renderer.render(scene, camera);
     }
     rafId = requestAnimationFrame(tick);
@@ -798,6 +809,7 @@ export default function BrainBackground() {
       window.removeEventListener('mousemove', onMouse);
       window.removeEventListener('resize', resize);
       window.removeEventListener('scroll', onScroll);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
       renderer.dispose();
       if (tunePanel && tunePanel.parentNode) tunePanel.parentNode.removeChild(tunePanel);
     };

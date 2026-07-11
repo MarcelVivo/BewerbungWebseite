@@ -429,6 +429,24 @@ body::before {
   stroke-dasharray: 2 12;
 }
 
+.strand-aura {
+  fill: none;
+  stroke-width: 1.25;
+  stroke-dasharray: 2 11;
+  opacity: 0.32;
+  filter: drop-shadow(0 0 7px currentColor);
+}
+
+.strand-aura-left {
+  color: #65c6ff;
+  stroke: #65c6ff;
+}
+
+.strand-aura-right {
+  color: #c891ff;
+  stroke: #c891ff;
+}
+
 .strand-fiber {
   stroke: url(#spiralStrandA);
   opacity: 0.52;

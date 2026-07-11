@@ -176,7 +176,9 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
           const fiberIndex = Number(pathElement.dataset.fiberIndex || 0);
           const offset = role === 'glow' || role === 'core'
             ? 0
-            : (fiberIndex - 5.5) * 2.2 + Math.sin(fiberIndex * 1.7) * 2.2;
+            : role === 'aura'
+              ? fiberIndex * 22
+              : (fiberIndex - 5.5) * 2.2 + Math.sin(fiberIndex * 1.7) * 2.2;
           const phase = fiberIndex * 0.61;
           pathElement.setAttribute('d', createPath(extendedPoints, offset, phase));
         });
@@ -426,6 +428,8 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
             </defs>
             <path data-strand-path data-strand-role="glow" className="strand-glow" />
             <path data-strand-path data-strand-role="core" className="strand-core" />
+            <path data-strand-path data-strand-role="aura" data-fiber-index="-1" className="strand-aura strand-aura-left" />
+            <path data-strand-path data-strand-role="aura" data-fiber-index="1" className="strand-aura strand-aura-right" />
             {Array.from({ length: 12 }).map((_, fiberIndex) => (
               <path
                 key={`strand-fiber-${fiberIndex}`}
