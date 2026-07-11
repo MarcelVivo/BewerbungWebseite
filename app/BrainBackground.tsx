@@ -873,14 +873,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   for(i=0;i<GPN;i++) goldenPulses.push(new GlidePulse('golden'));
   if(STRAND_ON&&sFibers.length) for(i=0;i<SPULN;i++) strandPulses.push(new GlidePulse('strand'));
 
-  var d1=[], d2b=[];
-  for(i=0;i<(isMobile?70:170);i++) d1.push((Math.random()-.5)*14, 4-Math.random()*22, -3+Math.random()*5);
-  for(i=0;i<(isMobile?45:115);i++)  d2b.push((Math.random()-.5)*16, 4-Math.random()*22, -4+Math.random()*5);
-  var farDust=pointsObj(d1,null,.32,.2);
-  var nearDust=pointsObj(d2b,null,.78,.13);
-  world.add(farDust);
-  world.add(nearDust);
-
     var mouseX = 0, mouseY = 0;
     const onMouse = (e) => { mouseX = (e.clientX / innerWidth - 0.5) * 2; mouseY = (e.clientY / innerHeight - 0.5) * 2; };
     const resize = () => { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); };
@@ -952,8 +944,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var cameraRadius=9.2-sf*0.8;
       world.rotation.y = 0;
       world.position.y = 0;
-      farDust.position.set(0,0,0);
-      nearDust.position.set(0,0,0);
       secondaryEnergy.rotation.y = 0;
       secondaryEnergyLines.forEach(function(energyLine,lineIndex){
         energyLine.material.opacity=.13+Math.sin(t*.8+lineIndex*1.8)*.045;
