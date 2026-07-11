@@ -1,5 +1,5 @@
 /** @type {import('tailwindcss').Config} */
-export default {
+module.exports = {
   content: [
     './app/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -10,7 +10,7 @@ export default {
     extend: {
       colors: {
         ms: {
-          50:  '#f0f8ff',
+          50: '#f0f8ff',
           100: '#e0f2fe',
           200: '#bae6fd',
           300: '#7dd3fc',
@@ -21,8 +21,8 @@ export default {
         },
       },
       fontFamily: {
-        sans:    ['Inter', 'system-ui', 'sans-serif'],
-        brand:   ['Poppins', 'Inter', 'sans-serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        brand: ['Poppins', 'Inter', 'sans-serif'],
         display: ['"Space Grotesk"', 'Inter', 'sans-serif'],
       },
     },

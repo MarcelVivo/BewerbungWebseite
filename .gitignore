@@ -34,3 +34,15 @@ data/*.bak
 # Claude memory (local dev only)
 memory/
 messages/
+.claude/
+CLAUDE.md
+graphify-out/
+
+# Local visual source/drop folders not served by Next.js
+Bilder/
+
+# Local model experiments
+public/Models/
+
+# Backups
+*.bak

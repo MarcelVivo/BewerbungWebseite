@@ -1,15 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import {
-  Bot, BarChart3, Workflow, Megaphone, Video, FolderKanban,
+  Bot, BarChart3, Workflow, FolderKanban,
   GraduationCap, Globe, Lightbulb, Mail, MapPin, Phone,
   ChevronRight, ExternalLink, Star,
   CheckCircle, Zap, Users, Award,
   MessageSquare, Search, Compass, Wrench, Heart, ClipboardList,
 } from 'lucide-react';
-import Link from 'next/link';
 import HomeNavBar from './HomeNavBar';
+import BrainBackground from './BrainBackground';
 import ContactFormClient from './ContactFormClient';
 import { useLanguage } from './LanguageContext';
 import { T } from '../lib/translations';
@@ -19,15 +19,15 @@ export const dynamic = 'force-static';
 // ── Static meta (icons + slugs/urls, language-independent) ───
 
 const SERVICE_META = [
-  { icon: Bot,           slug: 'ki-agenten' },
-  { icon: BarChart3,     slug: 'business-analyse' },
-  { icon: Workflow,      slug: 'prozessoptimierung' },
-  { icon: Megaphone,     slug: 'digital-marketing' },
-  { icon: Video,         slug: 'video-produktion' },
-  { icon: FolderKanban,  slug: 'projektmanagement' },
-  { icon: GraduationCap, slug: 'workshops' },
-  { icon: Globe,         slug: 'website-optimierung' },
-  { icon: Lightbulb,     slug: 'ki-beratung-kmu' },
+  { icon: Lightbulb,     slug: 'corporate-design' },
+  { icon: Globe,         slug: '2d-3d-websites' },
+  { icon: BarChart3,     slug: 'crm-loesungen' },
+  { icon: Workflow,      slug: 'erp-prozesse' },
+  { icon: FolderKanban,  slug: 'datenbanken-schnittstellen' },
+  { icon: Bot,           slug: 'automatisierung-ki-agenten' },
+  { icon: BarChart3,     slug: 'analyse-konzept' },
+  { icon: FolderKanban,  slug: 'go-live-umsetzung' },
+  { icon: GraduationCap, slug: 'wartung-weiterentwicklung' },
 ];
 
 const PORTFOLIO_META = [
@@ -40,41 +40,757 @@ const PORTFOLIO_META = [
 const USP_ICONS = [Zap, Users, CheckCircle, Award];
 const PROCESS_ICONS = [MessageSquare, Search, Compass, Wrench, Heart];
 
-const CINEMATIC_QUOTES = [
-  'KI ersetzt keine Menschen. Sie ersetzt Unternehmen, die sie ignorieren.',
-  'Die besten Ergebnisse entstehen dort, wo menschliche Intelligenz auf künstliche Intelligenz trifft.',
-  'Wer KI nur nutzt, spart Zeit. Wer sie versteht, gewinnt Zukunft.',
-  'KI denkt schnell. Der Mensch denkt richtig. Gemeinsam entsteht Exzellenz.',
-  'KI kann Daten verstehen. Menschen verstehen Menschen.',
-];
-
-function CinematicQuotes() {
-  const [state, setState] = useState({ index: 0, gen: 0 });
+function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
+  const [activeServiceSlug, setActiveServiceSlug] = useState<string | null>(null);
+  const progressRef = useRef(0);
+  const targetProgressRef = useRef(0);
+  const activeLayoutProgressRef = useRef(0);
+  const frameRef = useRef(0);
+  const lastFrameTimeRef = useRef(0);
+  const lastStrandProgressRef = useRef(-1);
 
   useEffect(() => {
-    const t = setTimeout(
-      () => setState(s => ({ index: (s.index + 1) % CINEMATIC_QUOTES.length, gen: s.gen + 1 })),
-      7600,
-    );
-    return () => clearTimeout(t);
-  }, [state.gen]);
+    const section = document.getElementById('solution-spiral');
+    if (!section) return;
+    const items = Array.from(section.querySelectorAll<HTMLElement>('[data-spiral-item]'));
+    const strandAnchors = Array.from(section.querySelectorAll<HTMLElement>('[data-spiral-strand-anchor]'));
+    const continuousStrand = section.querySelector<SVGSVGElement>('[data-continuous-strand]');
+    const continuousStrandPaths = continuousStrand
+      ? Array.from(continuousStrand.querySelectorAll<SVGPathElement>('[data-strand-path]'))
+      : [];
+    const serviceItems = Array.from(section.querySelectorAll<HTMLElement>('[data-service-card]'));
+
+    const update = () => {
+      const start = section.offsetTop;
+      const end = start + section.offsetHeight - window.innerHeight;
+      const raw = (window.scrollY - start) / Math.max(1, end - start);
+      targetProgressRef.current = Math.max(0, Math.min(1, raw));
+    };
+
+    const renderProgress = (currentProgress: number, activeLayoutProgress: number) => {
+      if (section.dataset.activeService && (currentProgress < 0.61 || currentProgress > 0.97)) {
+        section.dataset.activeService = '';
+        setActiveServiceSlug(null);
+      }
+
+      items.forEach((item, i) => {
+        const angle = i * 58 - currentProgress * 420;
+        const rad = (angle * Math.PI) / 180;
+        const y = i * verticalStep - currentProgress * totalTravel + 76;
+        const front = Math.cos(rad);
+        const visible = Math.max(0, 1 - Math.abs(y) / 690);
+        const frontFocus = Math.max(0, (front + 0.18) / 1.18);
+        const opacity = Math.max(0, Math.min(1, visible * frontFocus));
+
+        item.style.transform = `translate3d(-50%, -50%, 0) rotateY(${angle}deg) translateZ(${radius}px) translate3d(0, ${y}px, 0) scale(1)`;
+        item.style.opacity = String(opacity);
+        item.style.zIndex = String(Math.round(1000 + front * 120 + visible * 240));
+      });
+
+      strandAnchors.forEach((strand, i) => {
+        const strandIndex = i + 0.5;
+        const angle = strandIndex * 58 - currentProgress * 420;
+        const rad = (angle * Math.PI) / 180;
+        const y = strandIndex * verticalStep - currentProgress * totalTravel + 76;
+        const front = Math.cos(rad);
+        const visible = Math.max(0, 1 - Math.abs(y) / 720);
+        const frontFocus = Math.max(0, (front + 0.1) / 1.1);
+        const opacity = Math.max(0, Math.min(0.82, visible * frontFocus * 0.82));
+
+        strand.style.transform = `translate3d(-50%, -50%, 0) rotateY(${angle}deg) translateZ(${radius - 24}px) translate3d(0, ${y}px, 0)`;
+        strand.dataset.strandOpacity = String(opacity);
+        strand.style.zIndex = String(Math.round(960 + front * 80 + visible * 120));
+      });
+
+      if (
+        continuousStrand
+        && continuousStrandPaths.length
+        && strandAnchors.length > 1
+        && Math.abs(currentProgress - lastStrandProgressRef.current) > 0.0015
+      ) {
+        lastStrandProgressRef.current = currentProgress;
+        const strandRect = continuousStrand.getBoundingClientRect();
+        continuousStrand.setAttribute('viewBox', `0 0 ${strandRect.width.toFixed(1)} ${strandRect.height.toFixed(1)}`);
+        const points = strandAnchors.map((anchor) => {
+          const rect = anchor.getBoundingClientRect();
+          return {
+            x: rect.left + rect.width / 2 - strandRect.left,
+            y: rect.top + rect.height / 2 - strandRect.top,
+          };
+        });
+        const first = points[0];
+        const second = points[1];
+        const last = points[points.length - 1];
+        const beforeLast = points[points.length - 2];
+        const extendedPoints = [
+          {
+            x: first.x + (first.x - second.x) * 0.42,
+            y: first.y + (first.y - second.y) * 0.42,
+          },
+          ...points,
+          {
+            x: last.x + (last.x - beforeLast.x) * 0.42,
+            y: last.y + (last.y - beforeLast.y) * 0.42,
+          },
+        ];
+
+        const createPath = (sourcePoints: typeof extendedPoints, offset: number, phase: number) => sourcePoints.reduce((pathData, point, index, allPoints) => {
+          const tv = index / Math.max(1, allPoints.length - 1);
+          const wave = Math.sin(currentProgress * 12 + tv * 6 + phase) * 7 * tv * (1 - tv * 0.18);
+          const taper = 0.32 + Math.sin(Math.PI * tv) * 0.72;
+          const shifted = {
+            x: point.x + offset * taper + wave,
+            y: point.y + Math.cos(currentProgress * 14 + tv * 9 + phase) * 5 * taper,
+          };
+          if (index === 0) return `M ${shifted.x.toFixed(1)} ${shifted.y.toFixed(1)}`;
+          const previous = allPoints[index - 1];
+          const previousTv = (index - 1) / Math.max(1, allPoints.length - 1);
+          const previousTaper = 0.36 + Math.sin(Math.PI * previousTv) * 0.94;
+          const previousWave = Math.sin(currentProgress * 12 + previousTv * 6 + phase) * 7 * previousTv * (1 - previousTv * 0.18);
+          const shiftedPrevious = {
+            x: previous.x + offset * previousTaper + previousWave,
+            y: previous.y + Math.cos(currentProgress * 14 + previousTv * 9 + phase) * 5 * previousTaper,
+          };
+          const controlX = (shiftedPrevious.x + shifted.x) / 2;
+          return `${pathData} C ${controlX.toFixed(1)} ${shiftedPrevious.y.toFixed(1)}, ${controlX.toFixed(1)} ${shifted.y.toFixed(1)}, ${shifted.x.toFixed(1)} ${shifted.y.toFixed(1)}`;
+        }, '');
+        const opacity = Math.max(...strandAnchors.map((anchor) => Number(anchor.dataset.strandOpacity || 0)));
+
+        continuousStrandPaths.forEach((pathElement) => {
+          const role = pathElement.dataset.strandRole || 'fiber';
+          const fiberIndex = Number(pathElement.dataset.fiberIndex || 0);
+          const offset = role === 'glow' || role === 'core'
+            ? 0
+            : (fiberIndex - 5.5) * 2.2 + Math.sin(fiberIndex * 1.7) * 2.2;
+          const phase = fiberIndex * 0.61;
+          pathElement.setAttribute('d', createPath(extendedPoints, offset, phase));
+        });
+        continuousStrand.style.opacity = String(Math.min(0.82, opacity));
+      }
+
+      serviceItems.forEach((item, i) => {
+        const activeSlug = section.dataset.activeService || '';
+        const isSelected = item.dataset.serviceSlug === activeSlug;
+        const side = item.dataset.side || (i % 2 === 0 ? 'left' : 'right');
+        const rowDelay = i > 1 ? 0.11 : 0;
+        const raw = (currentProgress - 0.56 - rowDelay) / 0.2;
+        const clamped = Math.max(0, Math.min(1, raw));
+        const eased = 1 - Math.pow(1 - clamped, 3);
+        const y = (1 - eased) * 150;
+        const direction = side === 'left' ? -1 : 1;
+        const x = direction * (isSelected ? 220 : 330) * activeLayoutProgress;
+        const z = (isSelected ? 150 : 96) * activeLayoutProgress;
+        const rotateY = direction * -42 * activeLayoutProgress;
+
+        item.style.transform = `translate3d(${x}px, ${y}px, ${z}px) rotateY(${rotateY}deg)`;
+        item.style.opacity = String(Math.max(eased, activeLayoutProgress));
+        item.style.zIndex = String(isSelected ? 1280 : 1260);
+      });
+    };
+
+    const animate = (time: number) => {
+      const delta = Math.min(40, time - (lastFrameTimeRef.current || time));
+      lastFrameTimeRef.current = time;
+      const easing = 1 - Math.pow(0.006, delta / 1000);
+      const next = progressRef.current + (targetProgressRef.current - progressRef.current) * easing;
+      progressRef.current = Math.abs(targetProgressRef.current - next) < 0.0006
+        ? targetProgressRef.current
+        : next;
+
+      const activeTarget = section.dataset.activeService ? 1 : 0;
+      const activeNext = activeLayoutProgressRef.current + (activeTarget - activeLayoutProgressRef.current) * easing;
+      activeLayoutProgressRef.current = Math.abs(activeTarget - activeNext) < 0.0008 ? activeTarget : activeNext;
+
+      renderProgress(progressRef.current, activeLayoutProgressRef.current);
+
+      frameRef.current = requestAnimationFrame(animate);
+    };
+
+    update();
+    renderProgress(progressRef.current, activeLayoutProgressRef.current);
+    frameRef.current = requestAnimationFrame(animate);
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    return () => {
+      if (frameRef.current) cancelAnimationFrame(frameRef.current);
+      window.removeEventListener('scroll', update);
+      window.removeEventListener('resize', update);
+    };
+  }, []);
+
+  const cards = [
+    {
+      kind: 'intro',
+      code: 'INTRO 01',
+      title: lang === 'de' ? 'Ich baue\ndie passende Lösung.' : 'I build\nthe right solution.',
+      icon: Wrench,
+    },
+    {
+      kind: 'intro',
+      code: 'INTRO 02',
+      title: lang === 'de' ? 'für\nDein Unternehmen' : 'for\nyour company',
+      icon: Users,
+    },
+    {
+      kind: 'intro',
+      code: 'INTRO 03',
+      title: lang === 'de' ? 'Deine\nHerausforderung.' : 'Your\nchallenge.',
+      icon: Compass,
+    },
+    {
+      kind: 'intro',
+      code: 'INTRO 04',
+      title: lang === 'de' ? 'Meine\nLösung.' : 'My\nsolution.',
+      icon: Lightbulb,
+    },
+    {
+      kind: 'intro',
+      code: 'INTRO 05',
+      title: lang === 'de' ? 'Alles Individuell.\nAlles aus einem Guss.' : 'Fully custom.\nBuilt as one system.',
+      icon: Workflow,
+    },
+    {
+      kind: 'service',
+      slug: 'corporate-design-webauftritt',
+      code: '01',
+      title: lang === 'de' ? 'Corporate Design\n& Webauftritt' : 'Corporate design\n& web presence',
+      body: lang === 'de'
+        ? 'Marke, Gestaltung, Wirkung und digitale Präsentation sauber aus einem System gedacht.'
+        : 'Brand, design, impact and digital presentation built as one coherent system.',
+      detailTitle: lang === 'de' ? 'Ein Auftritt, der sofort seriös wirkt.' : 'A presence that feels credible immediately.',
+      detailText: lang === 'de'
+        ? 'Ich entwickle ein visuelles Fundament, das zu deinem Unternehmen passt: Logo, Farben, Typografie, Bildsprache, Layoutsystem und Website-Auftritt. Ziel ist kein austauschbares Design, sondern ein professioneller digitaler Eindruck, der Vertrauen schafft und dein Angebot verständlich macht.'
+        : 'I build a visual foundation that fits your company: logo, colors, typography, imagery, layout system and web presence. The goal is not generic design, but a credible digital impression that builds trust and explains your offer clearly.',
+      detailPoints: lang === 'de'
+        ? ['Corporate Design und visuelle Leitplanken', 'Website-Struktur, Texteinstieg und Nutzerführung', 'Moderne Gestaltung mit klarer Wirkung', 'Saubere Übergabe für langfristige Weiterentwicklung']
+        : ['Corporate design and visual guidelines', 'Website structure, copy entry and user flow', 'Modern design with clear impact', 'Clean handover for long-term evolution'],
+      accent: '#d6b75a',
+      accentRgb: '214,183,90',
+      icon: Star,
+    },
+    {
+      kind: 'service',
+      slug: 'websites-applikationen',
+      code: '02',
+      title: lang === 'de' ? '2D-/3D-Websites\n& Applikationen' : '2D/3D websites\n& applications',
+      body: lang === 'de'
+        ? 'Moderne Websites und Web-Apps, die hochwertig aussehen und technisch belastbar sind.'
+        : 'Modern websites and web apps that look premium and hold up technically.',
+      detailTitle: lang === 'de' ? 'Websites und Apps, die nicht nur gut aussehen.' : 'Websites and apps that do more than look good.',
+      detailText: lang === 'de'
+        ? 'Ich baue moderne 2D- und 3D-Websites, Landingpages, Portale und Web-Applikationen mit sauberer Architektur. Performance, Responsivität, Animationen, Inhalte und Bedienbarkeit werden zusammen geplant, damit die Lösung stabil, schnell und überzeugend funktioniert.'
+        : 'I build modern 2D and 3D websites, landing pages, portals and web applications with clean architecture. Performance, responsiveness, animation, content and usability are planned together so the solution is stable, fast and convincing.',
+      detailPoints: lang === 'de'
+        ? ['Individuelle Websites, Landingpages und Web-Apps', '2D-/3D-Interaktionen mit Fokus auf Performance', 'Responsive Umsetzung für Desktop und Mobile', 'Technisch saubere Basis für SEO und Erweiterungen']
+        : ['Custom websites, landing pages and web apps', '2D/3D interactions with performance focus', 'Responsive implementation for desktop and mobile', 'Clean technical base for SEO and extensions'],
+      accent: '#5fb4ff',
+      accentRgb: '95,180,255',
+      icon: Globe,
+    },
+    {
+      kind: 'service',
+      slug: 'crm-erp-datenbanken',
+      code: '03',
+      title: lang === 'de' ? 'CRM, ERP\n& Datenbanken' : 'CRM, ERP\n& databases',
+      body: lang === 'de'
+        ? 'Individuelle Systeme, exakt auf Abläufe, Teams, Daten und Wachstum abgestimmt.'
+        : 'Custom systems aligned to workflows, teams, data and long-term growth.',
+      detailTitle: lang === 'de' ? 'Systeme, die exakt zu deinem Betrieb passen.' : 'Systems aligned exactly to your business.',
+      detailText: lang === 'de'
+        ? 'Ich konzipiere und entwickle CRM-, ERP- und Datenbanklösungen, die reale Abläufe abbilden statt sie komplizierter zu machen. Kunden, Projekte, Dokumente, Angebote, Rechnungen, Prozesse und Rechte werden so strukturiert, dass dein Unternehmen damit langfristig arbeiten kann.'
+        : 'I design and develop CRM, ERP and database solutions that reflect real workflows instead of making them more complicated. Customers, projects, documents, quotes, invoices, processes and roles are structured so your company can rely on them long term.',
+      detailPoints: lang === 'de'
+        ? ['CRM- und ERP-Funktionen nach Maß', 'Datenbanken, Rollen, Rechte und Workflows', 'Dashboards, Dokumente, Formulare und Auswertungen', 'Schnittstellen zu bestehenden Tools und Prozessen']
+        : ['Custom CRM and ERP functions', 'Databases, roles, permissions and workflows', 'Dashboards, documents, forms and reporting', 'Interfaces to existing tools and processes'],
+      accent: '#c28cff',
+      accentRgb: '194,140,255',
+      icon: FolderKanban,
+    },
+    {
+      kind: 'service',
+      slug: 'ki-automation-prozesse',
+      code: '04',
+      title: lang === 'de' ? 'KI-Automation\n& Prozesse' : 'AI automation\n& processes',
+      body: lang === 'de'
+        ? 'Sinnvolle KI-Lösungen, die Arbeit vereinfachen, Prozesse beschleunigen und Qualität sichern.'
+        : 'Practical AI solutions that simplify work, accelerate processes and protect quality.',
+      detailTitle: lang === 'de' ? 'KI dort einsetzen, wo sie wirklich hilft.' : 'AI where it actually helps.',
+      detailText: lang === 'de'
+        ? 'Ich analysiere, wo Automatisierung und KI in deinem Unternehmen konkret Nutzen bringen: weniger manuelle Arbeit, bessere Antworten, schnellere Prozesse, klarere Daten und weniger Fehler. Statt Tool-Chaos entsteht eine passende Lösung, die kontrollierbar und seriös bleibt.'
+        : 'I analyze where automation and AI create concrete value in your company: less manual work, better answers, faster processes, clearer data and fewer errors. Instead of tool chaos, you get a fitting solution that remains controlled and professional.',
+      detailPoints: lang === 'de'
+        ? ['KI-Workflows für wiederkehrende Aufgaben', 'Automatisierung von Kommunikation, Daten und Abläufen', 'Tool-Auswahl und Integration ohne KI-Chaos', 'Sichere, nachvollziehbare und wartbare Umsetzung']
+        : ['AI workflows for recurring tasks', 'Automation of communication, data and operations', 'Tool selection and integration without AI chaos', 'Safe, explainable and maintainable implementation'],
+      accent: '#5ee6c4',
+      accentRgb: '94,230,196',
+      icon: Bot,
+    },
+  ];
+
+  const verticalStep = 210;
+  const introCards = cards.filter((card) => card.kind === 'intro');
+  const serviceCards = cards.filter((card) => card.kind === 'service');
+  const activeService = serviceCards.find((card) => card.slug === activeServiceSlug) || null;
+  const totalTravel = introCards.length * verticalStep + 780;
+  const radius = 520;
+  const progress = 0;
 
   return (
-    <div className="absolute top-[12%] right-3 left-[42%] sm:top-[26%] sm:right-[20%] sm:left-auto sm:w-[min(290px,32vw)] z-10 pointer-events-none">
-      <div key={state.gen} className="cinematic-quote">
-        <p
-          className="text-[#ede8dc] text-[0.73rem] sm:text-[0.82rem] leading-[1.75] font-light italic tracking-wide text-right"
-          style={{ textShadow: '0 2px 14px rgba(0,0,0,0.96), 0 1px 4px rgba(0,0,0,0.88)' }}
+    <section
+      id="solution-spiral"
+      className="spiral-section relative z-10"
+      data-active-service={activeServiceSlug || ''}
+    >
+      <div id="about" className="spiral-anchor top-0" />
+      <div id="services" className="spiral-anchor top-[18%]" />
+      <div id="references" className="spiral-anchor top-[52%]" />
+      <div id="portfolio" className="spiral-anchor top-[68%]" />
+      <div id="prozess-spiral" className="spiral-anchor top-[82%]" />
+
+      <div className="spiral-sticky">
+        <div className="spiral-cylinder" aria-hidden>
+          <span />
+          <span />
+          <span />
+        </div>
+
+        <div className="spiral-stage">
+          <svg
+            data-continuous-strand
+            className="spiral-continuous-strand"
+            aria-hidden
+            focusable="false"
+          >
+            <defs>
+              <linearGradient id="spiralStrandGlow" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#d6b75a" stopOpacity="0.16" />
+                <stop offset="23%" stopColor="#5fb4ff" stopOpacity="0.12" />
+                <stop offset="47%" stopColor="#c28cff" stopOpacity="0.13" />
+                <stop offset="69%" stopColor="#5ee6c4" stopOpacity="0.12" />
+                <stop offset="100%" stopColor="#d6b75a" stopOpacity="0.14" />
+              </linearGradient>
+              <linearGradient id="spiralStrandA" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#d6b75a" />
+                <stop offset="18%" stopColor="#5ee6c4" />
+                <stop offset="39%" stopColor="#5fb4ff" />
+                <stop offset="63%" stopColor="#c28cff" />
+                <stop offset="82%" stopColor="#d6b75a" />
+                <stop offset="100%" stopColor="#5fb4ff" />
+              </linearGradient>
+              <linearGradient id="spiralStrandB" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#5fb4ff" />
+                <stop offset="21%" stopColor="#d6b75a" />
+                <stop offset="44%" stopColor="#c28cff" />
+                <stop offset="71%" stopColor="#5ee6c4" />
+                <stop offset="100%" stopColor="#d6b75a" />
+              </linearGradient>
+              <linearGradient id="spiralStrandC" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#c28cff" />
+                <stop offset="16%" stopColor="#5fb4ff" />
+                <stop offset="37%" stopColor="#d6b75a" />
+                <stop offset="58%" stopColor="#5ee6c4" />
+                <stop offset="79%" stopColor="#c28cff" />
+                <stop offset="100%" stopColor="#d6b75a" />
+              </linearGradient>
+              <linearGradient id="spiralStrandD" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#5ee6c4" />
+                <stop offset="25%" stopColor="#c28cff" />
+                <stop offset="48%" stopColor="#d6b75a" />
+                <stop offset="66%" stopColor="#5fb4ff" />
+                <stop offset="100%" stopColor="#5ee6c4" />
+              </linearGradient>
+            </defs>
+            <path data-strand-path data-strand-role="glow" className="strand-glow" />
+            <path data-strand-path data-strand-role="core" className="strand-core" />
+            {Array.from({ length: 12 }).map((_, fiberIndex) => (
+              <path
+                key={`strand-fiber-${fiberIndex}`}
+                data-strand-path
+                data-strand-role="fiber"
+                data-fiber-index={fiberIndex}
+                className={`strand-fiber strand-fiber-tone-${fiberIndex % 4} ${fiberIndex % 4 === 0 ? 'strand-fiber-dim' : ''}`}
+              />
+            ))}
+          </svg>
+
+          {introCards.slice(0, -1).map((_, i) => (
+            <div
+              key={`intro-strand-${i}`}
+              data-spiral-strand-anchor
+              className="spiral-strand-anchor"
+              aria-hidden
+            />
+          ))}
+
+          {introCards.map((card, i) => {
+            const angle = i * 58 - progress * 420;
+            const rad = (angle * Math.PI) / 180;
+            const y = i * verticalStep - progress * totalTravel + 76;
+            const front = Math.cos(rad);
+            const visible = Math.max(0, 1 - Math.abs(y) / 690);
+            const frontFocus = Math.max(0, (front + 0.18) / 1.18);
+            const scale = 1;
+            const isIntro = card.kind === 'intro';
+            const isService = card.kind === 'service';
+            const opacity = Math.max(0, Math.min(1, visible * frontFocus));
+            const width = isIntro ? 560 : isService ? 470 : 380;
+            const Icon = card.icon;
+            const accent = card.accent || '#c9a84c';
+            const transform = `translate3d(-50%, -50%, 0) rotateY(${angle}deg) translateZ(${radius}px) translate3d(0, ${y}px, 0) scale(${scale})`;
+            const content = isIntro ? (
+              <div className="spiral-intro-statement">
+                <span className="spiral-intro-meta">
+                  <span className="spiral-intro-index">{String(i + 1).padStart(2, '0')}</span>
+                  <span className="spiral-intro-icon">
+                    {Icon ? <Icon size={15} strokeWidth={1.8} /> : null}
+                  </span>
+                </span>
+                <h3 className="spiral-intro-title">{card.title}</h3>
+                <span className="spiral-intro-rule" />
+              </div>
+            ) : isService ? (
+              <div className="spiral-service-card">
+                <span className="spiral-intro-meta">
+                  <span className="spiral-intro-index">{card.code}</span>
+                  <span className="spiral-intro-icon">
+                    {Icon ? <Icon size={15} strokeWidth={1.8} /> : null}
+                  </span>
+                </span>
+                <h3 className="spiral-service-title">{card.title}</h3>
+                <p className="spiral-service-body">{card.body}</p>
+                <span className="spiral-intro-rule" />
+              </div>
+            ) : (
+              <>
+                <div className="mb-5 flex items-center gap-3">
+                  <div className="neural-node" style={{ color: accent, borderColor: `${accent}88` }}>
+                    {Icon ? <Icon size={18} /> : null}
+                  </div>
+                  <div className="neural-thread" style={{ background: `linear-gradient(90deg, ${accent}aa, transparent)` }} />
+                  <span className="neural-code" style={{ color: accent }}>{card.code}</span>
+                </div>
+                <h3 className={card.kind === 'small' ? 'spiral-card-title text-2xl' : 'spiral-card-title'}>
+                  {card.title}
+                </h3>
+                <p className="spiral-card-body">{card.body}</p>
+                {card.action ? (
+                  <div className="mt-5 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.16em] text-[#d4b86a]">
+                    {card.action}
+                    <ChevronRight size={14} />
+                  </div>
+                ) : null}
+              </>
+            );
+
+            return card.href ? (
+              <a
+                key={`${card.code}-${i}`}
+                href={card.href}
+                data-spiral-item
+                data-kind={card.kind}
+                className={`spiral-card neural-panel ${card.kind === 'wide' ? 'spiral-card-wide' : ''}`}
+                style={{ transform, opacity, width, zIndex: Math.round(1000 + front * 120 + visible * 240) }}
+              >
+                <div className="spiral-card-float">
+                  {content}
+                </div>
+              </a>
+            ) : (
+              <div
+                key={`${card.code}-${i}`}
+                data-spiral-item
+                data-kind={card.kind}
+                className={isIntro ? 'spiral-intro-line' : isService ? 'spiral-service-line' : `spiral-card neural-panel ${card.kind === 'wide' ? 'spiral-card-wide' : ''}`}
+                style={{
+                  transform,
+                  opacity,
+                  width,
+                  zIndex: Math.round(1000 + front * 120 + visible * 240),
+                } as CSSProperties}
+              >
+                <div className="spiral-card-float">
+                  {content}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div
+          className={`spiral-detail-panel ${activeService ? 'is-open' : ''}`}
+          aria-hidden={!activeService}
+          style={activeService ? {
+            '--service-accent': activeService.accent,
+            '--service-accent-rgb': activeService.accentRgb,
+          } as CSSProperties : undefined}
         >
-          <span className="text-[#c9a84c] not-italic">„</span>
-          {CINEMATIC_QUOTES[state.index]}
-          <span className="text-[#c9a84c] not-italic">“</span>
-        </p>
-        <div className="mt-2.5 flex justify-end">
-          <div className="h-px w-10 bg-gradient-to-l from-[#c9a84c]/55 to-transparent" />
+          {activeService ? (
+            <>
+              <button
+                type="button"
+                className="spiral-detail-close"
+                onClick={() => setActiveServiceSlug(null)}
+                aria-label={lang === 'de' ? 'Detail schließen' : 'Close detail'}
+              >
+                ×
+              </button>
+              <span className="spiral-intro-meta">
+                <span className="spiral-intro-index">{activeService.code}</span>
+                <span className="spiral-intro-icon">
+                  {activeService.icon ? <activeService.icon size={15} strokeWidth={1.8} /> : null}
+                </span>
+              </span>
+              <h3 className="spiral-detail-title">{activeService.detailTitle}</h3>
+              <p className="spiral-detail-text">{activeService.detailText}</p>
+              <div className="spiral-detail-list">
+                {activeService.detailPoints?.map((point) => (
+                  <span key={point}>{point}</span>
+                ))}
+              </div>
+            </>
+          ) : null}
+        </div>
+
+        <div
+          className={`spiral-service-grid ${activeService ? 'has-active-service' : ''}`}
+          aria-label={lang === 'de' ? 'Service Leistungen' : 'Services'}
+        >
+          {serviceCards.map((card, i) => {
+            const Icon = card.icon;
+            const isSelected = activeServiceSlug === card.slug;
+            return (
+              <button
+                key={`${card.code}-service-${i}`}
+                type="button"
+                data-service-card
+                data-service-slug={card.slug}
+                data-side={i % 2 === 0 ? 'left' : 'right'}
+                className={`spiral-service-card ${isSelected ? 'is-selected' : ''}`}
+                style={{
+                  '--service-accent': card.accent,
+                  '--service-accent-rgb': card.accentRgb,
+                } as CSSProperties}
+                onClick={() => setActiveServiceSlug(card.slug)}
+              >
+                <span className="spiral-intro-meta">
+                  <span className="spiral-intro-index">{card.code}</span>
+                  <span className="spiral-intro-icon">
+                    {Icon ? <Icon size={15} strokeWidth={1.8} /> : null}
+                  </span>
+                </span>
+                <h3 className="spiral-service-title">{card.title}</h3>
+                <p className="spiral-service-body">{card.body}</p>
+                <span className="spiral-intro-rule" />
+              </button>
+            );
+          })}
         </div>
       </div>
-    </div>
+
+      <div className="spiral-mobile px-4 sm:px-6">
+        <div className="max-w-3xl mx-auto space-y-4">
+          {introCards.map((card, i) => {
+            if (card.kind === 'intro') {
+              const MobileIcon = card.icon;
+              return (
+                <div key={`${card.code}-mobile-${i}`} className="spiral-intro-statement py-5">
+                  <span className="spiral-intro-meta">
+                    <span className="spiral-intro-index">{String(i + 1).padStart(2, '0')}</span>
+                    <span className="spiral-intro-icon">
+                      {MobileIcon ? <MobileIcon size={15} strokeWidth={1.8} /> : null}
+                    </span>
+                  </span>
+                  <h3 className="text-2xl font-bold text-white leading-tight tracking-[-0.035em] drop-shadow">
+                    {card.title}
+                  </h3>
+                  <span className="spiral-intro-rule" />
+                </div>
+              );
+            }
+            const Icon = card.icon;
+            const content = (
+              <>
+                <div className="mb-4 flex items-center gap-3">
+                  <div className="neural-node">
+                    <Icon size={18} />
+                  </div>
+                  <div className="neural-thread" />
+                  <span className="neural-code">{card.code}</span>
+                </div>
+                <h3 className="text-lg font-semibold text-white mb-2 leading-tight">{card.title}</h3>
+                <p className="text-sm text-[#b9aa8f] leading-relaxed">{card.body}</p>
+              </>
+            );
+            return card.href ? (
+              <a key={`${card.code}-mobile-${i}`} href={card.href} className="neural-panel min-h-[180px] p-5">
+                {content}
+              </a>
+            ) : (
+              <div key={`${card.code}-mobile-${i}`} className="neural-panel min-h-[180px] p-5">
+                {content}
+              </div>
+            );
+          })}
+          {serviceCards.map((card, i) => {
+            const MobileIcon = card.icon;
+            return (
+              <div
+                key={`${card.code}-mobile-service-${i}`}
+                className="spiral-service-card"
+                style={{
+                  '--service-accent': card.accent,
+                  '--service-accent-rgb': card.accentRgb,
+                } as CSSProperties}
+              >
+                <span className="spiral-intro-meta">
+                  <span className="spiral-intro-index">{card.code}</span>
+                  <span className="spiral-intro-icon">
+                    {MobileIcon ? <MobileIcon size={15} strokeWidth={1.8} /> : null}
+                  </span>
+                </span>
+                <h3 className="spiral-service-title">{card.title}</h3>
+                <p className="spiral-service-body">{card.body}</p>
+                <span className="spiral-intro-rule" />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ProcessTimeline({ lang }: { lang: 'de' | 'en' }) {
+  const steps = [
+    {
+      Icon: MessageSquare,
+      number: '01',
+      title: lang === 'de' ? 'Erstgespräch' : 'First call',
+      badge: lang === 'de' ? 'Tag 1' : 'Day 1',
+      subtitle: lang === 'de' ? 'Kennenlernen & Ziele verstehen' : 'Understand goals and context',
+      body: lang === 'de'
+        ? 'Wir sprechen 30 Minuten über dein Unternehmen, deine aktuellen Herausforderungen und was du erreichen möchtest. Ohne Verpflichtung – ich höre zu, bevor ich etwas vorschlage.'
+        : 'We talk for 30 minutes about your company, current challenges and what you want to achieve. No obligation — I listen before proposing anything.',
+    },
+    {
+      Icon: Search,
+      number: '02',
+      title: lang === 'de' ? 'Analyse' : 'Analysis',
+      badge: lang === 'de' ? 'Woche 1' : 'Week 1',
+      subtitle: lang === 'de' ? 'Verstehen, wo du stehst' : 'Understand where you stand',
+      body: lang === 'de'
+        ? 'Ich analysiere Prozesse, Daten, Systeme und Potenziale mit KI-Unterstützung schnell und präzise. Damit wir von Anfang an das Richtige angehen – ohne Zeit mit falschen Lösungen zu verlieren.'
+        : 'I analyze processes, data, systems and potential quickly and precisely with AI support, so we solve the right problems from the start.',
+    },
+    {
+      Icon: Compass,
+      number: '03',
+      title: lang === 'de' ? 'Konzept & Strategie' : 'Concept & strategy',
+      badge: lang === 'de' ? 'Woche 1' : 'Week 1',
+      subtitle: lang === 'de' ? 'Den richtigen Weg definieren' : 'Define the right path',
+      body: lang === 'de'
+        ? 'Ich entwickle einen massgeschneiderten Plan mit konkreten Massnahmen, klaren Prioritäten und einem kompakten 3-Wochen-Fahrplan – transparent und gemeinsam mit dir validiert.'
+        : 'I develop a tailored plan with concrete actions, clear priorities and a compact 3-week roadmap — transparent and validated with you.',
+    },
+    {
+      Icon: Wrench,
+      number: '04',
+      title: lang === 'de' ? 'Umsetzung' : 'Implementation',
+      badge: lang === 'de' ? 'Woche 2–3' : 'Week 2–3',
+      subtitle: lang === 'de' ? 'Konkret und zügig handeln' : 'Act clearly and quickly',
+      body: lang === 'de'
+        ? 'Die Lösung wird fokussiert umgesetzt – ob Website, CRM, ERP, Datenbank, Prozessoptimierung oder KI-Automation. Durch KI-gestützte Entwicklung arbeiten wir schneller, ohne die Qualität zu senken.'
+        : 'The solution is implemented with focus — website, CRM, ERP, database, process optimization or AI automation. AI-supported development lets us move faster without lowering quality.',
+    },
+    {
+      Icon: Heart,
+      number: '05',
+      title: lang === 'de' ? 'Begleitung' : 'Support',
+      badge: lang === 'de' ? 'bis Woche 3' : 'by week 3',
+      subtitle: lang === 'de' ? 'Fertiges Produkt & Übergabe' : 'Finished product & handover',
+      body: lang === 'de'
+        ? 'Nach maximal drei Wochen steht eine nutzbare, professionelle Lösung. Danach begleite ich dich bei Feinschliff, Erweiterungen und laufender Optimierung, damit alles langfristig trägt.'
+        : 'Within a maximum of three weeks, you have a usable, professional solution. After that, I support refinement, extensions and ongoing optimization.',
+    },
+  ];
+
+  useEffect(() => {
+    const elements = Array.from(document.querySelectorAll<HTMLElement>('[data-process-reveal]'));
+    if (!elements.length) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+          }
+        });
+      },
+      { threshold: 0.18, rootMargin: '0px 0px -8% 0px' },
+    );
+
+    elements.forEach((element) => observer.observe(element));
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <section id="prozess" className="process-section relative z-10 px-4 sm:px-6">
+      <div className="mx-auto max-w-6xl">
+        <div data-process-reveal className="process-heading text-center">
+          <span className="process-pill">{lang === 'de' ? 'Ablauf' : 'Process'}</span>
+          <h2>
+            {lang === 'de' ? (
+              <>So arbeiten <span>wir zusammen</span></>
+            ) : (
+              <>How <span>we work together</span></>
+            )}
+          </h2>
+          <p>
+            {lang === 'de'
+              ? 'Mensch und KI Hand in Hand – strukturiert, transparent und in maximal drei Wochen zum fertigen Produkt.'
+              : 'Human expertise and AI working together — structured, transparent and moving to a finished product within three weeks.'}
+          </p>
+        </div>
+
+        <div className="process-timeline">
+          <div className="process-line" aria-hidden />
+          {steps.map((step, index) => {
+            const Icon = step.Icon;
+            const side = index % 2 === 0 ? 'left' : 'right';
+            return (
+              <div
+                key={step.number}
+                data-process-reveal
+                className={`process-row process-row-${side}`}
+                style={{ '--process-delay': `${index * 110}ms` } as CSSProperties}
+              >
+                <article className="process-card">
+                  <div className="process-icon">
+                    <Icon size={18} strokeWidth={1.8} />
+                  </div>
+                  <div>
+                    <div className="process-card-title">
+                      <h3>{step.title}</h3>
+                      <span>{step.badge}</span>
+                    </div>
+                    <strong>{step.subtitle}</strong>
+                    <p>{step.body}</p>
+                  </div>
+                </article>
+                <div className="process-marker" aria-hidden>{step.number}</div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div data-process-reveal className="process-cta">
+          <a href="#contact">
+            {lang === 'de' ? 'Jetzt Erstgespräch buchen' : 'Book first call'}
+            <ChevronRight size={16} />
+          </a>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -87,40 +803,31 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-[#0c0a06] text-[#f4edd8]">
       <HomeNavBar />
+      <BrainBackground />
 
       {/* ── Hero ── */}
-      <section className="relative min-h-screen overflow-hidden pt-16">
-        <div className="absolute inset-x-0 bottom-0 top-16 sm:inset-0">
-          <img
-            src="/assets/MarcelSpahrHeader.jpg"
-            alt="Marcel Spahr – KI-Unternehmensberater Bern"
-            className="w-full h-full object-contain object-top sm:object-cover"
-          />
-          <div className="absolute inset-0" style={{
-            background: 'linear-gradient(to bottom, rgba(12,10,6,0.35) 0%, rgba(12,10,6,0.05) 20%, rgba(12,10,6,0.08) 50%, rgba(12,10,6,0.70) 68%, rgba(12,10,6,0.92) 82%, #0c0a06 95%)'
-          }} />
-        </div>
-        <CinematicQuotes />
-        <div className="absolute bottom-0 left-0 right-0 z-10 pb-10 sm:pb-14">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
-            <div className="ms-anim-scale mb-3 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#c9a84c]/40 bg-[#c9a84c]/10 text-[#d4b86a] text-sm font-medium backdrop-blur-sm">
-              <Bot size={14} /> {t.hero.badge}
+      <section className="home-hero relative z-10 min-h-screen overflow-hidden pt-16">
+        <div className="absolute inset-x-0 bottom-0 z-10 pb-10 sm:pb-16 lg:pb-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6">
+            <div className="hero-copy ms-anim">
+              <p className="mb-4 text-xs font-bold uppercase tracking-[0.28em] text-[#c9a84c]">
+                Weblösungen · CRM · ERP · KI
+              </p>
+              <h1 className="max-w-xl text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-[0.96] tracking-[-0.055em]">
+                {lang === 'de' ? 'Digitale Lösungen aus einem Guss.' : 'Digital solutions built as one system.'}
+              </h1>
+              <p className="mt-5 max-w-lg text-base sm:text-lg text-[#d8ccb3] leading-relaxed">
+                {lang === 'de'
+                  ? 'Websites, Systeme, Datenbanken, Automatisierung und KI – sauber geplant, schnell umgesetzt und langfristig tragfähig.'
+                  : 'Websites, systems, databases, automation and AI — clearly planned, fast to build and made to last.'}
+              </p>
             </div>
-            <p style={{ animationDelay: '0.08s' }} className="ms-anim mb-3 text-sm sm:text-base font-medium italic text-[#c9a84c] tracking-wide drop-shadow">
-              {t.hero.tagline}
-            </p>
-            <h1 style={{ animationDelay: '0.15s' }} className="ms-anim text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight tracking-tight drop-shadow-lg">
-              {t.hero.title}
-            </h1>
-            <p style={{ animationDelay: '0.2s' }} className="ms-anim mt-4 text-base sm:text-lg text-[#d4c4a8] max-w-2xl mx-auto leading-relaxed drop-shadow">
-              {t.hero.subtitle}
-            </p>
-            <div style={{ animationDelay: '0.3s' }} className="ms-anim mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <a href="#contact" className="group flex items-center gap-2 px-6 py-3 rounded-xl bg-[#c9a84c] hover:bg-[#b8943a] text-[#0c0a06] font-bold transition-all shadow-lg shadow-[#c9a84c]/30">
+            <div style={{ animationDelay: '0.18s' }} className="ms-anim mt-7 flex flex-col sm:flex-row items-stretch sm:items-start gap-3 sm:gap-4">
+              <a href="#contact" className="group flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#c9a84c] hover:bg-[#b8943a] text-[#0c0a06] font-bold transition-all shadow-lg shadow-[#c9a84c]/30">
                 {t.hero.cta}
                 <ChevronRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
               </a>
-              <a href="#about" className="px-6 py-3 rounded-xl border border-[#f4edd8]/25 hover:border-[#f4edd8]/60 text-[#f4edd8] font-medium transition-all backdrop-blur-sm">
+              <a href="#about" className="px-6 py-3 rounded-xl border border-[#f4edd8]/25 hover:border-[#f4edd8]/60 text-[#f4edd8] font-medium text-center transition-all backdrop-blur-sm">
                 {t.hero.more}
               </a>
             </div>
@@ -128,307 +835,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── About ── */}
-      <section id="about" className="py-24 px-4 sm:px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <span className="text-[#c9a84c] text-sm font-semibold tracking-widest uppercase">{t.about.label}</span>
-            <h2 className="mt-2 text-3xl sm:text-4xl font-bold text-white">{t.about.heading}</h2>
-          </div>
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <p className="text-lg text-[#d4c4a8] leading-relaxed">{t.about.text}</p>
-              <div className="mt-8 flex gap-4">
-                <a href="https://www.linkedin.com/in/marcel-spahr-901568304" target="_blank" rel="noreferrer"
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#2d2820] hover:border-[#c9a84c] text-[#a89880] hover:text-[#c9a84c] text-sm transition-all">
-                  <ExternalLink size={16} /> {t.about.linkedin}
-                </a>
-                <a href="mailto:kontakt@marcelspahr.ch"
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#2d2820] hover:border-[#c9a84c] text-[#a89880] hover:text-[#c9a84c] text-sm transition-all">
-                  <Mail size={16} /> {t.about.email}
-                </a>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              {t.about.facts.map((f, i) => (
-                <div key={i} className="rounded-xl border border-[#2d2820] bg-[#221e14] p-5">
-                  <div className="text-xs text-[#7a6d5a] uppercase tracking-wider mb-1">{f.label}</div>
-                  <div className="text-sm font-semibold text-white leading-snug">{f.value}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      <SpiralShowcase t={t} lang={lang} />
 
-      {/* ── Services ── */}
-      <section id="services" className="py-24 px-4 sm:px-6 bg-[#100d09]">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <span className="text-[#c9a84c] text-sm font-semibold tracking-widest uppercase">{t.services.label}</span>
-            <h2 className="mt-2 text-3xl sm:text-4xl font-bold text-white">{t.services.heading}</h2>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {SERVICE_META.map((s, i) => {
-              const Icon = s.icon;
-              const item = t.services.items[i];
-              return (
-                <a key={i} href={`/leistungen/${s.slug}`}
-                  className="group h-full rounded-xl border border-[#2d2820] bg-[#1c1912] p-6 hover:border-[#c9a84c]/50 hover:bg-[#231e15] transition-all block">
-                  <div className="mb-4 inline-flex p-2.5 rounded-lg bg-[#c9a84c]/10 text-[#d4b86a] group-hover:bg-[#c9a84c]/20 transition-colors">
-                    <Icon size={20} />
-                  </div>
-                  <h3 className="font-semibold text-white mb-2 leading-snug">{item.title}</h3>
-                  <p className="text-sm text-[#a89880] leading-relaxed">{item.desc}</p>
-                  <div className="mt-4 flex items-center gap-1 text-xs text-[#c9a84c] opacity-0 group-hover:opacity-100 transition-opacity font-medium">
-                    {t.services.more} <ChevronRight size={12} />
-                  </div>
-                </a>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ── CTA Duo: Projektanfrage + KI-Check ── */}
-      <section className="py-20 px-4 sm:px-6 bg-[#100d09]">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-10">
-            <span className="text-[#c9a84c] text-sm font-semibold tracking-widest uppercase">
-              {lang === 'de' ? 'Nächster Schritt' : 'Next Step'}
-            </span>
-            <h2 className="mt-2 text-2xl sm:text-3xl font-bold text-white">
-              {lang === 'de' ? 'Wie kann ich Ihnen helfen?' : 'How can I help you?'}
-            </h2>
-          </div>
-
-          <div className="grid sm:grid-cols-2 gap-5">
-
-            {/* Projektanfrage – primary */}
-            <div className="relative rounded-2xl border border-[#c9a84c]/50 bg-[#1c1912] overflow-hidden p-7 flex flex-col">
-              <div
-                className="absolute -top-24 -left-24 w-64 h-64 rounded-full pointer-events-none"
-                style={{ background: 'radial-gradient(circle, rgba(201,168,76,0.10) 0%, transparent 70%)' }}
-              />
-              <div className="relative z-10 flex flex-col flex-1">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#c9a84c]/40 bg-[#c9a84c]/10 text-[#d4b86a] text-xs font-semibold mb-5 tracking-widest uppercase w-fit">
-                  <ClipboardList size={12} />
-                  {lang === 'de' ? 'Projekt starten' : 'Start a Project'}
-                </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 leading-tight">
-                  {lang === 'de'
-                    ? <>{`Bereit loszulegen? `}<span className="text-[#c9a84c]">Anfrage stellen.</span></>
-                    : <>{`Ready to go? `}<span className="text-[#c9a84c]">Submit a request.</span></>}
-                </h3>
-                <p className="text-[#a89880] leading-relaxed mb-6 flex-1">
-                  {lang === 'de'
-                    ? 'Beschreiben Sie Ihr Projekt in 4 strukturierten Schritten – ich melde mich innerhalb von 24 Stunden persönlich bei Ihnen.'
-                    : 'Describe your project in 4 structured steps – I will get back to you personally within 24 hours.'}
-                </p>
-                <div className="space-y-4">
-                  <a
-                    href="/anfrage"
-                    className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-[#c9a84c] hover:bg-[#b8943a] text-[#0c0a06] font-bold transition-all shadow-lg shadow-[#c9a84c]/25"
-                  >
-                    {lang === 'de' ? 'Projektanfrage starten' : 'Start Project Request'}
-                    <ChevronRight size={18} />
-                  </a>
-                  <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-[#7a6d5a]">
-                    <span>{lang === 'de' ? '4 Schritte' : '4 Steps'}</span>
-                    <span>·</span>
-                    <span>{lang === 'de' ? '5 Minuten' : '5 Minutes'}</span>
-                    <span>·</span>
-                    <span>{lang === 'de' ? 'Antwort innerhalb 24h' : 'Reply within 24h'}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* KI-Check – secondary */}
-            <div className="relative rounded-2xl border border-[#2d2820] bg-[#1c1912] overflow-hidden p-7 flex flex-col hover:border-[#c9a84c]/30 transition-colors">
-              <div
-                className="absolute -top-24 -right-24 w-64 h-64 rounded-full pointer-events-none"
-                style={{ background: 'radial-gradient(circle, rgba(201,168,76,0.05) 0%, transparent 70%)' }}
-              />
-              <div className="relative z-10 flex flex-col flex-1">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#c9a84c]/25 bg-[#c9a84c]/8 text-[#d4b86a] text-xs font-semibold mb-5 tracking-widest uppercase w-fit">
-                  <Bot size={12} />
-                  {lang === 'de' ? 'Kostenloser Self-Check' : 'Free Self-Assessment'}
-                </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 leading-tight">
-                  {lang === 'de'
-                    ? <>{'Wie KI-ready ist '}<span className="text-[#c9a84c]">Ihr</span>{' Unternehmen?'}</>
-                    : <>{'How AI-ready is '}<span className="text-[#c9a84c]">your</span>{' company?'}</>}
-                </h3>
-                <p className="text-[#a89880] leading-relaxed mb-6 flex-1">
-                  {lang === 'de'
-                    ? 'Der kostenlose Self-Check zeigt Ihnen in wenigen Minuten, wo Ihr Unternehmen heute steht – und welche Hebel als Nächstes wirklich helfen.'
-                    : 'The free self-check shows you in minutes where your company stands – and which levers will really help next.'}
-                </p>
-                <div className="space-y-4">
-                  <a
-                    href="/ki-check"
-                    className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl border border-[#c9a84c]/50 hover:border-[#c9a84c] hover:bg-[#c9a84c]/10 text-[#c9a84c] font-bold transition-all"
-                  >
-                    {lang === 'de' ? 'Jetzt Check starten' : 'Start Assessment'}
-                    <ChevronRight size={18} />
-                  </a>
-                  <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-[#7a6d5a]">
-                    <span>{lang === 'de' ? '10 Fragen' : '10 Questions'}</span>
-                    <span>·</span>
-                    <span>{lang === 'de' ? '3 Minuten' : '3 Minutes'}</span>
-                    <span>·</span>
-                    <span>{lang === 'de' ? 'Persönlicher Fahrplan per E-Mail' : 'Personal roadmap by email'}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* ── Warum Marcel ── */}
-      <section id="references" className="py-24 px-4 sm:px-6 bg-[#100d09]">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <span className="text-[#c9a84c] text-sm font-semibold tracking-widest uppercase">{t.why.label}</span>
-            <h2 className="mt-2 text-3xl sm:text-4xl font-bold text-white">{t.why.heading}</h2>
-            <p className="mt-3 text-[#a89880]">{t.why.subheading}</p>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-16">
-            {t.why.stats.map((s, i) => (
-              <div key={i} className="rounded-xl border border-[#2d2820] bg-[#1c1912] p-6 text-center">
-                <div className="text-3xl font-bold text-[#c9a84c] mb-1">{s.value}</div>
-                <div className="text-sm text-[#a89880]">{s.label}</div>
-              </div>
-            ))}
-          </div>
-          <div className="grid sm:grid-cols-2 gap-5">
-            {t.why.usp.map((p, i) => {
-              const Icon = USP_ICONS[i];
-              return (
-                <div key={i} className="flex gap-4 rounded-xl border border-[#2d2820] bg-[#1c1912] p-6 hover:border-[#c9a84c]/40 transition-all">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-[#c9a84c]/10 flex items-center justify-center text-[#d4b86a]">
-                    <Icon size={20} />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-white mb-1">{p.title}</h3>
-                    <p className="text-sm text-[#a89880] leading-relaxed">{p.desc}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Portfolio ── */}
-      <section id="portfolio" className="py-24 px-4 sm:px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <span className="text-[#c9a84c] text-sm font-semibold tracking-widest uppercase">{t.portfolio.label}</span>
-            <h2 className="mt-2 text-3xl sm:text-4xl font-bold text-white">{t.portfolio.heading}</h2>
-            <p className="mt-3 text-[#a89880]">{t.portfolio.subheading}</p>
-          </div>
-          <div className="grid sm:grid-cols-2 gap-6">
-            {t.portfolio.items.map((item, i) => {
-              const meta = PORTFOLIO_META[i];
-              return (
-                <Link
-                  key={i}
-                  href={`/portfolio/${meta.slug}`}
-                  className="group h-full flex flex-col rounded-xl border border-[#2d2820] bg-[#1c1912] overflow-hidden hover:border-[#c9a84c]/40 hover:bg-[#1c1912]/80 transition-all"
-                >
-                  <div className="h-1 w-full" style={{ background: meta.color }} />
-                  <div className="flex-1 p-6 flex flex-col gap-3">
-                    <span className="inline-block text-xs font-semibold px-2.5 py-1 rounded-full border w-fit"
-                      style={{ color: meta.color, borderColor: `${meta.color}40`, background: `${meta.color}15` }}>
-                      {item.tag}
-                    </span>
-                    <h3 className="font-bold text-white leading-snug">{item.title}</h3>
-                    <p className="text-sm text-[#a89880] leading-relaxed flex-1">{item.desc}</p>
-                    <div className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-[#d4b86a] group-hover:text-[#c9a84c] transition-colors">
-                      {t.portfolio.viewProject}
-                      <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Vorgehen / Prozess ── */}
-      <section id="prozess" className="py-24 px-4 sm:px-6 bg-[#100d09]">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-16">
-            <span className="inline-block border border-[#2d2820] text-[#a89880] text-xs font-semibold uppercase tracking-widest px-4 py-1.5 rounded-full mb-5">{t.process.label}</span>
-            <h2 className="text-3xl sm:text-4xl font-bold">
-              <span className="text-white">{t.process.heading1}</span>
-              <span className="text-[#c9a84c]">{t.process.heading2}</span>
-            </h2>
-            <p className="mt-3 text-[#a89880] max-w-xl mx-auto">{t.process.subheading}</p>
-          </div>
-
-          <div className="relative">
-            <div className="hidden md:block absolute left-1/2 top-6 bottom-6 w-px bg-[#2d2820] -translate-x-1/2 z-0" />
-            <div className="space-y-4 md:space-y-0">
-              {t.process.steps.map((step, i) => {
-                const isLeft = i % 2 === 0;
-                const Icon = PROCESS_ICONS[i];
-                const card = (
-                  <div className="rounded-xl border border-[#2d2820] bg-[#1c1912] p-5 hover:border-[#c9a84c]/40 transition-colors">
-                    <div className="flex items-start gap-3 mb-3">
-                      <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-[#c9a84c]/10 flex items-center justify-center text-[#d4b86a]">
-                        <Icon size={17} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-semibold text-white">{step.title}</span>
-                          <span className="text-[11px] text-[#7a6d5a] bg-[#221e14] px-2 py-0.5 rounded-full">{step.badge}</span>
-                        </div>
-                        <p className="text-xs font-medium mt-0.5 text-[#d4b86a]">{step.tagline}</p>
-                      </div>
-                    </div>
-                    <p className="text-sm text-[#a89880] leading-relaxed">{step.desc}</p>
-                  </div>
-                );
-
-                return (
-                  <div key={i} className="md:py-3">
-                    <div className="flex items-start gap-3 md:hidden">
-                      <div className="flex-shrink-0 mt-1 w-8 h-8 rounded-full border border-[#c9a84c]/50 bg-[#0c0a06] flex items-center justify-center">
-                        <span className="text-[10px] font-bold text-[#c9a84c]">{step.num}</span>
-                      </div>
-                      <div className="flex-1">{card}</div>
-                    </div>
-                    <div className="hidden md:grid grid-cols-[1fr_80px_1fr] items-center gap-6">
-                      <div>{isLeft ? card : null}</div>
-                      <div className="flex justify-center relative z-10">
-                        <div className="w-12 h-12 rounded-full border-2 border-[#c9a84c]/50 bg-[#0c0a06] flex items-center justify-center shadow-lg shadow-[#c9a84c]/10">
-                          <span className="text-sm font-bold text-[#c9a84c]">{step.num}</span>
-                        </div>
-                      </div>
-                      <div>{!isLeft ? card : null}</div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="mt-12 text-center">
-            <a href="#contact" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#c9a84c] hover:bg-[#b8943a] text-[#0c0a06] font-bold transition-all shadow-lg shadow-[#c9a84c]/25">
-              {t.process.cta} <ChevronRight size={16} />
-            </a>
-          </div>
-        </div>
-      </section>
+      <ProcessTimeline lang={lang} />
 
       {/* ── Kontakt ── */}
-      <section id="contact" className="py-24 px-4 sm:px-6">
+      <section id="contact" className="contact-section py-24 px-4 sm:px-6">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
             <span className="text-[#c9a84c] text-sm font-semibold tracking-widest uppercase">{t.contact.label}</span>
@@ -459,7 +871,7 @@ export default function HomePage() {
       </section>
 
       {/* ── FAQ ── */}
-      <section id="faq" className="py-24 px-4 sm:px-6">
+      <section id="faq" className="faq-section py-24 px-4 sm:px-6">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify({
