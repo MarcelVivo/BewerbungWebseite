@@ -53,24 +53,25 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var cameraTargetStart=0;
   var cameraTargetEnd=TEXT_START_Y-(totalWorldStops-1)*HELIX_STEP-2.1;
   var cameraTravel=cameraTargetStart-cameraTargetEnd;
+  var SCENE_MOTION=false;
+  var lastCameraFov=camera.fov;
 
   function helixAngle(worldIndex){
     var stopY=TEXT_START_Y-worldIndex*HELIX_STEP;
     return Math.PI*2*(cameraTargetStart-stopY)/cameraTravel;
   }
 
-  function cameraFocus(progress){
-    var focusWindow=.032, strongest=0, focusIndex=0;
+  function cameraRailSlowdown(progress){
+    var focusWindow=.028, slowdown=1;
     for(var stopIndex=0;stopIndex<totalWorldStops;stopIndex++){
       var stopY=TEXT_START_Y-stopIndex*HELIX_STEP;
       var stopProgress=(cameraTargetStart-stopY)/cameraTravel;
       var distance=Math.abs(progress-stopProgress);
       if(distance>=focusWindow) continue;
       var proximity=1-distance/focusWindow;
-      var amount=Math.pow(Math.sin(proximity*Math.PI*.5),1.45);
-      if(amount>strongest){ strongest=amount; focusIndex=stopIndex; }
+      slowdown=Math.min(slowdown,.3+.7*(1-proximity)*(1-proximity));
     }
-    return { amount:strongest, index:focusIndex };
+    return slowdown;
   }
 
   function buildIntroSprite(label,index){
@@ -187,6 +188,30 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       vertexColors:!!cols,color:cols?0xffffff:0xffd15a,blending:THREE.AdditiveBlending,depthWrite:false});
     return new THREE.Points(g2,m2);
   }
+
+  function addDepthLayer(count,minRadius,maxRadius,size,opacity,colorA,colorB){
+    var positions=[], colors=[], layerColorA=new THREE.Color(colorA), layerColorB=new THREE.Color(colorB), layerColor=new THREE.Color();
+    for(var depthIndex=0;depthIndex<count;depthIndex++){
+      var angle=Math.random()*Math.PI*2;
+      var radius=minRadius+Math.random()*(maxRadius-minRadius);
+      var y=cameraTargetEnd-7+Math.random()*(cameraTravel+15);
+      positions.push(Math.cos(angle)*radius,y,Math.sin(angle)*radius);
+      layerColor.copy(layerColorA).lerp(layerColorB,Math.random());
+      colors.push(layerColor.r,layerColor.g,layerColor.b);
+    }
+    var depthPoints=pointsObj(positions,colors,size,opacity);
+    depthPoints.frustumCulled=false;
+    world.add(depthPoints);
+  }
+
+  // Fünf feste räumliche Ebenen: Die Partikel bewegen sich nicht selbst,
+  // erzeugen durch die vorbeifliegende Kamera aber permanenten Vorder- und Hintergrund-Flow.
+  addDepthLayer(isMobile?24:52,1.4,3.6,.055,.42,0xffd76a,0xffffff);
+  addDepthLayer(isMobile?34:72,3.7,6.8,.075,.32,0xffa92f,0xffed9a);
+  addDepthLayer(isMobile?42:92,6.9,10.5,.11,.22,0x9d6b24,0xffd76a);
+  addDepthLayer(isMobile?34:76,10.6,16.5,.16,.14,0x5f4218,0xd6b75a);
+  addDepthLayer(isMobile?16:36,16.6,23,.42,.06,0x3d2a10,0xa8792b);
+
   var BR=brainData;
 
   var __hideSet = (typeof window!=='undefined' ? new URLSearchParams(window.location.search).get('hide')||'' : '').split(',');
@@ -852,17 +877,17 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       rafId = requestAnimationFrame(tick);
       if (!documentVisible) return;
       var dt = Math.min((now - last) / 1000 || 0.016, 0.05); last = now;
-      if (!reduced) t += dt;
-      brain.rotation.y = BASE_Y - t*.035 + mouseX*.06 + Math.sin(t*.31)*.018;
-      brain.rotation.x = BASE_X + mouseY*.035 + Math.sin(t*.27+1.1)*.012;
-      brain.rotation.z = Math.sin(t*.34)*.028;
+      if (!reduced && SCENE_MOTION) t += dt;
+      brain.rotation.y = BASE_Y;
+      brain.rotation.x = BASE_X;
+      brain.rotation.z = 0;
       stumpCenterOffset.copy(stumpCenterLocal).applyEuler(brain.rotation).multiplyScalar(brain.scale.x);
       brain.position.x = -stumpCenterOffset.x;
       brain.position.z = -stumpCenterOffset.z;
       brain.position.y = BRAIN_BASE_Y + Math.sin(t*.58)*.058;
       strandInverseRotation.setFromEuler(brain.rotation).invert();
       worldVerticalInStrandLocal.set(0,1,0).applyQuaternion(strandInverseRotation);
-      if (!reduced) {
+      if (!reduced && SCENE_MOTION) {
         for (var si = 0; si < sparks.length; si++) sparks[si].update(dt);
         if (vc > 0 && now - lastWobbleUpdate > 32) {
           lastWobbleUpdate = now;
@@ -896,23 +921,28 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         for (var pi = 0; pi < strandPulses.length; pi++) strandPulses[pi].update(dt);
         for (var ni = 0; ni < nerveBolts.length; ni++) nerveBolts[ni].update(dt);
       }
-      nodesP.material.opacity = 0.95 + 0.2 * Math.sin(t * 2.6) + 0.08 * Math.sin(t * 13);
-      scrollP = targetScrollP;
+      nodesP.material.opacity = .95;
+      var railSlowdown=cameraRailSlowdown(scrollP);
+      var cameraInertia=1-Math.exp(-dt*7.2*railSlowdown);
+      scrollP+=(targetScrollP-scrollP)*cameraInertia;
+      if(Math.abs(targetScrollP-scrollP)<.00008) scrollP=targetScrollP;
       var sf = scrollP;
-      var focus=cameraFocus(sf);
-      var focusY=TEXT_START_Y-focus.index*HELIX_STEP;
-      var focusOrbit=helixAngle(focus.index);
-      var orbit=sf*Math.PI*2+(focusOrbit-sf*Math.PI*2)*focus.amount*.72;
+      var orbit=sf*Math.PI*2;
       var lookY=cameraTargetStart-sf*cameraTravel;
-      lookY+=((focusY-lookY)*focus.amount);
-      var cameraY=lookY+3.4*(1-focus.amount);
-      var cameraRadius=9.2-sf*.8-2.15*focus.amount;
-      var focusTargetRadius=focus.index<introTexts.length?2.65:1.68;
-      var targetRadius=focusTargetRadius*focus.amount;
+      var cameraY=lookY+.24;
+      var cameraRadius=8.78
+        +Math.sin(sf*Math.PI*2*3.15+.6)*.46
+        +Math.sin(sf*Math.PI*2*6.4+1.7)*.22;
+      var targetFov=53+Math.sin(sf*Math.PI*2*2.15+.45)*1.65;
+      if(Math.abs(targetFov-lastCameraFov)>.015){
+        camera.fov=targetFov;
+        camera.updateProjectionMatrix();
+        lastCameraFov=targetFov;
+      }
       world.rotation.y = 0;
       world.position.y = 0;
       camera.position.set(Math.sin(orbit)*cameraRadius, cameraY, Math.cos(orbit)*cameraRadius);
-      camera.lookAt(Math.sin(orbit)*targetRadius, lookY, Math.cos(orbit)*targetRadius);
+      camera.lookAt(0, lookY, 0);
       renderer.render(scene, camera);
     }
     rafId = requestAnimationFrame(tick);

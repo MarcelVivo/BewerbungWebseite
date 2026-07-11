@@ -39,6 +39,7 @@ const PORTFOLIO_META = [
 
 const USP_ICONS = [Zap, Users, CheckCircle, Award];
 const PROCESS_ICONS = [MessageSquare, Search, Compass, Wrench, Heart];
+const CAMERA_ONLY_WORLD = true;
 
 function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
   const [activeServiceSlug, setActiveServiceSlug] = useState<string | null>(null);
@@ -51,6 +52,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
   const viewportRef = useRef({ width: 0, height: 0 });
 
   useEffect(() => {
+    if (CAMERA_ONLY_WORLD) return;
     const section = document.getElementById('solution-spiral');
     if (!section) return;
     const items = Array.from(section.querySelectorAll<HTMLElement>('[data-spiral-item]'));
