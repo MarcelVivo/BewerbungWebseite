@@ -235,11 +235,12 @@ body {
 }
 
 .spiral-section {
-  margin-top: -34vh;
+  margin-top: 0;
   min-height: 520vh;
   background:
-    radial-gradient(ellipse 38% 42% at 50% 4%, rgba(201,168,76,0.06), transparent 72%),
-    linear-gradient(180deg, rgba(12,10,6,0) 0%, rgba(16,13,9,0.72) 14%, rgba(12,10,6,0.72) 88%, rgba(12,10,6,0) 100%);
+    radial-gradient(ellipse 38% 42% at 50% 4%, rgba(201,168,76,0.09), transparent 72%),
+    radial-gradient(ellipse 40% 36% at 76% 52%, rgba(95,180,255,0.035), transparent 72%),
+    linear-gradient(180deg, rgba(12,10,6,0.12) 0%, rgba(16,13,9,0.72) 14%, rgba(12,10,6,0.78) 88%, rgba(12,10,6,0.12) 100%);
 }
 
 .spiral-anchor {
@@ -263,8 +264,41 @@ body {
 .spiral-stage {
   position: absolute;
   inset: 0;
+  isolation: isolate;
   transform-style: preserve-3d;
   pointer-events: none;
+}
+
+.spiral-stage::before,
+.spiral-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.spiral-stage::before {
+  z-index: 1;
+  opacity: 0.58;
+  background:
+    radial-gradient(circle at 18% 28%, rgba(255,221,111,0.2) 0 1px, transparent 2px),
+    radial-gradient(circle at 72% 18%, rgba(108,194,255,0.16) 0 1px, transparent 2px),
+    radial-gradient(circle at 82% 71%, rgba(198,140,255,0.14) 0 1px, transparent 2px),
+    radial-gradient(ellipse at center, transparent 38%, rgba(0,0,0,0.32) 100%);
+  background-size: 173px 149px, 241px 199px, 311px 257px, 100% 100%;
+  mix-blend-mode: screen;
+  animation: atmosphere-drift 18s ease-in-out infinite alternate;
+}
+
+.spiral-stage::after {
+  z-index: 2;
+  opacity: 0.52;
+  background: radial-gradient(ellipse 42% 46% at 50% 50%, transparent 42%, rgba(0,0,0,0.48) 100%);
+}
+
+@keyframes atmosphere-drift {
+  from { transform: translate3d(-0.8%, -0.6%, 0) scale(1); }
+  to { transform: translate3d(0.9%, 0.7%, 0) scale(1.04); }
 }
 
 .spiral-card {
@@ -332,8 +366,9 @@ body {
   opacity: 0;
   transition: opacity 180ms linear;
   filter:
-    drop-shadow(0 0 8px rgba(201, 168, 76, 0.14))
-    drop-shadow(0 0 16px rgba(255, 214, 88, 0.06));
+    drop-shadow(0 0 8px rgba(201, 168, 76, 0.18))
+    drop-shadow(0 0 16px rgba(95, 180, 255, 0.08));
+  mix-blend-mode: screen;
   mask-image: linear-gradient(to bottom, transparent 0%, #000 12%, #000 88%, transparent 100%);
 }
 
@@ -345,20 +380,20 @@ body {
 
 .strand-glow {
   stroke: url(#spiralStrandGlow);
-  stroke-width: 26;
-  filter: blur(10px);
+  stroke-width: 30;
+  filter: blur(12px);
 }
 
 .strand-core {
   stroke: url(#spiralStrandA);
-  opacity: 0.24;
+  opacity: 0.3;
   stroke-width: 3;
   stroke-dasharray: 2 12;
 }
 
 .strand-fiber {
   stroke: url(#spiralStrandA);
-  opacity: 0.46;
+  opacity: 0.52;
   stroke-width: 0.82;
   filter: drop-shadow(0 0 5px rgba(255, 214, 88, 0.12));
 }
@@ -561,6 +596,28 @@ body {
   text-align: left;
 }
 
+.spiral-intro-statement::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -1.7rem -2.5rem;
+  opacity: 0.52;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 19% 42%, rgba(255,222,112,0.74) 0 1px, transparent 1.9px),
+    radial-gradient(circle at 67% 74%, rgba(255,222,112,0.5) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 82% 22%, rgba(95,180,255,0.33) 0 1px, transparent 1.8px),
+    radial-gradient(ellipse at 42% 52%, rgba(201,168,76,0.15), transparent 65%);
+  background-size: 39px 31px, 57px 47px, 73px 61px, 100% 100%;
+  mask-image: radial-gradient(ellipse at center, #000 18%, transparent 72%);
+  animation: statement-atmosphere 7.8s ease-in-out infinite alternate;
+}
+
+@keyframes statement-atmosphere {
+  from { transform: translate3d(-3px, 2px, 0); opacity: 0.36; }
+  to { transform: translate3d(4px, -3px, 0); opacity: 0.68; }
+}
+
 .spiral-intro-statement::before,
 .spiral-service-card::before {
   content: "";
@@ -598,6 +655,11 @@ body {
     0 0 28px rgba(var(--service-accent-rgb),0.08),
     inset 0 1px 0 rgba(255,244,190,0.08);
   overflow: hidden;
+  transition: border-color 420ms ease, box-shadow 640ms ease, background 640ms ease;
+}
+
+.spiral-service-card::selection {
+  background: rgba(var(--service-accent-rgb), 0.34);
 }
 
 .spiral-service-card.is-selected {
@@ -680,7 +742,7 @@ body {
 
 .spiral-intro-title {
   color: #fff;
-  font-size: clamp(0.95rem, 2.1vw, 2.4rem);
+  font-size: clamp(1rem, 2.15vw, 2.5rem);
   font-weight: 900;
   line-height: 0.9;
   letter-spacing: -0.055em;

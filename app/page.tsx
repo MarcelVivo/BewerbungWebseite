@@ -48,6 +48,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
   const frameRef = useRef(0);
   const lastFrameTimeRef = useRef(0);
   const lastStrandProgressRef = useRef(-1);
+  const viewportRef = useRef({ width: 0, height: 0 });
 
   useEffect(() => {
     const section = document.getElementById('solution-spiral');
@@ -65,6 +66,25 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       const end = start + section.offsetHeight - window.innerHeight;
       const raw = (window.scrollY - start) / Math.max(1, end - start);
       targetProgressRef.current = Math.max(0, Math.min(1, raw));
+    };
+
+    const updateViewport = () => {
+      viewportRef.current = { width: window.innerWidth, height: window.innerHeight };
+    };
+
+    const projectHelixPoint = (index: number, currentProgress: number) => {
+      const angle = index * spiralAngleStep - currentProgress * rotationTravel;
+      const rad = (angle * Math.PI) / 180;
+      const y = index * verticalStep - currentProgress * totalTravel + spiralYOffset;
+      const z = Math.cos(rad) * (radius - 24);
+      const perspective = 1700;
+      const depth = perspective / Math.max(420, perspective - z);
+      const { width, height } = viewportRef.current;
+
+      return {
+        x: width / 2 + Math.sin(rad) * (radius - 24) * depth,
+        y: height / 2 + y * depth,
+      };
     };
 
     const renderProgress = (currentProgress: number, activeLayoutProgress: number) => {
@@ -110,15 +130,9 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
         && Math.abs(currentProgress - lastStrandProgressRef.current) > 0.00035
       ) {
         lastStrandProgressRef.current = currentProgress;
-        const strandRect = continuousStrand.getBoundingClientRect();
-        continuousStrand.setAttribute('viewBox', `0 0 ${strandRect.width.toFixed(1)} ${strandRect.height.toFixed(1)}`);
-        const points = strandAnchors.map((anchor) => {
-          const rect = anchor.getBoundingClientRect();
-          return {
-            x: rect.left + rect.width / 2 - strandRect.left,
-            y: rect.top + rect.height / 2 - strandRect.top,
-          };
-        });
+        const { width, height } = viewportRef.current;
+        continuousStrand.setAttribute('viewBox', `0 0 ${width.toFixed(1)} ${height.toFixed(1)}`);
+        const points = strandAnchors.map((_, index) => projectHelixPoint(index + 0.5, currentProgress));
         const first = points[0];
         const second = points[1];
         const last = points[points.length - 1];
@@ -207,15 +221,21 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       frameRef.current = requestAnimationFrame(animate);
     };
 
+    const handleResize = () => {
+      updateViewport();
+      update();
+    };
+
+    updateViewport();
     update();
     renderProgress(progressRef.current, activeLayoutProgressRef.current);
     frameRef.current = requestAnimationFrame(animate);
     window.addEventListener('scroll', update, { passive: true });
-    window.addEventListener('resize', update);
+    window.addEventListener('resize', handleResize);
     return () => {
       if (frameRef.current) cancelAnimationFrame(frameRef.current);
       window.removeEventListener('scroll', update);
-      window.removeEventListener('resize', update);
+      window.removeEventListener('resize', handleResize);
     };
   }, []);
 

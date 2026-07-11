@@ -13,8 +13,8 @@ export default function BrainBackground() {
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var isMobile = innerWidth < 700;
-    var renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.15 : 2));
+    var renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'high-performance' });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.1 : 1.5));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     var scene = new THREE.Scene();
     var camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 200);
@@ -132,6 +132,7 @@ export default function BrainBackground() {
   var HAIR_COUNT=isMobile?36:64, HAIR_SEGS=40;
   var sBase=[], sMeta=[], sFibers=[], vc=0;
   var wobbleLineRefs=[], wobblePtsRefs=[];
+  var wobbleX=new Float32Array(0), wobbleZ=new Float32Array(0);
   // gemeinsame Durchhang-Richtung (Schwerkraft): leicht nach vorne/unten,
   // nicht rein vertikal, wirkt organischer als ein reiner Y-Fall
   var DROOP_DX=0.18, DROOP_DZ=0.55;
@@ -274,9 +275,15 @@ export default function BrainBackground() {
     }
   }
 
+  function resetWobbleBuffers(){
+    wobbleX=new Float32Array(vc);
+    wobbleZ=new Float32Array(vc);
+  }
+
   var baseLinePos=lpos.slice(), baseLineCol=lcol.slice();
   var baseWPos=wpos.slice(), baseWCol=wcol.slice();
   if(STRAND_ON) genStrandInto(lpos,lcol,wpos,wcol);
+  resetWobbleBuffers();
 
   var lgeo=new THREE.BufferGeometry();
   lgeo.setAttribute('position',new THREE.Float32BufferAttribute(lpos,3));
@@ -290,6 +297,7 @@ export default function BrainBackground() {
     var newLPos=baseLinePos.slice(), newLCol=baseLineCol.slice();
     var newWPos=baseWPos.slice(), newWCol=baseWCol.slice();
     if(STRAND_ON) genStrandInto(newLPos,newLCol,newWPos,newWCol);
+    resetWobbleBuffers();
     var ng=new THREE.BufferGeometry();
     ng.setAttribute('position',new THREE.Float32BufferAttribute(newLPos,3));
     ng.setAttribute('color',new THREE.Float32BufferAttribute(newLCol,3));
@@ -727,40 +735,40 @@ export default function BrainBackground() {
     var mouseX = 0, mouseY = 0;
     const onMouse = (e) => { mouseX = (e.clientX / innerWidth - 0.5) * 2; mouseY = (e.clientY / innerHeight - 0.5) * 2; };
     const resize = () => { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); };
-    var scrollP = 0;
-    const onScroll = () => { var max = document.documentElement.scrollHeight - innerHeight; scrollP = max > 0 ? scrollY / max : 0; };
+    var scrollP = 0, targetScrollP = 0;
+    const onScroll = () => { var max = document.documentElement.scrollHeight - innerHeight; targetScrollP = max > 0 ? scrollY / max : 0; };
     window.addEventListener('mousemove', onMouse);
     window.addEventListener('resize', resize);
     window.addEventListener('scroll', onScroll, { passive: true });
     resize(); onScroll();
     renderer.render(scene, camera);
 
-    var t = 0, DROP = 20, last = 0, rafId = 0;
+    var t = 0, last = 0, rafId = 0, lastWobbleUpdate = 0;
     function tick(now) {
       rafId = requestAnimationFrame(tick);
       var dt = Math.min((now - last) / 1000 || 0.016, 0.05); last = now;
       if (!reduced) {
         t += dt;
         for (var si = 0; si < sparks.length; si++) sparks[si].update(dt);
-        if (vc > 0) {
+        if (vc > 0 && now - lastWobbleUpdate > 32) {
+          lastWobbleUpdate = now;
           var linePosArr = linesObj.geometry.attributes.position.array;
           var ptsPosArr = wptsObj.geometry.attributes.position.array;
-          var wobX = new Float32Array(vc), wobZ = new Float32Array(vc);
           for (var v = 0; v < vc; v++) {
             var tv = sMeta[v * 2], ph = sMeta[v * 2 + 1];
-            wobX[v] = Math.sin(t * 1.1 + tv * 9 + ph) * 0.06 * tv * tv;
-            wobZ[v] = Math.cos(t * 0.9 + tv * 7 + ph) * 0.05 * tv * tv;
+            wobbleX[v] = Math.sin(t * 1.1 + tv * 9 + ph) * 0.06 * tv * tv;
+            wobbleZ[v] = Math.cos(t * 0.9 + tv * 7 + ph) * 0.05 * tv * tv;
           }
           for (var wr = 0; wr < wobbleLineRefs.length; wr++) {
             var refL = wobbleLineRefs[wr], svL = refL.srcV, oL = refL.off;
-            linePosArr[oL]     = sBase[svL * 3]     + wobX[svL];
-            linePosArr[oL + 2] = sBase[svL * 3 + 2] + wobZ[svL];
+            linePosArr[oL]     = sBase[svL * 3]     + wobbleX[svL];
+            linePosArr[oL + 2] = sBase[svL * 3 + 2] + wobbleZ[svL];
           }
           linesObj.geometry.attributes.position.needsUpdate = true;
           for (var wp = 0; wp < wobblePtsRefs.length; wp++) {
             var refP = wobblePtsRefs[wp], svP = refP.srcV, oP = refP.off;
-            ptsPosArr[oP]     = sBase[svP * 3]     + wobX[svP];
-            ptsPosArr[oP + 2] = sBase[svP * 3 + 2] + wobZ[svP];
+            ptsPosArr[oP]     = sBase[svP * 3]     + wobbleX[svP];
+            ptsPosArr[oP + 2] = sBase[svP * 3 + 2] + wobbleZ[svP];
           }
           wptsObj.geometry.attributes.position.needsUpdate = true;
         }
@@ -773,9 +781,13 @@ export default function BrainBackground() {
       brain.rotation.x += ((BASE_X + mouseY * 0.2) - brain.rotation.x) * 0.05;
       brain.position.y = 1.38 + Math.sin(t * 0.8) * 0.08;
       nodesP.material.opacity = 0.95 + 0.2 * Math.sin(t * 2.6) + 0.08 * Math.sin(t * 13);
+      scrollP += (targetScrollP - scrollP) * Math.min(1, dt * 5);
       var sf = scrollP;
-      world.rotation.y = sf * Math.PI * 2;
-      world.position.y = sf * DROP;
+      world.rotation.y = sf * 0.42;
+      world.position.y = sf * 3.25;
+      camera.position.z += ((9.2 - sf * 0.68) - camera.position.z) * 0.035;
+      camera.position.y += ((0.4 - sf * 0.18) - camera.position.y) * 0.035;
+      camera.lookAt(0, 0.5 + sf * 0.32, 0);
       camera.position.x += ((mouseX * 0.3) - camera.position.x) * 0.05;
       renderer.render(scene, camera);
     }
