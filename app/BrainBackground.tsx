@@ -18,6 +18,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var isMobile = innerWidth < 700;
+    // Schmales Mobile-Sichtfeld (kleines aspect) macht das horizontale FOV
+    // viel enger als auf Desktop — Kamera etwas weiter zurücksetzen, damit
+    // neben dem Haupt-Gehirn auch Platz für die 3 Satelliten-Gehirne bleibt.
+    var MOBILE_RADIUS_SCALE = isMobile ? 1.34 : 1;
     var renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'high-performance' });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.1 : 1.5));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -583,15 +587,25 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   function addSatelliteBrain(x,y,z,phase,colorHex){
     var satellite=brain.clone(true);
     tintSatelliteBrain(satellite,colorHex);
-    satellite.scale.setScalar(1.32);
+    satellite.scale.setScalar(isMobile?0.92:1.32);
     satellite.position.set(x,y,z);
     satellite.rotation.set(BASE_X,BASE_Y,0);
     satellite.userData={baseX:x,baseY:y,baseZ:z,baseRotY:BASE_Y,phase:phase};
     world.add(satellite);
     satelliteBrains.push(satellite);
   }
-  addSatelliteBrain(-5.7,-.62,-.7,.35,'#ff4d6d');
-  addSatelliteBrain(5.7,-.44,-.9,2.7,'#4dd2ff');
+  // Auf schmalen Mobile-Viewports ist das horizontale Sichtfeld der Kamera
+  // (gleiche vertikale FOV, aber viel kleineres Seitenverhältnis) deutlich
+  // enger als auf Desktop — bei den Desktop-Offsets (±5.7) wären die
+  // Satelliten-Gehirne komplett ausserhalb des sichtbaren Bereichs. Näher
+  // an die Mitte rücken, damit alle 3 Gehirne im Hero-Screen schweben.
+  if(isMobile){
+    addSatelliteBrain(-2.3,-.45,-.9,.35,'#ff4d6d');
+    addSatelliteBrain(2.3,-.32,-1.1,2.7,'#4dd2ff');
+  } else {
+    addSatelliteBrain(-5.7,-.62,-.7,.35,'#ff4d6d');
+    addSatelliteBrain(5.7,-.44,-.9,2.7,'#4dd2ff');
+  }
 
   var satelliteStrands=[];
   var satelliteTargetWorld=new THREE.Vector3();
@@ -1317,9 +1331,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var orbit=sf*Math.PI*2;
       var lookY=cameraTargetStart-sf*cameraTravel;
       var cameraY=lookY+.24;
-      var cameraRadius=8.78
+      var cameraRadius=(8.78
         +Math.sin(sf*Math.PI*2*3.15+.6)*.46
-        +Math.sin(sf*Math.PI*2*6.4+1.7)*.22;
+        +Math.sin(sf*Math.PI*2*6.4+1.7)*.22)*MOBILE_RADIUS_SCALE;
       var targetFov=53+Math.sin(sf*Math.PI*2*2.15+.45)*1.65;
       if(Math.abs(targetFov-lastCameraFov)>.015){
         camera.fov=targetFov;
