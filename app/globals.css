@@ -743,7 +743,7 @@ body {
     0 0 28px rgba(var(--service-accent-rgb),0.08),
     inset 0 1px 0 rgba(246,227,161,0.08);
   overflow: visible;
-  transition: border-color 420ms ease, box-shadow 640ms ease, background 640ms ease, transform 320ms ease;
+  transition: border-color 420ms ease, box-shadow 640ms ease, background 640ms ease;
 }
 
 .spiral-service-card:not(.ngp-panel-static) {
@@ -771,11 +771,6 @@ body {
 .spiral-service-card.is-selected::before {
   opacity: 1;
   box-shadow: 0 0 26px rgba(var(--service-accent-rgb),0.52);
-}
-
-.spiral-service-card.ngp-panel:hover,
-.spiral-service-card.ngp-panel.is-selected {
-  transform: translateY(-2px) scale(1.012);
 }
 
 .spiral-service-card:hover:not(.ngp-panel-static) {
@@ -1677,10 +1672,5 @@ body {
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;
-  }
-
-  .spiral-service-card:hover,
-  .spiral-service-card.is-selected {
-    transform: none !important;
   }
 }
