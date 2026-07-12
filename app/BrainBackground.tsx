@@ -394,8 +394,19 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     if(!stumpAnchorPts.length) stumpAnchorPts=roots.length?roots:[new THREE.Vector3(SBASE_X,SBASE_Y,SBASE_Z)];
     var anchorOrder=stumpAnchorPts.map(function(_,ix){return ix;});
     for(var sh=anchorOrder.length-1;sh>0;sh--){ var jx=Math.floor(rnd()*(sh+1)); var tmp=anchorOrder[sh]; anchorOrder[sh]=anchorOrder[jx]; anchorOrder[jx]=tmp; }
-    var fiberCount=FN.count;
+    var fiberCount=Math.max(2,Math.round(FN.count*.5)*2);
+    var pairProfiles=[];
     for(var f=0;f<fiberCount;f++){
+      var pairIndex=Math.floor(f*.5), pairProfile=pairProfiles[pairIndex];
+      if(!pairProfile){
+        pairProfile={
+          angle:pairIndex/Math.max(1,fiberCount*.5)*6.283+(rnd()-.5)*.025,
+          twist:(rnd()-.5)*SP.twist,
+          frayJitter:.4+rnd()*.6,
+          endF:(pairIndex%4)?0.9+0.1*rnd():0.6+0.3*rnd()
+        };
+        pairProfiles[pairIndex]=pairProfile;
+      }
       // Ankerpunkt: ein echter goldener Vertex aus dem Stumpf-Bereich,
       // gleichmässig durchgemischt über alle verfügbaren Punkte zyklisch.
       var anchorRaw=stumpAnchorPts[anchorOrder[f%anchorOrder.length]];
@@ -419,13 +430,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         SBASE_Z+mz+Math.sin(mediumAngle)*mediumRadius
       );
       var largeCenter=new THREE.Vector3(
-        converge.x+(rnd()-.5)*.025,
+        converge.x,
         converge.y+(rnd()-.5)*.035,
-        converge.z+(rnd()-.5)*.025
+        converge.z
       );
-      var a0=rnd()*6.283, tw=(rnd()-.5)*SP.twist, rootWaveAmp=.016+rnd()*.018;
-      var frayJitter=0.4+rnd()*0.6;
-      var endF=(f%4)?0.9+0.1*rnd():0.6+0.3*rnd();
+      var a0=pairProfile.angle+(f%2?Math.PI:0), tw=pairProfile.twist, rootWaveAmp=.016+rnd()*.018;
+      var frayJitter=pairProfile.frayJitter;
+      var endF=pairProfile.endF;
       var legacyFunnelSteps=Math.max(3,Math.round(FN.funnelSegs));
       var totalSteps=Math.max(24,Math.round(N*endF)+legacyFunnelSteps);
       var rootSteps=Math.min(totalSteps-18,Math.max(Math.round(totalSteps*.27),legacyFunnelSteps*6));
@@ -1781,12 +1792,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           lastWobbleUpdate = now;
           var linePosArr = linesObj.geometry.attributes.position.array;
           var ptsPosArr = wptsObj.geometry.attributes.position.array;
-          var airSwayX=Math.sin(t*WIND.speed)*WIND.sway*.65+Math.sin(t*WIND.speed*.43+1.2)*WIND.sway*.35;
-          var airSwayZ=Math.cos(t*WIND.speed*.84)*WIND.sway*.52+Math.sin(t*WIND.speed*.51+.7)*WIND.sway*.3;
           for (var v = 0; v < vc; v++) {
             var tv = sMeta[v * 2], ph = sMeta[v * 2 + 1];
-            wobbleX[v] = Math.sin(t*WIND.speed*2.95+tv*WIND.waveFrequency+ph)*WIND.wave*tv*tv+airSwayX*tv;
-            wobbleZ[v] = Math.cos(t*WIND.speed*2.43+tv*WIND.waveFrequency*.78+ph)*WIND.wave*.82*tv*tv+airSwayZ*tv;
+            wobbleX[v] = Math.sin(t*WIND.speed*2.95+tv*WIND.waveFrequency+ph)*WIND.wave*tv*tv
+              +Math.sin(t*WIND.speed*1.31+ph)*WIND.sway*.08*tv*tv;
+            wobbleZ[v] = Math.cos(t*WIND.speed*2.43+tv*WIND.waveFrequency*.78+ph)*WIND.wave*.82*tv*tv
+              +Math.cos(t*WIND.speed*1.07+ph)*WIND.sway*.06*tv*tv;
           }
           for (var wr = 0; wr < wobbleLineRefs.length; wr++) {
             var refL = wobbleLineRefs[wr], svL = refL.srcV, oL = refL.off;
