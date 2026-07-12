@@ -26,7 +26,7 @@ export default function HomeNavBar() {
           <img
             src="/MSLogo/MSLogoLang.png"
             alt="Marcel Spahr"
-            className="h-12 sm:h-14 w-auto object-contain"
+            className="h-24 sm:h-28 w-auto object-contain"
           />
         </a>
         <nav className="hidden md:flex items-center gap-6">
