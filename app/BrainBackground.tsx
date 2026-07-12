@@ -32,7 +32,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var scene = new THREE.Scene();
     var camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 200);
     camera.position.set(0, 0.4, 9.2);
-    camera.lookAt(0, 0.5, 0);
+    camera.lookAt(0, -0.1, 0);
     if (typeof window !== 'undefined') { window.__debugScene = scene; window.__debugCamera = camera; window.__debugTHREE = THREE; }
 
   function softSprite(){
@@ -179,7 +179,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     placeholderCards.forEach(function(card,index){ buildServiceCard(card,index,introTexts.length+serviceCards.length+index); });
   }
 
-  var BASE_Y=Math.PI/2+0.15, BASE_X=0.22; /* Front, leicht nach vorne geneigt: Oberseite mit Hirnstruktur sichtbar */
+  var BASE_Y=Math.PI/2+0.15, BASE_X=0.22, MAIN_BRAIN_BASE_X=.29;
+  var MAX_MAIN_BRAIN_YAW=THREE.MathUtils.degToRad(20);
+  var MAIN_BRAIN_SWAY=THREE.MathUtils.degToRad(16);
+  var MAIN_BRAIN_MOUSE_YAW=THREE.MathUtils.degToRad(4);
+  var MAIN_BRAIN_MOUSE_PITCH=THREE.MathUtils.degToRad(3);
   var GOLD={
     deep:new THREE.Color(0x7c5a1a),
     core:new THREE.Color(0xc89a3d),
@@ -1546,9 +1550,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var mouseEase=1-Math.exp(-dt*3.2);
       smoothMouseX += (mouseX-smoothMouseX)*mouseEase;
       smoothMouseY += (mouseY-smoothMouseY)*mouseEase;
-      var brainSway=Math.sin(t*.08)*Math.PI/6;
-      brain.rotation.y = BASE_Y+brainSway+smoothMouseX*.22;
-      brain.rotation.x = BASE_X+Math.sin(t*.23)*.012+smoothMouseY*.12;
+      var mainBrainSway=Math.sin(t*.08)*MAIN_BRAIN_SWAY;
+      var mainBrainYaw=BASE_Y+mainBrainSway+smoothMouseX*MAIN_BRAIN_MOUSE_YAW;
+      var satelliteSway=Math.sin(t*.08)*Math.PI/6;
+      brain.rotation.y = THREE.MathUtils.clamp(mainBrainYaw,BASE_Y-MAX_MAIN_BRAIN_YAW,BASE_Y+MAX_MAIN_BRAIN_YAW);
+      brain.rotation.x = THREE.MathUtils.clamp(MAIN_BRAIN_BASE_X+Math.sin(t*.23)*.012+smoothMouseY*MAIN_BRAIN_MOUSE_PITCH,.24,.34);
       brain.rotation.z = Math.cos(t*.19+1.1)*.014+smoothMouseX*.03;
       stumpCenterOffset.copy(stumpCenterLocal).applyEuler(brain.rotation).multiplyScalar(brain.scale.x);
       brain.position.x = -stumpCenterOffset.x+smoothMouseX*.14;
@@ -1564,7 +1570,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         satelliteBrain.position.y=satelliteData.baseY+Math.cos(satelliteTime*1.17)*.13;
         satelliteBrain.position.z=satelliteData.baseZ+Math.sin(satelliteTime*1.43+1.4)*.12;
         satelliteBrain.rotation.x=BASE_X+Math.sin(satelliteTime*.81)*.025;
-        satelliteBrain.rotation.y=satelliteData.baseRotY+brainSway;
+        satelliteBrain.rotation.y=satelliteData.baseRotY+satelliteSway;
         satelliteBrain.rotation.z=Math.sin(satelliteTime*.92+1.2)*.022;
       }
       if(now-lastSatelliteStrandUpdate>48){
@@ -1654,7 +1660,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var sf = scrollP;
       var orbit=sf*Math.PI*2;
       var lookY=cameraTargetStart-sf*cameraTravel;
-      var cameraY=lookY+.24;
+      var heroPerspective=Math.max(0,1-sf/.11);
+      var cameraY=lookY+.24+heroPerspective*.16;
+      var cameraLookY=lookY-heroPerspective*.1;
       var cameraRadius=(8.78
         +Math.sin(sf*Math.PI*2*3.15+.6)*.46
         +Math.sin(sf*Math.PI*2*6.4+1.7)*.22)*MOBILE_RADIUS_SCALE;
@@ -1667,7 +1675,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       world.rotation.y = 0;
       world.position.y = 0;
       camera.position.set(Math.sin(orbit)*cameraRadius, cameraY, Math.cos(orbit)*cameraRadius);
-      camera.lookAt(0, lookY, 0);
+      camera.lookAt(0, cameraLookY, 0);
       renderer.render(scene, camera);
     }
     rafId = requestAnimationFrame(tick);
