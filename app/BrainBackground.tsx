@@ -598,6 +598,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var sideMainAnchor=new THREE.Vector3();
   var sideSourceAnchor=new THREE.Vector3();
   var sideFiberBundles=[];
+  // Gemeinsame, mit dem Gehirn rotierende Achsen für die Doppelhelix, damit
+  // die Umwicklung aus jedem Blickwinkel korrekt aussieht (nicht nur von vorne).
+  var sideAxisDown=new THREE.Vector3();
+  var sideAxisFront=new THREE.Vector3();
+  var sideAxisSide=new THREE.Vector3();
   var sideSatelliteAnchors=pts.filter(function(point){
     var dx=point.x-SBASE_X, dy=point.y-SBASE_Y, dz=point.z-SBASE_Z;
     return dx*dx+dz*dz<.026&&dy>-.015&&dy<.36;
@@ -645,9 +650,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         subBundleOffset:subBundleIndex*.075+(Math.random()-.5)*.026,
         mainBundleOffset:(Math.random()-.5)*(.045+edgeWeight*.04),
         centralOffset:(Math.random()-.5)*(.04+edgeWeight*.06),
-        targetAngle:(isRed?Math.PI:0)+(Math.random()-.5)*.46,
-        targetRadius:.42+Math.random()*.1,
-        targetHeight:(isRed?-.16:-.08)+(Math.random()-.5)*.13,
+        // Roter Strang tritt vorne (Winkel 0) in den Hauptstamm ein, blauer
+        // Strang hinten (Winkel PI) — enger Streuwinkel, damit die Fasern
+        // beim Umwickeln nicht durcheinander kreuzen.
+        helixEntryAngle:(isRed?0:Math.PI)+(Math.random()-.5)*.16,
+        helixRadius:.4+Math.random()*.05,
+        helixRadiusJitter:Math.random()*Math.PI*2,
+        helixLaneOffset:(Math.random()-.5)*.05,
         sag:(isRed?1.52:1.28)+Math.random()*(isRed?.28:.26),
         sagCenter:(isRed?.635:.585)+(Math.random()-.5)*.05,
         catenaryTension:1.34+Math.random()*.36,
@@ -674,53 +683,82 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   createLivingSideBundle(satelliteBrains[0],-1,'#ff4d6d');
   createLivingSideBundle(satelliteBrains[1],1,'#4dd2ff');
 
+  var sideHelixTurns=3.2, sideHelixLength=7.6, sideHelixJoinShare=.34, sideHelixRotationSpeed=.05;
+  var sideJoinPoint=new THREE.Vector3();
   function updateLivingSideBundle(bundle,flowTime){
     var coreX=sideMainAnchor.x, coreY=sideMainAnchor.y, coreZ=sideMainAnchor.z;
+    var bundleRotation=flowTime*sideHelixRotationSpeed;
     for(var fiberIndex=0;fiberIndex<bundle.fibers.length;fiberIndex++){
       var fiber=bundle.fibers[fiberIndex];
       sideSourceAnchor.copy(fiber.anchorLocal);
       bundle.satellite.localToWorld(sideSourceAnchor);
       var sourceX=sideSourceAnchor.x, sourceY=sideSourceAnchor.y, sourceZ=sideSourceAnchor.z;
-      var targetX=coreX+Math.cos(fiber.targetAngle)*fiber.targetRadius;
-      var targetY=coreY+fiber.targetHeight;
-      var targetZ=coreZ+Math.sin(fiber.targetAngle)*fiber.targetRadius;
+      // Eintrittspunkt am Hauptstamm: exakt der Punkt, an dem die Helix bei
+      // helixProgress=0 beginnt — dadurch kein Knick beim Übergang.
+      sideJoinPoint.set(
+        coreX+sideAxisFront.x*Math.cos(fiber.helixEntryAngle)*fiber.helixRadius+sideAxisSide.x*Math.sin(fiber.helixEntryAngle)*fiber.helixRadius,
+        coreY+sideAxisFront.y*Math.cos(fiber.helixEntryAngle)*fiber.helixRadius+sideAxisSide.y*Math.sin(fiber.helixEntryAngle)*fiber.helixRadius,
+        coreZ+sideAxisFront.z*Math.cos(fiber.helixEntryAngle)*fiber.helixRadius+sideAxisSide.z*Math.sin(fiber.helixEntryAngle)*fiber.helixRadius
+      );
+      var targetX=sideJoinPoint.x, targetY=sideJoinPoint.y, targetZ=sideJoinPoint.z;
       var horizontalX=targetX-sourceX, horizontalZ=targetZ-sourceZ;
       var horizontalLength=Math.max(.001,Math.hypot(horizontalX,horizontalZ));
       var normalX=-horizontalZ/horizontalLength, normalZ=horizontalX/horizontalLength;
       var previousX=0, previousY=0, previousZ=0, previousR=0, previousG=0, previousB=0;
       for(var segmentIndex=0;segmentIndex<=bundle.segments;segmentIndex++){
         var progress=segmentIndex/bundle.segments;
-        var fanFade=1-smooth(progress/.56);
-        var subBundleFade=smooth((progress-.16)/.34)*(1-smooth((progress-.65)/.17));
-        var mainBundleFade=smooth((progress-.42)/.24)*(1-smooth((progress-.74)/.13));
-        var integrationFade=smooth((progress-.7)/.3);
-        var sagProgress=progress<fiber.sagCenter?progress/fiber.sagCenter:(1-progress)/(1-fiber.sagCenter);
-        var catenaryDenominator=Math.cosh(fiber.catenaryTension)-1;
-        var cat=(Math.cosh(fiber.catenaryTension)-Math.cosh(fiber.catenaryTension*(1-sagProgress)))/catenaryDenominator;
-        var heavyZone=Math.max(0,1-Math.abs(progress-fiber.sagCenter)/.27);
-        heavyZone*=heavyZone;
-        var sagEnvelope=cat*(.98+heavyZone*.25);
-        var x=sourceX+(targetX-sourceX)*progress;
-        var y=sourceY+(targetY-sourceY)*progress-fiber.sag*sagEnvelope;
-        var z=sourceZ+(targetZ-sourceZ)*progress;
-        var release=smooth(progress/.11);
-        var centralFan=Math.sin(integrationFade*Math.PI)*fiber.centralOffset;
-        var crossOffset=(fiber.fanOffset*fanFade*release+fiber.subBundleOffset*subBundleFade+fiber.mainBundleOffset*mainBundleFade+centralFan)*(1-heavyZone*.3);
-        var livingSway=Math.sin(flowTime*.44+fiber.phase+progress*5.6)*(.009+.018*fiber.edgeWeight)*(1-integrationFade*.68);
-        var looseEdge=Math.sin(fiber.phase*1.31+progress*8.4)*fiber.edgeWeight*cat*.035;
-        x+=bundle.side*fiber.lateralBow*cat*(1-integrationFade*.42);
-        z+=Math.cos(fiber.phase*.71+progress*3.2)*fiber.edgeWeight*cat*.045*(1-integrationFade*.45);
-        x+=normalX*(crossOffset+livingSway+looseEdge)+Math.cos(fiber.phase)*fiber.depthOffset*fanFade*release*.34;
-        y+=Math.sin(fiber.phase*1.7+flowTime*.32)*fiber.depthOffset*fanFade*release*.16-heavyZone*.038;
-        z+=normalZ*(crossOffset+livingSway+looseEdge)+Math.sin(fiber.phase)*fiber.depthOffset*fanFade*release*.34;
+        var x,y,z;
+        if(progress<sideHelixJoinShare){
+          // Phase 1: Faser fächert vom Satelliten-Gehirn auf und hängt mit
+          // Durchhang (Kettenlinie) zum Eintrittspunkt am Hauptstamm.
+          var fanFade=1-smooth(progress/.56);
+          var subBundleFade=smooth((progress-.16)/.34)*(1-smooth((progress-.65)/.17));
+          var mainBundleFade=smooth((progress-.42)/.24)*(1-smooth((progress-.74)/.13));
+          var joinLocal=progress/sideHelixJoinShare;
+          var integrationFade=smooth(joinLocal);
+          var sagProgress=progress<fiber.sagCenter?progress/fiber.sagCenter:(1-progress)/(1-fiber.sagCenter);
+          var catenaryDenominator=Math.cosh(fiber.catenaryTension)-1;
+          var cat=(Math.cosh(fiber.catenaryTension)-Math.cosh(fiber.catenaryTension*(1-sagProgress)))/catenaryDenominator;
+          var heavyZone=Math.max(0,1-Math.abs(progress-fiber.sagCenter)/.27);
+          heavyZone*=heavyZone;
+          var sagEnvelope=cat*(.98+heavyZone*.25);
+          x=sourceX+(targetX-sourceX)*(progress/sideHelixJoinShare);
+          y=sourceY+(targetY-sourceY)*(progress/sideHelixJoinShare)-fiber.sag*sagEnvelope;
+          z=sourceZ+(targetZ-sourceZ)*(progress/sideHelixJoinShare);
+          var release=smooth(progress/.11);
+          var centralFan=Math.sin(integrationFade*Math.PI)*fiber.centralOffset;
+          var crossOffset=(fiber.fanOffset*fanFade*release+fiber.subBundleOffset*subBundleFade+fiber.mainBundleOffset*mainBundleFade+centralFan)*(1-heavyZone*.3)*(1-integrationFade);
+          var livingSway=Math.sin(flowTime*.44+fiber.phase+progress*5.6)*(.009+.018*fiber.edgeWeight)*(1-integrationFade);
+          var looseEdge=Math.sin(fiber.phase*1.31+progress*8.4)*fiber.edgeWeight*cat*.035*(1-integrationFade);
+          x+=bundle.side*fiber.lateralBow*cat*(1-integrationFade);
+          z+=Math.cos(fiber.phase*.71+progress*3.2)*fiber.edgeWeight*cat*.045*(1-integrationFade);
+          x+=normalX*(crossOffset+livingSway+looseEdge)+Math.cos(fiber.phase)*fiber.depthOffset*fanFade*release*.34*(1-integrationFade);
+          y+=Math.sin(fiber.phase*1.7+flowTime*.32)*fiber.depthOffset*fanFade*release*.16*(1-integrationFade)-heavyZone*.038;
+          z+=normalZ*(crossOffset+livingSway+looseEdge)+Math.sin(fiber.phase)*fiber.depthOffset*fanFade*release*.34*(1-integrationFade);
+        } else {
+          // Phase 2: Faser umwickelt den Hauptstamm als echte Doppelhelix.
+          // Rot und Blau drehen mit derselben Geschwindigkeit/Richtung und
+          // bleiben dadurch immer exakt gegenüberliegend (180°) — sie
+          // kreuzen sich nie und wechseln sich beim Umlauf automatisch als
+          // vorderer/hinterer Strang ab, wie bei echter DNA.
+          var helixProgress=(progress-sideHelixJoinShare)/(1-sideHelixJoinShare);
+          var angle=fiber.helixEntryAngle+bundleRotation+helixProgress*Math.PI*2*sideHelixTurns+fiber.helixLaneOffset;
+          var radius=fiber.helixRadius+Math.sin(helixProgress*Math.PI*3+fiber.helixRadiusJitter)*.02;
+          var cx=sideJoinPoint.x+sideAxisDown.x*helixProgress*sideHelixLength;
+          var cy=sideJoinPoint.y+sideAxisDown.y*helixProgress*sideHelixLength;
+          var cz=sideJoinPoint.z+sideAxisDown.z*helixProgress*sideHelixLength;
+          x=cx+sideAxisFront.x*Math.cos(angle)*radius+sideAxisSide.x*Math.sin(angle)*radius;
+          y=cy+sideAxisFront.y*Math.cos(angle)*radius+sideAxisSide.y*Math.sin(angle)*radius;
+          z=cz+sideAxisFront.z*Math.cos(angle)*radius+sideAxisSide.z*Math.sin(angle)*radius;
+        }
         var flow=Math.max(0,Math.sin(flowTime*2.4-progress*15+fiber.phase));
-        var centerFade=1-integrationFade*.1;
-        var fiberDensity=.3+(1-fiber.edgeWeight)*.85+heavyZone*.2+Math.sin(progress*15+fiber.phase)*.04;
-        var brightness=(.45+flow*.54)*fiberDensity*centerFade;
-        var goldBlend=integrationFade*.18;
-        var red=(bundle.color.r+(1-bundle.color.r)*goldBlend)*brightness;
-        var green=(bundle.color.g+(.843-bundle.color.g)*goldBlend)*brightness;
-        var blue=(bundle.color.b+(0-bundle.color.b)*goldBlend)*brightness;
+        var fiberDensity=.3+(1-fiber.edgeWeight)*.85+Math.sin(progress*15+fiber.phase)*.04;
+        var endFade=1-smooth(Math.max(0,(progress-.88)/.12));
+        // Farbe bleibt strangintern konstant (kein Vermischen mit Gold).
+        var brightness=(.45+flow*.54)*fiberDensity*endFade;
+        var red=bundle.color.r*brightness;
+        var green=bundle.color.g*brightness;
+        var blue=bundle.color.b*brightness;
         var pointOffset=(fiberIndex*(bundle.segments+1)+segmentIndex)*3;
         bundle.pointPositions[pointOffset]=x;
         bundle.pointPositions[pointOffset+1]=y;
@@ -760,6 +798,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   function updateLivingSideBundles(flowTime){
     sideMainAnchor.copy(stumpCenterLocal);
     brain.localToWorld(sideMainAnchor);
+    brain.updateMatrixWorld();
+    sideAxisDown.set(0,-1,0).transformDirection(brain.matrixWorld).normalize();
+    sideAxisFront.set(0,0,1).transformDirection(brain.matrixWorld).normalize();
+    sideAxisSide.crossVectors(sideAxisDown,sideAxisFront).normalize();
     for(var bundleIndex=0;bundleIndex<sideFiberBundles.length;bundleIndex++) updateLivingSideBundle(sideFiberBundles[bundleIndex],flowTime);
   }
 
@@ -805,7 +847,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   function curveExistingSatelliteStrand(strand,flowTime){
     satelliteTargetWorld.copy(stumpCenterLocal);
     brain.localToWorld(satelliteTargetWorld);
-    satellite.worldToLocal(satelliteTargetLocal.copy(satelliteTargetWorld));
+    strand.satellite.worldToLocal(satelliteTargetLocal.copy(satelliteTargetWorld));
     satelliteInverseMatrix.copy(strand.satellite.matrixWorld).invert();
     satelliteWorldX.set(1,0,0).transformDirection(satelliteInverseMatrix);
     satelliteWorldZ.set(0,0,1).transformDirection(satelliteInverseMatrix);

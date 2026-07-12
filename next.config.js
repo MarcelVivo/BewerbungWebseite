@@ -1,6 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
+  // BrainBackground builds its Three.js scene imperatively inside a single
+  // useEffect (WebGLRenderer, geometries, RAF loop). StrictMode's dev-only
+  // double-invoke (mount -> cleanup -> mount) races the async
+  // renderer.forceContextLoss() from the first cleanup against the second
+  // mount's `new THREE.WebGLRenderer()` on the same canvas, crashing with
+  // "Cannot read properties of null (reading 'precision')".
+  reactStrictMode: false,
   poweredByHeader: false,
   typescript: {
     ignoreBuildErrors: true,
