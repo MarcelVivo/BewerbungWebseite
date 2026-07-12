@@ -1227,18 +1227,14 @@ body {
 
 /* .spiral-service-grid war hier ebenfalls dauerhaft ausgeblendet (Relikt aus
    CAMERA_ONLY_WORLD) — die Neural Glass Panels sind das echte, klickbare
-   Kartenraster. Es erscheint erst nach dem letzten Intro-Text (siehe
-   .ngp-grid-revealed, scroll-gesteuert in SpiralShowcase), nicht durchgehend
-   während der ganzen Sticky-Sektion. */
+   Kartenraster. Es sitzt fix auf der Helix-Achse (siehe SpiralShowcase-
+   Scroll-Effekt) und blendet dort beim Vorbeifliegen der Kamera ein und
+   wieder aus, statt dauerhaft sticky zu bleiben — opacity/transform/
+   pointer-events werden pro Scroll-Frame per Inline-Style gesetzt, hier nur
+   der Übergang für weiche Werte zwischen den Scroll-Events. */
 .spiral-service-grid {
   opacity: 0;
-  pointer-events: none;
-  transition: opacity 560ms ease;
-}
-
-.spiral-service-grid.ngp-grid-revealed {
-  opacity: 1;
-  pointer-events: auto;
+  transition: opacity 220ms linear, transform 220ms linear;
 }
 
 .spiral-service-grid .spiral-service-card {

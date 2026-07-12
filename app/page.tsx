@@ -95,23 +95,25 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
   const viewportRef = useRef({ width: 0, height: 0 });
   const serviceGridRef = useRef<HTMLDivElement | null>(null);
 
-  // Neural Glass Panels: erscheinen an exakt der Stelle, an der zuvor die
-  // erste (gelbe) 3D-Leistungskarte in der Helix sass, kurz bevor die
-  // Kamera dort ankommt. Die Schwelle wird aus denselben Helix-Konstanten
-  // wie in BrainBackground.tsx hergeleitet (TEXT_START_Y=-5, HELIX_STEP=4.2,
-  // 5 Intro-Texte + 4 Service- + 4 Platzhalterkarten = 13 Stopps, erste
-  // Servicekarte = Stopp Index 5), auf dieselbe scrollY-Formel abgebildet,
-  // die BrainBackground für die Kamera-Fortschrittsberechnung nutzt
-  // (start = section.offsetTop - innerHeight; scrollP = (scrollY-start)/
-  // section.offsetHeight). Reine Scroll-Positions-Prüfung, kein
-  // zusätzlicher rAF-Loop — einmalig ausgelöst, danach übernimmt CSS die
-  // Kaskade aus Partikeln → Fasern → Rahmen → Glas → Inhalt.
+  // Neural Glass Panels: sitzen fix auf der Helix-Achse, an der Stelle der
+  // ehemaligen ersten (gelben) 3D-Leistungskarte — zwischen dem letzten
+  // Intro-Text und der Karte "2D-/3D-Websites", die beide ebenfalls auf der
+  // Helix-Achse fixiert sind. Wie diese blenden sie beim Vorbeifliegen der
+  // Kamera EIN UND WIEDER AUS (kein dauerhaftes Sticky-Verharren), über
+  // dieselben Helix-Konstanten/Kamera-Fortschrittsformel wie
+  // BrainBackground.tsx (TEXT_START_Y=-5, HELIX_STEP=4.2, 13 Stopps, erste
+  // Servicekarte = Stopp Index 5; scrollP = (scrollY-(section.offsetTop-
+  // innerHeight))/section.offsetHeight; lookY = -scrollP*cameraTravel).
+  // Sichtbarkeit fällt symmetrisch mit dem Weltraum-Abstand zwischen
+  // aktueller Kamera-Y-Position und der Stopp-Position ab, analog zum
+  // bestehenden Fenster-Prinzip anderer Helix-Elemente. Reine
+  // Scroll-Berechnung, kein zusätzlicher rAF-Loop.
   useEffect(() => {
     const grid = serviceGridRef.current;
     const section = document.getElementById('solution-spiral');
     if (!grid || !section) return;
     const panels = Array.from(grid.querySelectorAll<HTMLElement>('.ngp-panel'));
-    let revealed = false;
+    let materialized = false;
     const HELIX_STEP = 4.2;
     const TEXT_START_Y = -5;
     const introStopCount = 5;
@@ -120,22 +122,28 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
     const cameraTravel = 0 - cameraTargetEnd;
     const firstCardWorldIndex = introStopCount;
     const firstCardStopY = TEXT_START_Y - firstCardWorldIndex * HELIX_STEP;
-    const firstCardFraction = (0 - firstCardStopY) / cameraTravel;
-    const leadIn = 0.035;
-    const revealFraction = Math.max(0, firstCardFraction - leadIn);
+    const fadeWindow = HELIX_STEP * 1.35;
     const onScroll = () => {
-      if (revealed) return;
       const start = section.offsetTop - window.innerHeight;
-      const threshold = start + section.offsetHeight * revealFraction;
-      if (window.scrollY < threshold) return;
-      revealed = true;
-      grid.classList.add('ngp-grid-revealed');
-      panels.forEach((panel) => panel.classList.add('is-materialized'));
-      window.removeEventListener('scroll', onScroll);
+      const scrollP = Math.max(0, Math.min(1, (window.scrollY - start) / Math.max(1, section.offsetHeight)));
+      const lookY = 0 - scrollP * cameraTravel;
+      const distance = Math.abs(lookY - firstCardStopY);
+      const visibility = Math.max(0, Math.min(1, 1 - distance / fadeWindow));
+      grid.style.opacity = String(visibility);
+      grid.style.transform = `translate3d(-50%, calc(-50% + ${(1 - visibility) * 16}px), 0) scale(${0.96 + visibility * 0.04})`;
+      grid.style.pointerEvents = visibility > 0.55 ? 'auto' : 'none';
+      if (!materialized && visibility > 0.05) {
+        materialized = true;
+        panels.forEach((panel) => panel.classList.add('is-materialized'));
+      }
     };
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    window.addEventListener('resize', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
   }, []);
 
   useEffect(() => {
