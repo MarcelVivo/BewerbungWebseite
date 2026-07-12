@@ -331,44 +331,22 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       }
     }
     if(!foreheadPoint) return;
-    var plaqueWidth=isMobile?.58:.74;
+    var plaqueWidth=isMobile?.52:.68;
     var plaqueHeight=plaqueWidth/(1536/1024);
-    var plaqueInset=.032, plaqueDepth=.035;
     var plaque=new THREE.Group();
-    plaque.name='forehead-logo-plaque';
-    plaque.position.copy(foreheadPoint).addScaledVector(foreheadNormal,.09);
-    plaque.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),foreheadNormal);
-    var plaqueBackplateMaterial=new THREE.MeshPhysicalMaterial({
-      color:GOLD.deep,
-      metalness:.9,
-      roughness:.28,
-      clearcoat:.32,
-      clearcoatRoughness:.2,
-      emissive:GOLD.deep,
-      emissiveIntensity:.16
-    });
-    var plaqueBackplate=new THREE.Mesh(new THREE.BoxGeometry(plaqueWidth,plaqueHeight,plaqueDepth),plaqueBackplateMaterial);
-    plaqueBackplate.position.z=-plaqueDepth*.5;
-    plaque.add(plaqueBackplate);
-    var plaqueInsetMaterial=new THREE.MeshBasicMaterial({color:0x0f1012,transparent:true,opacity:.88,side:THREE.FrontSide,toneMapped:false});
-    var plaqueInsetMesh=new THREE.Mesh(new THREE.PlaneGeometry(plaqueWidth-plaqueInset*2,plaqueHeight-plaqueInset*2),plaqueInsetMaterial);
-    plaqueInsetMesh.position.z=.002;
-    plaque.add(plaqueInsetMesh);
+    plaque.name='forehead-logo';
+    plaque.position.copy(foreheadPoint).addScaledVector(foreheadNormal,.07);
+    var plaqueUp=new THREE.Vector3(0,1,0).addScaledVector(foreheadNormal,-foreheadNormal.y).normalize();
+    var plaqueRight=new THREE.Vector3().crossVectors(plaqueUp,foreheadNormal).normalize();
+    plaque.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(plaqueRight,plaqueUp,foreheadNormal));
     var logoTexture=new THREE.TextureLoader().load('/MSLogo/MSLogoQuer.png');
     logoTexture.colorSpace=THREE.SRGBColorSpace;
     logoTexture.anisotropy=renderer.capabilities.getMaxAnisotropy();
-    var logoMaterial=new THREE.MeshBasicMaterial({map:logoTexture,transparent:true,alphaTest:.015,depthWrite:false,side:THREE.FrontSide,toneMapped:false});
-    var logoMesh=new THREE.Mesh(new THREE.PlaneGeometry(plaqueWidth-plaqueInset*2.8,plaqueHeight-plaqueInset*2.8),logoMaterial);
-    logoMesh.position.z=.006;
+    var logoMaterial=new THREE.MeshBasicMaterial({map:logoTexture,transparent:true,opacity:.62,alphaTest:.001,depthWrite:false,side:THREE.FrontSide,toneMapped:false});
+    var logoMesh=new THREE.Mesh(new THREE.PlaneGeometry(plaqueWidth,plaqueHeight),logoMaterial);
+    logoMesh.position.z=.002;
+    logoMesh.renderOrder=2;
     plaque.add(logoMesh);
-    var studMaterial=new THREE.MeshBasicMaterial({color:GOLD.hot,toneMapped:false});
-    var studGeometry=new THREE.SphereGeometry(.022,10,8);
-    var studOffsetX=plaqueWidth*.43, studOffsetY=plaqueHeight*.37;
-    [[-studOffsetX,-studOffsetY],[studOffsetX,-studOffsetY],[-studOffsetX,studOffsetY],[studOffsetX,studOffsetY]].forEach(function(studPosition){
-      var stud=new THREE.Mesh(studGeometry,studMaterial);
-      stud.position.set(studPosition[0],studPosition[1],.018);
-      plaque.add(stud);
-    });
     brain.add(plaque);
   }
   addForeheadLogoPlaque();
