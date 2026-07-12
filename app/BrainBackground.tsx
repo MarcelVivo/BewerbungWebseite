@@ -554,7 +554,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   function addSatelliteBrain(x,y,z,phase,colorHex){
     var satellite=brain.clone(true);
     tintSatelliteBrain(satellite,colorHex);
-    hideSatelliteTail(satellite);
     satellite.scale.setScalar(1.32);
     satellite.position.set(x,y,z);
     satellite.rotation.set(BASE_X,BASE_Y,0);
@@ -604,9 +603,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       pointColors:satellitePoints.geometry.attributes.color.array
     });
   }
-  useExistingSatelliteStrand(satelliteBrains[0],Math.PI,'#e46d62',1);
-  useExistingSatelliteStrand(satelliteBrains[1],0,'#39bfe9',-1);
-
   function curveExistingSatelliteStrand(strand,flowTime){
     satelliteTargetWorld.copy(stumpCenterLocal);
     brain.localToWorld(satelliteTargetWorld);
@@ -738,6 +734,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         anchorLocal:secondaryNetworkAnchors[Math.floor(Math.random()*secondaryNetworkAnchors.length)].clone(),
         laneOffset:(Math.random()-.5)*.25,
         branchEnd:.42+Math.random()*.16,
+        colorStart:.05+Math.random()*.1,
+        colorSpan:.4+Math.random()*.14,
         routeSway:(Math.random()-.5)*.38*secondaryGeometryScale,
         routeDepth:(Math.random()-.5)*.24*secondaryGeometryScale,
         microPhase:Math.random()*Math.PI*2
@@ -787,6 +785,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         var routeY=routeInverse*routeInverse*routeInverse*rootY+3*routeInverse*routeInverse*routeProgress*controlOneY+3*routeInverse*routeProgress*routeProgress*controlTwoY+routeProgress*routeProgress*routeProgress*routeEndY;
         var routeZ=routeInverse*routeInverse*routeInverse*rootZ+3*routeInverse*routeInverse*routeProgress*controlOneZ+3*routeInverse*routeProgress*routeProgress*controlTwoZ+routeProgress*routeProgress*routeProgress*routeEndZ;
         var transition=smooth(progress/fiber.branchEnd);
+        var colorTransition=smooth(Math.max(0,(progress-fiber.colorStart)/fiber.colorSpan));
         var helixProgress=Math.max(0,(progress-fiber.branchEnd)/Math.max(.001,1-fiber.branchEnd));
         var helixAngle=bundle.phase+helixRotation+helixProgress*Math.PI*2*helixTurns+fiber.laneOffset;
         var microAngle=fiber.microPhase+helixProgress*Math.PI*2*.45*bundle.flowDirection;
@@ -799,9 +798,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         z=routeZ*(1-transition)+helixZ*transition;
         var pulse=Math.max(0,Math.sin(flowTime*3.8*bundle.flowDirection-progress*24*bundle.flowDirection+fiber.microPhase));
         var brightness=.42+pulse*.9;
-        var red=(secondaryGoldColor.r+(bundle.color.r-secondaryGoldColor.r)*transition)*brightness;
-        var green=(secondaryGoldColor.g+(bundle.color.g-secondaryGoldColor.g)*transition)*brightness;
-        var blue=(secondaryGoldColor.b+(bundle.color.b-secondaryGoldColor.b)*transition)*brightness;
+        var red=(secondaryGoldColor.r+(bundle.color.r-secondaryGoldColor.r)*colorTransition)*brightness;
+        var green=(secondaryGoldColor.g+(bundle.color.g-secondaryGoldColor.g)*colorTransition)*brightness;
+        var blue=(secondaryGoldColor.b+(bundle.color.b-secondaryGoldColor.b)*colorTransition)*brightness;
         var pointOffset=(fiberIndex*(bundle.segments+1)+segmentIndex)*3;
         bundle.pointPositions[pointOffset]=x;
         bundle.pointPositions[pointOffset+1]=y;
