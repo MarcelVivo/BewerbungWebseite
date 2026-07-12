@@ -314,41 +314,65 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       // gleichmässig durchgemischt über alle verfügbaren Punkte zyklisch.
       var anchorRaw=stumpAnchorPts[anchorOrder[f%anchorOrder.length]];
       var anchor=new THREE.Vector3(anchorRaw.x+mx,anchorRaw.y+my,anchorRaw.z+mz);
-      // Konvergenzpunkt auf der Mittelachse, mit leichter Höhen-Streuung pro
-      // Faser (organisch statt mathematisch perfekt)
       var convY=SBASE_Y+my-FN.funnelHeight*(0.7+rnd()*0.6);
       var converge=new THREE.Vector3(SBASE_X+mx,convY,SBASE_Z+mz);
-      // Bezier-Kontrollpunkt: zieht die Kurve zur Achse, mit Zufalls-Schwung
-      // statt einer geraden Linie
-      var pull=FN.convergePull*(0.75+rnd()*0.5);
-      var ctrl=anchor.clone().lerp(converge,pull);
-      ctrl.x+=(rnd()-0.5)*FN.randomness*0.3;
-      ctrl.z+=(rnd()-0.5)*FN.randomness*0.3;
-      ctrl.y+=(rnd()-0.5)*FN.randomness*0.08;
-
-      var a0=rnd()*6.283, tw=(rnd()-0.5)*SP.twist;
-      var frayJitter=0.4+rnd()*0.6; // per-fiber Streuung fürs Auffransen unten
+      var bundlePull=FN.convergePull*(0.75+rnd()*0.5);
+      var microGroup=f%15, mediumGroup=Math.floor(f/15)%5;
+      var microAngle=microGroup/15*6.283+(rnd()-.5)*.2;
+      var mediumAngle=mediumGroup/5*6.283+(rnd()-.5)*.18;
+      var microRadius=(.16+rnd()*.05)*(1.18-bundlePull*.18);
+      var mediumRadius=(.065+rnd()*.025)*(1.16-bundlePull*.16);
+      var microCenter=new THREE.Vector3(
+        SBASE_X+mx+Math.cos(microAngle)*microRadius,
+        SBASE_Y+my+.035+rnd()*.1,
+        SBASE_Z+mz+Math.sin(microAngle)*microRadius
+      );
+      var mediumCenter=new THREE.Vector3(
+        SBASE_X+mx+Math.cos(mediumAngle)*mediumRadius,
+        convY+.035+rnd()*.055,
+        SBASE_Z+mz+Math.sin(mediumAngle)*mediumRadius
+      );
+      var largeCenter=new THREE.Vector3(
+        converge.x+(rnd()-.5)*.025,
+        converge.y+(rnd()-.5)*.035,
+        converge.z+(rnd()-.5)*.025
+      );
+      var a0=rnd()*6.283, tw=(rnd()-.5)*SP.twist, rootWaveAmp=.016+rnd()*.018;
+      var frayJitter=0.4+rnd()*0.6;
       var endF=(f%4)?0.9+0.1*rnd():0.6+0.3*rnd();
-      var bundleSteps=Math.round(N*endF);
-      var funnelSegs=Math.max(3,Math.round(FN.funnelSegs));
-      var steps=funnelSegs+bundleSteps, base=vc;
+      var legacyFunnelSteps=Math.max(3,Math.round(FN.funnelSegs));
+      var totalSteps=Math.max(24,Math.round(N*endF)+legacyFunnelSteps);
+      var rootSteps=Math.min(totalSteps-18,Math.max(Math.round(totalSteps*.27),legacyFunnelSteps*6));
+      var bundleSteps=totalSteps-rootSteps;
+      var bundleSpacing=SP.length*endF/Math.max(1,bundleSteps-1);
+      var steps=totalSteps, base=vc;
       sFibers.push({start:base, len:steps});
       var fiberCol=golds[Math.floor(rnd()*golds.length)];
       for(var r=0;r<steps;r++){
-        var tv=r/(steps-1); // globaler Fortschritt: 0 am Node-Anker, 1 an der Faserspitze
+        var tv=r/(steps-1);
         var px,py,pz;
-        if(r<funnelSegs){
-          // Trichter-Phase: quadratische Bezier vom Anker zum Konvergenz-
-          // punkt, sanftes Ease-in statt gerader Linie
-          var ft=smooth(r/funnelSegs);
-          var it=1-ft;
-          px=it*it*anchor.x+2*it*ft*ctrl.x+ft*ft*converge.x;
-          py=it*it*anchor.y+2*it*ft*ctrl.y+ft*ft*converge.y;
-          pz=it*it*anchor.z+2*it*ft*ctrl.z+ft*ft*converge.z;
+        if(r<rootSteps){
+          var rootProgress=rootSteps>1?r/(rootSteps-1):1;
+          var stageStart, stageEnd, stageProgress;
+          if(rootProgress<.34){
+            stageStart=anchor;
+            stageEnd=microCenter;
+            stageProgress=smooth(rootProgress/.34);
+          } else if(rootProgress<.72){
+            stageStart=microCenter;
+            stageEnd=mediumCenter;
+            stageProgress=smooth((rootProgress-.34)/.38);
+          } else {
+            stageStart=mediumCenter;
+            stageEnd=largeCenter;
+            stageProgress=smooth((rootProgress-.72)/.28);
+          }
+          var rootWeave=Math.sin(a0+rootProgress*8.5)*rootWaveAmp*rootProgress*(1-rootProgress);
+          px=stageStart.x+(stageEnd.x-stageStart.x)*stageProgress+Math.cos(a0)*rootWeave;
+          py=stageStart.y+(stageEnd.y-stageStart.y)*stageProgress+Math.sin(a0*1.7)*rootWeave*.55;
+          pz=stageStart.z+(stageEnd.z-stageStart.z)*stageProgress+Math.sin(a0)*rootWeave;
         } else {
-          // Bündel-Phase: bestehende Swirl/Taper/Droop/Fray-Formeln, jetzt
-          // ab dem Konvergenzpunkt statt ab dem Ring
-          var br=r-funnelSegs;
+          var br=r-rootSteps;
           var btv=bundleSteps>1?br/(bundleSteps-1):0;
           var ang=a0+btv*tw;
           var bundleScale=1-SP.taper*btv;
@@ -356,9 +380,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           var frayEnv=smooth(Math.max(0,(btv-SP.frayStart)/Math.max(.001,1-SP.frayStart)));
           var fraySpread=frayEnv*SP.fraySpread*frayJitter;
           var droop=SP.droop*btv*btv;
-          px=converge.x+SP.curve*Math.sin(btv*2.1)+Math.cos(ang)*(swirl+fraySpread)+droop*DROOP_DX;
-          pz=converge.z+0.7*SP.curve*Math.sin(btv*1.6+1.0)+Math.sin(ang)*(swirl+fraySpread)+droop*DROOP_DZ;
-          py=converge.y-br*SP.spacing*bundleScale;
+          px=largeCenter.x+SP.curve*Math.sin(btv*2.1)+Math.cos(ang)*(swirl+fraySpread)+droop*DROOP_DX;
+          pz=largeCenter.z+0.7*SP.curve*Math.sin(btv*1.6+1.0)+Math.sin(ang)*(swirl+fraySpread)+droop*DROOP_DZ;
+          py=largeCenter.y-br*bundleSpacing*bundleScale;
         }
         // sanftes Ausblenden im letzten Abschnitt statt hartem Ende
         var endFade=1-smooth(Math.max(0,(tv-0.86)/0.14));
@@ -876,8 +900,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var secondaryAxisDown=new THREE.Vector3();
   var secondaryGoldColor=new THREE.Color(0xffd700);
   var secondaryNetworkAnchors=pts.filter(function(point){
-    var dx=point.x-SBASE_X, dy=point.y-SBASE_Y, dz=point.z-SBASE_Z;
-    return dx*dx+dy*dy+dz*dz<.49&&point.y>SBASE_Y+.25&&point.y<SBASE_Y+.78;
+    var dx=point.x-SBASE_X, dz=point.z-SBASE_Z;
+    return dx*dx+dz*dz<.34&&point.y>SBASE_Y+.02&&point.y<SBASE_Y+.76;
   });
   if(!secondaryNetworkAnchors.length) secondaryNetworkAnchors=roots;
   var secondaryEnergyBundles=[];
@@ -907,12 +931,15 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     for(var fiberIndex=0;fiberIndex<fiberCount;fiberIndex++){
       fibers.push({
         anchorLocal:secondaryNetworkAnchors[Math.floor(Math.random()*secondaryNetworkAnchors.length)].clone(),
-        laneOffset:(Math.random()-.5)*.25,
-        branchEnd:.42+Math.random()*.16,
-        colorStart:.05+Math.random()*.1,
-        colorSpan:.4+Math.random()*.14,
-        routeSway:(Math.random()-.5)*.38*secondaryGeometryScale,
-        routeDepth:(Math.random()-.5)*.24*secondaryGeometryScale,
+        microAngle:(fiberIndex%17)/17*Math.PI*2+(Math.random()-.5)*.22,
+        mediumOffset:(Math.floor(fiberIndex/17)%5-2)*.18+(Math.random()-.5)*.05,
+        laneOffset:(Math.random()-.5)*.28,
+        microRadius:(.33+Math.random()*.09)*secondaryGeometryScale,
+        mediumRadius:(.15+Math.random()*.05)*secondaryGeometryScale,
+        trunkRadius:(.055+Math.random()*.025)*secondaryGeometryScale,
+        helixStart:.58+Math.random()*.14,
+        colorStart:.34+Math.random()*.1,
+        colorSpan:.34+Math.random()*.12,
         microPhase:Math.random()*Math.PI*2
       });
     }
@@ -942,35 +969,51 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var rootX=fiber.anchorLocal.x;
       var rootY=fiber.anchorLocal.y;
       var rootZ=fiber.anchorLocal.z;
-      var routeEndX=coreX+secondaryAxisX.x*Math.cos(bundle.phase)*.06*secondaryGeometryScale+secondaryAxisZ.x*Math.sin(bundle.phase)*.06*secondaryGeometryScale;
-      var routeEndY=coreY+secondaryAxisX.y*Math.cos(bundle.phase)*.06*secondaryGeometryScale+secondaryAxisZ.y*Math.sin(bundle.phase)*.06*secondaryGeometryScale;
-      var routeEndZ=coreZ+secondaryAxisX.z*Math.cos(bundle.phase)*.06*secondaryGeometryScale+secondaryAxisZ.z*Math.sin(bundle.phase)*.06*secondaryGeometryScale;
-      var controlOneX=rootX+(routeEndX-rootX)*.28+secondaryAxisX.x*fiber.routeSway+secondaryAxisZ.x*fiber.routeDepth;
-      var controlOneY=rootY+(routeEndY-rootY)*.18+secondaryAxisX.y*fiber.routeSway+secondaryAxisZ.y*fiber.routeDepth;
-      var controlOneZ=rootZ+(routeEndZ-rootZ)*.22+secondaryAxisX.z*fiber.routeSway+secondaryAxisZ.z*fiber.routeDepth;
-      var controlTwoX=rootX+(routeEndX-rootX)*.68+secondaryAxisX.x*fiber.routeSway*.4-secondaryAxisZ.x*fiber.routeDepth*.35;
-      var controlTwoY=rootY+(routeEndY-rootY)*.7+secondaryAxisX.y*fiber.routeSway*.4-secondaryAxisZ.y*fiber.routeDepth*.35;
-      var controlTwoZ=rootZ+(routeEndZ-rootZ)*.72+secondaryAxisX.z*fiber.routeSway*.4-secondaryAxisZ.z*fiber.routeDepth*.35;
+      var laneCos=Math.cos(bundle.phase), laneSin=Math.sin(bundle.phase);
+      var microX=coreX+secondaryAxisX.x*Math.cos(fiber.microAngle)*fiber.microRadius+secondaryAxisZ.x*Math.sin(fiber.microAngle)*fiber.microRadius-secondaryAxisDown.x*.24*secondaryGeometryScale;
+      var microY=coreY+secondaryAxisX.y*Math.cos(fiber.microAngle)*fiber.microRadius+secondaryAxisZ.y*Math.sin(fiber.microAngle)*fiber.microRadius-secondaryAxisDown.y*.24*secondaryGeometryScale;
+      var microZ=coreZ+secondaryAxisX.z*Math.cos(fiber.microAngle)*fiber.microRadius+secondaryAxisZ.z*Math.sin(fiber.microAngle)*fiber.microRadius-secondaryAxisDown.z*.24*secondaryGeometryScale;
+      var mediumAngle=bundle.phase+fiber.mediumOffset;
+      var mediumX=coreX+secondaryAxisX.x*Math.cos(mediumAngle)*fiber.mediumRadius+secondaryAxisZ.x*Math.sin(mediumAngle)*fiber.mediumRadius-secondaryAxisDown.x*.07*secondaryGeometryScale;
+      var mediumY=coreY+secondaryAxisX.y*Math.cos(mediumAngle)*fiber.mediumRadius+secondaryAxisZ.y*Math.sin(mediumAngle)*fiber.mediumRadius-secondaryAxisDown.y*.07*secondaryGeometryScale;
+      var mediumZ=coreZ+secondaryAxisX.z*Math.cos(mediumAngle)*fiber.mediumRadius+secondaryAxisZ.z*Math.sin(mediumAngle)*fiber.mediumRadius-secondaryAxisDown.z*.07*secondaryGeometryScale;
+      var trunkX=coreX+secondaryAxisX.x*laneCos*fiber.trunkRadius+secondaryAxisZ.x*laneSin*fiber.trunkRadius+secondaryAxisDown.x*.025*secondaryGeometryScale;
+      var trunkY=coreY+secondaryAxisX.y*laneCos*fiber.trunkRadius+secondaryAxisZ.y*laneSin*fiber.trunkRadius+secondaryAxisDown.y*.025*secondaryGeometryScale;
+      var trunkZ=coreZ+secondaryAxisX.z*laneCos*fiber.trunkRadius+secondaryAxisZ.z*laneSin*fiber.trunkRadius+secondaryAxisDown.z*.025*secondaryGeometryScale;
       var previousX=0, previousY=0, previousZ=0, previousR=0, previousG=0, previousB=0;
       for(var segmentIndex=0;segmentIndex<=bundle.segments;segmentIndex++){
         var progress=segmentIndex/bundle.segments, x,y,z;
-        var routeProgress=Math.min(1,progress/fiber.branchEnd);
-        var routeInverse=1-routeProgress;
-        var routeX=routeInverse*routeInverse*routeInverse*rootX+3*routeInverse*routeInverse*routeProgress*controlOneX+3*routeInverse*routeProgress*routeProgress*controlTwoX+routeProgress*routeProgress*routeProgress*routeEndX;
-        var routeY=routeInverse*routeInverse*routeInverse*rootY+3*routeInverse*routeInverse*routeProgress*controlOneY+3*routeInverse*routeProgress*routeProgress*controlTwoY+routeProgress*routeProgress*routeProgress*routeEndY;
-        var routeZ=routeInverse*routeInverse*routeInverse*rootZ+3*routeInverse*routeInverse*routeProgress*controlOneZ+3*routeInverse*routeProgress*routeProgress*controlTwoZ+routeProgress*routeProgress*routeProgress*routeEndZ;
-        var transition=smooth(progress/fiber.branchEnd);
-        var colorTransition=smooth(Math.max(0,(progress-fiber.colorStart)/fiber.colorSpan));
-        var helixProgress=Math.max(0,(progress-fiber.branchEnd)/Math.max(.001,1-fiber.branchEnd));
+        var routeStartX, routeStartY, routeStartZ, routeEndX, routeEndY, routeEndZ, routeProgress;
+        if(progress<.28){
+          routeStartX=rootX; routeStartY=rootY; routeStartZ=rootZ;
+          routeEndX=microX; routeEndY=microY; routeEndZ=microZ;
+          routeProgress=smooth(progress/.28);
+        } else if(progress<.56){
+          routeStartX=microX; routeStartY=microY; routeStartZ=microZ;
+          routeEndX=mediumX; routeEndY=mediumY; routeEndZ=mediumZ;
+          routeProgress=smooth((progress-.28)/.28);
+        } else {
+          routeStartX=mediumX; routeStartY=mediumY; routeStartZ=mediumZ;
+          routeEndX=trunkX; routeEndY=trunkY; routeEndZ=trunkZ;
+          routeProgress=smooth((progress-.56)/.24);
+        }
+        var routeWeave=Math.sin(fiber.microPhase+progress*10.5)*(.008+.01*Math.sin(progress*Math.PI));
+        var routeX=routeStartX+(routeEndX-routeStartX)*routeProgress+secondaryAxisX.x*routeWeave+secondaryAxisZ.x*routeWeave*.45;
+        var routeY=routeStartY+(routeEndY-routeStartY)*routeProgress+secondaryAxisDown.y*routeWeave*.24;
+        var routeZ=routeStartZ+(routeEndZ-routeStartZ)*routeProgress+secondaryAxisZ.z*routeWeave+secondaryAxisX.z*routeWeave*.45;
+        var helixProgress=Math.max(0,(progress-fiber.helixStart)/Math.max(.001,1-fiber.helixStart));
+        var helixGate=smooth(helixProgress);
+        var colorTransition=smooth(Math.max(0,(progress-fiber.colorStart)/fiber.colorSpan))*(.58+.42*helixGate);
         var helixAngle=bundle.phase+helixRotation+helixProgress*Math.PI*2*helixTurns+fiber.laneOffset;
         var microAngle=fiber.microPhase+helixProgress*Math.PI*2*.45*bundle.flowDirection;
-        var radius=(.46+Math.cos(microAngle)*.045)*secondaryGeometryScale*transition;
+        var targetRadius=(.46+Math.cos(microAngle)*.045)*secondaryGeometryScale;
+        var radius=fiber.trunkRadius+(targetRadius-fiber.trunkRadius)*helixGate;
         var helixX=coreX+secondaryAxisX.x*Math.cos(helixAngle)*radius+secondaryAxisZ.x*Math.sin(helixAngle)*radius+secondaryAxisDown.x*helixProgress*helixLength;
-        var helixY=coreY+secondaryAxisX.y*Math.cos(helixAngle)*radius+secondaryAxisZ.y*Math.sin(helixAngle)*radius+secondaryAxisDown.y*helixProgress*helixLength+Math.sin(microAngle)*.035*secondaryGeometryScale*transition;
+        var helixY=coreY+secondaryAxisX.y*Math.cos(helixAngle)*radius+secondaryAxisZ.y*Math.sin(helixAngle)*radius+secondaryAxisDown.y*helixProgress*helixLength+Math.sin(microAngle)*.035*secondaryGeometryScale*helixGate;
         var helixZ=coreZ+secondaryAxisX.z*Math.cos(helixAngle)*radius+secondaryAxisZ.z*Math.sin(helixAngle)*radius+secondaryAxisDown.z*helixProgress*helixLength;
-        x=routeX*(1-transition)+helixX*transition;
-        y=routeY*(1-transition)+helixY*transition;
-        z=routeZ*(1-transition)+helixZ*transition;
+        x=routeX*(1-helixGate)+helixX*helixGate;
+        y=routeY*(1-helixGate)+helixY*helixGate;
+        z=routeZ*(1-helixGate)+helixZ*helixGate;
         var pulse=Math.max(0,Math.sin(flowTime*3.8*bundle.flowDirection-progress*24*bundle.flowDirection+fiber.microPhase));
         var brightness=.42+pulse*.9;
         var red=(secondaryGoldColor.r+(bundle.color.r-secondaryGoldColor.r)*colorTransition)*brightness;
