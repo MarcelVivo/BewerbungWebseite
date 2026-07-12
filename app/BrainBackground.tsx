@@ -699,10 +699,16 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   secondaryEnergyGroup.renderOrder=3;
   world.add(secondaryEnergyGroup);
   var secondaryMainAnchor=new THREE.Vector3();
-  var secondarySatelliteAnchor=new THREE.Vector3();
+  var secondaryFiberAnchor=new THREE.Vector3();
+  var secondaryGoldColor=new THREE.Color(0xffd700);
+  var secondaryNetworkAnchors=pts.filter(function(point){
+    var dx=point.x-SBASE_X, dy=point.y-SBASE_Y, dz=point.z-SBASE_Z;
+    return dx*dx+dy*dy+dz*dz<.49&&point.y>SBASE_Y+.25&&point.y<SBASE_Y+.78;
+  });
+  if(!secondaryNetworkAnchors.length) secondaryNetworkAnchors=roots;
   var secondaryEnergyBundles=[];
 
-  function createSecondaryEnergyBundle(satellite,side,phase,colorHex,flowDirection){
+  function createSecondaryEnergyBundle(phase,colorHex,flowDirection){
     var fiberCount=isMobile?48:144, segments=isMobile?66:104;
     var pointCount=fiberCount*(segments+1), lineCount=fiberCount*segments;
     var linePositions=new Float32Array(lineCount*6);
@@ -726,17 +732,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var fibers=[];
     for(var fiberIndex=0;fiberIndex<fiberCount;fiberIndex++){
       fibers.push({
-        rootAngle:Math.random()*Math.PI*2,
-        rootRadius:.045+Math.random()*.16,
+        anchorLocal:secondaryNetworkAnchors[Math.floor(Math.random()*secondaryNetworkAnchors.length)].clone(),
         laneOffset:(Math.random()-.5)*.25,
-        radiusOffset:(Math.random()-.5)*.08,
-        sag:1.22+Math.random()*.45,
+        sag:.32+Math.random()*.22,
         microPhase:Math.random()*Math.PI*2
       });
     }
     secondaryEnergyBundles.push({
-      satellite:satellite,
-      side:side,
       phase:phase,
       flowDirection:flowDirection,
       color:new THREE.Color(colorHex),
@@ -751,28 +753,29 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     });
   }
 
-  createSecondaryEnergyBundle(satelliteBrains[0],-1,Math.PI,'#ff4d6d',1);
-  createSecondaryEnergyBundle(satelliteBrains[1],1,0,'#4dd2ff',-1);
+  createSecondaryEnergyBundle(Math.PI,'#ff4d6d',1);
+  createSecondaryEnergyBundle(0,'#4dd2ff',-1);
 
   function updateSecondaryEnergyBundle(bundle,flowTime){
-    secondarySatelliteAnchor.copy(stumpCenterLocal);
-    bundle.satellite.localToWorld(secondarySatelliteAnchor);
-    var coreX=secondaryMainAnchor.x, coreY=secondaryMainAnchor.y-.16, coreZ=secondaryMainAnchor.z;
-    var connectorShare=.35, helixLength=34, helixTurns=3.75, helixRotation=flowTime*.055;
+    var coreX=secondaryMainAnchor.x, coreY=secondaryMainAnchor.y, coreZ=secondaryMainAnchor.z;
+    var connectorShare=.3, helixLength=34, helixTurns=3.75, helixRotation=flowTime*.055;
     for(var fiberIndex=0;fiberIndex<bundle.fibers.length;fiberIndex++){
       var fiber=bundle.fibers[fiberIndex];
-      var rootX=secondarySatelliteAnchor.x+Math.cos(fiber.rootAngle)*fiber.rootRadius;
-      var rootY=secondarySatelliteAnchor.y+Math.sin(fiber.rootAngle*.7)*fiber.rootRadius*.4;
-      var rootZ=secondarySatelliteAnchor.z+Math.sin(fiber.rootAngle)*fiber.rootRadius;
+      secondaryFiberAnchor.copy(fiber.anchorLocal);
+      brain.localToWorld(secondaryFiberAnchor);
+      var rootX=secondaryFiberAnchor.x;
+      var rootY=secondaryFiberAnchor.y;
+      var rootZ=secondaryFiberAnchor.z;
       var joinAngle=bundle.phase+helixRotation+fiber.laneOffset;
-      var joinRadius=.46+fiber.radiusOffset;
+      var joinRadius=.46;
       var joinX=coreX+Math.cos(joinAngle)*joinRadius;
       var joinY=coreY;
       var joinZ=coreZ+Math.sin(joinAngle)*joinRadius;
-      var controlOneX=rootX+(joinX-rootX)*.24+bundle.side*.55;
+      var side=Math.cos(bundle.phase);
+      var controlOneX=rootX+(joinX-rootX)*.26+side*.16;
       var controlOneY=rootY-fiber.sag;
       var controlOneZ=rootZ+(joinZ-rootZ)*.16;
-      var controlTwoX=rootX+(joinX-rootX)*.76+bundle.side*.18;
+      var controlTwoX=rootX+(joinX-rootX)*.74+side*.05;
       var controlTwoY=joinY-fiber.sag*.72;
       var controlTwoZ=rootZ+(joinZ-rootZ)*.78;
       var previousX=0, previousY=0, previousZ=0, previousR=0, previousG=0, previousB=0;
@@ -787,14 +790,17 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           var helixProgress=(progress-connectorShare)/(1-connectorShare);
           var helixAngle=bundle.phase+helixRotation+helixProgress*Math.PI*2*helixTurns+fiber.laneOffset;
           var microAngle=fiber.microPhase+helixProgress*Math.PI*2*.45*bundle.flowDirection;
-          var radius=.46+fiber.radiusOffset+Math.cos(microAngle)*.045;
+          var radius=.46+Math.cos(microAngle)*.045;
           x=coreX+Math.cos(helixAngle)*radius;
           y=coreY-helixProgress*helixLength+Math.sin(microAngle)*.035;
           z=coreZ+Math.sin(helixAngle)*radius;
         }
+        var transition=smooth(Math.max(0,(progress-.05)/Math.max(.001,connectorShare-.05)));
         var pulse=Math.max(0,Math.sin(flowTime*3.8*bundle.flowDirection-progress*24*bundle.flowDirection+fiber.microPhase));
         var brightness=.42+pulse*.9;
-        var red=bundle.color.r*brightness, green=bundle.color.g*brightness, blue=bundle.color.b*brightness;
+        var red=(secondaryGoldColor.r+(bundle.color.r-secondaryGoldColor.r)*transition)*brightness;
+        var green=(secondaryGoldColor.g+(bundle.color.g-secondaryGoldColor.g)*transition)*brightness;
+        var blue=(secondaryGoldColor.b+(bundle.color.b-secondaryGoldColor.b)*transition)*brightness;
         var pointOffset=(fiberIndex*(bundle.segments+1)+segmentIndex)*3;
         bundle.pointPositions[pointOffset]=x;
         bundle.pointPositions[pointOffset+1]=y;
