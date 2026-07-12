@@ -265,8 +265,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var stardust=pointsObj(positions,colors,size,opacity,THREE.AdditiveBlending);
     stardust.frustumCulled=false;
     world.add(stardust);
+    return positions;
   }
-  addStardustField(isMobile?1300:4200,.09,.85);
+  var stardustPositions=addStardustField(isMobile?1300:4200,.09,.85);
 
   // --- Farbige Leuchtorbs: rote & blaue Partikel, dreimal so gross wie das
   // Gold-Staubfeld, in halber Stückzahl, über einen deutlich grösseren Raum
@@ -294,12 +295,105 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var halo=pointsObj(positions,colors,haloSize,haloOpacity,THREE.AdditiveBlending);
     halo.frustumCulled=false;
     world.add(halo);
+    return positions;
   }
   var BLUE_ORB_SHADES=[new THREE.Color(0x4d7fbf),new THREE.Color(0x8ebef2),new THREE.Color(0xc4e3ff),new THREE.Color(0x244d82)];
   var RED_ORB_SHADES=[new THREE.Color(0xa6425c),new THREE.Color(0xd9788a),new THREE.Color(0xf3b0b9),new THREE.Color(0x6a263b)];
   var coloredOrbCount=isMobile?325:1050;
-  addColoredOrbField(coloredOrbCount,.27,1.35,.8,.13,BLUE_ORB_SHADES,2,55,14);
-  addColoredOrbField(coloredOrbCount,.27,1.35,.8,.13,RED_ORB_SHADES,2,55,14);
+  var blueOrbPositions=addColoredOrbField(coloredOrbCount,.27,1.35,.8,.13,BLUE_ORB_SHADES,2,55,14);
+  var redOrbPositions=addColoredOrbField(coloredOrbCount,.27,1.35,.8,.13,RED_ORB_SHADES,2,55,14);
+
+  // --- Tesla-Blitze: vereinzelte, absolut zufällige Blitzbögen zwischen den
+  // schwebenden Leuchtpunkten (Gold-Staub + rote/blaue Orbs), die wild
+  // zwischen wechselnden Punktpaaren hin- und herspringen. Reine Positions-
+  // Stichprobe statt eines echten Nachbarschaftsgraphen — bei zusammen über
+  // 6000 Punkten wäre ein vollständiger Nearest-Neighbor-Graph unnötig teuer
+  // für einen rein dekorativen, seltenen Effekt. ---
+  var boltAnchorPool=stardustPositions.concat(blueOrbPositions,redOrbPositions);
+  var boltAnchorCount=boltAnchorPool.length/3;
+  function randomBoltAnchor(){
+    var idx=Math.floor(Math.random()*boltAnchorCount)*3;
+    return {x:boltAnchorPool[idx],y:boltAnchorPool[idx+1],z:boltAnchorPool[idx+2]};
+  }
+  // Die Ankerpunkte liegen über die komplette Scroll-Tiefe verstreut — ohne
+  // Gewichtung würden Blitze fast immer weit ausserhalb des gerade
+  // sichtbaren Kamera-Bereichs einschlagen. Score bevorzugt Punkte nahe der
+  // aktuellen Scroll-Tiefe und nahe der zentralen Kamera-Achse.
+  function boltAnchorVisibilityScore(candidate,focusY){
+    var lateralRadius=Math.sqrt(candidate.x*candidate.x+candidate.z*candidate.z);
+    return Math.abs(candidate.y-focusY)+lateralRadius*.6;
+  }
+  function randomBoltAnchorNearFocus(tries){
+    var focusY=cameraTargetStart-scrollP*cameraTravel;
+    var best=null, bestScore=Infinity;
+    for(var attempt=0;attempt<tries;attempt++){
+      var candidate=randomBoltAnchor();
+      var score=boltAnchorVisibilityScore(candidate,focusY);
+      if(score<bestScore){ bestScore=score; best=candidate; }
+    }
+    return best;
+  }
+  function nearbyBoltAnchor(origin,tries){
+    var best=null, bestDist=Infinity;
+    for(var attempt=0;attempt<tries;attempt++){
+      var candidate=randomBoltAnchor();
+      var dx=candidate.x-origin.x, dy=candidate.y-origin.y, dz=candidate.z-origin.z;
+      var distSq=dx*dx+dy*dy+dz*dz;
+      if(distSq>.0004&&distSq<bestDist){ bestDist=distSq; best=candidate; }
+    }
+    return best||randomBoltAnchor();
+  }
+  var TESLA_BOLT_COLORS=[GOLD.hot,new THREE.Color(0x8ebef2),new THREE.Color(0xd9788a)];
+  function TeslaBolt(){
+    this.segments=9;
+    var boltGeometry=new THREE.BufferGeometry();
+    this.posArr=new Float32Array(this.segments*3);
+    this.colArr=new Float32Array(this.segments*3);
+    boltGeometry.setAttribute('position',new THREE.BufferAttribute(this.posArr,3));
+    boltGeometry.setAttribute('color',new THREE.BufferAttribute(this.colArr,3));
+    this.mat=new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
+    this.line=new THREE.Line(boltGeometry,this.mat);
+    this.line.frustumCulled=false;
+    world.add(this.line);
+    this.life=0;
+    this.hopsLeft=0;
+    this.wait=Math.random()*3.5;
+  }
+  TeslaBolt.prototype.strike=function(){
+    var origin=randomBoltAnchorNearFocus(50);
+    var target=nearbyBoltAnchor(origin,70);
+    var boltColor=TESLA_BOLT_COLORS[Math.floor(Math.random()*TESLA_BOLT_COLORS.length)];
+    var boltDx=target.x-origin.x, boltDy=target.y-origin.y, boltDz=target.z-origin.z;
+    var boltLength=Math.sqrt(boltDx*boltDx+boltDy*boltDy+boltDz*boltDz);
+    var jitter=Math.min(1.1,Math.max(.12,boltLength*.22));
+    for(var segmentIndex=0;segmentIndex<this.segments;segmentIndex++){
+      var segmentProgress=segmentIndex/(this.segments-1);
+      var isMidpoint=(segmentIndex>0&&segmentIndex<this.segments-1)?1:0;
+      this.posArr[segmentIndex*3]  =origin.x+(target.x-origin.x)*segmentProgress+isMidpoint*(Math.random()-.5)*jitter;
+      this.posArr[segmentIndex*3+1]=origin.y+(target.y-origin.y)*segmentProgress+isMidpoint*(Math.random()-.5)*jitter;
+      this.posArr[segmentIndex*3+2]=origin.z+(target.z-origin.z)*segmentProgress+isMidpoint*(Math.random()-.5)*jitter;
+      this.colArr[segmentIndex*3]=boltColor.r;
+      this.colArr[segmentIndex*3+1]=boltColor.g;
+      this.colArr[segmentIndex*3+2]=boltColor.b;
+    }
+    this.line.geometry.attributes.position.needsUpdate=true;
+    this.line.geometry.attributes.color.needsUpdate=true;
+    this.life=.09+Math.random()*.13;
+    this.hopsLeft=1+Math.floor(Math.random()*3);
+  };
+  TeslaBolt.prototype.update=function(dt){
+    if(this.life>0){
+      this.life-=dt;
+      if(this.life>0){ this.mat.opacity=.65+Math.random()*.35; }
+      else if(this.hopsLeft>0){ this.hopsLeft--; this.strike(); }
+      else { this.mat.opacity=0; this.wait=.6+Math.random()*3.2; }
+    } else {
+      this.wait-=dt;
+      if(this.wait<=0) this.strike();
+    }
+  };
+  var teslaBolts=[], TESLA_BOLT_COUNT=isMobile?7:16;
+  for(var teslaBoltIndex=0;teslaBoltIndex<TESLA_BOLT_COUNT;teslaBoltIndex++) teslaBolts.push(new TeslaBolt());
 
   var BR=brainData;
 
@@ -1658,6 +1752,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
             networkColorArr[networkNodeIndex * 3 + 2] = networkBaseColors[networkNodeIndex * 3 + 2] * pulseBrightness;
           }
           networkPointsObj.geometry.attributes.color.needsUpdate = true;
+        }
+        for (var teslaBoltUpdateIndex = 0; teslaBoltUpdateIndex < teslaBolts.length; teslaBoltUpdateIndex++) {
+          teslaBolts[teslaBoltUpdateIndex].update(dt);
         }
       }
       nodesP.material.opacity = .44;
