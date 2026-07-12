@@ -193,7 +193,7 @@ export default function RecruiterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans">
+    <div className="recruiter-theme min-h-screen bg-slate-50 font-sans">
       {/* Top bar */}
       <div className="bg-indigo-600 text-white text-xs py-2 px-6 flex items-center justify-between">
         <div className="flex items-center gap-2">

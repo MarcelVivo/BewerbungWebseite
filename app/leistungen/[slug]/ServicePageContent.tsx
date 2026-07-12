@@ -16,6 +16,19 @@ const ICON_MAP: Record<string, React.ElementType> = {
   GraduationCap, Globe, Lightbulb,
 };
 
+const METALLIC_GRADIENTS: Record<string, string> = {
+  '#c89a3d': 'linear-gradient(135deg, #F6E3A1 0%, #E7C56A 18%, #C89A3D 45%, #B8862B 72%, #7C5A1A 100%)',
+  '#4d7fbf': 'linear-gradient(135deg, #C4E3FF 0%, #8EBEF2 18%, #4D7FBF 45%, #244D82 72%, #102A4A 100%)',
+  '#8ebef2': 'linear-gradient(135deg, #C4E3FF 0%, #8EBEF2 18%, #4D7FBF 45%, #244D82 72%, #102A4A 100%)',
+  '#244d82': 'linear-gradient(135deg, #C4E3FF 0%, #8EBEF2 18%, #4D7FBF 45%, #244D82 72%, #102A4A 100%)',
+  '#a6425c': 'linear-gradient(135deg, #F3B0B9 0%, #D9788A 18%, #A6425C 45%, #6A263B 72%, #37131D 100%)',
+  '#6a263b': 'linear-gradient(135deg, #F3B0B9 0%, #D9788A 18%, #A6425C 45%, #6A263B 72%, #37131D 100%)',
+};
+
+function metallicGradient(color: string) {
+  return METALLIC_GRADIENTS[color.toLowerCase()] ?? 'var(--gradient-gold)';
+}
+
 // ── Page labels by language ───────────────────────────────────
 
 const PL = {
@@ -70,7 +83,7 @@ function VisualKiAgenten({ color, lang }: { color: string; lang: Lang }) {
         <div key={i} className={`flex ${msg.align === 'right' ? 'justify-end' : 'justify-start'}`}>
           <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
             msg.align === 'right' ? 'text-white rounded-br-sm' : 'bg-[#231e15] text-[#d4c4a8] rounded-bl-sm'
-          }`} style={msg.align === 'right' ? { background: color } : {}}>
+          }`} style={msg.align === 'right' ? { background: metallicGradient(color) } : {}}>
             <span className="block text-[10px] font-semibold mb-1 opacity-70">{msg.from}</span>
             {msg.text}
           </div>
@@ -93,7 +106,7 @@ function VisualBusinessAnalyse({ color, lang }: { color: string; lang: Lang }) {
     <div className="grid sm:grid-cols-2 gap-4">
       {cols.map((col, i) => (
         <div key={i} className="rounded-2xl border p-5 space-y-3"
-          style={i === 1 ? { borderColor: `${color}40`, background: `${color}08` } : { borderColor: '#2d2820', background: '#1c1912' }}>
+          style={i === 1 ? { borderColor: `${color}40`, background: `${color}08` } : { borderColor: '#2A2D32', background: '#1A1C20' }}>
           <p className="font-semibold text-sm" style={{ color: i === 1 ? color : '#64748b' }}>{col.label}</p>
           {col.items.map((item, j) => (
             <div key={j} className="flex items-start gap-2 text-sm">
@@ -135,14 +148,14 @@ function VisualBpmn({ color, lang }: { color: string; lang: Lang }) {
   const savings     = lang === 'en' ? '→ Time saved: ~79 min/week = 65 hours/year' : '→ Zeitersparnis: ~79 Minuten pro Woche = 65 Stunden pro Jahr';
   return (
     <div className="space-y-5">
-      <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-5">
-        <p className="text-xs font-semibold text-red-400 uppercase tracking-wider mb-3">{beforeLabel}</p>
+      <div className="rounded-xl border border-[#a6425c]/20 bg-[#a6425c]/5 p-5">
+        <p className="text-xs font-semibold text-[#d9788a] uppercase tracking-wider mb-3">{beforeLabel}</p>
         <div className="space-y-2">
           {before.map(b => (
             <div key={b.step} className="flex items-center gap-3 text-sm">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-red-500/20 text-red-400 text-xs flex items-center justify-center font-bold">{b.step}</span>
+              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#a6425c]/20 text-[#d9788a] text-xs flex items-center justify-center font-bold">{b.step}</span>
               <span className="flex-1 text-[#a89880]">{b.text}</span>
-              <span className="text-xs text-red-400">{b.time}</span>
+              <span className="text-xs text-[#d9788a]">{b.time}</span>
             </div>
           ))}
         </div>
@@ -191,7 +204,7 @@ function VisualMarketing({ color, lang }: { color: string; lang: Lang }) {
               <span className="text-[#a89880]">{s.value}</span>
             </div>
             <div className="h-2 bg-[#2d2820] rounded-full overflow-hidden">
-              <div className="h-full rounded-full transition-all" style={{ width: `${s.pct}%`, background: color, opacity: 1 - i * 0.1 }} />
+              <div className="h-full rounded-full transition-all" style={{ width: `${s.pct}%`, background: metallicGradient(color), opacity: 1 - i * 0.1 }} />
             </div>
           </div>
         ))}
@@ -333,16 +346,16 @@ function VisualWebsite({ color, lang }: { color: string; lang: Lang }) {
               <p className="text-xs text-[#7a6d5a] mb-1">{beforeLabel}</p>
               <div className="flex items-center gap-2">
                 <div className="flex-1 h-2.5 bg-[#2d2820] rounded-full overflow-hidden">
-                  <div className="h-full rounded-full bg-red-500" style={{ width: `${s.before}%` }} />
+                  <div className="brand-red-fill h-full rounded-full" style={{ width: `${s.before}%` }} />
                 </div>
-                <span className="text-sm font-bold text-red-400 w-7">{s.before}</span>
+                <span className="text-sm font-bold text-[#d9788a] w-7">{s.before}</span>
               </div>
             </div>
             <div>
               <p className="text-xs text-[#7a6d5a] mb-1">{afterLabel}</p>
               <div className="flex items-center gap-2">
                 <div className="flex-1 h-2.5 bg-[#2d2820] rounded-full overflow-hidden">
-                  <div className="h-full rounded-full" style={{ width: `${s.after}%`, background: color }} />
+                  <div className="h-full rounded-full" style={{ width: `${s.after}%`, background: metallicGradient(color) }} />
                 </div>
                 <span className="text-sm font-bold w-7" style={{ color }}>{s.after}</span>
               </div>
@@ -373,7 +386,7 @@ function VisualRoadmap({ color, lang }: { color: string; lang: Lang }) {
         {phases.map((p, i) => (
           <div key={i} className="relative flex gap-4 pl-2">
             <div className="flex-shrink-0 relative z-10 w-9 h-9 rounded-full border-2 flex items-center justify-center text-sm font-bold"
-              style={{ borderColor: color, background: '#0c0a06', color }}>
+              style={{ borderColor: color, background: '#0F1012', color }}>
               {i + 1}
             </div>
             <div className="flex-1 rounded-xl border border-[#2d2820] bg-[#1c1912] p-4 pt-2.5">
@@ -432,7 +445,7 @@ export default function ServicePageContent({ slug }: { slug: string }) {
               <button onClick={() => setLang('de')} className={`px-2.5 py-1 text-xs font-semibold transition-colors ${lang === 'de' ? 'bg-[#c9a84c] text-[#0c0a06]' : 'text-[#a89880] hover:text-[#f4edd8]'}`}>DE</button>
               <button onClick={() => setLang('en')} className={`px-2.5 py-1 text-xs font-semibold transition-colors ${lang === 'en' ? 'bg-[#c9a84c] text-[#0c0a06]' : 'text-[#a89880] hover:text-[#f4edd8]'}`}>EN</button>
             </div>
-            <a href="#contact" className="px-4 py-1.5 rounded-lg text-[#0c0a06] text-sm font-semibold transition-colors" style={{ background: service.color }}>
+            <a href="#contact" className="px-4 py-1.5 rounded-lg text-[#0c0a06] text-sm font-semibold transition-colors" style={{ background: metallicGradient(service.color) }}>
               {pl.navCta}
             </a>
           </nav>

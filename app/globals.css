@@ -58,7 +58,6 @@
   --text-muted:   #90959D;
   --text-faint:   #6F747C;
 
-  /* Backwards-compatible aliases for existing page modules. */
   --background:           var(--background-primary);
   --card:                 var(--background-card);
 }
@@ -121,6 +120,41 @@ body {
 .brand-red-fill:hover {
   filter: brightness(1.05) saturate(.96);
 }
+
+.recruiter-theme {
+  color: var(--text-primary);
+  background: var(--background-primary);
+}
+
+.recruiter-theme .bg-slate-50,
+.recruiter-theme .bg-slate-100 { background-color: var(--background-secondary) !important; }
+.recruiter-theme .bg-white { background-color: var(--background-card) !important; }
+.recruiter-theme .border-slate-200 { border-color: var(--background-border) !important; }
+.recruiter-theme .text-slate-900,
+.recruiter-theme .text-slate-800 { color: var(--text-primary) !important; }
+.recruiter-theme .text-slate-700,
+.recruiter-theme .text-slate-600 { color: var(--text-secondary) !important; }
+.recruiter-theme .text-slate-500 { color: var(--text-muted) !important; }
+.recruiter-theme .text-slate-400 { color: var(--text-faint) !important; }
+.recruiter-theme .bg-indigo-50 { background-color: rgba(var(--blue-rgb), .12) !important; }
+.recruiter-theme .text-indigo-200 { color: var(--blue-highlight) !important; }
+.recruiter-theme .text-indigo-400,
+.recruiter-theme .text-indigo-500 { color: var(--blue-light) !important; }
+.recruiter-theme .text-indigo-600,
+.recruiter-theme .text-indigo-700,
+.recruiter-theme .text-indigo-800 { color: var(--blue-primary) !important; }
+.recruiter-theme .border-indigo-300,
+.recruiter-theme .border-indigo-500 { border-color: rgba(var(--blue-rgb), .56) !important; }
+.recruiter-theme .bg-indigo-600,
+.recruiter-theme .bg-indigo-700,
+.recruiter-theme .bg-gradient-to-br,
+.recruiter-theme .bg-gradient-to-r { background: var(--gradient-blue) !important; }
+.recruiter-theme [class~="hover:bg-indigo-50"]:hover { background-color: rgba(var(--blue-rgb), .18) !important; }
+.recruiter-theme [class~="hover:text-indigo-600"]:hover,
+.recruiter-theme [class~="hover:text-indigo-700"]:hover,
+.recruiter-theme [class~="hover:text-indigo-800"]:hover,
+.recruiter-theme .group:hover [class~="group-hover:text-indigo-400"],
+.recruiter-theme .group:hover [class~="group-hover:text-indigo-700"] { color: var(--blue-light) !important; }
 
 [class~="text-[#5fb4ff]"],
 [class~="text-[#4dd2ff]"],
