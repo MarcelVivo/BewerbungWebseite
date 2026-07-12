@@ -2,7 +2,8 @@
 // @ts-nocheck
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { ConvexGeometry } from 'three/examples/jsm/geometries/ConvexGeometry.js';
+import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import brainData from './brainData.json';
 
 type BrainBackgroundProps = {
@@ -48,7 +49,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
 
   var world=new THREE.Group(); scene.add(world);
   var BRAIN_BASE_Y=-.5;
-  var brain=new THREE.Group(); brain.position.y=BRAIN_BASE_Y; brain.scale.setScalar(4.37); world.add(brain);
+  var brain=new THREE.Group(); brain.position.y=BRAIN_BASE_Y; brain.scale.setScalar(3.2775); world.add(brain);
   var introTextGroup=new THREE.Group(); world.add(introTextGroup);
   var introSprites=[];
   var floatingObjects=[];
@@ -629,92 +630,133 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     addSatelliteBrain(5.7,-.44,-.9,2.7,'#4d7fbf');
   }
 
-  function frontSurfacePoint(vertical,lateral,relief){
-    var normalizedVertical=(vertical-.02)/.92;
-    var normalizedLateral=lateral/.84;
-    var silhouette=Math.max(.028,1-normalizedVertical*normalizedVertical-normalizedLateral*normalizedLateral);
-    var corrugation=Math.sin(vertical*13+lateral*9)*.011+Math.cos(vertical*21-lateral*7)*.008;
-    return new THREE.Vector3(-1.02*Math.sqrt(silhouette)-relief-corrugation,vertical,lateral);
+  // --- Verbindliche Maske für beide Gehirnhälften: dieselbe Scatter-Punktwolke
+  // (BR.scatter, bereits als pts[0..scatterN) vorhanden), nach dem Vorzeichen
+  // der lateralen z-Achse gesplittet. Links und rechts teilen sich dadurch
+  // exakt dieselbe Rohform/Aussenkontur — keine zwei unabhängigen Konturen. ---
+  var scatterPts=pts.slice(0,scatterN);
+  var leftScatterPts=scatterPts.filter(function(p){ return p.z<=0; });
+  var rightScatterPts=scatterPts.filter(function(p){ return p.z>0; });
+
+  function hemisphereFoldNoise(x,y,z){
+    var largeFolds=Math.sin(y*9+z*7)*.052+Math.cos(x*8-y*11)*.044+Math.sin(z*13+x*6)*.034;
+    var fineWrinkles=Math.sin(x*27+y*19-z*15)*.014+Math.cos(y*31-z*23+x*11)*.011;
+    return largeFolds+fineWrinkles;
   }
 
-  var organicModelDisposed=false;
-  function leftHemisphereGeometry(sourceGeometry){
-    var expandedGeometry=sourceGeometry.index?sourceGeometry.toNonIndexed():sourceGeometry.clone();
-    var sourcePositions=expandedGeometry.getAttribute('position');
-    var sourceNormals=expandedGeometry.getAttribute('normal');
-    var leftPositions=[], leftNormals=[];
-    for(var triangleOffset=0;triangleOffset<sourcePositions.count;triangleOffset+=3){
-      var lateralCenter=(sourcePositions.getZ(triangleOffset)+sourcePositions.getZ(triangleOffset+1)+sourcePositions.getZ(triangleOffset+2))/3;
-      if(lateralCenter>.012) continue;
-      for(var triangleVertex=0;triangleVertex<3;triangleVertex++){
-        var vertexIndex=triangleOffset+triangleVertex;
-        var normalX=sourceNormals?sourceNormals.getX(vertexIndex):0;
-        var normalY=sourceNormals?sourceNormals.getY(vertexIndex):0;
-        var normalZ=sourceNormals?sourceNormals.getZ(vertexIndex):0;
-        leftPositions.push(
-          sourcePositions.getX(vertexIndex)+normalX*.012,
-          sourcePositions.getY(vertexIndex)+normalY*.012,
-          sourcePositions.getZ(vertexIndex)+normalZ*.012
-        );
-        if(sourceNormals) leftNormals.push(normalX,normalY,normalZ);
+  // Lineare Mittelpunkt-Unterteilung: bricht die grossen, flachen Hüllflächen
+  // in viele kleine Dreiecke auf, damit das Falten-Rauschen danach als
+  // organische Wölbung statt als grobe Facettierung sichtbar wird.
+  function subdivideTriangleSoup(positions,iterations){
+    var current=positions;
+    for(var iteration=0;iteration<iterations;iteration++){
+      var next=[];
+      for(var t=0;t<current.length;t+=9){
+        var ax=current[t],ay=current[t+1],az=current[t+2];
+        var bx=current[t+3],by=current[t+4],bz=current[t+5];
+        var cx=current[t+6],cy=current[t+7],cz=current[t+8];
+        var abx=(ax+bx)/2,aby=(ay+by)/2,abz=(az+bz)/2;
+        var bcx=(bx+cx)/2,bcy=(by+cy)/2,bcz=(bz+cz)/2;
+        var cax=(cx+ax)/2,cay=(cy+ay)/2,caz=(cz+az)/2;
+        next.push(ax,ay,az, abx,aby,abz, cax,cay,caz);
+        next.push(bx,by,bz, bcx,bcy,bcz, abx,aby,abz);
+        next.push(cx,cy,cz, cax,cay,caz, bcx,bcy,bcz);
+        next.push(abx,aby,abz, bcx,bcy,bcz, cax,cay,caz);
       }
+      current=next;
     }
-    expandedGeometry.dispose();
-    var hemisphereGeometry=new THREE.BufferGeometry();
-    hemisphereGeometry.setAttribute('position',new THREE.Float32BufferAttribute(leftPositions,3));
-    if(leftNormals.length) hemisphereGeometry.setAttribute('normal',new THREE.Float32BufferAttribute(leftNormals,3));
-    else hemisphereGeometry.computeVertexNormals();
-    return hemisphereGeometry;
+    return current;
   }
 
-  function addOrganicHemisphereFromModel(){
-    var loader=new GLTFLoader();
-    loader.load('/Models/human_brain_cerebrum__brainstem.glb',function(gltf){
-      if(organicModelDisposed) return;
-      var sourceMesh=null;
-      gltf.scene.traverse(function(node){ if(!sourceMesh&&node.isMesh) sourceMesh=node; });
-      if(!sourceMesh||!sourceMesh.geometry) return;
-      var hemisphereGeometry=leftHemisphereGeometry(sourceMesh.geometry);
-      var hemisphereMaterial=new THREE.MeshPhysicalMaterial({
-        color:0xc89a3d,
-        metalness:.68,
-        roughness:.38,
-        clearcoat:.22,
-        clearcoatRoughness:.34,
-        emissive:0x1d1003,
-        emissiveIntensity:.1,
-        side:THREE.FrontSide
-      });
-      var organicHemisphere=new THREE.Mesh(hemisphereGeometry,hemisphereMaterial);
-      organicHemisphere.frustumCulled=false;
-      brain.add(organicHemisphere);
+  // --- Links: menschliche Hälfte. Hüllfläche der linken Punktmenge, fein
+  // unterteilt und danach entlang der Normalen mit prozeduralem Falten-
+  // Rauschen verformt, damit sie organisch statt facettiert/glatt wirkt. ---
+  function buildOrganicHemisphere(){
+    if(leftScatterPts.length<4) return;
+    var rawHull=new ConvexGeometry(leftScatterPts);
+    var subdividedPositions=subdivideTriangleSoup(rawHull.getAttribute('position').array,3);
+    var soupGeometry=new THREE.BufferGeometry();
+    soupGeometry.setAttribute('position',new THREE.Float32BufferAttribute(subdividedPositions,3));
+    var hullGeometry=mergeVertices(soupGeometry);
+    hullGeometry.computeVertexNormals();
+    var positionAttribute=hullGeometry.getAttribute('position');
+    var normalAttribute=hullGeometry.getAttribute('normal');
+    var foldValues=new Float32Array(positionAttribute.count);
+    for(var vertexIndex=0;vertexIndex<positionAttribute.count;vertexIndex++){
+      var vx=positionAttribute.getX(vertexIndex), vy=positionAttribute.getY(vertexIndex), vz=positionAttribute.getZ(vertexIndex);
+      var nx=normalAttribute.getX(vertexIndex), ny=normalAttribute.getY(vertexIndex), nz=normalAttribute.getZ(vertexIndex);
+      var fold=hemisphereFoldNoise(vx,vy,vz);
+      foldValues[vertexIndex]=fold;
+      positionAttribute.setXYZ(vertexIndex,vx+nx*fold,vy+ny*fold,vz+nz*fold);
+    }
+    positionAttribute.needsUpdate=true;
+    hullGeometry.computeVertexNormals();
+    var hullColors=new Float32Array(positionAttribute.count*3);
+    var hemisphereColor=new THREE.Color();
+    for(var colorIndex=0;colorIndex<positionAttribute.count;colorIndex++){
+      var depthT=Math.max(0,Math.min(1,(foldValues[colorIndex]+.155)/.31));
+      hemisphereColor.copy(GOLD.deep).lerp(GOLD.core,depthT).lerp(GOLD.hot,depthT*depthT*.5);
+      hullColors[colorIndex*3]=hemisphereColor.r;
+      hullColors[colorIndex*3+1]=hemisphereColor.g;
+      hullColors[colorIndex*3+2]=hemisphereColor.b;
+    }
+    hullGeometry.setAttribute('color',new THREE.Float32BufferAttribute(hullColors,3));
+    var hemisphereMaterial=new THREE.MeshPhysicalMaterial({
+      color:0xffffff,
+      vertexColors:true,
+      metalness:.85,
+      roughness:.4,
+      clearcoat:.25,
+      clearcoatRoughness:.32,
+      emissive:0x140b02,
+      emissiveIntensity:.08,
+      side:THREE.FrontSide
     });
+    var organicHemisphere=new THREE.Mesh(hullGeometry,hemisphereMaterial);
+    organicHemisphere.frustumCulled=false;
+    organicHemisphere.name='organic-hemisphere';
+    brain.add(organicHemisphere);
   }
 
-  function addTechnicalHemisphere(){
-    var techNodeCount=isMobile?84:164;
-    var techNodes=[], techNodeColors=[], techPointPositions=[], techPointColors=[];
-    for(var techNodeIndex=0;techNodeIndex<techNodeCount;techNodeIndex++){
-      var vertical,lateral,shape;
-      do {
-        vertical=-.78+rnd()*1.64;
-        lateral=.025+rnd()*.79;
-        shape=((vertical-.02)/.92)*((vertical-.02)/.92)+(lateral/.84)*(lateral/.84);
-      } while(shape>.98);
-      var techPoint=frontSurfacePoint(vertical,lateral,.032+rnd()*.022);
+  // --- Rechts: KI-Hälfte. Dieselbe rechte Punktmenge wird verdichtet (Punkte
+  // dazwischen eingefügt, bleibt innerhalb derselben Kontur) und zu einem
+  // Knoten-/Liniennetzwerk verbunden statt zu einem Volumen geschlossen. ---
+  function densifyWithinMask(basePoints,targetCount){
+    var result=basePoints.slice();
+    var guard=0;
+    while(result.length<targetCount&&guard<targetCount*30){
+      var a=result[Math.floor(rnd()*basePoints.length)];
+      var b=result[Math.floor(rnd()*basePoints.length)];
+      guard++;
+      if(a===b) continue;
+      var t=.25+rnd()*.5;
+      result.push(new THREE.Vector3().lerpVectors(a,b,t));
+    }
+    return result;
+  }
+
+  var networkNodes=[], networkAdjacency=[], networkPointsObj=null, networkHubIndices=[];
+  function buildNetworkHemisphere(){
+    if(rightScatterPts.length<4) return;
+    networkNodes=densifyWithinMask(rightScatterPts,isMobile?150:380);
+    var nodeColors=[];
+    for(var nodeIndex=0;nodeIndex<networkNodes.length;nodeIndex++){
+      networkAdjacency.push([]);
       var intensity=.38+rnd()*.62;
-      var techColor=new THREE.Color(GOLD.deep).lerp(GOLD.hot,intensity);
-      techNodes.push(techPoint);
-      techNodeColors.push(techColor);
-      techPointPositions.push(techPoint.x,techPoint.y,techPoint.z);
-      techPointColors.push(techColor.r,techColor.g,techColor.b);
+      nodeColors.push(new THREE.Color(GOLD.deep).lerp(GOLD.hot,intensity));
+    }
+    var techPointPositions=[], techPointColors=[];
+    for(nodeIndex=0;nodeIndex<networkNodes.length;nodeIndex++){
+      var node=networkNodes[nodeIndex];
+      techPointPositions.push(node.x,node.y,node.z);
+      techPointColors.push(nodeColors[nodeIndex].r,nodeColors[nodeIndex].g,nodeColors[nodeIndex].b);
     }
     var techLinePositions=[], techLineColors=[];
-    for(var sourceIndex=0;sourceIndex<techNodes.length;sourceIndex++){
+    for(var sourceIndex=0;sourceIndex<networkNodes.length;sourceIndex++){
       var nearestIndices=[], nearestDistances=[];
-      for(var targetIndex=0;targetIndex<techNodes.length;targetIndex++){
+      for(var targetIndex=0;targetIndex<networkNodes.length;targetIndex++){
         if(sourceIndex===targetIndex) continue;
-        var distance=techNodes[sourceIndex].distanceToSquared(techNodes[targetIndex]);
+        var distance=networkNodes[sourceIndex].distanceToSquared(networkNodes[targetIndex]);
         for(var nearestSlot=0;nearestSlot<3;nearestSlot++){
           if(distance<(nearestDistances[nearestSlot]===undefined?Infinity:nearestDistances[nearestSlot])){
             nearestDistances.splice(nearestSlot,0,distance);
@@ -727,9 +769,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       }
       for(var nearestIndex=0;nearestIndex<nearestIndices.length;nearestIndex++){
         var neighborIndex=nearestIndices[nearestIndex];
+        networkAdjacency[sourceIndex].push(neighborIndex);
+        networkAdjacency[neighborIndex].push(sourceIndex);
         if(neighborIndex<sourceIndex) continue;
-        var sourceNode=techNodes[sourceIndex], neighborNode=techNodes[neighborIndex];
-        var sourceColor=techNodeColors[sourceIndex], neighborColor=techNodeColors[neighborIndex];
+        var sourceNode=networkNodes[sourceIndex], neighborNode=networkNodes[neighborIndex];
+        var sourceColor=nodeColors[sourceIndex], neighborColor=nodeColors[neighborIndex];
         techLinePositions.push(sourceNode.x,sourceNode.y,sourceNode.z,neighborNode.x,neighborNode.y,neighborNode.z);
         techLineColors.push(sourceColor.r,sourceColor.g,sourceColor.b,neighborColor.r,neighborColor.g,neighborColor.b);
       }
@@ -739,23 +783,49 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     techLineGeometry.setAttribute('color',new THREE.Float32BufferAttribute(techLineColors,3));
     var techLines=new THREE.LineSegments(techLineGeometry,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:.48,blending:THREE.NormalBlending,depthWrite:false}));
     techLines.frustumCulled=false;
-    var techPoints=pointsObj(techPointPositions,techPointColors,.065,.7,THREE.NormalBlending);
-    techPoints.frustumCulled=false;
+    networkPointsObj=pointsObj(techPointPositions,techPointColors,.058,.7,THREE.NormalBlending);
+    networkPointsObj.frustumCulled=false;
+    networkPointsObj.name='network-nodes';
     brain.add(techLines);
-    brain.add(techPoints);
+    brain.add(networkPointsObj);
+    // Grössere, hellere Hub-Knoten: jeder 12. Knoten, eigene Punktschicht
+    var hubPositions=[], hubColors=[];
+    for(nodeIndex=0;nodeIndex<networkNodes.length;nodeIndex+=12){
+      networkHubIndices.push(nodeIndex);
+      var hubNode=networkNodes[nodeIndex];
+      hubPositions.push(hubNode.x,hubNode.y,hubNode.z);
+      hubColors.push(GOLD.hot.r,GOLD.hot.g,GOLD.hot.b);
+    }
+    var hubPoints=pointsObj(hubPositions,hubColors,.13,.85,THREE.AdditiveBlending);
+    hubPoints.frustumCulled=false;
+    brain.add(hubPoints);
   }
 
-  function addHemisphereDivider(){
+  // --- Mitte: Trennlinie folgt echten Scatter-Punkten nahe der Symmetrieebene
+  // (z≈0) statt einer unabhängigen Formel — sitzt dadurch exakt auf der
+  // gemeinsamen Kontur zwischen beiden Hälften. ---
+  function buildDivider(){
+    var binCount=24;
+    var minY=-.9, maxY=.9;
+    var bins=[];
+    for(var binIndex=0;binIndex<=binCount;binIndex++) bins.push(null);
+    scatterPts.forEach(function(p){
+      var binIndex=Math.round(((p.y-minY)/(maxY-minY))*binCount);
+      if(binIndex<0||binIndex>binCount) return;
+      var absZ=Math.abs(p.z);
+      if(!bins[binIndex]||absZ<bins[binIndex].absZ) bins[binIndex]={x:p.x,y:p.y,z:p.z*0,absZ:absZ};
+    });
     var dividerPoints=[];
-    for(var dividerIndex=0;dividerIndex<=22;dividerIndex++){
-      var vertical=-.83+dividerIndex/22*1.7;
-      dividerPoints.push(frontSurfacePoint(vertical,0,.055));
+    for(binIndex=0;binIndex<=binCount;binIndex++){
+      if(bins[binIndex]) dividerPoints.push(new THREE.Vector3(bins[binIndex].x,bins[binIndex].y,0));
     }
+    if(dividerPoints.length<4) return;
     var dividerCurve=new THREE.CatmullRomCurve3(dividerPoints);
     var dividerGeometry=new THREE.TubeGeometry(dividerCurve,42,.007,4,false);
     var dividerMaterial=new THREE.MeshBasicMaterial({color:0xe7c56a,transparent:true,opacity:.46,toneMapped:false});
     var divider=new THREE.Mesh(dividerGeometry,dividerMaterial);
     divider.frustumCulled=false;
+    divider.name='hemisphere-divider';
     brain.add(divider);
   }
 
@@ -767,9 +837,85 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var organicRimLight=new THREE.PointLight(0xc89a3d,.72,12,2);
   organicRimLight.position.set(3.6,1.8,-2.2);
   scene.add(organicRimLight);
-  addOrganicHemisphereFromModel();
-  addTechnicalHemisphere();
-  addHemisphereDivider();
+  buildOrganicHemisphere();
+  buildNetworkHemisphere();
+  buildDivider();
+
+  // --- Ruhige Netzwerk-Lichtimpulse: gleiten golden über die rechte KI-Hälfte,
+  // analog zu NerveBolt aber langsamer, gedämpfter und in der Goldpalette. ---
+  function NetworkPulse(){
+    this.maxTrail=8;
+    var pulseGeometry=new THREE.BufferGeometry();
+    this.posArr=new Float32Array(this.maxTrail*3);
+    this.colArr=new Float32Array(this.maxTrail*3);
+    pulseGeometry.setAttribute('position',new THREE.BufferAttribute(this.posArr,3));
+    pulseGeometry.setAttribute('color',new THREE.BufferAttribute(this.colArr,3));
+    this.mat=new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
+    this.line=new THREE.Line(pulseGeometry,this.mat);
+    this.line.frustumCulled=false;
+    brain.add(this.line);
+    this.trail=[];
+    this.alive=false;
+    this.wait=1+rnd()*3;
+  }
+  NetworkPulse.prototype.startChain=function(){
+    if(!networkNodes.length){ this.wait=2; return; }
+    var start=0, tries=0;
+    do{ start=Math.floor(rnd()*networkAdjacency.length); tries++; }while((!networkAdjacency[start]||!networkAdjacency[start].length)&&tries<60);
+    if(!networkAdjacency[start]||!networkAdjacency[start].length){ this.alive=false; this.wait=1+rnd()*2; return; }
+    this.cur=start; this.prev=-1;
+    this.trail=[networkNodes[start]];
+    this.hopsLeft=10+Math.floor(rnd()*10);
+    this.hopTimer=.22+rnd()*.18;
+    this.alive=true;
+  };
+  NetworkPulse.prototype.update=function(dt){
+    if(!this.alive){ this.wait-=dt; if(this.wait<=0) this.startChain(); return; }
+    this.hopTimer-=dt;
+    if(this.hopTimer<=0){
+      var neigh=networkAdjacency[this.cur];
+      if(this.hopsLeft<=0||!neigh.length){
+        this.alive=false; this.mat.opacity=0; this.wait=2+rnd()*4; return;
+      }
+      var forward=neigh.filter(function(n){return n!==this.prev;},this);
+      var pool=forward.length?forward:neigh;
+      this.prev=this.cur;
+      this.cur=pool[Math.floor(rnd()*pool.length)];
+      this.trail.push(networkNodes[this.cur]);
+      if(this.trail.length>this.maxTrail) this.trail.shift();
+      this.hopsLeft--;
+      this.hopTimer=.22+rnd()*.18;
+    }
+    var n=this.trail.length;
+    for(var k=0;k<this.maxTrail;k++){
+      var srcIdx=k-(this.maxTrail-n);
+      if(srcIdx<0||!this.trail[srcIdx]){
+        var fallback=this.trail[0]||networkNodes[0];
+        this.posArr[k*3]=fallback.x; this.posArr[k*3+1]=fallback.y; this.posArr[k*3+2]=fallback.z;
+        this.colArr[k*3]=0; this.colArr[k*3+1]=0; this.colArr[k*3+2]=0;
+      } else {
+        var p=this.trail[srcIdx];
+        var frac=n>1?srcIdx/(n-1):1;
+        var alpha=.22*Math.sqrt(frac);
+        this.posArr[k*3]=p.x; this.posArr[k*3+1]=p.y; this.posArr[k*3+2]=p.z;
+        this.colArr[k*3]=GOLD.hot.r*alpha; this.colArr[k*3+1]=GOLD.hot.g*alpha; this.colArr[k*3+2]=GOLD.hot.b*alpha;
+      }
+    }
+    this.line.geometry.attributes.position.needsUpdate=true;
+    this.line.geometry.attributes.color.needsUpdate=true;
+    this.mat.opacity=.3;
+  };
+  var networkPulses=[], NPN=isMobile?2:5;
+  for(i=0;i<NPN;i++) networkPulses.push(new NetworkPulse());
+
+  // --- Sehr sanftes Knotenpulsieren: Helligkeit einzelner Netzwerk-Knoten
+  // schwankt langsam und phasenversetzt, kein Blinken, kein Disco-Effekt. ---
+  var networkBaseColors=null, networkPhases=[];
+  if(networkPointsObj){
+    networkBaseColors=networkPointsObj.geometry.attributes.color.array.slice();
+    for(var phaseIndex=0;phaseIndex<networkNodes.length;phaseIndex++) networkPhases.push(rnd()*Math.PI*2);
+  }
+  var lastNetworkPulseUpdate=0;
 
   var satelliteStrands=[];
   var satelliteTargetWorld=new THREE.Vector3();
@@ -1485,6 +1631,20 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         for (var satelliteOrbUpdateIndex = 0; satelliteOrbUpdateIndex < satelliteBlueOrbs.length; satelliteOrbUpdateIndex++) {
           satelliteBlueOrbs[satelliteOrbUpdateIndex].update(dt);
         }
+        for (var networkPulseIndex = 0; networkPulseIndex < networkPulses.length; networkPulseIndex++) {
+          networkPulses[networkPulseIndex].update(dt);
+        }
+        if (networkBaseColors && now - lastNetworkPulseUpdate > 48) {
+          lastNetworkPulseUpdate = now;
+          var networkColorArr = networkPointsObj.geometry.attributes.color.array;
+          for (var networkNodeIndex = 0; networkNodeIndex < networkNodes.length; networkNodeIndex++) {
+            var pulseBrightness = .82 + .18 * Math.sin(t * .6 + networkPhases[networkNodeIndex]);
+            networkColorArr[networkNodeIndex * 3] = networkBaseColors[networkNodeIndex * 3] * pulseBrightness;
+            networkColorArr[networkNodeIndex * 3 + 1] = networkBaseColors[networkNodeIndex * 3 + 1] * pulseBrightness;
+            networkColorArr[networkNodeIndex * 3 + 2] = networkBaseColors[networkNodeIndex * 3 + 2] * pulseBrightness;
+          }
+          networkPointsObj.geometry.attributes.color.needsUpdate = true;
+        }
       }
       nodesP.material.opacity = .44;
       var railSlowdown=cameraRailSlowdown(scrollP);
@@ -1520,7 +1680,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       document.removeEventListener('visibilitychange', onVisibilityChange);
       renderer.dispose();
       renderer.forceContextLoss();
-      organicModelDisposed=true;
       if (tunePanel && tunePanel.parentNode) tunePanel.parentNode.removeChild(tunePanel);
     };
   }, []);
