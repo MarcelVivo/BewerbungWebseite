@@ -519,14 +519,11 @@ body {
 }
 
 .spiral-service-line {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform-style: preserve-3d;
-  backface-visibility: hidden;
-  will-change: transform, opacity;
-  pointer-events: auto;
-  text-align: left;
+  /* Inaktiver Duplikat-Renderpfad aus dem deaktivierten 3D-Transform-System
+     (CAMERA_ONLY_WORLD=true friert ihn ohne Positionierung ein, dadurch
+     erschien er riesig und ungeklickt mittig im Bild). Die funktionale,
+     klickbare Darstellung der Leistungskarten ist .spiral-service-grid. */
+  display: none;
 }
 
 .spiral-service-grid {
@@ -729,14 +726,14 @@ body {
   box-shadow: 0 0 18px rgba(231,197,106,0.34);
 }
 
+/* ============================================================
+   NEURAL GLASS PANELS — Leistungskarten
+   ============================================================ */
 .spiral-service-card {
   --service-accent: var(--gold);
   --service-accent-rgb: 200,154,61;
   position: relative;
-  display: inline-flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.58rem;
+  display: block;
   width: 100%;
   min-height: 10.4rem;
   padding: 1rem 1.18rem 1.05rem 1.15rem;
@@ -748,13 +745,18 @@ body {
     linear-gradient(135deg, rgba(var(--service-accent-rgb),0.1), transparent 42%),
     linear-gradient(135deg, rgba(18,19,21,0.76), rgba(15,16,18,0.48));
   border: 1px solid rgba(var(--service-accent-rgb),0.28);
-  border-radius: 1.25rem;
+  border-radius: 1.6rem 1.05rem 1.6rem 0.6rem;
   box-shadow:
     0 18px 60px rgba(0,0,0,0.46),
     0 0 28px rgba(var(--service-accent-rgb),0.08),
     inset 0 1px 0 rgba(246,227,161,0.08);
-  overflow: hidden;
-  transition: border-color 420ms ease, box-shadow 640ms ease, background 640ms ease;
+  overflow: visible;
+  transition: border-color 420ms ease, box-shadow 640ms ease, background 640ms ease, transform 320ms ease;
+}
+
+.spiral-service-card:not(.ngp-panel-static) {
+  -webkit-backdrop-filter: blur(7px) saturate(1.08);
+  backdrop-filter: blur(7px) saturate(1.08);
 }
 
 .spiral-service-card::selection {
@@ -779,9 +781,23 @@ body {
   box-shadow: 0 0 26px rgba(var(--service-accent-rgb),0.52);
 }
 
+.spiral-service-card:hover,
+.spiral-service-card.is-selected {
+  transform: translateY(-2px) scale(1.012);
+}
+
+.spiral-service-card:hover:not(.ngp-panel-static) {
+  -webkit-backdrop-filter: blur(10px) saturate(1.12);
+  backdrop-filter: blur(10px) saturate(1.12);
+}
+
 .spiral-service-card[data-side="left"] {
-  align-items: flex-end;
   text-align: right;
+  border-radius: 1.05rem 1.6rem 0.6rem 1.6rem;
+}
+
+.spiral-service-card[data-side="left"] .ngp-core {
+  align-items: flex-end;
 }
 
 .spiral-service-card[data-side="left"]::before {
@@ -816,6 +832,222 @@ body {
 .spiral-service-card .spiral-intro-rule {
   background: linear-gradient(90deg, rgba(var(--service-accent-rgb),0.95), rgba(var(--service-accent-rgb),0.16), transparent);
   box-shadow: 0 0 16px rgba(var(--service-accent-rgb),0.22);
+}
+
+/* ── Data Core: Textinhalt liegt sichtbar vor Glas/Fasern/Partikeln ── */
+.ngp-core {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.58rem;
+  width: 100%;
+}
+
+/* ── Floating Glass Layer + Neural Fiber Layer: gemeinsamer, auf die
+   Kartenrundung geclippter Layer, damit Fasern nie über die Ecken hinaus
+   laufen. ── */
+.ngp-surface {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ngp-fibers {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.3;
+  transition: opacity 640ms ease;
+}
+
+.ngp-fibers path {
+  fill: none;
+  stroke: var(--service-accent);
+  stroke-width: 1;
+  stroke-linecap: round;
+}
+
+.ngp-fibers circle {
+  fill: var(--service-accent);
+  opacity: 0.75;
+}
+
+.spiral-service-card[data-side="left"] .ngp-fibers {
+  transform: scaleX(-1);
+}
+
+.spiral-service-card:hover .ngp-fibers,
+.spiral-service-card.is-selected .ngp-fibers {
+  opacity: 0.5;
+}
+
+@keyframes ngp-fiber-pulse {
+  0%, 100% { opacity: 0.24; }
+  50%      { opacity: 0.4; }
+}
+
+.ngp-panel.is-materialized:not(.ngp-panel-static) .ngp-fibers {
+  animation: ngp-fiber-pulse 7s ease-in-out infinite;
+  animation-delay: var(--ngp-delay, 0ms);
+}
+
+/* ── Living Light Layer: schmaler, seltener Lichtsweep, zeitversetzt ── */
+.ngp-sheen {
+  position: absolute;
+  top: -20%;
+  left: -30%;
+  width: 34%;
+  height: 140%;
+  background: linear-gradient(120deg, transparent, rgba(246,227,161,0.16), transparent);
+  transform: translateX(-120%) skewX(-16deg);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ngp-panel.is-materialized:not(.ngp-panel-static) .ngp-sheen {
+  animation: ngp-sheen-sweep 9.5s ease-in-out infinite;
+  animation-delay: calc(var(--ngp-delay, 0ms) + 1.2s);
+}
+
+@keyframes ngp-sheen-sweep {
+  0%, 90%, 100% { opacity: 0; transform: translateX(-120%) skewX(-16deg); }
+  4%            { opacity: 1; }
+  24%           { opacity: 0; transform: translateX(260%) skewX(-16deg); }
+}
+
+/* ── Neural Connector: feiner Lichtfaden Richtung Hauptstrang ── */
+.ngp-connector {
+  position: absolute;
+  left: 50%;
+  bottom: -1.5rem;
+  width: 1px;
+  height: 1.55rem;
+  transform: translateX(-50%);
+  background: linear-gradient(to bottom, rgba(var(--service-accent-rgb),0.75), transparent);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.ngp-connector::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -1px;
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  transform: translateX(-50%);
+  background: var(--service-accent);
+  box-shadow: 0 0 8px rgba(var(--service-accent-rgb),0.7);
+}
+
+.ngp-panel.is-materialized .ngp-connector {
+  animation: ngp-connector-pulse 6.5s ease-in-out infinite;
+  animation-delay: var(--ngp-delay, 0ms);
+}
+
+@keyframes ngp-connector-pulse {
+  0%, 100% { opacity: 0.32; }
+  50%      { opacity: 0.7; }
+}
+
+.spiral-service-card:hover .ngp-connector,
+.spiral-service-card.is-selected .ngp-connector {
+  opacity: 0.85;
+}
+
+/* ── Ambient Particle Layer: wenige, sehr subtile schwebende Punkte ── */
+.ngp-particles {
+  position: absolute;
+  inset: -1.2rem;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.ngp-particle {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--service-accent);
+  box-shadow: 0 0 6px rgba(var(--service-accent-rgb),0.65);
+  opacity: 0;
+}
+
+.ngp-particle:nth-child(1) { top: 6%;  left: 10%; }
+.ngp-particle:nth-child(2) { top: 82%; left: 88%; }
+.ngp-particle:nth-child(3) { top: 20%; left: 92%; }
+.ngp-particle:nth-child(4) { top: 90%; left: 14%; }
+
+.ngp-panel.is-materialized:not(.ngp-panel-static) .ngp-particle {
+  animation: ngp-particle-drift 11s ease-in-out infinite;
+}
+
+.ngp-particle:nth-child(1) { animation-delay: calc(var(--ngp-delay, 0ms) + 0.2s); }
+.ngp-particle:nth-child(2) { animation-delay: calc(var(--ngp-delay, 0ms) + 2.6s); }
+.ngp-particle:nth-child(3) { animation-delay: calc(var(--ngp-delay, 0ms) + 5.1s); }
+.ngp-particle:nth-child(4) { animation-delay: calc(var(--ngp-delay, 0ms) + 7.4s); }
+
+@keyframes ngp-particle-drift {
+  0%, 100% { opacity: 0; transform: translate3d(0,0,0); }
+  10%      { opacity: 0.7; }
+  50%      { opacity: 0.32; transform: translate3d(4px,-6px,0); }
+  90%      { opacity: 0; }
+}
+
+/* ── Materialisierung: löst durch IntersectionObserver einmalig aus,
+   Unterebenen kommen zeitversetzt zur Ruhe (Partikel → Fasern/Glas →
+   Rahmen/Inhalt), gesteuert allein über transition-delay. ── */
+.ngp-panel {
+  opacity: 0;
+  transform: translateY(18px) scale(0.985);
+  transition-delay: var(--ngp-delay, 0ms);
+}
+
+.ngp-panel.is-materialized {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.ngp-panel .ngp-surface {
+  opacity: 0;
+  transition: opacity 420ms ease;
+  transition-delay: calc(var(--ngp-delay, 0ms) + 90ms);
+}
+
+.ngp-panel.is-materialized .ngp-surface {
+  opacity: 1;
+}
+
+.ngp-panel .ngp-core {
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 420ms ease, transform 420ms ease;
+  transition-delay: calc(var(--ngp-delay, 0ms) + 260ms);
+}
+
+.ngp-panel.is-materialized .ngp-core {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ngp-panel-static,
+.ngp-panel-static .ngp-surface,
+.ngp-panel-static .ngp-core {
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+.ngp-panel-static .ngp-fibers {
+  opacity: 0.22;
 }
 
 .spiral-intro-meta {
@@ -965,10 +1197,21 @@ body {
 }
 
 .spiral-intro-line,
-.spiral-service-grid,
 .spiral-detail-panel {
   opacity: 0 !important;
   pointer-events: none !important;
+}
+
+/* .spiral-service-grid war hier ebenfalls dauerhaft ausgeblendet (Relikt aus
+   CAMERA_ONLY_WORLD) — die Neural Glass Panels sind das echte, klickbare
+   Kartenraster und sollen sichtbar sein, siehe .ngp-panel weiter oben. */
+.spiral-service-grid {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.spiral-service-grid .spiral-service-card {
+  pointer-events: auto;
 }
 
 /* ── Process timeline ──────────────────────────────────────── */
@@ -1320,7 +1563,6 @@ body {
   }
 
   .spiral-mobile .spiral-service-card {
-    display: flex;
     min-height: auto;
     padding: 1rem;
     border-radius: 1rem;
@@ -1414,7 +1656,7 @@ body {
     font-size: clamp(1.75rem, 10vw, 2.35rem);
   }
 
-  .spiral-mobile .spiral-service-card {
+  .spiral-mobile .spiral-service-card .ngp-core {
     gap: 0.5rem;
   }
 
@@ -1476,5 +1718,29 @@ body {
 
   .spiral-mobile {
     display: block;
+  }
+
+  .ngp-fibers,
+  .ngp-sheen,
+  .ngp-connector,
+  .ngp-particles {
+    animation: none !important;
+  }
+
+  .ngp-particle {
+    display: none;
+  }
+
+  .ngp-panel,
+  .ngp-panel .ngp-surface,
+  .ngp-panel .ngp-core {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .spiral-service-card:hover,
+  .spiral-service-card.is-selected {
+    transform: none !important;
   }
 }

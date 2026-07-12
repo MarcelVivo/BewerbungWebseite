@@ -41,6 +41,49 @@ const USP_ICONS = [Zap, Users, CheckCircle, Award];
 const PROCESS_ICONS = [MessageSquare, Search, Compass, Wrench, Heart];
 const CAMERA_ONLY_WORLD = true;
 
+// ── Neural Glass Panels: eigenes, reduziertes Knoten-Icon statt generischer
+// Stock-Icons — vier leicht unterschiedliche Netzwerk-Topologien, gezeichnet
+// mit currentColor, damit die bestehende Accent-Farbe pro Karte greift. ───
+const NEURAL_ICON_VARIANTS: { nodes: [number, number][]; edges: [number, number][] }[] = [
+  { nodes: [[5, 18], [12, 6], [19, 17], [12, 12]], edges: [[0, 3], [1, 3], [2, 3], [0, 1]] },
+  { nodes: [[4, 8], [12, 4], [20, 9], [16, 19], [7, 18]], edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 0], [1, 4]] },
+  { nodes: [[6, 5], [18, 6], [20, 17], [9, 20], [4, 13]], edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 0]] },
+  { nodes: [[12, 4], [20, 10], [17, 19], [7, 19], [4, 10]], edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 0], [0, 2], [0, 3]] },
+];
+
+function NeuralNodeIcon({ variant = 0 }: { variant?: number }) {
+  const v = NEURAL_ICON_VARIANTS[variant % NEURAL_ICON_VARIANTS.length];
+  return (
+    <svg viewBox="0 0 24 24" width={15} height={15} className="ngp-icon" aria-hidden="true">
+      {v.edges.map(([a, b], idx) => {
+        const [x1, y1] = v.nodes[a];
+        const [x2, y2] = v.nodes[b];
+        return <line key={idx} x1={x1} y1={y1} x2={x2} y2={y2} stroke="currentColor" strokeWidth={1} strokeOpacity={0.85} />;
+      })}
+      {v.nodes.map(([x, y], idx) => (
+        <circle key={idx} cx={x} cy={y} r={idx === v.nodes.length - 1 ? 2.1 : 1.4} fill="currentColor" />
+      ))}
+    </svg>
+  );
+}
+
+// Feine, organisch-technische Nervenfasern hinter dem Kartentext — eine
+// gemeinsame Pfadstruktur, pro Kartenseite gespiegelt statt vier separate
+// Handzeichnungen zu pflegen.
+function NeuralFiberField() {
+  return (
+    <svg className="ngp-fibers" viewBox="0 0 400 260" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M-10,214 C58,182 92,142 68,92 C54,56 92,32 152,42" />
+      <path d="M410,26 C338,8 300,52 322,102 C336,142 300,172 238,150" />
+      <path d="M22,18 C70,58 58,112 112,132" />
+      <circle cx="68" cy="92" r="2.4" />
+      <circle cx="152" cy="42" r="1.6" />
+      <circle cx="322" cy="102" r="2.2" />
+      <circle cx="112" cy="132" r="1.6" />
+    </svg>
+  );
+}
+
 function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
   const [activeServiceSlug, setActiveServiceSlug] = useState<string | null>(null);
   const progressRef = useRef(0);
@@ -50,6 +93,32 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
   const lastFrameTimeRef = useRef(0);
   const lastStrandProgressRef = useRef(-1);
   const viewportRef = useRef({ width: 0, height: 0 });
+  const serviceGridRef = useRef<HTMLDivElement | null>(null);
+
+  // Neural Glass Panels: Materialisierung wird scroll-/viewport-getrieben
+  // über einen einzigen gemeinsamen IntersectionObserver ausgelöst (kein
+  // Autoplay-Timer, kein Loop pro Karte) — jede Karte bekommt nur einmal
+  // die Klasse .is-materialized, danach übernimmt reines CSS die Kaskade
+  // aus Partikeln → Fasern → Rahmen → Glas → Inhalt über transition-delay.
+  useEffect(() => {
+    const grid = serviceGridRef.current;
+    if (!grid) return;
+    const panels = Array.from(grid.querySelectorAll<HTMLElement>('.ngp-panel'));
+    if (!panels.length) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-materialized');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.22 }
+    );
+    panels.forEach((panel) => observer.observe(panel));
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     if (CAMERA_ONLY_WORLD) return;
@@ -507,11 +576,11 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
         </div>
 
         <div
+          ref={serviceGridRef}
           className={`spiral-service-grid ${activeService ? 'has-active-service' : ''}`}
           aria-label={lang === 'de' ? 'Service Leistungen' : 'Services'}
         >
           {serviceCards.map((card, i) => {
-            const Icon = card.icon;
             const isSelected = activeServiceSlug === card.slug;
             return (
               <button
@@ -520,22 +589,36 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
                 data-service-card
                 data-service-slug={card.slug}
                 data-side={i % 2 === 0 ? 'left' : 'right'}
-                className={`spiral-service-card ${isSelected ? 'is-selected' : ''}`}
+                className={`spiral-service-card ngp-panel ${isSelected ? 'is-selected' : ''}`}
                 style={{
                   '--service-accent': card.accent,
                   '--service-accent-rgb': card.accentRgb,
+                  '--ngp-delay': `${i * 90}ms`,
                 } as CSSProperties}
                 onClick={() => setActiveServiceSlug(card.slug)}
               >
-                <span className="spiral-intro-meta">
-                  <span className="spiral-intro-index">{card.code}</span>
-                  <span className="spiral-intro-icon">
-                    {Icon ? <Icon size={15} strokeWidth={1.8} /> : null}
-                  </span>
+                <span className="ngp-connector" aria-hidden="true" />
+                <span className="ngp-particles" aria-hidden="true">
+                  <i className="ngp-particle" />
+                  <i className="ngp-particle" />
+                  <i className="ngp-particle" />
+                  <i className="ngp-particle" />
                 </span>
-                <h3 className="spiral-service-title">{card.title}</h3>
-                <p className="spiral-service-body">{card.body}</p>
-                <span className="spiral-intro-rule" />
+                <span className="ngp-surface" aria-hidden="true">
+                  <NeuralFiberField />
+                  <span className="ngp-sheen" />
+                </span>
+                <span className="ngp-core">
+                  <span className="spiral-intro-meta">
+                    <span className="spiral-intro-index">{card.code}</span>
+                    <span className="spiral-intro-icon">
+                      <NeuralNodeIcon variant={i} />
+                    </span>
+                  </span>
+                  <h3 className="spiral-service-title">{card.title}</h3>
+                  <p className="spiral-service-body">{card.body}</p>
+                  <span className="spiral-intro-rule" />
+                </span>
               </button>
             );
           })}
@@ -587,25 +670,29 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
             );
           })}
           {serviceCards.map((card, i) => {
-            const MobileIcon = card.icon;
             return (
               <div
                 key={`${card.code}-mobile-service-${i}`}
-                className="spiral-service-card"
+                className="spiral-service-card ngp-panel ngp-panel-static is-materialized"
                 style={{
                   '--service-accent': card.accent,
                   '--service-accent-rgb': card.accentRgb,
                 } as CSSProperties}
               >
-                <span className="spiral-intro-meta">
-                  <span className="spiral-intro-index">{card.code}</span>
-                  <span className="spiral-intro-icon">
-                    {MobileIcon ? <MobileIcon size={15} strokeWidth={1.8} /> : null}
-                  </span>
+                <span className="ngp-surface" aria-hidden="true">
+                  <NeuralFiberField />
                 </span>
-                <h3 className="spiral-service-title">{card.title}</h3>
-                <p className="spiral-service-body">{card.body}</p>
-                <span className="spiral-intro-rule" />
+                <span className="ngp-core">
+                  <span className="spiral-intro-meta">
+                    <span className="spiral-intro-index">{card.code}</span>
+                    <span className="spiral-intro-icon">
+                      <NeuralNodeIcon variant={i} />
+                    </span>
+                  </span>
+                  <h3 className="spiral-service-title">{card.title}</h3>
+                  <p className="spiral-service-body">{card.body}</p>
+                  <span className="spiral-intro-rule" />
+                </span>
               </div>
             );
           })}
