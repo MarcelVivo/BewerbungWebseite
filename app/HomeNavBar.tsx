@@ -24,7 +24,7 @@ export default function HomeNavBar() {
         {/* ── Logo ── */}
         <a href="/" aria-label="Marcel Spahr – Startseite" className="flex items-center select-none">
           <img
-            src="/MSLogo/MSLogoNavbar.png"
+            src="/MSLogo/MSLogoLang.png"
             alt="Marcel Spahr"
             className="h-12 sm:h-14 w-auto object-contain"
           />
