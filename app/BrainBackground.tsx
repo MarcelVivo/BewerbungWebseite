@@ -377,6 +377,30 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var sBase=[], sMeta=[], sFibers=[], vc=0;
   var wobbleLineRefs=[], wobblePtsRefs=[];
   var wobbleX=new Float32Array(0), wobbleZ=new Float32Array(0);
+  var GOLD_STRAND_END_KEY='ms-gold-strand-end-v1';
+  var strandEndTargetWorld=null;
+  var strandEndOffsetWorld=new THREE.Vector3();
+  var strandEndOffsetLocal=new THREE.Vector3();
+  var goldTipLocal=new THREE.Vector3();
+  var goldTipWorld=new THREE.Vector3();
+  var goldTipProjected=new THREE.Vector3();
+  var goldDragRaycaster=new THREE.Raycaster();
+  var goldDragPlane=new THREE.Plane();
+  var goldDragPointer=new THREE.Vector2();
+  var goldDragPointerOffset=new THREE.Vector3();
+  var goldDragQuaternion=new THREE.Quaternion();
+  var goldDragScale=new THREE.Vector3();
+  var goldDragScratch=new THREE.Vector3();
+  var goldDragActive=false;
+  var goldDragHovered=false;
+  var goldDragHandle=null;
+  var goldDragHandleMaterial=null;
+  try {
+    var savedGoldEnd=JSON.parse(window.localStorage.getItem(GOLD_STRAND_END_KEY)||'null');
+    if(savedGoldEnd&&Number.isFinite(savedGoldEnd.x)&&Number.isFinite(savedGoldEnd.y)&&Number.isFinite(savedGoldEnd.z)) {
+      strandEndTargetWorld=new THREE.Vector3(savedGoldEnd.x,savedGoldEnd.y,savedGoldEnd.z);
+    }
+  } catch(_) {}
   // gemeinsame Durchhang-Richtung (Schwerkraft): leicht nach vorne/unten,
   // nicht rein vertikal, wirkt organischer als ein reiner Y-Fall
   var DROOP_DX=0, DROOP_DZ=0;
@@ -546,6 +570,142 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     wptsObj.material.size=SP.ptSize;
   }
   applyGoldRendering();
+
+  function goldStrandBendWeight(progress){
+    return smooth((progress-.22)/.78);
+  }
+
+  function goldStrandVertexLocal(vertexIndex,out,includeEndOffset){
+    var sourceOffset=vertexIndex*3;
+    var strandDeltaY=sBase[sourceOffset+1]-SBASE_Y;
+    out.set(
+      SBASE_X+(sBase[sourceOffset]-SBASE_X)+worldVerticalInStrandLocal.x*strandDeltaY+wobbleX[vertexIndex],
+      SBASE_Y+worldVerticalInStrandLocal.y*strandDeltaY,
+      SBASE_Z+(sBase[sourceOffset+2]-SBASE_Z)+worldVerticalInStrandLocal.z*strandDeltaY+wobbleZ[vertexIndex]
+    );
+    if(includeEndOffset&&strandEndTargetWorld){
+      out.addScaledVector(strandEndOffsetLocal,goldStrandBendWeight(sMeta[vertexIndex*2]));
+    }
+    return out;
+  }
+
+  function goldStrandTipLocal(out,includeEndOffset){
+    var lowestY=Infinity;
+    for(var tipFiberIndex=0;tipFiberIndex<sFibers.length;tipFiberIndex++){
+      var tipFiber=sFibers[tipFiberIndex];
+      var tipVertex=tipFiber.start+tipFiber.len-1;
+      lowestY=Math.min(lowestY,sBase[tipVertex*3+1]);
+    }
+    var tipCount=0;
+    out.set(0,0,0);
+    for(var tipAverageIndex=0;tipAverageIndex<sFibers.length;tipAverageIndex++){
+      var averageFiber=sFibers[tipAverageIndex];
+      var averageVertex=averageFiber.start+averageFiber.len-1;
+      if(sBase[averageVertex*3+1]>lowestY+.18) continue;
+      goldStrandVertexLocal(averageVertex,goldDragScratch,includeEndOffset);
+      out.add(goldDragScratch);
+      tipCount++;
+    }
+    if(!tipCount){
+      goldStrandVertexLocal(0,out,includeEndOffset);
+      return out;
+    }
+    return out.multiplyScalar(1/tipCount);
+  }
+
+  function updateGoldEndOffset(){
+    if(!strandEndTargetWorld){
+      strandEndOffsetWorld.set(0,0,0);
+      strandEndOffsetLocal.set(0,0,0);
+      return;
+    }
+    brain.updateWorldMatrix(true,false);
+    goldStrandTipLocal(goldTipLocal,false);
+    goldTipWorld.copy(goldTipLocal);
+    brain.localToWorld(goldTipWorld);
+    strandEndOffsetWorld.copy(strandEndTargetWorld).sub(goldTipWorld);
+    brain.getWorldQuaternion(goldDragQuaternion).invert();
+    brain.getWorldScale(goldDragScale);
+    strandEndOffsetLocal.copy(strandEndOffsetWorld).applyQuaternion(goldDragQuaternion);
+    strandEndOffsetLocal.x/=Math.max(.0001,goldDragScale.x);
+    strandEndOffsetLocal.y/=Math.max(.0001,goldDragScale.y);
+    strandEndOffsetLocal.z/=Math.max(.0001,goldDragScale.z);
+  }
+
+  function goldStrandTipWorld(out,includeEndOffset){
+    goldStrandTipLocal(goldTipLocal,includeEndOffset);
+    out.copy(goldTipLocal);
+    brain.localToWorld(out);
+    return out;
+  }
+
+  function updateGoldStrandGeometry(time){
+    if(!STRAND_ON||!vc) return;
+    for(var strandVertexIndex=0;strandVertexIndex<vc;strandVertexIndex++){
+      var strandProgress=sMeta[strandVertexIndex*2], strandPhase=sMeta[strandVertexIndex*2+1];
+      wobbleX[strandVertexIndex]=Math.sin(time*WIND.speed*2.95+strandProgress*WIND.waveFrequency+strandPhase)*WIND.wave*strandProgress*strandProgress
+        +Math.sin(time*WIND.speed*1.31+strandPhase)*WIND.sway*.08*strandProgress*strandProgress;
+      wobbleZ[strandVertexIndex]=Math.cos(time*WIND.speed*2.43+strandProgress*WIND.waveFrequency*.78+strandPhase)*WIND.wave*.82*strandProgress*strandProgress
+        +Math.cos(time*WIND.speed*1.07+strandPhase)*WIND.sway*.06*strandProgress*strandProgress;
+    }
+    updateGoldEndOffset();
+    var linePositionArray=linesObj.geometry.attributes.position.array;
+    for(var lineReferenceIndex=0;lineReferenceIndex<wobbleLineRefs.length;lineReferenceIndex++){
+      var lineReference=wobbleLineRefs[lineReferenceIndex];
+      goldStrandVertexLocal(lineReference.srcV,goldDragScratch,true);
+      linePositionArray[lineReference.off]=goldDragScratch.x;
+      linePositionArray[lineReference.off+1]=goldDragScratch.y;
+      linePositionArray[lineReference.off+2]=goldDragScratch.z;
+    }
+    linesObj.geometry.attributes.position.needsUpdate=true;
+    var pointPositionArray=wptsObj.geometry.attributes.position.array;
+    for(var pointReferenceIndex=0;pointReferenceIndex<wobblePtsRefs.length;pointReferenceIndex++){
+      var pointReference=wobblePtsRefs[pointReferenceIndex];
+      goldStrandVertexLocal(pointReference.srcV,goldDragScratch,true);
+      pointPositionArray[pointReference.off]=goldDragScratch.x;
+      pointPositionArray[pointReference.off+1]=goldDragScratch.y;
+      pointPositionArray[pointReference.off+2]=goldDragScratch.z;
+    }
+    wptsObj.geometry.attributes.position.needsUpdate=true;
+    goldStrandTipWorld(goldTipWorld,true);
+    if(goldDragHandle){
+      goldDragHandle.position.copy(goldTipWorld);
+      goldDragHandleMaterial.opacity=(goldDragActive||goldDragHovered)?.86:.42;
+    }
+  }
+
+  function persistGoldStrandEnd(){
+    try {
+      if(!strandEndTargetWorld){ window.localStorage.removeItem(GOLD_STRAND_END_KEY); return; }
+      window.localStorage.setItem(GOLD_STRAND_END_KEY,JSON.stringify({
+        x:strandEndTargetWorld.x,
+        y:strandEndTargetWorld.y,
+        z:strandEndTargetWorld.z
+      }));
+    } catch(_) {}
+  }
+
+  function resetGoldStrandEnd(){
+    strandEndTargetWorld=null;
+    strandEndOffsetWorld.set(0,0,0);
+    strandEndOffsetLocal.set(0,0,0);
+    persistGoldStrandEnd();
+  }
+
+  goldDragHandleMaterial=new THREE.SpriteMaterial({
+    map:sprite,
+    color:0xe7c56a,
+    transparent:true,
+    opacity:.42,
+    blending:THREE.AdditiveBlending,
+    depthWrite:false,
+    depthTest:false
+  });
+  goldDragHandle=new THREE.Sprite(goldDragHandleMaterial);
+  goldDragHandle.name='gold-strand-drag-handle';
+  goldDragHandle.scale.set(.18,.18,1);
+  goldDragHandle.visible=!isMobile;
+  scene.add(goldDragHandle);
 
   function rebuildStrand(){
     var newLPos=baseLinePos.slice(), newLCol=baseLineCol.slice();
@@ -1654,7 +1814,15 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
 
     appendSecondaryControls('Rot • linker Strang',satelliteStrands[0],'#d9788a');
     appendSecondaryControls('Blau • rechter Strang',satelliteStrands[1],'#8ebef2');
-    window.__strandTuning={SP:SP,FN:FN,MP:MP,WIND:WIND,GOLD_RENDER:GOLD_RENDER,RED_STRAND:RED_STRAND,BLUE_STRAND:BLUE_STRAND};
+    sectionLabel('Gold • Interaktives Ende','#f6e3a1');
+    var resetGoldEndBtn=document.createElement('button');
+    resetGoldEndBtn.type='button';
+    resetGoldEndBtn.textContent='Gezogenes Ende zurücksetzen';
+    resetGoldEndBtn.style.cssText='width:100%;padding:7px;background:rgba(231,197,106,.12);color:#f6e3a1;'
+      +'border:1px solid rgba(231,197,106,.52);border-radius:5px;font-weight:bold;cursor:pointer;';
+    resetGoldEndBtn.onclick=resetGoldStrandEnd;
+    tunePanel.appendChild(resetGoldEndBtn);
+    window.__strandTuning={SP:SP,FN:FN,MP:MP,WIND:WIND,GOLD_RENDER:GOLD_RENDER,RED_STRAND:RED_STRAND,BLUE_STRAND:BLUE_STRAND,resetGoldEnd:resetGoldStrandEnd};
     var copyBtn=document.createElement('button');
     copyBtn.textContent='Werte kopieren';
     copyBtn.style.cssText='margin-top:8px;width:100%;padding:6px;background:#c89a3d;color:#000;'
@@ -1675,6 +1843,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         +'WIND={ sway:'+WIND.sway+', speed:'+WIND.speed+', wave:'+WIND.wave+', waveFrequency:'+WIND.waveFrequency+' }\\n'
         +'stumpCenter=['+SBASE_X+','+SBASE_Y+','+SBASE_Z+']\n'
         +'GOLD_RENDER='+JSON.stringify(GOLD_RENDER)+'\n'
+        +'GOLD_END='+(strandEndTargetWorld?JSON.stringify({x:strandEndTargetWorld.x,y:strandEndTargetWorld.y,z:strandEndTargetWorld.z}):'null')+'\n'
         +'RED_STRAND='+JSON.stringify(RED_STRAND)+'\n'
         +'BLUE_STRAND='+JSON.stringify(BLUE_STRAND);
       out.value=snippet;
@@ -1708,6 +1877,58 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
 
     var mouseX = 0, mouseY = 0, smoothMouseX = 0, smoothMouseY = 0;
     const onMouse = (e) => { mouseX = (e.clientX / innerWidth - 0.5) * 2; mouseY = (e.clientY / innerHeight - 0.5) * 2; };
+    function setGoldDragPointer(event){
+      goldDragPointer.set(event.clientX/innerWidth*2-1,-(event.clientY/innerHeight)*2+1);
+    }
+    function pointerIsOverGoldTip(event){
+      if(isMobile||!goldDragHandle||!goldDragHandle.visible) return false;
+      brain.updateWorldMatrix(true,false);
+      updateGoldEndOffset();
+      goldStrandTipWorld(goldTipWorld,true);
+      camera.updateMatrixWorld();
+      goldTipProjected.copy(goldTipWorld).project(camera);
+      if(goldTipProjected.z<-1||goldTipProjected.z>1) return false;
+      var tipScreenX=(goldTipProjected.x*.5+.5)*innerWidth;
+      var tipScreenY=(-goldTipProjected.y*.5+.5)*innerHeight;
+      return Math.hypot(event.clientX-tipScreenX,event.clientY-tipScreenY)<=34;
+    }
+    function onGoldPointerDown(event){
+      if(event.button!==0||!pointerIsOverGoldTip(event)) return;
+      event.preventDefault();
+      setGoldDragPointer(event);
+      camera.getWorldDirection(goldDragScratch).normalize();
+      goldDragPlane.setFromNormalAndCoplanarPoint(goldDragScratch,goldTipWorld);
+      goldDragRaycaster.setFromCamera(goldDragPointer,camera);
+      if(goldDragRaycaster.ray.intersectPlane(goldDragPlane,goldDragScratch)){
+        goldDragPointerOffset.copy(goldTipWorld).sub(goldDragScratch);
+      } else {
+        goldDragPointerOffset.set(0,0,0);
+      }
+      strandEndTargetWorld=goldTipWorld.clone();
+      goldDragActive=true;
+      goldDragHovered=true;
+      document.body.style.cursor='grabbing';
+    }
+    function onGoldPointerMove(event){
+      if(!goldDragActive){
+        goldDragHovered=pointerIsOverGoldTip(event);
+        document.body.style.cursor=goldDragHovered?'grab':'';
+        return;
+      }
+      event.preventDefault();
+      setGoldDragPointer(event);
+      goldDragRaycaster.setFromCamera(goldDragPointer,camera);
+      if(goldDragRaycaster.ray.intersectPlane(goldDragPlane,goldDragScratch)){
+        strandEndTargetWorld.copy(goldDragScratch).add(goldDragPointerOffset);
+      }
+    }
+    function onGoldPointerUp(){
+      if(!goldDragActive) return;
+      goldDragActive=false;
+      goldDragHovered=false;
+      document.body.style.cursor='';
+      persistGoldStrandEnd();
+    }
     const resize = () => {
       // updateStyle=false: keep the canvas's own width:100%/height:100% CSS
       // (set inline below) instead of letting Three.js stamp a literal
@@ -1729,13 +1950,17 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     };
     const onVisibilityChange = () => { documentVisible = document.visibilityState === 'visible'; };
     window.addEventListener('mousemove', onMouse);
+    window.addEventListener('pointerdown', onGoldPointerDown, true);
+    window.addEventListener('pointermove', onGoldPointerMove, true);
+    window.addEventListener('pointerup', onGoldPointerUp, true);
+    window.addEventListener('pointercancel', onGoldPointerUp, true);
     window.addEventListener('resize', resize);
     window.addEventListener('scroll', onScroll, { passive: true });
     document.addEventListener('visibilitychange', onVisibilityChange);
     resize(); onScroll();
     renderer.render(scene, camera);
 
-    var t = 0, last = 0, rafId = 0, lastWobbleUpdate = 0, lastSatelliteStrandUpdate = 0;
+    var t = 0, last = 0, rafId = 0, lastWobbleUpdate = 0, lastSatelliteStrandUpdate = 0, lastGoldStrandUpdate = 0;
     function tick(now) {
       rafId = requestAnimationFrame(tick);
       if (!documentVisible) return;
@@ -1819,6 +2044,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         for (var gi = 0; gi < goldenPulses.length; gi++) goldenPulses[gi].update(dt);
         for (var pi = 0; pi < strandPulses.length; pi++) strandPulses[pi].update(dt);
       }
+      if(STRAND_ON&&vc>0){
+        var goldUpdateInterval=goldDragActive?16:40;
+        if(now-lastGoldStrandUpdate>goldUpdateInterval){
+          lastGoldStrandUpdate=now;
+          updateGoldStrandGeometry(t);
+        }
+      }
       if (NEURAL_ACTIVITY) {
         for (var neuralIndex = 0; neuralIndex < nerveBolts.length; neuralIndex++) {
           nerveBolts[neuralIndex].update(dt);
@@ -1878,11 +2110,18 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     return () => {
       cancelAnimationFrame(rafId);
       window.removeEventListener('mousemove', onMouse);
+      window.removeEventListener('pointerdown', onGoldPointerDown, true);
+      window.removeEventListener('pointermove', onGoldPointerMove, true);
+      window.removeEventListener('pointerup', onGoldPointerUp, true);
+      window.removeEventListener('pointercancel', onGoldPointerUp, true);
       window.removeEventListener('resize', resize);
       window.removeEventListener('scroll', onScroll);
       document.removeEventListener('visibilitychange', onVisibilityChange);
       renderer.dispose();
       renderer.forceContextLoss();
+      document.body.style.cursor='';
+      if(goldDragHandle&&goldDragHandle.parent) goldDragHandle.parent.remove(goldDragHandle);
+      if(goldDragHandleMaterial) goldDragHandleMaterial.dispose();
       if (tunePanel && tunePanel.parentNode) tunePanel.parentNode.removeChild(tunePanel);
       if (tuneLauncher && tuneLauncher.parentNode) tuneLauncher.parentNode.removeChild(tuneLauncher);
     };
