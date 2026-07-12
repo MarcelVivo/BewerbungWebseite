@@ -266,7 +266,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     stardust.frustumCulled=false;
     world.add(stardust);
   }
-  addStardustField(isMobile?1300:4200,.022,.5);
+  addStardustField(isMobile?1300:4200,.09,.85);
 
   var BR=brainData;
 
