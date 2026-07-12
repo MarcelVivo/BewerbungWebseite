@@ -612,17 +612,22 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     for(var fiberIndex=0;fiberIndex<fiberCount;fiberIndex++){
       var fanBias=(Math.random()-.5)*2;
       var edgeWeight=Math.pow(Math.abs(fanBias),.76);
+      var subBundleIndex=fiberIndex%5-2;
+      var isRed=side<0;
       fibers.push({
         anchorLocal:sideSatelliteAnchors[anchorOrder[fiberIndex%anchorOrder.length]].clone(),
-        fanOffset:fanBias*(.22+Math.random()*.18),
+        fanOffset:fanBias*(.26+Math.random()*.16),
         depthOffset:(Math.random()-.5)*(.24+edgeWeight*.2),
-        bundleOffset:(Math.random()-.5)*(.1+edgeWeight*.12),
-        targetAngle:(side<0?Math.PI:0)+(Math.random()-.5)*.76,
-        targetRadius:.1+Math.random()*.18,
-        targetHeight:(Math.random()-.5)*.25,
-        sag:.92+Math.random()*.34+(side<0?.06:-.035),
-        sagCenter:.57+(side<0?.035:-.025)+(Math.random()-.5)*.055,
-        catenaryTension:1.55+Math.random()*.42,
+        subBundleOffset:subBundleIndex*.075+(Math.random()-.5)*.026,
+        mainBundleOffset:(Math.random()-.5)*(.045+edgeWeight*.04),
+        centralOffset:(Math.random()-.5)*(.04+edgeWeight*.06),
+        targetAngle:(isRed?Math.PI:0)+(Math.random()-.5)*.46,
+        targetRadius:.42+Math.random()*.1,
+        targetHeight:(isRed?-.16:-.08)+(Math.random()-.5)*.13,
+        sag:(isRed?1.52:1.28)+Math.random()*(isRed?.28:.26),
+        sagCenter:(isRed?.635:.585)+(Math.random()-.5)*.05,
+        catenaryTension:1.34+Math.random()*.36,
+        lateralBow:(isRed?.09:.23)+(Math.random()-.5)*.045,
         edgeWeight:edgeWeight,
         phase:Math.random()*Math.PI*2
       });
@@ -661,31 +666,34 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var previousX=0, previousY=0, previousZ=0, previousR=0, previousG=0, previousB=0;
       for(var segmentIndex=0;segmentIndex<=bundle.segments;segmentIndex++){
         var progress=segmentIndex/bundle.segments;
-        var fanFade=1-smooth(progress/.42);
-        var bundleFade=smooth((progress-.12)/.36)*(1-smooth((progress-.64)/.24));
-        var integrationFade=smooth((progress-.64)/.36);
+        var fanFade=1-smooth(progress/.56);
+        var subBundleFade=smooth((progress-.16)/.34)*(1-smooth((progress-.65)/.17));
+        var mainBundleFade=smooth((progress-.42)/.24)*(1-smooth((progress-.74)/.13));
+        var integrationFade=smooth((progress-.7)/.3);
         var sagProgress=progress<fiber.sagCenter?progress/fiber.sagCenter:(1-progress)/(1-fiber.sagCenter);
         var catenaryDenominator=Math.cosh(fiber.catenaryTension)-1;
         var cat=(Math.cosh(fiber.catenaryTension)-Math.cosh(fiber.catenaryTension*(1-sagProgress)))/catenaryDenominator;
-        var heavyZone=Math.max(0,1-Math.abs(progress-fiber.sagCenter)/.24);
+        var heavyZone=Math.max(0,1-Math.abs(progress-fiber.sagCenter)/.27);
         heavyZone*=heavyZone;
-        var sagEnvelope=cat*(.94+heavyZone*.18);
+        var sagEnvelope=cat*(.98+heavyZone*.25);
         var x=sourceX+(targetX-sourceX)*progress;
         var y=sourceY+(targetY-sourceY)*progress-fiber.sag*sagEnvelope;
         var z=sourceZ+(targetZ-sourceZ)*progress;
         var release=smooth(progress/.11);
-        var crossOffset=(fiber.fanOffset*fanFade*release+fiber.bundleOffset*bundleFade)*(1-heavyZone*.42);
-        var livingSway=Math.sin(flowTime*.52+fiber.phase+progress*6.2)*(.012+.016*fiber.edgeWeight)*(1-integrationFade*.7);
-        x+=normalX*(crossOffset+livingSway)+Math.cos(fiber.phase)*fiber.depthOffset*fanFade*release*.34;
-        y+=Math.sin(fiber.phase*1.7+flowTime*.4)*fiber.depthOffset*fanFade*release*.16-heavyZone*.024;
-        z+=normalZ*(crossOffset+livingSway)+Math.sin(fiber.phase)*fiber.depthOffset*fanFade*release*.34;
-        x+=Math.cos(fiber.targetAngle)*fiber.targetRadius*integrationFade*.14;
-        z+=Math.sin(fiber.targetAngle)*fiber.targetRadius*integrationFade*.14;
+        var centralFan=Math.sin(integrationFade*Math.PI)*fiber.centralOffset;
+        var crossOffset=(fiber.fanOffset*fanFade*release+fiber.subBundleOffset*subBundleFade+fiber.mainBundleOffset*mainBundleFade+centralFan)*(1-heavyZone*.3);
+        var livingSway=Math.sin(flowTime*.44+fiber.phase+progress*5.6)*(.009+.018*fiber.edgeWeight)*(1-integrationFade*.68);
+        var looseEdge=Math.sin(fiber.phase*1.31+progress*8.4)*fiber.edgeWeight*cat*.035;
+        x+=bundle.side*fiber.lateralBow*cat*(1-integrationFade*.42);
+        z+=Math.cos(fiber.phase*.71+progress*3.2)*fiber.edgeWeight*cat*.045*(1-integrationFade*.45);
+        x+=normalX*(crossOffset+livingSway+looseEdge)+Math.cos(fiber.phase)*fiber.depthOffset*fanFade*release*.34;
+        y+=Math.sin(fiber.phase*1.7+flowTime*.32)*fiber.depthOffset*fanFade*release*.16-heavyZone*.038;
+        z+=normalZ*(crossOffset+livingSway+looseEdge)+Math.sin(fiber.phase)*fiber.depthOffset*fanFade*release*.34;
         var flow=Math.max(0,Math.sin(flowTime*2.4-progress*15+fiber.phase));
-        var centerFade=1-integrationFade*.2;
-        var fiberDensity=.44+(1-fiber.edgeWeight)*.58+heavyZone*.16;
-        var brightness=(.5+flow*.56)*fiberDensity*centerFade;
-        var goldBlend=integrationFade*.34;
+        var centerFade=1-integrationFade*.1;
+        var fiberDensity=.3+(1-fiber.edgeWeight)*.85+heavyZone*.2+Math.sin(progress*15+fiber.phase)*.04;
+        var brightness=(.45+flow*.54)*fiberDensity*centerFade;
+        var goldBlend=integrationFade*.18;
         var red=(bundle.color.r+(1-bundle.color.r)*goldBlend)*brightness;
         var green=(bundle.color.g+(.843-bundle.color.g)*goldBlend)*brightness;
         var blue=(bundle.color.b+(0-bundle.color.b)*goldBlend)*brightness;
