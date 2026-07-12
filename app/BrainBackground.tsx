@@ -331,7 +331,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       }
     }
     if(!foreheadPoint) return;
-    var plaqueWidth=isMobile?.52:.68;
+    var plaqueWidth=isMobile?.78:1.02;
     var plaqueHeight=plaqueWidth/(1536/1024);
     var plaque=new THREE.Group();
     plaque.name='forehead-logo';
@@ -342,7 +342,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var logoTexture=new THREE.TextureLoader().load('/MSLogo/MSLogoQuer.png');
     logoTexture.colorSpace=THREE.SRGBColorSpace;
     logoTexture.anisotropy=renderer.capabilities.getMaxAnisotropy();
-    var logoMaterial=new THREE.MeshBasicMaterial({map:logoTexture,transparent:true,opacity:.62,alphaTest:.001,depthWrite:false,side:THREE.FrontSide,toneMapped:false});
+    var logoMaterial=new THREE.MeshBasicMaterial({map:logoTexture,transparent:true,alphaTest:.001,depthWrite:false,side:THREE.FrontSide,toneMapped:false});
     var logoMesh=new THREE.Mesh(new THREE.PlaneGeometry(plaqueWidth,plaqueHeight),logoMaterial);
     logoMesh.position.z=.002;
     logoMesh.renderOrder=2;
