@@ -734,7 +734,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       fibers.push({
         anchorLocal:secondaryNetworkAnchors[Math.floor(Math.random()*secondaryNetworkAnchors.length)].clone(),
         laneOffset:(Math.random()-.5)*.25,
-        sag:.32+Math.random()*.22,
+        branchEnd:.42+Math.random()*.16,
+        routeSway:(Math.random()-.5)*.38,
+        routeDepth:(Math.random()-.5)*.24,
         microPhase:Math.random()*Math.PI*2
       });
     }
@@ -758,7 +760,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
 
   function updateSecondaryEnergyBundle(bundle,flowTime){
     var coreX=secondaryMainAnchor.x, coreY=secondaryMainAnchor.y, coreZ=secondaryMainAnchor.z;
-    var connectorShare=.3, helixLength=34, helixTurns=3.75, helixRotation=flowTime*.055;
+    var helixLength=34, helixTurns=3.75, helixRotation=flowTime*.055;
     for(var fiberIndex=0;fiberIndex<bundle.fibers.length;fiberIndex++){
       var fiber=bundle.fibers[fiberIndex];
       secondaryFiberAnchor.copy(fiber.anchorLocal);
@@ -766,36 +768,34 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var rootX=secondaryFiberAnchor.x;
       var rootY=secondaryFiberAnchor.y;
       var rootZ=secondaryFiberAnchor.z;
-      var joinAngle=bundle.phase+helixRotation+fiber.laneOffset;
-      var joinRadius=.46;
-      var joinX=coreX+Math.cos(joinAngle)*joinRadius;
-      var joinY=coreY;
-      var joinZ=coreZ+Math.sin(joinAngle)*joinRadius;
-      var side=Math.cos(bundle.phase);
-      var controlOneX=rootX+(joinX-rootX)*.26+side*.16;
-      var controlOneY=rootY-fiber.sag;
-      var controlOneZ=rootZ+(joinZ-rootZ)*.16;
-      var controlTwoX=rootX+(joinX-rootX)*.74+side*.05;
-      var controlTwoY=joinY-fiber.sag*.72;
-      var controlTwoZ=rootZ+(joinZ-rootZ)*.78;
+      var routeEndX=coreX+Math.cos(bundle.phase)*.06;
+      var routeEndY=coreY;
+      var routeEndZ=coreZ+Math.sin(bundle.phase)*.06;
+      var controlOneX=rootX+(routeEndX-rootX)*.28+fiber.routeSway;
+      var controlOneY=rootY+(routeEndY-rootY)*.18+fiber.routeDepth;
+      var controlOneZ=rootZ+(routeEndZ-rootZ)*.22+fiber.routeDepth;
+      var controlTwoX=rootX+(routeEndX-rootX)*.68+fiber.routeSway*.4;
+      var controlTwoY=rootY+(routeEndY-rootY)*.7-fiber.routeDepth*.35;
+      var controlTwoZ=rootZ+(routeEndZ-rootZ)*.72+fiber.routeDepth*.25;
       var previousX=0, previousY=0, previousZ=0, previousR=0, previousG=0, previousB=0;
       for(var segmentIndex=0;segmentIndex<=bundle.segments;segmentIndex++){
         var progress=segmentIndex/bundle.segments, x,y,z;
-        if(progress<connectorShare){
-          var connectorProgress=progress/connectorShare, inverse=1-connectorProgress;
-          x=inverse*inverse*inverse*rootX+3*inverse*inverse*connectorProgress*controlOneX+3*inverse*connectorProgress*connectorProgress*controlTwoX+connectorProgress*connectorProgress*connectorProgress*joinX;
-          y=inverse*inverse*inverse*rootY+3*inverse*inverse*connectorProgress*controlOneY+3*inverse*connectorProgress*connectorProgress*controlTwoY+connectorProgress*connectorProgress*connectorProgress*joinY;
-          z=inverse*inverse*inverse*rootZ+3*inverse*inverse*connectorProgress*controlOneZ+3*inverse*connectorProgress*connectorProgress*controlTwoZ+connectorProgress*connectorProgress*connectorProgress*joinZ;
-        } else {
-          var helixProgress=(progress-connectorShare)/(1-connectorShare);
-          var helixAngle=bundle.phase+helixRotation+helixProgress*Math.PI*2*helixTurns+fiber.laneOffset;
-          var microAngle=fiber.microPhase+helixProgress*Math.PI*2*.45*bundle.flowDirection;
-          var radius=.46+Math.cos(microAngle)*.045;
-          x=coreX+Math.cos(helixAngle)*radius;
-          y=coreY-helixProgress*helixLength+Math.sin(microAngle)*.035;
-          z=coreZ+Math.sin(helixAngle)*radius;
-        }
-        var transition=smooth(Math.max(0,(progress-.05)/Math.max(.001,connectorShare-.05)));
+        var routeProgress=Math.min(1,progress/fiber.branchEnd);
+        var routeInverse=1-routeProgress;
+        var routeX=routeInverse*routeInverse*routeInverse*rootX+3*routeInverse*routeInverse*routeProgress*controlOneX+3*routeInverse*routeProgress*routeProgress*controlTwoX+routeProgress*routeProgress*routeProgress*routeEndX;
+        var routeY=routeInverse*routeInverse*routeInverse*rootY+3*routeInverse*routeInverse*routeProgress*controlOneY+3*routeInverse*routeProgress*routeProgress*controlTwoY+routeProgress*routeProgress*routeProgress*routeEndY;
+        var routeZ=routeInverse*routeInverse*routeInverse*rootZ+3*routeInverse*routeInverse*routeProgress*controlOneZ+3*routeInverse*routeProgress*routeProgress*controlTwoZ+routeProgress*routeProgress*routeProgress*routeEndZ;
+        var transition=smooth(progress/fiber.branchEnd);
+        var helixProgress=Math.max(0,(progress-fiber.branchEnd)/Math.max(.001,1-fiber.branchEnd));
+        var helixAngle=bundle.phase+helixRotation+helixProgress*Math.PI*2*helixTurns+fiber.laneOffset;
+        var microAngle=fiber.microPhase+helixProgress*Math.PI*2*.45*bundle.flowDirection;
+        var radius=(.46+Math.cos(microAngle)*.045)*transition;
+        var helixX=coreX+Math.cos(helixAngle)*radius;
+        var helixY=coreY-helixProgress*helixLength+Math.sin(microAngle)*.035*transition;
+        var helixZ=coreZ+Math.sin(helixAngle)*radius;
+        x=routeX*(1-transition)+helixX*transition;
+        y=routeY*(1-transition)+helixY*transition;
+        z=routeZ*(1-transition)+helixZ*transition;
         var pulse=Math.max(0,Math.sin(flowTime*3.8*bundle.flowDirection-progress*24*bundle.flowDirection+fiber.microPhase));
         var brightness=.42+pulse*.9;
         var red=(secondaryGoldColor.r+(bundle.color.r-secondaryGoldColor.r)*transition)*brightness;
