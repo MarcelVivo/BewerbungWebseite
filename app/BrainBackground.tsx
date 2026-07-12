@@ -317,40 +317,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var scatterN=pts.length;
   brain.add(dbgHide('scatter',pointsObj(ppos,pcol,.072,1)));
 
-  function addForeheadLogoPlaque(){
-    var frontViewDirection=new THREE.Vector3(0,.12,1).normalize();
-    var referenceBrainRotation=new THREE.Euler(MAIN_BRAIN_BASE_X,BASE_Y,0,'XYZ');
-    var foreheadNormal=frontViewDirection.applyQuaternion(new THREE.Quaternion().setFromEuler(referenceBrainRotation).invert()).normalize();
-    var foreheadPoint=null, foreheadScore=-Infinity;
-    for(var foreheadIndex=0;foreheadIndex<scatterN;foreheadIndex++){
-      var candidatePoint=pts[foreheadIndex];
-      var candidateScore=candidatePoint.dot(foreheadNormal);
-      if(candidateScore>foreheadScore){
-        foreheadScore=candidateScore;
-        foreheadPoint=candidatePoint;
-      }
-    }
-    if(!foreheadPoint) return;
-    var plaqueWidth=isMobile?.78:1.02;
-    var plaqueHeight=plaqueWidth/(1536/1024);
-    var plaque=new THREE.Group();
-    plaque.name='forehead-logo';
-    plaque.position.copy(foreheadPoint).addScaledVector(foreheadNormal,.07);
-    var plaqueUp=new THREE.Vector3(0,1,0).addScaledVector(foreheadNormal,-foreheadNormal.y).normalize();
-    var plaqueRight=new THREE.Vector3().crossVectors(plaqueUp,foreheadNormal).normalize();
-    plaque.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(plaqueRight,plaqueUp,foreheadNormal));
-    var logoTexture=new THREE.TextureLoader().load('/MSLogo/MSLogoQuer.png');
-    logoTexture.colorSpace=THREE.SRGBColorSpace;
-    logoTexture.anisotropy=renderer.capabilities.getMaxAnisotropy();
-    var logoMaterial=new THREE.MeshBasicMaterial({map:logoTexture,transparent:true,alphaTest:.001,depthWrite:false,side:THREE.FrontSide,toneMapped:false});
-    var logoMesh=new THREE.Mesh(new THREE.PlaneGeometry(plaqueWidth,plaqueHeight),logoMaterial);
-    logoMesh.position.z=.002;
-    logoMesh.renderOrder=2;
-    plaque.add(logoMesh);
-    brain.add(plaque);
-  }
-  addForeheadLogoPlaque();
-
   var lpos=[], lcol=[], wpos=[], wcol=[], pairs=[], walkPaths=[];
   BR.walks.forEach(function(flat){
     cc.copy(golds[Math.floor(Math.random()*golds.length)]);
@@ -693,8 +659,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   }
   function addSatelliteBrain(x,y,z,phase,colorHex){
     var satellite=brain.clone(true);
-    var satelliteLogo=satellite.getObjectByName('forehead-logo');
-    if(satelliteLogo&&satelliteLogo.parent) satelliteLogo.parent.remove(satelliteLogo);
     tintSatelliteBrain(satellite,colorHex);
     satellite.scale.setScalar(isMobile?0.6:1.32);
     satellite.position.set(x,y,z);
