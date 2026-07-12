@@ -728,6 +728,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       fibers.push({
         rootAngle:Math.random()*Math.PI*2,
         rootRadius:.045+Math.random()*.16,
+        laneOffset:(Math.random()-.5)*.25,
+        radiusOffset:(Math.random()-.5)*.08,
         sag:1.22+Math.random()*.45,
         microPhase:Math.random()*Math.PI*2
       });
@@ -756,14 +758,14 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     secondarySatelliteAnchor.copy(stumpCenterLocal);
     bundle.satellite.localToWorld(secondarySatelliteAnchor);
     var coreX=secondaryMainAnchor.x, coreY=secondaryMainAnchor.y-.16, coreZ=secondaryMainAnchor.z;
-    var connectorShare=.35, helixLength=34, helixTurns=3.75, helixRadius=.52;
+    var connectorShare=.35, helixLength=34, helixTurns=3.75, helixRotation=flowTime*.055;
     for(var fiberIndex=0;fiberIndex<bundle.fibers.length;fiberIndex++){
       var fiber=bundle.fibers[fiberIndex];
       var rootX=secondarySatelliteAnchor.x+Math.cos(fiber.rootAngle)*fiber.rootRadius;
       var rootY=secondarySatelliteAnchor.y+Math.sin(fiber.rootAngle*.7)*fiber.rootRadius*.4;
       var rootZ=secondarySatelliteAnchor.z+Math.sin(fiber.rootAngle)*fiber.rootRadius;
-      var joinAngle=bundle.phase;
-      var joinRadius=helixRadius;
+      var joinAngle=bundle.phase+helixRotation+fiber.laneOffset;
+      var joinRadius=.46+fiber.radiusOffset;
       var joinX=coreX+Math.cos(joinAngle)*joinRadius;
       var joinY=coreY;
       var joinZ=coreZ+Math.sin(joinAngle)*joinRadius;
@@ -783,9 +785,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           z=inverse*inverse*inverse*rootZ+3*inverse*inverse*connectorProgress*controlOneZ+3*inverse*connectorProgress*connectorProgress*controlTwoZ+connectorProgress*connectorProgress*connectorProgress*joinZ;
         } else {
           var helixProgress=(progress-connectorShare)/(1-connectorShare);
-          var helixAngle=bundle.phase+helixProgress*Math.PI*2*helixTurns;
+          var helixAngle=bundle.phase+helixRotation+helixProgress*Math.PI*2*helixTurns+fiber.laneOffset;
           var microAngle=fiber.microPhase+helixProgress*Math.PI*2*.45*bundle.flowDirection;
-          var radius=helixRadius;
+          var radius=.46+fiber.radiusOffset+Math.cos(microAngle)*.045;
           x=coreX+Math.cos(helixAngle)*radius;
           y=coreY-helixProgress*helixLength+Math.sin(microAngle)*.035;
           z=coreZ+Math.sin(helixAngle)*radius;
