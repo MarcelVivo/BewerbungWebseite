@@ -628,6 +628,196 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     addSatelliteBrain(5.7,-.44,-.9,2.7,'#4d7fbf');
   }
 
+  function frontSurfacePoint(vertical,lateral,relief){
+    var normalizedVertical=(vertical-.02)/.92;
+    var normalizedLateral=lateral/.84;
+    var silhouette=Math.max(.028,1-normalizedVertical*normalizedVertical-normalizedLateral*normalizedLateral);
+    var corrugation=Math.sin(vertical*13+lateral*9)*.011+Math.cos(vertical*21-lateral*7)*.008;
+    return new THREE.Vector3(-1.02*Math.sqrt(silhouette)-relief-corrugation,vertical,lateral);
+  }
+
+  function addOrganicHemisphere(){
+    var verticalSegments=isMobile?26:40;
+    var azimuthSegments=isMobile?26:42;
+    var radiusX=1.025, radiusY=.925, radiusZ=.845;
+    var organicPositions=[], organicIndices=[];
+    for(var verticalIndex=0;verticalIndex<=verticalSegments;verticalIndex++){
+      var latitude=-Math.PI*.5+verticalIndex/verticalSegments*Math.PI;
+      var latitudeCosine=Math.cos(latitude);
+      var baseVertical=.02+radiusY*Math.sin(latitude);
+      for(var azimuthIndex=0;azimuthIndex<=azimuthSegments;azimuthIndex++){
+        var azimuth=Math.PI+azimuthIndex/azimuthSegments*Math.PI;
+        var surfaceNoise=Math.sin(azimuth*6+latitude*4)*.025+Math.cos(azimuth*11-latitude*7)*.014+Math.sin(latitude*19)*.009;
+        var radiusScale=1+surfaceNoise;
+        organicPositions.push(
+          radiusX*latitudeCosine*Math.cos(azimuth)*radiusScale,
+          baseVertical+Math.sin(azimuth*4+latitude*6)*.012,
+          radiusZ*latitudeCosine*Math.sin(azimuth)*radiusScale
+        );
+      }
+    }
+    for(var surfaceVerticalIndex=0;surfaceVerticalIndex<verticalSegments;surfaceVerticalIndex++){
+      for(var surfaceAzimuthIndex=0;surfaceAzimuthIndex<azimuthSegments;surfaceAzimuthIndex++){
+        var topLeft=surfaceVerticalIndex*(azimuthSegments+1)+surfaceAzimuthIndex;
+        var topRight=topLeft+1;
+        var bottomLeft=topLeft+azimuthSegments+1;
+        var bottomRight=bottomLeft+1;
+        organicIndices.push(topLeft,bottomLeft,topRight,topRight,bottomLeft,bottomRight);
+      }
+    }
+    var organicGeometry=new THREE.BufferGeometry();
+    organicGeometry.setAttribute('position',new THREE.Float32BufferAttribute(organicPositions,3));
+    organicGeometry.setIndex(organicIndices);
+    organicGeometry.computeVertexNormals();
+    var organicMaterial=new THREE.MeshStandardMaterial({
+      color:0xb8862b,
+      metalness:.82,
+      roughness:.34,
+      emissive:0x241607,
+      emissiveIntensity:.16,
+      side:THREE.DoubleSide
+    });
+    var organicSurface=new THREE.Mesh(organicGeometry,organicMaterial);
+    organicSurface.frustumCulled=false;
+    brain.add(organicSurface);
+  }
+
+  function createGyrusMaterials(){
+    return [
+      new THREE.MeshStandardMaterial({color:0xf6e3a1,metalness:.88,roughness:.24,emissive:0x3a2408,emissiveIntensity:.18}),
+      new THREE.MeshStandardMaterial({color:0xe7c56a,metalness:.84,roughness:.28,emissive:0x2a1905,emissiveIntensity:.15}),
+      new THREE.MeshStandardMaterial({color:0xc89a3d,metalness:.8,roughness:.32,emissive:0x1d1003,emissiveIntensity:.12}),
+      new THREE.MeshStandardMaterial({color:0xb8862b,metalness:.76,roughness:.38,emissive:0x150b02,emissiveIntensity:.1})
+    ];
+  }
+
+  function addOrganicGyri(){
+    var gyrusGroup=new THREE.Group();
+    var gyrusMaterials=createGyrusMaterials();
+    var gyrusCount=isMobile?22:36;
+    for(var gyrusIndex=0;gyrusIndex<gyrusCount;gyrusIndex++){
+      var baseVertical=-.7+gyrusIndex/(gyrusCount-1)*1.48+(rnd()-.5)*.035;
+      var verticalNorm=(baseVertical-.02)/.92;
+      var lateralSpan=Math.max(.14,.8*Math.sqrt(Math.max(.02,1-verticalNorm*verticalNorm)));
+      var startLateral=-lateralSpan*(.96-rnd()*.08);
+      var endLateral=-.035-rnd()*.075;
+      var gyrusPhase=rnd()*Math.PI*2;
+      var gyrusPoints=[];
+      for(var gyrusStep=0;gyrusStep<=12;gyrusStep++){
+        var gyrusProgress=gyrusStep/12;
+        var lateral=startLateral+(endLateral-startLateral)*gyrusProgress;
+        var vertical=baseVertical+Math.sin(gyrusProgress*Math.PI*(1.25+(gyrusIndex%3)*.18)+gyrusPhase)*(.045+rnd()*.013)+Math.sin(gyrusProgress*Math.PI*4+gyrusPhase)*.018;
+        gyrusPoints.push(frontSurfacePoint(vertical,lateral,.028+Math.sin(gyrusProgress*Math.PI+gyrusPhase)*.012));
+      }
+      var gyrusCurve=new THREE.CatmullRomCurve3(gyrusPoints);
+      var gyrusGeometry=new THREE.TubeGeometry(gyrusCurve,32,.015+rnd()*.011,5,false);
+      var gyrusMesh=new THREE.Mesh(gyrusGeometry,gyrusMaterials[gyrusIndex%gyrusMaterials.length]);
+      gyrusMesh.frustumCulled=false;
+      gyrusGroup.add(gyrusMesh);
+    }
+    var loopCount=isMobile?7:12;
+    for(var loopIndex=0;loopIndex<loopCount;loopIndex++){
+      var loopVertical=-.5+rnd()*1.16;
+      var loopLateral=-.18-rnd()*.48;
+      var loopHeight=.055+rnd()*.065;
+      var loopWidth=.05+rnd()*.075;
+      var loopPoints=[];
+      for(var loopStep=0;loopStep<=16;loopStep++){
+        var loopAngle=loopStep/16*Math.PI*2;
+        var vertical=loopVertical+Math.sin(loopAngle)*loopHeight;
+        var lateral=Math.min(-.025,loopLateral+Math.cos(loopAngle)*loopWidth);
+        loopPoints.push(frontSurfacePoint(vertical,lateral,.045));
+      }
+      var loopCurve=new THREE.CatmullRomCurve3(loopPoints);
+      var loopGeometry=new THREE.TubeGeometry(loopCurve,40,.012+rnd()*.009,5,true);
+      var loopMesh=new THREE.Mesh(loopGeometry,gyrusMaterials[(loopIndex+1)%gyrusMaterials.length]);
+      loopMesh.frustumCulled=false;
+      gyrusGroup.add(loopMesh);
+    }
+    brain.add(gyrusGroup);
+  }
+
+  function addTechnicalHemisphere(){
+    var techNodeCount=isMobile?84:164;
+    var techNodes=[], techNodeColors=[], techPointPositions=[], techPointColors=[];
+    for(var techNodeIndex=0;techNodeIndex<techNodeCount;techNodeIndex++){
+      var vertical,lateral,shape;
+      do {
+        vertical=-.78+rnd()*1.64;
+        lateral=.025+rnd()*.79;
+        shape=((vertical-.02)/.92)*((vertical-.02)/.92)+(lateral/.84)*(lateral/.84);
+      } while(shape>.98);
+      var techPoint=frontSurfacePoint(vertical,lateral,.032+rnd()*.022);
+      var intensity=.38+rnd()*.62;
+      var techColor=new THREE.Color(GOLD.deep).lerp(GOLD.hot,intensity);
+      techNodes.push(techPoint);
+      techNodeColors.push(techColor);
+      techPointPositions.push(techPoint.x,techPoint.y,techPoint.z);
+      techPointColors.push(techColor.r,techColor.g,techColor.b);
+    }
+    var techLinePositions=[], techLineColors=[];
+    for(var sourceIndex=0;sourceIndex<techNodes.length;sourceIndex++){
+      var nearestIndices=[], nearestDistances=[];
+      for(var targetIndex=0;targetIndex<techNodes.length;targetIndex++){
+        if(sourceIndex===targetIndex) continue;
+        var distance=techNodes[sourceIndex].distanceToSquared(techNodes[targetIndex]);
+        for(var nearestSlot=0;nearestSlot<3;nearestSlot++){
+          if(distance<(nearestDistances[nearestSlot]===undefined?Infinity:nearestDistances[nearestSlot])){
+            nearestDistances.splice(nearestSlot,0,distance);
+            nearestIndices.splice(nearestSlot,0,targetIndex);
+            nearestDistances.length=Math.min(nearestDistances.length,3);
+            nearestIndices.length=Math.min(nearestIndices.length,3);
+            break;
+          }
+        }
+      }
+      for(var nearestIndex=0;nearestIndex<nearestIndices.length;nearestIndex++){
+        var neighborIndex=nearestIndices[nearestIndex];
+        if(neighborIndex<sourceIndex) continue;
+        var sourceNode=techNodes[sourceIndex], neighborNode=techNodes[neighborIndex];
+        var sourceColor=techNodeColors[sourceIndex], neighborColor=techNodeColors[neighborIndex];
+        techLinePositions.push(sourceNode.x,sourceNode.y,sourceNode.z,neighborNode.x,neighborNode.y,neighborNode.z);
+        techLineColors.push(sourceColor.r,sourceColor.g,sourceColor.b,neighborColor.r,neighborColor.g,neighborColor.b);
+      }
+    }
+    var techLineGeometry=new THREE.BufferGeometry();
+    techLineGeometry.setAttribute('position',new THREE.Float32BufferAttribute(techLinePositions,3));
+    techLineGeometry.setAttribute('color',new THREE.Float32BufferAttribute(techLineColors,3));
+    var techLines=new THREE.LineSegments(techLineGeometry,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:.48,blending:THREE.NormalBlending,depthWrite:false}));
+    techLines.frustumCulled=false;
+    var techPoints=pointsObj(techPointPositions,techPointColors,.065,.7,THREE.NormalBlending);
+    techPoints.frustumCulled=false;
+    brain.add(techLines);
+    brain.add(techPoints);
+  }
+
+  function addHemisphereDivider(){
+    var dividerPoints=[];
+    for(var dividerIndex=0;dividerIndex<=22;dividerIndex++){
+      var vertical=-.83+dividerIndex/22*1.7;
+      dividerPoints.push(frontSurfacePoint(vertical,0,.055));
+    }
+    var dividerCurve=new THREE.CatmullRomCurve3(dividerPoints);
+    var dividerGeometry=new THREE.TubeGeometry(dividerCurve,42,.007,4,false);
+    var dividerMaterial=new THREE.MeshBasicMaterial({color:0xe7c56a,transparent:true,opacity:.46,toneMapped:false});
+    var divider=new THREE.Mesh(dividerGeometry,dividerMaterial);
+    divider.frustumCulled=false;
+    brain.add(divider);
+  }
+
+  var organicKeyLight=new THREE.DirectionalLight(0xf6e3a1,2.15);
+  organicKeyLight.position.set(-4.2,4.8,5.6);
+  scene.add(organicKeyLight);
+  var organicFillLight=new THREE.HemisphereLight(0x3a260d,0x020202,.24);
+  scene.add(organicFillLight);
+  var organicRimLight=new THREE.PointLight(0xc89a3d,.72,12,2);
+  organicRimLight.position.set(3.6,1.8,-2.2);
+  scene.add(organicRimLight);
+  addOrganicHemisphere();
+  addOrganicGyri();
+  addTechnicalHemisphere();
+  addHemisphereDivider();
+
   var satelliteStrands=[];
   var satelliteTargetWorld=new THREE.Vector3();
   var satelliteTargetLocal=new THREE.Vector3();
