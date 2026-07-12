@@ -268,6 +268,39 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   }
   addStardustField(isMobile?1300:4200,.09,.85);
 
+  // --- Farbige Leuchtorbs: rote & blaue Partikel, dreimal so gross wie das
+  // Gold-Staubfeld, in halber Stückzahl, über einen deutlich grösseren Raum
+  // verteilt und ortsfest. Jede Position bekommt zusätzlich zum hellen Kern
+  // eine grosse, weiche additive Glow-Hülle — das ist die einzig sinnvolle
+  // Art, "umliegende Objekte in ihrem Radius zu erhellen": die Szene besteht
+  // ausschliesslich aus unbeleuchteten Points-/Line-Materialien ohne
+  // THREE.Light-Unterstützung, ein echtes dynamisches Licht hätte hier keine
+  // sichtbare Wirkung auf irgendein Objekt. Der additive Glow überlagert die
+  // goldenen Linien in seiner Nähe stattdessen optisch mit Farbe. ---
+  function addColoredOrbField(count,coreSize,haloSize,coreOpacity,haloOpacity,shades,radiusMin,radiusMax,yPad){
+    var positions=[], colors=[], tint=new THREE.Color();
+    for(var orbIndex=0;orbIndex<count;orbIndex++){
+      var angle=Math.random()*Math.PI*2;
+      var radius=radiusMin+Math.random()*(radiusMax-radiusMin);
+      var y=cameraTargetEnd-yPad+Math.random()*(cameraTravel+yPad*2);
+      positions.push(Math.cos(angle)*radius,y,Math.sin(angle)*radius);
+      var flicker=.55+Math.random()*.45;
+      tint.copy(shades[Math.floor(Math.random()*shades.length)]).multiplyScalar(flicker);
+      colors.push(tint.r,tint.g,tint.b);
+    }
+    var core=pointsObj(positions,colors,coreSize,coreOpacity,THREE.AdditiveBlending);
+    core.frustumCulled=false;
+    world.add(core);
+    var halo=pointsObj(positions,colors,haloSize,haloOpacity,THREE.AdditiveBlending);
+    halo.frustumCulled=false;
+    world.add(halo);
+  }
+  var BLUE_ORB_SHADES=[new THREE.Color(0x4d7fbf),new THREE.Color(0x8ebef2),new THREE.Color(0xc4e3ff),new THREE.Color(0x244d82)];
+  var RED_ORB_SHADES=[new THREE.Color(0xa6425c),new THREE.Color(0xd9788a),new THREE.Color(0xf3b0b9),new THREE.Color(0x6a263b)];
+  var coloredOrbCount=isMobile?325:1050;
+  addColoredOrbField(coloredOrbCount,.27,1.35,.8,.13,BLUE_ORB_SHADES,2,55,14);
+  addColoredOrbField(coloredOrbCount,.27,1.35,.8,.13,RED_ORB_SHADES,2,55,14);
+
   var BR=brainData;
 
   var __hideSet = (typeof window!=='undefined' ? new URLSearchParams(window.location.search).get('hide')||'' : '').split(',');
@@ -283,6 +316,62 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   }
   var scatterN=pts.length;
   brain.add(dbgHide('scatter',pointsObj(ppos,pcol,.072,1)));
+
+  function addForeheadLogoPlaque(){
+    var frontViewDirection=new THREE.Vector3(0,.12,1).normalize();
+    var referenceBrainRotation=new THREE.Euler(MAIN_BRAIN_BASE_X,BASE_Y,0,'XYZ');
+    var foreheadNormal=frontViewDirection.applyQuaternion(new THREE.Quaternion().setFromEuler(referenceBrainRotation).invert()).normalize();
+    var foreheadPoint=null, foreheadScore=-Infinity;
+    for(var foreheadIndex=0;foreheadIndex<scatterN;foreheadIndex++){
+      var candidatePoint=pts[foreheadIndex];
+      var candidateScore=candidatePoint.dot(foreheadNormal);
+      if(candidateScore>foreheadScore){
+        foreheadScore=candidateScore;
+        foreheadPoint=candidatePoint;
+      }
+    }
+    if(!foreheadPoint) return;
+    var plaqueWidth=isMobile?.58:.74;
+    var plaqueHeight=plaqueWidth/(1536/1024);
+    var plaqueInset=.032, plaqueDepth=.035;
+    var plaque=new THREE.Group();
+    plaque.name='forehead-logo-plaque';
+    plaque.position.copy(foreheadPoint).addScaledVector(foreheadNormal,.09);
+    plaque.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),foreheadNormal);
+    var plaqueBackplateMaterial=new THREE.MeshPhysicalMaterial({
+      color:GOLD.deep,
+      metalness:.9,
+      roughness:.28,
+      clearcoat:.32,
+      clearcoatRoughness:.2,
+      emissive:GOLD.deep,
+      emissiveIntensity:.16
+    });
+    var plaqueBackplate=new THREE.Mesh(new THREE.BoxGeometry(plaqueWidth,plaqueHeight,plaqueDepth),plaqueBackplateMaterial);
+    plaqueBackplate.position.z=-plaqueDepth*.5;
+    plaque.add(plaqueBackplate);
+    var plaqueInsetMaterial=new THREE.MeshBasicMaterial({color:0x0f1012,transparent:true,opacity:.88,side:THREE.FrontSide,toneMapped:false});
+    var plaqueInsetMesh=new THREE.Mesh(new THREE.PlaneGeometry(plaqueWidth-plaqueInset*2,plaqueHeight-plaqueInset*2),plaqueInsetMaterial);
+    plaqueInsetMesh.position.z=.002;
+    plaque.add(plaqueInsetMesh);
+    var logoTexture=new THREE.TextureLoader().load('/MSLogo/MSLogoQuer.png');
+    logoTexture.colorSpace=THREE.SRGBColorSpace;
+    logoTexture.anisotropy=renderer.capabilities.getMaxAnisotropy();
+    var logoMaterial=new THREE.MeshBasicMaterial({map:logoTexture,transparent:true,alphaTest:.015,depthWrite:false,side:THREE.FrontSide,toneMapped:false});
+    var logoMesh=new THREE.Mesh(new THREE.PlaneGeometry(plaqueWidth-plaqueInset*2.8,plaqueHeight-plaqueInset*2.8),logoMaterial);
+    logoMesh.position.z=.006;
+    plaque.add(logoMesh);
+    var studMaterial=new THREE.MeshBasicMaterial({color:GOLD.hot,toneMapped:false});
+    var studGeometry=new THREE.SphereGeometry(.022,10,8);
+    var studOffsetX=plaqueWidth*.43, studOffsetY=plaqueHeight*.37;
+    [[-studOffsetX,-studOffsetY],[studOffsetX,-studOffsetY],[-studOffsetX,studOffsetY],[studOffsetX,studOffsetY]].forEach(function(studPosition){
+      var stud=new THREE.Mesh(studGeometry,studMaterial);
+      stud.position.set(studPosition[0],studPosition[1],.018);
+      plaque.add(stud);
+    });
+    brain.add(plaque);
+  }
+  addForeheadLogoPlaque();
 
   var lpos=[], lcol=[], wpos=[], wcol=[], pairs=[], walkPaths=[];
   BR.walks.forEach(function(flat){
