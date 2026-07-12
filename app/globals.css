@@ -526,27 +526,24 @@ body {
   display: none;
 }
 
-/* Vier unabhängige, feste Helix-Stationen statt eines gemeinsamen
-   2×2-Rasters — alle liegen exakt übereinander (grid-area 1/1), nur je
-   eine ist zu einem gegebenen Scroll-Zeitpunkt sichtbar/dominant. */
+/* Die vier Karten bilden EIN zusammenstehendes 2×2-Element, fixiert an
+   einer einzigen Helix-Position — kein Aufsplitten in Einzelstationen. */
 .spiral-service-stations {
   position: absolute;
   left: 50%;
   top: 54%;
   z-index: 1280;
   display: grid;
-  width: min(34rem, 88vw);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  width: min(64rem, 78vw);
   transform: translate3d(-50%, -50%, 0);
   perspective: 900px;
+  transform-style: preserve-3d;
   pointer-events: none;
 }
 
-.spiral-service-station {
-  grid-area: 1 / 1;
-  transform-style: preserve-3d;
-}
-
-.spiral-service-station .spiral-service-card {
+.spiral-service-stations .spiral-service-card {
   width: 100%;
   will-change: opacity;
   contain: layout paint style;
@@ -869,7 +866,7 @@ body {
   50%      { opacity: 0.4; }
 }
 
-.spiral-service-station.is-materialized .ngp-fibers {
+.spiral-service-stations.is-materialized .ngp-fibers {
   animation: ngp-fiber-pulse 7s ease-in-out infinite;
 }
 
@@ -886,7 +883,7 @@ body {
   pointer-events: none;
 }
 
-.spiral-service-station.is-materialized .ngp-sheen {
+.spiral-service-stations.is-materialized .ngp-sheen {
   animation: ngp-sheen-sweep 9.5s ease-in-out infinite;
   animation-delay: 1.2s;
 }
@@ -924,7 +921,7 @@ body {
   box-shadow: 0 0 8px rgba(var(--service-accent-rgb),0.7);
 }
 
-.spiral-service-station.is-materialized .ngp-connector {
+.spiral-service-stations.is-materialized .ngp-connector {
   animation: ngp-connector-pulse 6.5s ease-in-out infinite;
 }
 
@@ -961,7 +958,7 @@ body {
 .ngp-particle:nth-child(3) { top: 20%; left: 92%; }
 .ngp-particle:nth-child(4) { top: 90%; left: 14%; }
 
-.spiral-service-station.is-materialized .ngp-particle {
+.spiral-service-stations.is-materialized .ngp-particle {
   animation: ngp-particle-drift 11s ease-in-out infinite;
 }
 
@@ -1148,13 +1145,13 @@ body {
   pointer-events: none !important;
 }
 
-/* Jede Station ist fix auf ihrer eigenen Helix-Position (siehe
+/* Das 2×2-Element ist fix auf einer einzigen Helix-Position (siehe
    SpiralShowcase-Scroll-Effekt in page.tsx) und blendet dort beim
    Vorbeifliegen der Kamera ein und wieder aus. Nur die Opacity wird pro
    Scroll-Frame aus der Kameradistanz gesetzt; die Neigung ist eine feste,
    einmalig gesetzte Grundneigung und ändert sich nie (keine vom
    Scrollfortschritt gesteuerte Rotation, keine Eigenbewegung). */
-.spiral-service-station {
+.spiral-service-stations {
   opacity: 0;
   transition: opacity 220ms linear;
 }
@@ -1676,7 +1673,7 @@ body {
     display: none;
   }
 
-  .spiral-service-station {
+  .spiral-service-stations {
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;
