@@ -781,8 +781,8 @@ body {
   box-shadow: 0 0 26px rgba(var(--service-accent-rgb),0.52);
 }
 
-.spiral-service-card:hover,
-.spiral-service-card.is-selected {
+.spiral-service-card.ngp-panel:hover,
+.spiral-service-card.ngp-panel.is-selected {
   transform: translateY(-2px) scale(1.012);
 }
 
@@ -1048,6 +1048,29 @@ body {
 
 .ngp-panel-static .ngp-fibers {
   opacity: 0.22;
+}
+
+/* ── Schwebeverhalten: übernimmt den ruhigen, mehrachsigen Drift der
+   schwebenden 3D-Leistungskarten aus der Gehirn-Szene (leichte Positions-
+   und Rotationsschwankung, kein Kreisen, keine grosse Bewegung). Jede
+   Karte bekommt über --ngp-delay eine eigene Phase, damit nicht alle vier
+   synchron schweben. ── */
+@keyframes ngp-float {
+  0%   { transform: translate3d(0,0,0) rotate(0deg); }
+  25%  { transform: translate3d(1.5px,-3px,0) rotate(0.35deg); }
+  50%  { transform: translate3d(-1px,-1.5px,0) rotate(-0.25deg); }
+  75%  { transform: translate3d(-2px,2px,0) rotate(0.3deg); }
+  100% { transform: translate3d(0,0,0) rotate(0deg); }
+}
+
+.ngp-panel.is-materialized:not(.ngp-panel-static) {
+  animation: ngp-float 13s ease-in-out infinite;
+  animation-delay: var(--ngp-delay, 0ms);
+}
+
+.spiral-service-card:hover.ngp-panel:not(.ngp-panel-static),
+.spiral-service-card.is-selected.ngp-panel:not(.ngp-panel-static) {
+  animation: none;
 }
 
 .spiral-intro-meta {

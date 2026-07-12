@@ -95,10 +95,15 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
   const viewportRef = useRef({ width: 0, height: 0 });
   const serviceGridRef = useRef<HTMLDivElement | null>(null);
 
-  // Neural Glass Panels: erscheinen erst, nachdem der letzte Intro-Text
-  // durchgescrollt wurde (Schwelle = die bestehende #services-Ankerposition
-  // bei 18% der Section-Höhe), nicht durchgehend während der ganzen
-  // Sticky-Sektion sichtbar. Reine Scroll-Positions-Prüfung, kein
+  // Neural Glass Panels: erscheinen an exakt der Stelle, an der zuvor die
+  // erste (gelbe) 3D-Leistungskarte in der Helix sass, kurz bevor die
+  // Kamera dort ankommt. Die Schwelle wird aus denselben Helix-Konstanten
+  // wie in BrainBackground.tsx hergeleitet (TEXT_START_Y=-5, HELIX_STEP=4.2,
+  // 5 Intro-Texte + 4 Service- + 4 Platzhalterkarten = 13 Stopps, erste
+  // Servicekarte = Stopp Index 5), auf dieselbe scrollY-Formel abgebildet,
+  // die BrainBackground für die Kamera-Fortschrittsberechnung nutzt
+  // (start = section.offsetTop - innerHeight; scrollP = (scrollY-start)/
+  // section.offsetHeight). Reine Scroll-Positions-Prüfung, kein
   // zusätzlicher rAF-Loop — einmalig ausgelöst, danach übernimmt CSS die
   // Kaskade aus Partikeln → Fasern → Rahmen → Glas → Inhalt.
   useEffect(() => {
@@ -107,10 +112,21 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
     if (!grid || !section) return;
     const panels = Array.from(grid.querySelectorAll<HTMLElement>('.ngp-panel'));
     let revealed = false;
-    const revealFraction = 0.18;
+    const HELIX_STEP = 4.2;
+    const TEXT_START_Y = -5;
+    const introStopCount = 5;
+    const totalWorldStops = introStopCount + 4 + 4;
+    const cameraTargetEnd = TEXT_START_Y - (totalWorldStops - 1) * HELIX_STEP - 2.1;
+    const cameraTravel = 0 - cameraTargetEnd;
+    const firstCardWorldIndex = introStopCount;
+    const firstCardStopY = TEXT_START_Y - firstCardWorldIndex * HELIX_STEP;
+    const firstCardFraction = (0 - firstCardStopY) / cameraTravel;
+    const leadIn = 0.035;
+    const revealFraction = Math.max(0, firstCardFraction - leadIn);
     const onScroll = () => {
       if (revealed) return;
-      const threshold = section.offsetTop + section.offsetHeight * revealFraction;
+      const start = section.offsetTop - window.innerHeight;
+      const threshold = start + section.offsetHeight * revealFraction;
       if (window.scrollY < threshold) return;
       revealed = true;
       grid.classList.add('ngp-grid-revealed');

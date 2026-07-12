@@ -179,7 +179,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   }
 
   if(!isMobile){
-    serviceCards.forEach(function(card,index){ buildServiceCard(card,index,introTexts.length+index); });
+    // Karte 0 (erste Leistungskarte) wird durch das DOM-Kartenraster
+    // (Neural Glass Panels) ersetzt und hier bewusst ausgelassen — die
+    // Helix-Position/Kamera-Slots aller anderen Karten bleiben unverändert.
+    serviceCards.forEach(function(card,index){ if(index===0) return; buildServiceCard(card,index,introTexts.length+index); });
     placeholderCards.forEach(function(card,index){ buildServiceCard(card,index,introTexts.length+serviceCards.length+index); });
   }
 
@@ -354,7 +357,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     roots.push(new THREE.Vector3(BR.stumpRing[ri],BR.stumpRing[ri+1],BR.stumpRing[ri+2]));
   }
   var SP={ length:9.05, rStr:0.08, gather:0.25, taper:0.24,
-           curve:0, twist:5.2, jitter:0, rungs:0.68, ptSize:0.03, spacing:0.06,
+           curve:0, twist:5.2, jitter:0, rungs:0.68, ptSize:0.044, spacing:0.06,
            ringSpread:0.1, offX:0, offY:0, offZ:0,
            droop:1.5, frayStart:0.98, fraySpread:0.12 };
   // Trichter: jede Faser startet an einem echten goldenen Vertex im Stumpf-
@@ -364,6 +367,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var FN={ count:isMobile?96:220, anchorRadius:0.59, funnelHeight:0.19, funnelSegs:3, convergePull:0.65, randomness:1 };
   var MP={ moveLeft:0, moveRight:0, moveForward:0, moveBack:0, moveVertical:0.01 };
   var WIND={ sway:0.04, speed:0.37, wave:0.036, waveFrequency:9 };
+  var GOLD_RENDER={ intensity:1, lineOpacity:.34, pointOpacity:.36 };
   function moveX(){ return SP.offX + MP.moveRight - MP.moveLeft; }
   function moveY(){ return SP.offY + MP.moveVertical; }
   function moveZ(){ return SP.offZ + MP.moveForward - MP.moveBack; }
@@ -518,12 +522,19 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var lgeo=new THREE.BufferGeometry();
   lgeo.setAttribute('position',new THREE.Float32BufferAttribute(lpos,3));
   lgeo.setAttribute('color',new THREE.Float32BufferAttribute(lcol,3));
-  var linesObj=new THREE.LineSegments(lgeo,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:.34,blending:THREE.NormalBlending,depthWrite:false}));
+  var linesObj=new THREE.LineSegments(lgeo,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:GOLD_RENDER.lineOpacity,blending:THREE.NormalBlending,depthWrite:false}));
   linesObj.name='neural-lines';
   brain.add(dbgHide('walks',linesObj));
-  var wptsObj=pointsObj(wpos,wcol,.044,.36);
+  var wptsObj=pointsObj(wpos,wcol,SP.ptSize,GOLD_RENDER.pointOpacity);
   wptsObj.name='neural-points';
   brain.add(dbgHide('wpts',wptsObj));
+
+  function applyGoldRendering(){
+    linesObj.material.opacity=Math.min(1,GOLD_RENDER.lineOpacity*GOLD_RENDER.intensity);
+    wptsObj.material.opacity=Math.min(1,GOLD_RENDER.pointOpacity*GOLD_RENDER.intensity);
+    wptsObj.material.size=SP.ptSize;
+  }
+  applyGoldRendering();
 
   function rebuildStrand(){
     var newLPos=baseLinePos.slice(), newLCol=baseLineCol.slice();
@@ -540,6 +551,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     nwg.setAttribute('color',new THREE.Float32BufferAttribute(newWCol,3));
     wptsObj.geometry.dispose();
     wptsObj.geometry=nwg;
+    applyGoldRendering();
+    if(satelliteStrands&&satelliteStrands.length) rebuildSecondaryStrands();
   }
 
   var deg=new Uint8Array(scatterN), xpos=[];
