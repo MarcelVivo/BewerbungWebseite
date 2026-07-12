@@ -1430,11 +1430,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     for(var satelliteOrbIndex=0;satelliteOrbIndex<(isMobile?1:2);satelliteOrbIndex++) satelliteBlueOrbs.push(new BlueOrb(satellite));
   });
 
-  // --- Tuning-Panel: Regler für die Nervenstrang-Parameter, nur mit ?tune=1
-  // in der URL sichtbar. Werte lassen sich live anpassen und als Code-
-  // Snippet kopieren, um sie mir zu schicken. ---
-  var tunePanel=null;
-  if (typeof window!=='undefined' && new URLSearchParams(window.location.search).get('tune')==='1') {
+  // --- Tuning-Panel: Regler für die Nervenstrang-Parameter. ?tune=1
+  // öffnet es direkt; ansonsten über den sichtbaren Button. ---
+  var tunePanel=null, tuneLauncher=null;
+  var tuneStartsOpen=typeof window!=='undefined' && new URLSearchParams(window.location.search).get('tune')==='1';
+  if (typeof window!=='undefined') {
     function sectionLabel(text,color){
       var s=document.createElement('div');
       s.textContent=text;
@@ -1548,6 +1548,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     tunePanel.style.cssText='position:fixed;top:80px;right:10px;z-index:99999;'
       +'background:rgba(10,10,10,.88);color:#fff;font:11px/1.4 monospace;padding:12px;border-radius:8px;'
       +'max-height:80vh;overflow:auto;width:276px;box-shadow:0 4px 20px rgba(0,0,0,.5);';
+    tunePanel.style.display=tuneStartsOpen?'block':'none';
     var title=document.createElement('div');
     title.textContent='☰ 3-Strang-Tuning';
     title.style.cssText='font-weight:bold;margin-bottom:8px;font-size:12px;cursor:move;'
@@ -1666,6 +1667,21 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     tunePanel.appendChild(copyBtn);
     tunePanel.appendChild(out);
     document.body.appendChild(tunePanel);
+    tuneLauncher=document.createElement('button');
+    tuneLauncher.type='button';
+    tuneLauncher.style.cssText='position:fixed;right:14px;bottom:18px;z-index:100000;padding:10px 12px;'
+      +'border:1px solid rgba(231,197,106,.72);border-radius:999px;background:rgba(15,16,18,.92);'
+      +'color:#e7c56a;font:700 11px/1.1 monospace;letter-spacing:.08em;text-transform:uppercase;'
+      +'cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.35);';
+    function setTuningPanelOpen(open){
+      tunePanel.style.display=open?'block':'none';
+      tuneLauncher.textContent=open?'Tuning schliessen':'Strang-Tuning';
+      tuneLauncher.setAttribute('aria-label',open?'Strang-Tuning schliessen':'Strang-Tuning öffnen');
+      tuneLauncher.setAttribute('aria-expanded',String(open));
+    }
+    tuneLauncher.onclick=function(){ setTuningPanelOpen(tunePanel.style.display==='none'); };
+    setTuningPanelOpen(tuneStartsOpen);
+    document.body.appendChild(tuneLauncher);
   }
 
   var goldenPulses=[], strandPulses=[];
@@ -1851,6 +1867,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       renderer.dispose();
       renderer.forceContextLoss();
       if (tunePanel && tunePanel.parentNode) tunePanel.parentNode.removeChild(tunePanel);
+      if (tuneLauncher && tuneLauncher.parentNode) tuneLauncher.parentNode.removeChild(tuneLauncher);
     };
   }, []);
 
