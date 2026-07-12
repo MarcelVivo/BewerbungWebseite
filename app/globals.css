@@ -21,6 +21,12 @@
   --text-faint:   #7a6d5a;
 }
 
+html.custom-cursor-active,
+html.custom-cursor-active body,
+html.custom-cursor-active * {
+  cursor: none !important;
+}
+
 /* Subtle warm background gradient */
 body {
   overflow-x: hidden;

@@ -1,6 +1,7 @@
 import './globals.css';
 import { Inter } from 'next/font/google';
 import { LanguageProvider } from './LanguageContext';
+import CustomCursor from './CustomCursor';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -143,6 +144,7 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body className="text-[#f4edd8]">
+        <CustomCursor />
         <LanguageProvider>{children}</LanguageProvider>
       </body>
     </html>
