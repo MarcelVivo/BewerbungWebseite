@@ -419,11 +419,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         SBASE_Z+mz+Math.sin(mediumAngle)*mediumRadius
       );
       var largeCenter=new THREE.Vector3(
-        converge.x+(rnd()-.5)*.025,
+        converge.x,
         converge.y+(rnd()-.5)*.035,
-        converge.z+(rnd()-.5)*.025
+        converge.z
       );
-      var a0=rnd()*6.283, tw=(rnd()-.5)*SP.twist, rootWaveAmp=.016+rnd()*.018;
+      var a0=f/fiberCount*6.283+(rnd()-.5)*.08, tw=(rnd()-.5)*SP.twist, rootWaveAmp=.016+rnd()*.018;
       var frayJitter=0.4+rnd()*0.6;
       var endF=(f%4)?0.9+0.1*rnd():0.6+0.3*rnd();
       var legacyFunnelSteps=Math.max(3,Math.round(FN.funnelSegs));
@@ -1053,12 +1053,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var catenaryDepth=.52+Math.min(1.15,horizontalSpan*.18);
       var firstSag=catenaryDepth*fiberShape.firstDroop*params.firstDroop;
       var secondSag=catenaryDepth*fiberShape.secondDroop*params.secondDroop;
-      var controlOneX=startX+(joinX-startX)*.08+satelliteWorldDown.x*firstSag+satelliteWorldZ.x*fiberShape.firstSway*params.sway+satelliteWorldX.x*strand.sideSign*params.sidePull;
-      var controlOneY=startY+(joinY-startY)*.08+satelliteWorldDown.y*firstSag+satelliteWorldZ.y*fiberShape.firstSway*params.sway+satelliteWorldX.y*strand.sideSign*params.sidePull;
-      var controlOneZ=startZ+(joinZ-startZ)*.08+satelliteWorldDown.z*firstSag+satelliteWorldZ.z*fiberShape.firstSway*params.sway+satelliteWorldX.z*strand.sideSign*params.sidePull;
-      var controlTwoX=startX+(joinX-startX)*.72+satelliteWorldDown.x*secondSag+satelliteWorldZ.x*fiberShape.secondSway*params.sway+satelliteWorldX.x*strand.sideSign*params.endPull;
-      var controlTwoY=startY+(joinY-startY)*.72+satelliteWorldDown.y*secondSag+satelliteWorldZ.y*fiberShape.secondSway*params.sway+satelliteWorldX.y*strand.sideSign*params.endPull;
-      var controlTwoZ=startZ+(joinZ-startZ)*.72+satelliteWorldDown.z*secondSag+satelliteWorldZ.z*fiberShape.secondSway*params.sway+satelliteWorldX.z*strand.sideSign*params.endPull;
+      var controlOneX=startX+satelliteWorldDown.x*firstSag+satelliteWorldZ.x*fiberShape.firstSway*params.sway+satelliteWorldX.x*strand.sideSign*params.sidePull;
+      var controlOneY=startY+satelliteWorldDown.y*firstSag+satelliteWorldZ.y*fiberShape.firstSway*params.sway+satelliteWorldX.y*strand.sideSign*params.sidePull;
+      var controlOneZ=startZ+satelliteWorldDown.z*firstSag+satelliteWorldZ.z*fiberShape.firstSway*params.sway+satelliteWorldX.z*strand.sideSign*params.sidePull;
+      var controlTwoX=joinX+satelliteWorldDown.x*secondSag+satelliteWorldZ.x*fiberShape.secondSway*params.sway+satelliteWorldX.x*strand.sideSign*params.endPull;
+      var controlTwoY=joinY+satelliteWorldDown.y*secondSag+satelliteWorldZ.y*fiberShape.secondSway*params.sway+satelliteWorldX.y*strand.sideSign*params.endPull;
+      var controlTwoZ=joinZ+satelliteWorldDown.z*secondSag+satelliteWorldZ.z*fiberShape.secondSway*params.sway+satelliteWorldX.z*strand.sideSign*params.endPull;
       var previousX=startX, previousY=startY, previousZ=startZ;
       var previousR=0, previousG=0, previousB=0, lineOffset=fiber.lineOffset;
       for(var step=0;step<fiber.len;step++){
