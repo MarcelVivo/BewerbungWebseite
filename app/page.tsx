@@ -122,6 +122,11 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
     const cameraTravel = 0 - cameraTargetEnd;
     const firstCardWorldIndex = introStopCount;
     const firstCardStopY = TEXT_START_Y - firstCardWorldIndex * HELIX_STEP;
+    // Exakt dieselbe Bedingung wie helixAngle()/cardMesh.rotation.y in
+    // BrainBackground.tsx: die Karte hat eine fixe Weltraum-Ausrichtung
+    // (firstCardAngle), die Kamera umkreist die Achse (orbit=scrollP*2π) —
+    // die scheinbare Drehung relativ zur Kamera ist die Differenz beider.
+    const firstCardAngle = (2 * Math.PI * (0 - firstCardStopY)) / cameraTravel;
     const fadeWindow = HELIX_STEP * 1.35;
     const onScroll = () => {
       const start = section.offsetTop - window.innerHeight;
@@ -129,8 +134,10 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       const lookY = 0 - scrollP * cameraTravel;
       const distance = Math.abs(lookY - firstCardStopY);
       const visibility = Math.max(0, Math.min(1, 1 - distance / fadeWindow));
+      const orbit = scrollP * 2 * Math.PI;
+      const rotateYDeg = ((orbit - firstCardAngle) * 180) / Math.PI;
       grid.style.opacity = String(visibility);
-      grid.style.transform = `translate3d(-50%, calc(-50% + ${(1 - visibility) * 16}px), 0) scale(${0.96 + visibility * 0.04})`;
+      grid.style.transform = `translate3d(-50%, calc(-50% + ${(1 - visibility) * 16}px), 0) rotateY(${rotateYDeg}deg) scale(${0.96 + visibility * 0.04})`;
       grid.style.pointerEvents = visibility > 0.55 ? 'auto' : 'none';
       if (!materialized && visibility > 0.05) {
         materialized = true;
