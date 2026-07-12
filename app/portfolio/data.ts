@@ -21,7 +21,7 @@ export type Project = {
 export const PROJECTS: Project[] = [
   {
     slug: 'covid-certificate',
-    color: '#a896c8',
+    color: '#4d7fbf',
     de: {
       title: 'Swiss COVID Certificate App',
       tag: 'Software Engineering',
@@ -55,7 +55,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: 'digitalisierung-swisscom',
-    color: '#7a9bb5',
+    color: '#244d82',
     de: {
       title: 'Digitalisierung @ Swisscom',
       tag: 'Prozessoptimierung',
@@ -89,7 +89,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: 'olivias-olivenpaste',
-    color: '#8fb58a',
+    color: '#a6425c',
     de: {
       title: "Olivia's Olivenpaste",
       tag: 'Digital Marketing',
@@ -123,7 +123,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: 'requirements-engineering',
-    color: '#7aada8',
+    color: '#8ebef2',
     de: {
       title: 'Software & Requirements Engineering',
       tag: 'Requirements Engineering',

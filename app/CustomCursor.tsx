@@ -71,11 +71,11 @@ export default function CustomCursor() {
         ctx!.lineTo(nx, ny);
         cx = nx; cy = ny;
       }
-      ctx!.strokeStyle = `rgba(90,190,255,${alpha})`;
+      ctx!.strokeStyle = `rgba(142,190,242,${alpha})`;
       ctx!.lineWidth = size;
       ctx!.lineCap = 'round';
       ctx!.lineJoin = 'round';
-      ctx!.shadowColor = 'rgba(70,170,255,0.7)';
+      ctx!.shadowColor = 'rgba(77,127,191,0.7)';
       ctx!.shadowBlur = 3;
       ctx!.stroke();
     }

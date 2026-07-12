@@ -2,35 +2,65 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Palette A: Noir & Or ──────────────────────────────── */
+/* ==========================================================
+   MARCELSPAHR.CH — OFFICIAL DESIGN SYSTEM
+   Premium Metallic Edition
+   ========================================================== */
 :root {
-  --gold:         #c89a3d;
-  --gold-hover:   #b8862b;
-  --gold-light:   #e7c56a;
-  --gold-pale:    #f6e3a1;
-  --gold-ghost:   #f6e3a1;
-  --gold-deep:    #7c5a1a;
-  --gold-rgb:     200, 154, 61;
-  --gold-gradient: linear-gradient(135deg, #f6e3a1 0%, #e7c56a 18%, #c89a3d 45%, #b8862b 70%, #7c5a1a 100%);
-  --gold-shadow: 0 0 18px rgba(231,197,106,.18), 0 0 45px rgba(200,154,61,.12);
-  --bg-base:      #0c0a06;
-  --bg-alt:       #100d09;
-  --surface:      #1c1912;
-  --surface-hover:#231e15;
-  --surface-badge:#221e14;
-  --border:       #2d2820;
-  --text-primary: #f4edd8;
-  --text-secondary:#d4c4a8;
-  --text-muted:   #a89880;
-  --text-faint:   #7a6d5a;
-
-  /* Referenz-Farbsystem (vom User vorgegeben, 2026-07-12) — noch nicht
-     im restlichen Code verdrahtet, siehe globals.css Zeile ~1 im Chat. */
-  --background:           #0F1012;
+  --background-primary:   #0F1012;
   --background-secondary: #121315;
-  --card:                 #1A1C20;
-  --gold-highlight:       #F6E3A1;
-  --gold-dark:            #B8862B;
+  --background-card:      #1A1C20;
+  --background-border:    #2A2D32;
+
+  --gold-highlight: #F6E3A1;
+  --gold-light:     #E7C56A;
+  --gold-primary:   #C89A3D;
+  --gold-dark:      #B8862B;
+  --gold-deep:      #7C5A1A;
+
+  --blue-highlight: #C4E3FF;
+  --blue-light:     #8EBEF2;
+  --blue-primary:   #4D7FBF;
+  --blue-dark:      #244D82;
+  --blue-deep:      #102A4A;
+
+  --red-highlight: #F3B0B9;
+  --red-light:     #D9788A;
+  --red-primary:   #A6425C;
+  --red-dark:      #6A263B;
+  --red-deep:      #37131D;
+
+  --gradient-gold: linear-gradient(135deg, #F6E3A1 0%, #E7C56A 18%, #C89A3D 45%, #B8862B 72%, #7C5A1A 100%);
+  --gradient-blue: linear-gradient(135deg, #C4E3FF 0%, #8EBEF2 18%, #4D7FBF 45%, #244D82 72%, #102A4A 100%);
+  --gradient-red:  linear-gradient(135deg, #F3B0B9 0%, #D9788A 18%, #A6425C 45%, #6A263B 72%, #37131D 100%);
+
+  --gold-rgb: 200, 154, 61;
+  --blue-rgb: 77, 127, 191;
+  --red-rgb: 166, 66, 92;
+  --gold-shadow: 0 0 18px rgba(231,197,106,.18), 0 0 45px rgba(200,154,61,.12);
+  --blue-shadow: 0 0 18px rgba(142,190,242,.16), 0 0 45px rgba(77,127,191,.12);
+  --red-shadow:  0 0 18px rgba(217,120,138,.16), 0 0 45px rgba(166,66,92,.12);
+
+  --gold:         var(--gold-primary);
+  --gold-hover:   var(--gold-dark);
+  --gold-pale:    var(--gold-highlight);
+  --gold-ghost:   var(--gold-highlight);
+  --gold-gradient: var(--gradient-gold);
+
+  --bg-base:      var(--background-primary);
+  --bg-alt:       var(--background-secondary);
+  --surface:      var(--background-card);
+  --surface-hover:var(--background-border);
+  --surface-badge:var(--background-secondary);
+  --border:       var(--background-border);
+  --text-primary: #F4F5F7;
+  --text-secondary:#C6C9CF;
+  --text-muted:   #90959D;
+  --text-faint:   #6F747C;
+
+  /* Backwards-compatible aliases for existing page modules. */
+  --background:           var(--background-primary);
+  --card:                 var(--background-card);
 }
 
 html.custom-cursor-active,
@@ -39,14 +69,72 @@ html.custom-cursor-active * {
   cursor: none !important;
 }
 
-/* Subtle warm background gradient */
 body {
   overflow-x: hidden;
   background:
-    radial-gradient(ellipse 70% 45% at 15% 5%, #c89a3d0b 0%, transparent 65%),
-    radial-gradient(ellipse 50% 35% at 85% 90%, #7c5a1a07 0%, transparent 60%),
-    #0c0a06;
+    radial-gradient(ellipse 70% 45% at 15% 5%, rgba(200,154,61,.07) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 35% at 85% 90%, rgba(77,127,191,.045) 0%, transparent 60%),
+    var(--background-primary);
 }
+
+[class~="bg-[#0c0a06]"] { background-color: var(--background-primary) !important; }
+[class~="bg-[#0c0a06]/95"] { background-color: rgba(15,16,18,.95) !important; }
+[class~="bg-[#0f1117]"] { background-color: var(--background-primary) !important; }
+[class~="bg-[#100d09]"] { background-color: var(--background-secondary) !important; }
+[class~="bg-[#1c1912]"] { background-color: var(--background-card) !important; }
+[class~="bg-[#221e14]"],
+[class~="bg-[#231e15]"] { background-color: var(--background-border) !important; }
+[class~="border-[#2d2820]"] { border-color: var(--background-border) !important; }
+[class~="border-[#2d3144]"] { border-color: var(--background-border) !important; }
+[class~="border-[#3d3525]"] { border-color: rgba(42,45,50,.78) !important; }
+[class~="text-[#0c0a06]"] { color: var(--background-primary) !important; }
+[class~="text-[#f4edd8]"] { color: var(--text-primary) !important; }
+[class~="text-[#d4c4a8]"] { color: var(--text-secondary) !important; }
+[class~="text-[#a89880]"] { color: var(--text-muted) !important; }
+[class~="text-[#7a6d5a]"] { color: var(--text-faint) !important; }
+[class~="placeholder-[#5a5040]"]::placeholder { color: #555A63 !important; }
+[class~="text-[#d8ccb3]"] { color: #D5D8DD !important; }
+[class~="text-[#b9aa8f]"] { color: #B8BDC5 !important; }
+
+.brand-blue-fill,
+[class~="bg-[#5fb4ff]"],
+[class~="bg-[#4dd2ff]"],
+[class~="bg-[#3b82f6]"],
+[class~="bg-[#6366f1]"],
+[class~="bg-[#5254cc]"] {
+  background: var(--gradient-blue) !important;
+  box-shadow: var(--blue-shadow) !important;
+}
+
+.brand-blue-fill:hover {
+  filter: brightness(1.05) saturate(.96);
+}
+
+.brand-red-fill,
+[class~="bg-[#ff4d6d]"],
+[class~="bg-[#c4897a]"],
+[class~="bg-[#c28cff]"] {
+  background: var(--gradient-red) !important;
+  box-shadow: var(--red-shadow) !important;
+}
+
+.brand-red-fill:hover {
+  filter: brightness(1.05) saturate(.96);
+}
+
+[class~="text-[#5fb4ff]"],
+[class~="text-[#4dd2ff]"],
+[class~="text-[#3b82f6]"],
+[class~="text-[#6366f1]"] { color: var(--blue-light) !important; }
+[class~="text-[#ff4d6d]"],
+[class~="text-[#c4897a]"],
+[class~="text-[#c28cff]"] { color: var(--red-light) !important; }
+[class~="text-[#4d7fbf]"] { color: var(--blue-light) !important; }
+[class~="text-[#a6425c]"] { color: var(--red-light) !important; }
+[class~="bg-[#4d7fbf]/10"] { background-color: rgba(var(--blue-rgb), .10) !important; }
+[class~="bg-[#a6425c]/10"] { background-color: rgba(var(--red-rgb), .10) !important; }
+[class~="focus:border-[#4d7fbf]"]:focus { border-color: var(--blue-light) !important; }
+[class~="focus:ring-[#4d7fbf]"]:focus { --tw-ring-color: rgba(var(--blue-rgb), .48) !important; }
 
 .brand-gold-fill,
 [class~="bg-[#c9a84c]"],
@@ -208,11 +296,11 @@ body {
   overflow: hidden;
   border: 1px solid rgba(200,154,61,0.22);
   background:
-    linear-gradient(145deg, rgba(244,237,216,0.045), transparent 34%),
+    linear-gradient(145deg, rgba(244,245,247,0.045), transparent 34%),
     radial-gradient(circle at 18% 12%, rgba(200,154,61,0.16), transparent 28%),
-    linear-gradient(180deg, rgba(28,25,18,0.82), rgba(12,10,6,0.72));
+    linear-gradient(180deg, rgba(26,28,32,0.82), rgba(15,16,18,0.72));
   clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
-  box-shadow: inset 0 1px 0 rgba(244,237,216,0.06), 0 18px 50px rgba(0,0,0,0.22);
+  box-shadow: inset 0 1px 0 rgba(244,245,247,0.06), 0 18px 50px rgba(0,0,0,0.22);
   transition: border-color 220ms ease, transform 220ms ease, background 220ms ease, box-shadow 220ms ease;
 }
 
@@ -246,10 +334,10 @@ body {
   transform: translateY(-4px);
   border-color: rgba(231,197,106,0.58);
   background:
-    linear-gradient(145deg, rgba(244,237,216,0.065), transparent 34%),
+    linear-gradient(145deg, rgba(244,245,247,0.065), transparent 34%),
     radial-gradient(circle at 18% 12%, rgba(200,154,61,0.24), transparent 30%),
-    linear-gradient(180deg, rgba(32,28,20,0.88), rgba(12,10,6,0.78));
-  box-shadow: inset 0 1px 0 rgba(244,237,216,0.08), 0 24px 64px rgba(0,0,0,0.30), var(--gold-shadow);
+    linear-gradient(180deg, rgba(26,28,32,0.88), rgba(15,16,18,0.78));
+  box-shadow: inset 0 1px 0 rgba(244,245,247,0.08), 0 24px 64px rgba(0,0,0,0.30), var(--gold-shadow);
 }
 
 .neural-panel:hover::after {
@@ -267,7 +355,7 @@ body {
   color: var(--gold-light);
   background:
     radial-gradient(circle, rgba(231,197,106,0.28), rgba(200,154,61,0.08) 54%, transparent 56%),
-    rgba(12,10,6,0.72);
+    rgba(15,16,18,0.72);
 }
 
 .neural-panel:hover .neural-node {
@@ -455,7 +543,7 @@ body {
   background:
     radial-gradient(circle at 50% 0%, rgba(var(--service-accent-rgb),0.15), transparent 36%),
     linear-gradient(145deg, rgba(var(--service-accent-rgb),0.08), transparent 44%),
-    linear-gradient(145deg, rgba(12,10,4,0.84), rgba(3,3,2,0.62));
+    linear-gradient(145deg, rgba(18,19,21,0.84), rgba(15,16,18,0.62));
   box-shadow:
     0 24px 80px rgba(0,0,0,0.58),
     0 0 44px rgba(var(--service-accent-rgb),0.14),
@@ -507,7 +595,7 @@ body {
   height: 2rem;
   border: 1px solid rgba(var(--service-accent-rgb),0.28);
   border-radius: 999px;
-  color: rgba(245,236,214,0.78);
+  color: rgba(244,245,247,0.78);
   background: rgba(0,0,0,0.24);
   font-size: 1.35rem;
   line-height: 1;
@@ -528,7 +616,7 @@ body {
 
 .spiral-detail-text {
   margin-top: 0.95rem;
-  color: rgba(245,236,214,0.82);
+  color: rgba(244,245,247,0.82);
   font-size: clamp(0.86rem, 1vw, 1rem);
   font-weight: 500;
   line-height: 1.55;
@@ -545,7 +633,7 @@ body {
 .spiral-detail-list span {
   position: relative;
   padding-left: 0.95rem;
-  color: rgba(255,240,194,0.76);
+  color: rgba(246,227,161,0.76);
   font-size: 0.78rem;
   font-weight: 700;
   line-height: 1.35;
@@ -584,7 +672,7 @@ body {
   background:
     radial-gradient(circle at 19% 42%, rgba(231,197,106,0.74) 0 1px, transparent 1.9px),
     radial-gradient(circle at 67% 74%, rgba(231,197,106,0.5) 0 1px, transparent 1.8px),
-    radial-gradient(circle at 82% 22%, rgba(95,180,255,0.33) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 82% 22%, rgba(142,190,242,0.33) 0 1px, transparent 1.8px),
     radial-gradient(ellipse at 42% 52%, rgba(200,154,61,0.15), transparent 65%);
   background-size: 39px 31px, 57px 47px, 73px 61px, 100% 100%;
   mask-image: radial-gradient(ellipse at center, #000 18%, transparent 72%);
@@ -625,7 +713,7 @@ body {
   background:
     radial-gradient(circle at 18% 12%, rgba(var(--service-accent-rgb),0.2), transparent 34%),
     linear-gradient(135deg, rgba(var(--service-accent-rgb),0.1), transparent 42%),
-    linear-gradient(135deg, rgba(12,10,4,0.76), rgba(3,3,2,0.48));
+    linear-gradient(135deg, rgba(18,19,21,0.76), rgba(15,16,18,0.48));
   border: 1px solid rgba(var(--service-accent-rgb),0.28);
   border-radius: 1.25rem;
   box-shadow:
@@ -763,7 +851,7 @@ body {
 
 .spiral-service-body {
   max-width: 24rem;
-  color: rgba(245,236,214,0.78);
+  color: rgba(244,245,247,0.78);
   font-size: clamp(0.82rem, 1vw, 0.96rem);
   font-weight: 500;
   line-height: 1.45;
@@ -790,43 +878,43 @@ body {
 .spiral-card::before {
   background:
     linear-gradient(105deg, transparent 0 18%, rgba(255,255,255,0.58) 24%, transparent 32% 100%),
-    linear-gradient(90deg, rgba(61,35,0,0.34), transparent 38%) top left / 66% 1px no-repeat,
-    linear-gradient(180deg, rgba(61,35,0,0.24), transparent 40%) top left / 1px 58% no-repeat;
+    linear-gradient(90deg, rgba(124,90,26,0.34), transparent 38%) top left / 66% 1px no-repeat,
+    linear-gradient(180deg, rgba(124,90,26,0.24), transparent 40%) top left / 1px 58% no-repeat;
   mix-blend-mode: soft-light;
 }
 
 .spiral-card .neural-node {
   width: 2rem;
   height: 2rem;
-  color: #151007 !important;
-  border-color: rgba(42,27,0,0.42) !important;
+  color: #0F1012 !important;
+  border-color: rgba(124,90,26,0.42) !important;
   background:
-    radial-gradient(circle, rgba(255,255,230,0.72), rgba(255,205,64,0.42) 54%, transparent 56%),
-    rgba(255,224,116,0.72);
+    radial-gradient(circle, rgba(246,227,161,0.72), rgba(231,197,106,0.42) 54%, transparent 56%),
+    rgba(200,154,61,0.72);
 }
 
 .spiral-card .neural-thread {
-  background: linear-gradient(90deg, rgba(42,27,0,0.52), transparent) !important;
+  background: linear-gradient(90deg, rgba(124,90,26,0.52), transparent) !important;
 }
 
 .spiral-card .neural-code {
-  color: rgba(30,19,0,0.72) !important;
+  color: rgba(15,16,18,0.72) !important;
   font-size: 0.56rem;
   letter-spacing: 0.1em;
 }
 
 .spiral-card-title {
-  color: #100b03;
+  color: #0F1012;
   font-size: 0.76rem;
   font-weight: 850;
   line-height: 1.12;
   letter-spacing: -0.015em;
-  text-shadow: 0 1px 0 rgba(255,245,190,0.34);
+  text-shadow: 0 1px 0 rgba(246,227,161,0.34);
 }
 
 .spiral-card-body {
   margin-top: 0.35rem;
-  color: rgba(16,11,3,0.82);
+  color: rgba(15,16,18,0.82);
   font-size: 0.6rem;
   line-height: 1.32;
   display: -webkit-box;
@@ -836,7 +924,7 @@ body {
 }
 
 .spiral-card .text-\[\#d4b86a\] {
-  color: #171004 !important;
+  color: #0F1012 !important;
 }
 
 .spiral-mobile {
@@ -857,7 +945,7 @@ body {
   padding-bottom: 7rem;
   background:
     radial-gradient(ellipse 44% 28% at 50% 0%, rgba(200,154,61,0.08), transparent 68%),
-    linear-gradient(180deg, rgba(12,10,6,0), rgba(12,10,6,0.86) 18%, rgba(12,10,6,0.9));
+    linear-gradient(180deg, rgba(15,16,18,0), rgba(15,16,18,0.86) 18%, rgba(15,16,18,0.9));
 }
 
 .process-heading {
@@ -884,7 +972,7 @@ body {
   border: 1px solid rgba(200,154,61,0.24);
   border-radius: 999px;
   color: var(--gold-light);
-  background: rgba(12,10,4,0.38);
+  background: rgba(18,19,21,0.38);
   font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.2em;
@@ -907,7 +995,7 @@ body {
 .process-heading p {
   max-width: 40rem;
   margin: 1.05rem auto 0;
-  color: rgba(245,236,214,0.72);
+  color: rgba(244,245,247,0.72);
   font-size: clamp(0.95rem, 1.35vw, 1.15rem);
   line-height: 1.55;
 }
@@ -985,7 +1073,7 @@ body {
   border-radius: 0.85rem;
   background:
     radial-gradient(circle at 18% 18%, rgba(200,154,61,0.12), transparent 38%),
-    linear-gradient(145deg, rgba(28,25,18,0.86), rgba(12,10,6,0.76));
+    linear-gradient(145deg, rgba(26,28,32,0.86), rgba(15,16,18,0.76));
   box-shadow:
     0 18px 56px rgba(0,0,0,0.36),
     inset 0 1px 0 rgba(246,227,161,0.06);
@@ -1046,7 +1134,7 @@ body {
 .process-card-title span {
   padding: 0.24rem 0.48rem;
   border-radius: 999px;
-  color: rgba(245,236,214,0.42);
+  color: rgba(244,245,247,0.42);
   background: rgba(200,154,61,0.08);
   font-size: 0.66rem;
   font-weight: 700;
@@ -1062,7 +1150,7 @@ body {
 
 .process-card p {
   margin-top: 0.95rem;
-  color: rgba(245,236,214,0.68);
+  color: rgba(244,245,247,0.68);
   font-size: 0.92rem;
   line-height: 1.55;
 }
@@ -1078,7 +1166,7 @@ body {
   border: 1px solid rgba(200,154,61,0.68);
   border-radius: 999px;
   color: var(--gold-light);
-  background: rgba(12,10,6,0.88);
+  background: rgba(15,16,18,0.88);
   box-shadow:
     var(--gold-shadow),
     inset 0 0 0 1px rgba(0,0,0,0.42);
@@ -1109,7 +1197,7 @@ body {
   gap: 0.7rem;
   padding: 1rem 1.6rem;
   border-radius: 0.8rem;
-  color: #0c0a06;
+  color: var(--background-primary);
   background: var(--gold-gradient);
   box-shadow: var(--gold-shadow);
   font-weight: 900;

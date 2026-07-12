@@ -46,7 +46,7 @@ export default function LoginPage() {
           <label className="block text-sm font-medium text-[#d4c4a8]">Passwort</label>
           <input type="password" className={inputCls} value={password} onChange={(e) => setPassword(e.target.value)} required />
         </div>
-        {error && <div className="text-[#c4897a] text-sm bg-[#c4897a]/10 rounded-lg px-3 py-2">{error}</div>}
+        {error && <div className="text-[#a6425c] text-sm bg-[#a6425c]/10 rounded-lg px-3 py-2">{error}</div>}
         <button
           className="w-full rounded-lg bg-[#c9a84c] hover:bg-[#b8943a] text-[#0c0a06] py-3 font-bold shadow-lg shadow-[#c9a84c]/20 transition-all"
           type="submit"

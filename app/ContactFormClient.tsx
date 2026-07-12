@@ -35,10 +35,10 @@ export default function ContactFormClient() {
       <input name="email"   type="email" required placeholder={t.email}   className={inputCls} />
       <textarea name="message" required rows={5} placeholder={t.message} className={`${inputCls} resize-none`} />
       {status === 'success' && (
-        <p className="text-sm text-[#8fb58a] bg-[#8fb58a]/10 rounded-lg px-4 py-3">{t.success}</p>
+        <p className="text-sm text-[#4d7fbf] bg-[#4d7fbf]/10 rounded-lg px-4 py-3">{t.success}</p>
       )}
       {status === 'error' && (
-        <p className="text-sm text-[#c4897a] bg-[#c4897a]/10 rounded-lg px-4 py-3">{t.error}</p>
+        <p className="text-sm text-[#a6425c] bg-[#a6425c]/10 rounded-lg px-4 py-3">{t.error}</p>
       )}
       <button
         type="submit"

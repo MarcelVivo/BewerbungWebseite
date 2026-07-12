@@ -243,7 +243,7 @@ function VisualKanban({ color, lang }: { color: string; lang: Lang }) {
     { title: 'In Progress', tasks: ['Homepage-Entwicklung', 'Mobile-Ansicht'] },
     { title: 'Done ✓',     tasks: ['Anforderungen definiert', 'Hosting eingerichtet', 'Domain konfiguriert', 'Design-System festgelegt'] },
   ];
-  const colors = ['#475569', color, '#22c55e'];
+  const colors = ['#102A4A', color, '#8EBEF2'];
   return (
     <div className="grid grid-cols-3 gap-3">
       {columns.map((col, ci) => (

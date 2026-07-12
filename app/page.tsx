@@ -31,10 +31,10 @@ const SERVICE_META = [
 ];
 
 const PORTFOLIO_META = [
-  { slug: 'covid-certificate',         color: '#a896c8' },
-  { slug: 'digitalisierung-swisscom',  color: '#7a9bb5' },
-  { slug: 'olivias-olivenpaste',       color: '#8fb58a' },
-  { slug: 'requirements-engineering',  color: '#7aada8' },
+  { slug: 'covid-certificate',         color: '#4d7fbf' },
+  { slug: 'digitalisierung-swisscom',  color: '#244d82' },
+  { slug: 'olivias-olivenpaste',       color: '#a6425c' },
+  { slug: 'requirements-engineering',  color: '#8ebef2' },
 ];
 
 const USP_ICONS = [Zap, Users, CheckCircle, Award];
@@ -308,8 +308,8 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       detailPoints: lang === 'de'
         ? ['Individuelle Websites, Landingpages und Web-Apps', '2D-/3D-Interaktionen mit Fokus auf Performance', 'Responsive Umsetzung für Desktop und Mobile', 'Technisch saubere Basis für SEO und Erweiterungen']
         : ['Custom websites, landing pages and web apps', '2D/3D interactions with performance focus', 'Responsive implementation for desktop and mobile', 'Clean technical base for SEO and extensions'],
-      accent: '#5fb4ff',
-      accentRgb: '95,180,255',
+      accent: '#4d7fbf',
+      accentRgb: '77,127,191',
       icon: Globe,
     },
     {
@@ -327,8 +327,8 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       detailPoints: lang === 'de'
         ? ['CRM- und ERP-Funktionen nach Maß', 'Datenbanken, Rollen, Rechte und Workflows', 'Dashboards, Dokumente, Formulare und Auswertungen', 'Schnittstellen zu bestehenden Tools und Prozessen']
         : ['Custom CRM and ERP functions', 'Databases, roles, permissions and workflows', 'Dashboards, documents, forms and reporting', 'Interfaces to existing tools and processes'],
-      accent: '#c28cff',
-      accentRgb: '194,140,255',
+      accent: '#a6425c',
+      accentRgb: '166,66,92',
       icon: FolderKanban,
     },
     {
@@ -346,8 +346,8 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       detailPoints: lang === 'de'
         ? ['KI-Workflows für wiederkehrende Aufgaben', 'Automatisierung von Kommunikation, Daten und Abläufen', 'Tool-Auswahl und Integration ohne KI-Chaos', 'Sichere, nachvollziehbare und wartbare Umsetzung']
         : ['AI workflows for recurring tasks', 'Automation of communication, data and operations', 'Tool selection and integration without AI chaos', 'Safe, explainable and maintainable implementation'],
-      accent: '#5ee6c4',
-      accentRgb: '94,230,196',
+      accent: '#8ebef2',
+      accentRgb: '142,190,242',
       icon: Bot,
     },
   ];
@@ -760,15 +760,15 @@ export default function HomePage() {
   const serviceWorldCards = useMemo(() => lang === 'de'
     ? [
         { code: '01', title: 'Corporate Design\n& Webauftritt', body: 'Marke, Gestaltung, Wirkung und digitale Präsentation sauber aus einem System gedacht.', accent: '#c89a3d' },
-        { code: '02', title: '2D-/3D-Websites\n& Applikationen', body: 'Moderne Websites und Web-Apps, die hochwertig aussehen und technisch belastbar sind.', accent: '#5fb4ff' },
-        { code: '03', title: 'CRM, ERP\n& Datenbanken', body: 'Individuelle Systeme, exakt auf Abläufe, Teams, Daten und Wachstum abgestimmt.', accent: '#c28cff' },
-        { code: '04', title: 'KI-Automation\n& Prozesse', body: 'Sinnvolle KI-Lösungen, die Arbeit vereinfachen, Prozesse beschleunigen und Qualität sichern.', accent: '#5ee6c4' },
+        { code: '02', title: '2D-/3D-Websites\n& Applikationen', body: 'Moderne Websites und Web-Apps, die hochwertig aussehen und technisch belastbar sind.', accent: '#4d7fbf' },
+        { code: '03', title: 'CRM, ERP\n& Datenbanken', body: 'Individuelle Systeme, exakt auf Abläufe, Teams, Daten und Wachstum abgestimmt.', accent: '#a6425c' },
+        { code: '04', title: 'KI-Automation\n& Prozesse', body: 'Sinnvolle KI-Lösungen, die Arbeit vereinfachen, Prozesse beschleunigen und Qualität sichern.', accent: '#8ebef2' },
       ]
     : [
         { code: '01', title: 'Corporate design\n& web presence', body: 'Brand, design, impact and digital presentation built as one coherent system.', accent: '#c89a3d' },
-        { code: '02', title: '2D/3D websites\n& applications', body: 'Modern websites and web apps that look premium and hold up technically.', accent: '#5fb4ff' },
-        { code: '03', title: 'CRM, ERP\n& databases', body: 'Custom systems aligned to workflows, teams, data and long-term growth.', accent: '#c28cff' },
-        { code: '04', title: 'AI automation\n& processes', body: 'Practical AI solutions that simplify work, accelerate processes and protect quality.', accent: '#5ee6c4' },
+        { code: '02', title: '2D/3D websites\n& applications', body: 'Modern websites and web apps that look premium and hold up technically.', accent: '#4d7fbf' },
+        { code: '03', title: 'CRM, ERP\n& databases', body: 'Custom systems aligned to workflows, teams, data and long-term growth.', accent: '#a6425c' },
+        { code: '04', title: 'AI automation\n& processes', body: 'Practical AI solutions that simplify work, accelerate processes and protect quality.', accent: '#8ebef2' },
       ], [lang]);
 
   return (

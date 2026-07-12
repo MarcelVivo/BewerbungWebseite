@@ -88,13 +88,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     if(!context) return;
     var textLines=label.split('\n');
     context.clearRect(0,0,textCanvas.width,textCanvas.height);
-    context.fillStyle='rgba(222,185,82,.92)';
+    context.fillStyle='rgba(231,197,106,.92)';
     context.font='700 30px Arial, sans-serif';
     context.letterSpacing='10px';
     context.fillText(('0'+(index+1)).slice(-2),80,74);
     context.fillStyle='rgba(255,255,255,.98)';
     context.font='900 102px Arial, sans-serif';
-    context.shadowColor='rgba(255,199,65,.36)';
+    context.shadowColor='rgba(231,197,106,.32)';
     context.shadowBlur=24;
     var lineOffsets=[[0,78,24],[94,8,116],[28,112,4],[86,0,62],[10,96,38]][index%5];
     textLines.forEach(function(line,lineIndex){
@@ -127,8 +127,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var context=cardCanvas.getContext('2d');
     if(!context) return;
     var cardGradient=context.createLinearGradient(0,0,1536,864);
-    cardGradient.addColorStop(0,'rgba(22,19,11,.94)');
-    cardGradient.addColorStop(1,'rgba(8,7,5,.8)');
+    cardGradient.addColorStop(0,'rgba(26,28,32,.94)');
+    cardGradient.addColorStop(1,'rgba(15,16,18,.8)');
     context.fillStyle=cardGradient;
     context.fillRect(0,0,1536,864);
     context.strokeStyle=card.accent+'99';
@@ -612,11 +612,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     // Bildschirmrand statt zentral über dem Text zu verschmelzen, mit
     // Rand zur Bildschirmkante damit nichts angeschnitten wird.
     var satelliteX=visibleHalfWidthAtSat*.78;
-    addSatelliteBrain(-satelliteX,.32,satelliteZ,.35,'#ff4d6d');
-    addSatelliteBrain(satelliteX,.46,satelliteZ-.2,2.7,'#4dd2ff');
+    addSatelliteBrain(-satelliteX,.32,satelliteZ,.35,'#a6425c');
+    addSatelliteBrain(satelliteX,.46,satelliteZ-.2,2.7,'#4d7fbf');
   } else {
-    addSatelliteBrain(-5.7,-.62,-.7,.35,'#ff4d6d');
-    addSatelliteBrain(5.7,-.44,-.9,2.7,'#4dd2ff');
+    addSatelliteBrain(-5.7,-.62,-.7,.35,'#a6425c');
+    addSatelliteBrain(5.7,-.44,-.9,2.7,'#4d7fbf');
   }
 
   var satelliteStrands=[];
@@ -777,7 +777,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
 
   // --- Blaue Nerven-Glitzer: feine, langsame Impulse, die entlang der goldenen
   // Linien bzw. am Nervenstrang hoch/runter gleiten (statt zu blitzen) ---
-  var BLUE=new THREE.Color(0x2fb3ff);
+  var BLUE=new THREE.Color(0x4d7fbf);
   function smootherstep(x){x=x<0?0:x>1?1:x;return x*x*x*(x*(x*6-15)+10);}
 
   function GlidePulse(kind){
@@ -874,7 +874,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var gh=new THREE.BufferGeometry();
     this.headArr=new Float32Array(3);
     gh.setAttribute('position',new THREE.BufferAttribute(this.headArr,3));
-    this.headMat=new THREE.PointsMaterial({size:.052,map:sprite,transparent:true,opacity:0,color:0x9fe0ff,blending:THREE.AdditiveBlending,depthWrite:false});
+    this.headMat=new THREE.PointsMaterial({size:.052,map:sprite,transparent:true,opacity:0,color:0xc4e3ff,blending:THREE.AdditiveBlending,depthWrite:false});
     this.headPt=new THREE.Points(gh,this.headMat);
     this.headPt.frustumCulled=false;
     parentGroup.add(this.headPt);
@@ -954,14 +954,14 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   });
 
   function BlueOrb(parentGroup){
-    this.coreMat=new THREE.SpriteMaterial({map:sprite,color:0xb9ecff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
+    this.coreMat=new THREE.SpriteMaterial({map:sprite,color:0xc4e3ff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
     this.core=new THREE.Sprite(this.coreMat);
-    this.haloMat=new THREE.SpriteMaterial({map:sprite,color:0x168cff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
+    this.haloMat=new THREE.SpriteMaterial({map:sprite,color:0x244d82,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
     this.halo=new THREE.Sprite(this.haloMat);
     var arcGeometry=new THREE.BufferGeometry();
     this.arcArr=new Float32Array(6*3);
     arcGeometry.setAttribute('position',new THREE.BufferAttribute(this.arcArr,3));
-    this.arcMat=new THREE.LineBasicMaterial({color:0x8edcff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
+    this.arcMat=new THREE.LineBasicMaterial({color:0x8ebef2,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
     this.arc=new THREE.Line(arcGeometry,this.arcMat);
     this.arc.frustumCulled=false;
     parentGroup.add(this.arc); parentGroup.add(this.halo); parentGroup.add(this.core);

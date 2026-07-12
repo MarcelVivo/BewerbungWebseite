@@ -321,7 +321,7 @@ export default function KiCheckPage() {
                 className={INPUT}
               />
               {error && (
-                <p className="text-sm text-[#c4897a] bg-[#c4897a]/10 rounded-xl px-4 py-3">{error}</p>
+                <p className="text-sm text-[#d9788a] bg-[#a6425c]/10 rounded-xl px-4 py-3">{error}</p>
               )}
               <button
                 type="submit"

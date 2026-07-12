@@ -35,14 +35,14 @@ export default function RecruiterLogin() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0c14] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#0f1012] flex items-center justify-center p-4">
       {/* Background gradient */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_#1a1d3a_0%,_#0a0c14_70%)] pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_#1a1c20_0%,_#0f1012_70%)] pointer-events-none" />
 
       <div className="relative w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex w-14 h-14 rounded-2xl bg-[#6366f1] items-center justify-center mb-4 shadow-xl shadow-indigo-500/30">
+          <div className="brand-blue-fill inline-flex w-14 h-14 rounded-2xl items-center justify-center mb-4">
             <Lock size={22} className="text-white" />
           </div>
           <h1 className="text-2xl font-bold text-white">Recruiter-Zugang</h1>
@@ -50,7 +50,7 @@ export default function RecruiterLogin() {
         </div>
 
         {/* Card */}
-        <div className="bg-[#1a1d27] border border-[#2d3144] rounded-2xl p-8 shadow-2xl">
+        <div className="bg-[#1a1c20] border border-[#2a2d32] rounded-2xl p-8 shadow-2xl">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-xs text-slate-500 mb-1.5 font-medium uppercase tracking-wide">Passwort</label>
@@ -62,7 +62,7 @@ export default function RecruiterLogin() {
                   autoFocus
                   autoComplete="current-password"
                   placeholder="••••••••"
-                  className="w-full rounded-xl bg-[#0f1117] border border-[#2d3144] focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1] outline-none px-4 py-3 pr-11 text-white placeholder-slate-600 transition-colors"
+                  className="w-full rounded-xl bg-[#0f1012] border border-[#2a2d32] focus:border-[#4d7fbf] focus:ring-1 focus:ring-[#4d7fbf] outline-none px-4 py-3 pr-11 text-white placeholder-slate-600 transition-colors"
                 />
                 <button
                   type="button"
@@ -75,7 +75,7 @@ export default function RecruiterLogin() {
             </div>
 
             {error && (
-              <p className="text-sm text-red-400 bg-red-400/10 border border-red-400/20 rounded-xl px-4 py-2.5">
+              <p className="text-sm text-[#d9788a] bg-[#a6425c]/10 border border-[#a6425c]/20 rounded-xl px-4 py-2.5">
                 {error}
               </p>
             )}
@@ -83,7 +83,7 @@ export default function RecruiterLogin() {
             <button
               type="submit"
               disabled={loading || !pw}
-              className="w-full py-3 rounded-xl bg-[#6366f1] hover:bg-[#5254cc] disabled:opacity-40 text-white font-semibold transition-colors shadow-lg shadow-indigo-500/20"
+              className="brand-blue-fill w-full py-3 rounded-xl disabled:opacity-40 text-white font-semibold transition-colors"
             >
               {loading ? 'Anmelden…' : 'Anmelden'}
             </button>

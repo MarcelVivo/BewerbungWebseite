@@ -70,7 +70,7 @@ export const SERVICES: ServiceData[] = [
     },
   },
   {
-    slug: '2d-3d-websites', iconKey: 'Globe', color: '#87a8c8', colorMuted: '#87a8c815',
+    slug: '2d-3d-websites', iconKey: 'Globe', color: '#4d7fbf', colorMuted: '#4d7fbf15',
     de: {
       title: 'Moderne 2D- & 3D-Websites', subtitle: 'Schön, schnell, klar und technisch sauber',
       intro: 'Ich baue moderne Websites, die nicht nach Vorlage aussehen: klare Inhalte, starke visuelle Führung, 2D-/3D-Elemente, saubere Performance und eine Struktur, die Besucher schnell zum Ziel führt.',
@@ -101,7 +101,7 @@ export const SERVICES: ServiceData[] = [
     },
   },
   {
-    slug: 'crm-loesungen', iconKey: 'BarChart3', color: '#7aada8', colorMuted: '#7aada815',
+    slug: 'crm-loesungen', iconKey: 'BarChart3', color: '#a6425c', colorMuted: '#a6425c15',
     de: {
       title: 'CRM-Lösungen', subtitle: 'Kunden, Leads und Aufgaben zentral im Griff',
       intro: 'Ich baue CRM-Lösungen, die zu deinem Ablauf passen: Kontakte, Anfragen, Aufgaben, Dokumente, Pipeline, Erinnerungen und Kommunikation an einem Ort. Kein unnötiger Ballast, sondern ein System, das im Alltag wirklich genutzt wird.',
@@ -132,7 +132,7 @@ export const SERVICES: ServiceData[] = [
     },
   },
   {
-    slug: 'erp-prozesse', iconKey: 'Workflow', color: '#8fb58a', colorMuted: '#8fb58a15',
+    slug: 'erp-prozesse', iconKey: 'Workflow', color: '#6a263b', colorMuted: '#6a263b15',
     de: {
       title: 'ERP- & Geschäftsprozesse', subtitle: 'Abläufe digitalisieren und sauber verbinden',
       intro: 'Ich entwickle digitale Systeme für operative Abläufe: Projekte, Offerten, Rechnungen, Verträge, Termine, Zeiterfassung, Lager oder interne Freigaben. Ziel ist ein schlanker Ablauf ohne doppelte Arbeit und Medienbrüche.',
@@ -163,7 +163,7 @@ export const SERVICES: ServiceData[] = [
     },
   },
   {
-    slug: 'datenbanken-schnittstellen', iconKey: 'FolderKanban', color: '#7a9bb5', colorMuted: '#7a9bb515',
+    slug: 'datenbanken-schnittstellen', iconKey: 'FolderKanban', color: '#4d7fbf', colorMuted: '#4d7fbf15',
     de: {
       title: 'Datenbanken & Schnittstellen', subtitle: 'Daten sauber speichern, verbinden und nutzen',
       intro: 'Ich plane und baue Datenbanken, die zur Lösung passen: klare Strukturen, sichere Zugriffe, Rollen, Backups und Verbindungen zu bestehenden Tools. Damit Informationen nicht verstreut liegen, sondern belastbar nutzbar werden.',
@@ -194,7 +194,7 @@ export const SERVICES: ServiceData[] = [
     },
   },
   {
-    slug: 'automatisierung-ki-agenten', iconKey: 'Bot', color: '#a896c8', colorMuted: '#a896c815',
+    slug: 'automatisierung-ki-agenten', iconKey: 'Bot', color: '#8ebef2', colorMuted: '#8ebef215',
     de: {
       title: 'KI-Automation & KI-Unterstützung', subtitle: 'Die passende KI-Lösung finden, integrieren und produktiv nutzen',
       intro: 'Ohne KI geht es heute nicht mehr. Aber der Markt ist unübersichtlich: Tools, Agenten, Automationen, Plattformen und Versprechen ändern sich laufend. Ich behalte den Überblick im KI-Lösungsdschungel, prüfe dein konkretes Problem und baue die Optimierung, die wirklich Nutzen bringt – sicher, verständlich und passend zu deinem Alltag.',
@@ -235,7 +235,7 @@ export const SERVICES: ServiceData[] = [
     },
   },
   {
-    slug: 'analyse-konzept', iconKey: 'BarChart3', color: '#c4926a', colorMuted: '#c4926a15',
+    slug: 'analyse-konzept', iconKey: 'BarChart3', color: '#a6425c', colorMuted: '#a6425c15',
     de: {
       title: 'Analyse & Konzept', subtitle: 'Erst verstehen, dann richtig bauen',
       intro: 'Bevor Code, Design oder Tools entschieden werden, kläre ich das eigentliche Problem. Daraus entsteht ein verständliches Konzept mit Prioritäten, Etappen, Risiken und einem realistischen Weg zur Lösung.',
@@ -266,7 +266,7 @@ export const SERVICES: ServiceData[] = [
     },
   },
   {
-    slug: 'go-live-umsetzung', iconKey: 'FolderKanban', color: '#c4897a', colorMuted: '#c4897a15',
+    slug: 'go-live-umsetzung', iconKey: 'FolderKanban', color: '#c89a3d', colorMuted: '#c89a3d15',
     de: {
       title: 'Umsetzung bis Go-Live', subtitle: 'Professionell bauen, prüfen und übergeben',
       intro: 'Ich übernehme die Umsetzung strukturiert bis zum Start: Design, Entwicklung, Inhalte, Testing, Deployment, Übergabe und Dokumentation. Ziel ist nicht ein unfertiger Prototyp, sondern eine Lösung, die produktiv genutzt werden kann.',
@@ -297,7 +297,7 @@ export const SERVICES: ServiceData[] = [
     },
   },
   {
-    slug: 'wartung-weiterentwicklung', iconKey: 'GraduationCap', color: '#a8b87a', colorMuted: '#a8b87a15',
+    slug: 'wartung-weiterentwicklung', iconKey: 'GraduationCap', color: '#4d7fbf', colorMuted: '#4d7fbf15',
     de: {
       title: 'Wartung & Weiterentwicklung', subtitle: 'Damit die Lösung langfristig trägt',
       intro: 'Nach dem Launch bleibt eine digitale Lösung lebendig. Ich unterstütze bei Betrieb, Updates, Sicherheit, Optimierung, neuen Funktionen und sinnvollen Erweiterungen – damit das System mit deinem Unternehmen wächst.',
