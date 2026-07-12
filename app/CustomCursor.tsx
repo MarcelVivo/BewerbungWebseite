@@ -119,17 +119,17 @@ export default function CustomCursor() {
       if (visible) {
         const glowR = 16;
         const grad = ctx!.createRadialGradient(core.x, core.y, 0, core.x, core.y, glowR);
-        grad.addColorStop(0, 'rgba(255,224,140,0.95)');
-        grad.addColorStop(0.35, 'rgba(230,180,70,0.55)');
-        grad.addColorStop(1, 'rgba(201,168,76,0)');
+        grad.addColorStop(0, 'rgba(246,227,161,0.95)');
+        grad.addColorStop(0.35, 'rgba(231,197,106,0.55)');
+        grad.addColorStop(1, 'rgba(200,154,61,0)');
         ctx!.fillStyle = grad;
         ctx!.beginPath();
         ctx!.arc(core.x, core.y, glowR, 0, Math.PI * 2);
         ctx!.fill();
 
         ctx!.beginPath();
-        ctx!.fillStyle = '#fff3d6';
-        ctx!.shadowColor = 'rgba(255,215,120,0.95)';
+        ctx!.fillStyle = '#f6e3a1';
+        ctx!.shadowColor = 'rgba(231,197,106,0.95)';
         ctx!.shadowBlur = 10;
         ctx!.arc(core.x, core.y, 3.2, 0, Math.PI * 2);
         ctx!.fill();

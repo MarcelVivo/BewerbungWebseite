@@ -289,8 +289,8 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       detailPoints: lang === 'de'
         ? ['Corporate Design und visuelle Leitplanken', 'Website-Struktur, Texteinstieg und Nutzerführung', 'Moderne Gestaltung mit klarer Wirkung', 'Saubere Übergabe für langfristige Weiterentwicklung']
         : ['Corporate design and visual guidelines', 'Website structure, copy entry and user flow', 'Modern design with clear impact', 'Clean handover for long-term evolution'],
-      accent: '#d6b75a',
-      accentRgb: '214,183,90',
+      accent: '#c89a3d',
+      accentRgb: '200,154,61',
       icon: Star,
     },
     {
@@ -390,7 +390,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
             const opacity = Math.max(0, Math.min(1, visible * frontFocus));
             const width = isIntro ? 560 : isService ? 470 : 380;
             const Icon = card.icon;
-            const accent = card.accent || '#c9a84c';
+            const accent = card.accent || '#c89a3d';
             const transform = `translate3d(-50%, -50%, 0) rotateY(${angle}deg) translateZ(${radius}px) translate3d(0, ${y}px, 0) scale(${scale})`;
             const content = isIntro ? (
               <div className="spiral-intro-statement">
@@ -429,7 +429,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
                 </h3>
                 <p className="spiral-card-body">{card.body}</p>
                 {card.action ? (
-                  <div className="mt-5 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.16em] text-[#d4b86a]">
+                  <div className="mt-5 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.16em] text-[#e7c56a]">
                     {card.action}
                     <ChevronRight size={14} />
                   </div>
@@ -759,13 +759,13 @@ export default function HomePage() {
     : ['I build\nthe right solution.', 'for\nyour company', 'Your\nchallenge.', 'My\nsolution.', 'Fully custom.\nBuilt as one system.'], [lang]);
   const serviceWorldCards = useMemo(() => lang === 'de'
     ? [
-        { code: '01', title: 'Corporate Design\n& Webauftritt', body: 'Marke, Gestaltung, Wirkung und digitale Präsentation sauber aus einem System gedacht.', accent: '#d6b75a' },
+        { code: '01', title: 'Corporate Design\n& Webauftritt', body: 'Marke, Gestaltung, Wirkung und digitale Präsentation sauber aus einem System gedacht.', accent: '#c89a3d' },
         { code: '02', title: '2D-/3D-Websites\n& Applikationen', body: 'Moderne Websites und Web-Apps, die hochwertig aussehen und technisch belastbar sind.', accent: '#5fb4ff' },
         { code: '03', title: 'CRM, ERP\n& Datenbanken', body: 'Individuelle Systeme, exakt auf Abläufe, Teams, Daten und Wachstum abgestimmt.', accent: '#c28cff' },
         { code: '04', title: 'KI-Automation\n& Prozesse', body: 'Sinnvolle KI-Lösungen, die Arbeit vereinfachen, Prozesse beschleunigen und Qualität sichern.', accent: '#5ee6c4' },
       ]
     : [
-        { code: '01', title: 'Corporate design\n& web presence', body: 'Brand, design, impact and digital presentation built as one coherent system.', accent: '#d6b75a' },
+        { code: '01', title: 'Corporate design\n& web presence', body: 'Brand, design, impact and digital presentation built as one coherent system.', accent: '#c89a3d' },
         { code: '02', title: '2D/3D websites\n& applications', body: 'Modern websites and web apps that look premium and hold up technically.', accent: '#5fb4ff' },
         { code: '03', title: 'CRM, ERP\n& databases', body: 'Custom systems aligned to workflows, teams, data and long-term growth.', accent: '#c28cff' },
         { code: '04', title: 'AI automation\n& processes', body: 'Practical AI solutions that simplify work, accelerate processes and protect quality.', accent: '#5ee6c4' },
@@ -798,7 +798,7 @@ export default function HomePage() {
               </p>
             </div>
             <div style={{ animationDelay: '0.18s' }} className="ms-anim mt-7 flex flex-col sm:flex-row items-stretch sm:items-start justify-center gap-3 sm:gap-4">
-              <a href="#contact" className="group flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#c9a84c] hover:bg-[#b8943a] text-[#0c0a06] font-bold transition-all shadow-lg shadow-[#c9a84c]/30">
+              <a href="#contact" className="group brand-gold-fill flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-[#0c0a06] font-bold transition-all">
                 {t.hero.cta}
                 <ChevronRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
               </a>
@@ -818,7 +818,7 @@ export default function HomePage() {
       <section id="contact" className="contact-section py-24 px-4 sm:px-6">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
-            <span className="text-[#c9a84c] text-sm font-semibold tracking-widest uppercase">{t.contact.label}</span>
+            <span className="text-[#e7c56a] text-sm font-semibold tracking-widest uppercase">{t.contact.label}</span>
             <h2 className="mt-2 text-3xl sm:text-4xl font-bold text-white">{t.contact.heading}</h2>
           </div>
           <div className="grid md:grid-cols-[1fr_1.4fr] gap-10">
@@ -829,7 +829,7 @@ export default function HomePage() {
                 { Icon: Mail,   text: 'kontakt@marcelspahr.ch',    href: 'mailto:kontakt@marcelspahr.ch' },
               ].map(({ Icon, text, href }, i) => (
                 <div key={i} className="flex items-center gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-[#c9a84c]/10 flex items-center justify-center text-[#d4b86a]">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-[#c89a3d]/10 flex items-center justify-center text-[#e7c56a]">
                     <Icon size={18} />
                   </div>
                   {href ? (
@@ -861,7 +861,7 @@ export default function HomePage() {
         />
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-12">
-            <span className="text-[#c9a84c] text-sm font-semibold tracking-widest uppercase">{t.faq.label}</span>
+            <span className="text-[#e7c56a] text-sm font-semibold tracking-widest uppercase">{t.faq.label}</span>
             <h2 className="mt-2 text-3xl sm:text-4xl font-bold text-white">{t.faq.heading}</h2>
           </div>
           <div className="space-y-3">
@@ -869,7 +869,7 @@ export default function HomePage() {
               <details key={`${lang}-${i}`} className="group rounded-xl border border-[#2d2820] bg-[#1c1912] overflow-hidden">
                 <summary className="flex items-center justify-between gap-4 px-6 py-4 cursor-pointer list-none hover:bg-[#231e15] transition-colors">
                   <span className="font-medium text-white text-sm sm:text-base">{item.q}</span>
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full border border-[#2d2820] flex items-center justify-center text-[#c9a84c] text-lg leading-none group-open:rotate-45 transition-transform duration-200">+</span>
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full border border-[#2d2820] flex items-center justify-center text-[#e7c56a] text-lg leading-none group-open:rotate-45 transition-transform duration-200">+</span>
                 </summary>
                 <div className="px-6 pb-5 pt-1">
                   <p className="text-sm text-[#a89880] leading-relaxed">{item.a}</p>

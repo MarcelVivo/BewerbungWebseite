@@ -39,7 +39,7 @@ const sharedProcessEn = [
 
 export const SERVICES: ServiceData[] = [
   {
-    slug: 'corporate-design', iconKey: 'Lightbulb', color: '#c9a84c', colorMuted: '#c9a84c15',
+    slug: 'corporate-design', iconKey: 'Lightbulb', color: '#c89a3d', colorMuted: '#c89a3d15',
     de: {
       title: 'Corporate Design & Markenauftritt', subtitle: 'Ein professioneller Auftritt aus einem Guss',
       intro: 'Ich entwickle einen klaren visuellen Rahmen für dein Unternehmen: Logo, Farben, Typografie, Bildsprache und digitale Anwendung. Ziel ist ein Auftritt, der seriös wirkt, wiedererkennbar bleibt und auf Website, Dokumenten und Systemen konsistent funktioniert.',
