@@ -2,6 +2,7 @@
 // @ts-nocheck
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import brainData from './brainData.json';
 
 type BrainBackgroundProps = {
@@ -636,105 +637,58 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     return new THREE.Vector3(-1.02*Math.sqrt(silhouette)-relief-corrugation,vertical,lateral);
   }
 
-  function addOrganicHemisphere(){
-    var verticalSegments=isMobile?26:40;
-    var azimuthSegments=isMobile?26:42;
-    var radiusX=1.025, radiusY=.925, radiusZ=.845;
-    var organicPositions=[], organicIndices=[];
-    for(var verticalIndex=0;verticalIndex<=verticalSegments;verticalIndex++){
-      var latitude=-Math.PI*.5+verticalIndex/verticalSegments*Math.PI;
-      var latitudeCosine=Math.cos(latitude);
-      var baseVertical=.02+radiusY*Math.sin(latitude);
-      for(var azimuthIndex=0;azimuthIndex<=azimuthSegments;azimuthIndex++){
-        var azimuth=Math.PI+azimuthIndex/azimuthSegments*Math.PI;
-        var surfaceNoise=Math.sin(azimuth*6+latitude*4)*.025+Math.cos(azimuth*11-latitude*7)*.014+Math.sin(latitude*19)*.009;
-        var radiusScale=1+surfaceNoise;
-        organicPositions.push(
-          radiusX*latitudeCosine*Math.cos(azimuth)*radiusScale,
-          baseVertical+Math.sin(azimuth*4+latitude*6)*.012,
-          radiusZ*latitudeCosine*Math.sin(azimuth)*radiusScale
+  var organicModelDisposed=false;
+  function leftHemisphereGeometry(sourceGeometry){
+    var expandedGeometry=sourceGeometry.index?sourceGeometry.toNonIndexed():sourceGeometry.clone();
+    var sourcePositions=expandedGeometry.getAttribute('position');
+    var sourceNormals=expandedGeometry.getAttribute('normal');
+    var leftPositions=[], leftNormals=[];
+    for(var triangleOffset=0;triangleOffset<sourcePositions.count;triangleOffset+=3){
+      var lateralCenter=(sourcePositions.getZ(triangleOffset)+sourcePositions.getZ(triangleOffset+1)+sourcePositions.getZ(triangleOffset+2))/3;
+      if(lateralCenter>.012) continue;
+      for(var triangleVertex=0;triangleVertex<3;triangleVertex++){
+        var vertexIndex=triangleOffset+triangleVertex;
+        var normalX=sourceNormals?sourceNormals.getX(vertexIndex):0;
+        var normalY=sourceNormals?sourceNormals.getY(vertexIndex):0;
+        var normalZ=sourceNormals?sourceNormals.getZ(vertexIndex):0;
+        leftPositions.push(
+          sourcePositions.getX(vertexIndex)+normalX*.012,
+          sourcePositions.getY(vertexIndex)+normalY*.012,
+          sourcePositions.getZ(vertexIndex)+normalZ*.012
         );
+        if(sourceNormals) leftNormals.push(normalX,normalY,normalZ);
       }
     }
-    for(var surfaceVerticalIndex=0;surfaceVerticalIndex<verticalSegments;surfaceVerticalIndex++){
-      for(var surfaceAzimuthIndex=0;surfaceAzimuthIndex<azimuthSegments;surfaceAzimuthIndex++){
-        var topLeft=surfaceVerticalIndex*(azimuthSegments+1)+surfaceAzimuthIndex;
-        var topRight=topLeft+1;
-        var bottomLeft=topLeft+azimuthSegments+1;
-        var bottomRight=bottomLeft+1;
-        organicIndices.push(topLeft,bottomLeft,topRight,topRight,bottomLeft,bottomRight);
-      }
-    }
-    var organicGeometry=new THREE.BufferGeometry();
-    organicGeometry.setAttribute('position',new THREE.Float32BufferAttribute(organicPositions,3));
-    organicGeometry.setIndex(organicIndices);
-    organicGeometry.computeVertexNormals();
-    var organicMaterial=new THREE.MeshStandardMaterial({
-      color:0xb8862b,
-      metalness:.82,
-      roughness:.34,
-      emissive:0x241607,
-      emissiveIntensity:.16,
-      side:THREE.DoubleSide
+    expandedGeometry.dispose();
+    var hemisphereGeometry=new THREE.BufferGeometry();
+    hemisphereGeometry.setAttribute('position',new THREE.Float32BufferAttribute(leftPositions,3));
+    if(leftNormals.length) hemisphereGeometry.setAttribute('normal',new THREE.Float32BufferAttribute(leftNormals,3));
+    else hemisphereGeometry.computeVertexNormals();
+    return hemisphereGeometry;
+  }
+
+  function addOrganicHemisphereFromModel(){
+    var loader=new GLTFLoader();
+    loader.load('/Models/human_brain_cerebrum__brainstem.glb',function(gltf){
+      if(organicModelDisposed) return;
+      var sourceMesh=null;
+      gltf.scene.traverse(function(node){ if(!sourceMesh&&node.isMesh) sourceMesh=node; });
+      if(!sourceMesh||!sourceMesh.geometry) return;
+      var hemisphereGeometry=leftHemisphereGeometry(sourceMesh.geometry);
+      var hemisphereMaterial=new THREE.MeshPhysicalMaterial({
+        color:0xc89a3d,
+        metalness:.68,
+        roughness:.38,
+        clearcoat:.22,
+        clearcoatRoughness:.34,
+        emissive:0x1d1003,
+        emissiveIntensity:.1,
+        side:THREE.FrontSide
+      });
+      var organicHemisphere=new THREE.Mesh(hemisphereGeometry,hemisphereMaterial);
+      organicHemisphere.frustumCulled=false;
+      brain.add(organicHemisphere);
     });
-    var organicSurface=new THREE.Mesh(organicGeometry,organicMaterial);
-    organicSurface.frustumCulled=false;
-    brain.add(organicSurface);
-  }
-
-  function createGyrusMaterials(){
-    return [
-      new THREE.MeshStandardMaterial({color:0xf6e3a1,metalness:.88,roughness:.24,emissive:0x3a2408,emissiveIntensity:.18}),
-      new THREE.MeshStandardMaterial({color:0xe7c56a,metalness:.84,roughness:.28,emissive:0x2a1905,emissiveIntensity:.15}),
-      new THREE.MeshStandardMaterial({color:0xc89a3d,metalness:.8,roughness:.32,emissive:0x1d1003,emissiveIntensity:.12}),
-      new THREE.MeshStandardMaterial({color:0xb8862b,metalness:.76,roughness:.38,emissive:0x150b02,emissiveIntensity:.1})
-    ];
-  }
-
-  function addOrganicGyri(){
-    var gyrusGroup=new THREE.Group();
-    var gyrusMaterials=createGyrusMaterials();
-    var gyrusCount=isMobile?22:36;
-    for(var gyrusIndex=0;gyrusIndex<gyrusCount;gyrusIndex++){
-      var baseVertical=-.7+gyrusIndex/(gyrusCount-1)*1.48+(rnd()-.5)*.035;
-      var verticalNorm=(baseVertical-.02)/.92;
-      var lateralSpan=Math.max(.14,.8*Math.sqrt(Math.max(.02,1-verticalNorm*verticalNorm)));
-      var startLateral=-lateralSpan*(.96-rnd()*.08);
-      var endLateral=-.035-rnd()*.075;
-      var gyrusPhase=rnd()*Math.PI*2;
-      var gyrusPoints=[];
-      for(var gyrusStep=0;gyrusStep<=12;gyrusStep++){
-        var gyrusProgress=gyrusStep/12;
-        var lateral=startLateral+(endLateral-startLateral)*gyrusProgress;
-        var vertical=baseVertical+Math.sin(gyrusProgress*Math.PI*(1.25+(gyrusIndex%3)*.18)+gyrusPhase)*(.045+rnd()*.013)+Math.sin(gyrusProgress*Math.PI*4+gyrusPhase)*.018;
-        gyrusPoints.push(frontSurfacePoint(vertical,lateral,.028+Math.sin(gyrusProgress*Math.PI+gyrusPhase)*.012));
-      }
-      var gyrusCurve=new THREE.CatmullRomCurve3(gyrusPoints);
-      var gyrusGeometry=new THREE.TubeGeometry(gyrusCurve,32,.015+rnd()*.011,5,false);
-      var gyrusMesh=new THREE.Mesh(gyrusGeometry,gyrusMaterials[gyrusIndex%gyrusMaterials.length]);
-      gyrusMesh.frustumCulled=false;
-      gyrusGroup.add(gyrusMesh);
-    }
-    var loopCount=isMobile?7:12;
-    for(var loopIndex=0;loopIndex<loopCount;loopIndex++){
-      var loopVertical=-.5+rnd()*1.16;
-      var loopLateral=-.18-rnd()*.48;
-      var loopHeight=.055+rnd()*.065;
-      var loopWidth=.05+rnd()*.075;
-      var loopPoints=[];
-      for(var loopStep=0;loopStep<=16;loopStep++){
-        var loopAngle=loopStep/16*Math.PI*2;
-        var vertical=loopVertical+Math.sin(loopAngle)*loopHeight;
-        var lateral=Math.min(-.025,loopLateral+Math.cos(loopAngle)*loopWidth);
-        loopPoints.push(frontSurfacePoint(vertical,lateral,.045));
-      }
-      var loopCurve=new THREE.CatmullRomCurve3(loopPoints);
-      var loopGeometry=new THREE.TubeGeometry(loopCurve,40,.012+rnd()*.009,5,true);
-      var loopMesh=new THREE.Mesh(loopGeometry,gyrusMaterials[(loopIndex+1)%gyrusMaterials.length]);
-      loopMesh.frustumCulled=false;
-      gyrusGroup.add(loopMesh);
-    }
-    brain.add(gyrusGroup);
   }
 
   function addTechnicalHemisphere(){
@@ -813,8 +767,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var organicRimLight=new THREE.PointLight(0xc89a3d,.72,12,2);
   organicRimLight.position.set(3.6,1.8,-2.2);
   scene.add(organicRimLight);
-  addOrganicHemisphere();
-  addOrganicGyri();
+  addOrganicHemisphereFromModel();
   addTechnicalHemisphere();
   addHemisphereDivider();
 
@@ -1567,6 +1520,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       document.removeEventListener('visibilitychange', onVisibilityChange);
       renderer.dispose();
       renderer.forceContextLoss();
+      organicModelDisposed=true;
       if (tunePanel && tunePanel.parentNode) tunePanel.parentNode.removeChild(tunePanel);
     };
   }, []);

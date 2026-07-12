@@ -42,7 +42,8 @@ graphify-out/
 Bilder/
 
 # Local model experiments
-public/Models/
+public/Models/*
+!public/Models/human_brain_cerebrum__brainstem.glb
 
 # Backups
 *.bak
