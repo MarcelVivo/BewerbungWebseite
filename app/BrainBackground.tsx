@@ -25,6 +25,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'high-performance' });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 0.58;
     var scene = new THREE.Scene();
     var camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 200);
     camera.position.set(0, 0.4, 9.2);
@@ -104,7 +106,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var texture=new THREE.CanvasTexture(textCanvas);
     texture.colorSpace=THREE.SRGBColorSpace;
     texture.minFilter=THREE.LinearFilter;
-    var material=new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false,depthTest:true,opacity:.98,side:THREE.FrontSide});
+    var material=new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false,depthTest:true,opacity:.98,side:THREE.FrontSide,toneMapped:false});
     var textSprite=new THREE.Mesh(new THREE.PlaneGeometry(isMobile?3.77:5.65,isMobile?1.25:1.88),material);
     var textAngle=helixAngle(index);
     var textRadius=2.65;
@@ -159,7 +161,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var texture=new THREE.CanvasTexture(cardCanvas);
     texture.colorSpace=THREE.SRGBColorSpace;
     texture.minFilter=THREE.LinearFilter;
-    var material=new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false,depthTest:true,opacity:.98,side:THREE.FrontSide});
+    var material=new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false,depthTest:true,opacity:.98,side:THREE.FrontSide,toneMapped:false});
     var cardMesh=new THREE.Mesh(new THREE.PlaneGeometry(isMobile?3.23:4.85,isMobile?1.82:2.73),material);
     var cardAngle=helixAngle(worldIndex);
     cardMesh.position.set(Math.sin(cardAngle)*1.68,-2.2-index*4.2,Math.cos(cardAngle)*1.68);
@@ -185,6 +187,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   };
   var golds=[GOLD.core,GOLD.line,GOLD.hot,GOLD.white,GOLD.deep];
   var cc=new THREE.Color();
+  var keyLightDirection=new THREE.Vector3(-.42,.64,.64).normalize();
+  function neuralShade(x,y,z){
+    var length=Math.max(.001,Math.sqrt(x*x+y*y+z*z));
+    var light=Math.max(0,(x*keyLightDirection.x+y*keyLightDirection.y+z*keyLightDirection.z)/length);
+    var rim=Math.max(0,-z/length);
+    return .22+light*.68+rim*.1;
+  }
   // The old blob (dense mesh seam) is now fixed at the data level via the
   // grid-density cap in gen-brain.mjs, so this only needs a very light
   // safety taper near the very tip — the neck/taper should read at roughly
@@ -196,12 +205,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   }
   var TAPER_Y_EARLY=-0.15;
 
-  function pointsObj(arr,cols,size,op){
+  function pointsObj(arr,cols,size,op,blending){
     var g2=new THREE.BufferGeometry();
     g2.setAttribute('position',new THREE.Float32BufferAttribute(arr,3));
     if(cols) g2.setAttribute('color',new THREE.Float32BufferAttribute(cols,3));
     var m2=new THREE.PointsMaterial({size:size,map:sprite,transparent:true,opacity:op,
-      vertexColors:!!cols,color:cols?0xffffff:0xe7c56a,blending:THREE.AdditiveBlending,depthWrite:false});
+      vertexColors:!!cols,color:cols?0xffffff:0xe7c56a,blending:blending||THREE.NormalBlending,depthWrite:false});
     return new THREE.Points(g2,m2);
   }
 
@@ -215,18 +224,18 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       layerColor.copy(layerColorA).lerp(layerColorB,Math.random());
       colors.push(layerColor.r,layerColor.g,layerColor.b);
     }
-    var depthPoints=pointsObj(positions,colors,size,opacity);
+    var depthPoints=pointsObj(positions,colors,size,opacity,THREE.AdditiveBlending);
     depthPoints.frustumCulled=false;
     world.add(depthPoints);
   }
 
   // Fünf feste räumliche Ebenen: Die Partikel bewegen sich nicht selbst,
   // erzeugen durch die vorbeifliegende Kamera aber permanenten Vorder- und Hintergrund-Flow.
-  addDepthLayer(isMobile?24:52,1.4,3.6,.055,.42,0xe7c56a,0xf6e3a1);
-  addDepthLayer(isMobile?34:72,3.7,6.8,.075,.32,0xc89a3d,0xf6e3a1);
-  addDepthLayer(isMobile?42:92,6.9,10.5,.11,.22,0xb8862b,0xe7c56a);
-  addDepthLayer(isMobile?34:76,10.6,16.5,.16,.14,0x7c5a1a,0xc89a3d);
-  addDepthLayer(isMobile?16:36,16.6,23,.42,.06,0x7c5a1a,0xb8862b);
+  addDepthLayer(isMobile?24:52,1.4,3.6,.055,.16,0xe7c56a,0xf6e3a1);
+  addDepthLayer(isMobile?34:72,3.7,6.8,.075,.11,0xc89a3d,0xf6e3a1);
+  addDepthLayer(isMobile?42:92,6.9,10.5,.11,.075,0xb8862b,0xe7c56a);
+  addDepthLayer(isMobile?34:76,10.6,16.5,.16,.045,0x7c5a1a,0xc89a3d);
+  addDepthLayer(isMobile?16:36,16.6,23,.42,.02,0x7c5a1a,0xb8862b);
 
   var BR=brainData;
 
@@ -238,7 +247,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var vx=sca[i],vy=sca[i+1],vz=sca[i+2];
     pts.push(new THREE.Vector3(vx,vy,vz));
     ppos.push(vx,vy,vz);
-    cc.copy(golds[Math.floor(Math.random()*golds.length)]).multiplyScalar(taperFade(vy));
+    cc.copy(golds[Math.floor(Math.random()*golds.length)]).multiplyScalar(taperFade(vy)*neuralShade(vx,vy,vz));
     pcol.push(cc.r,cc.g,cc.b);
   }
   var scatterN=pts.length;
@@ -252,13 +261,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var x=flat[k*3],y=flat[k*3+1],z=flat[k*3+2];
       pts.push(new THREE.Vector3(x,y,z));
       wpos.push(x,y,z);
-      var fw=taperFade(y);
+      var fw=taperFade(y)*neuralShade(x,y,z);
       wcol.push(cc.r*fw,cc.g*fw,cc.b*fw);
       path.push(new THREE.Vector3(x,y,z));
       if(k>0){
         var px=flat[(k-1)*3],py=flat[(k-1)*3+1],pz=flat[(k-1)*3+2];
         lpos.push(px,py,pz,x,y,z);
-        var fa=taperFade(py), fb=taperFade(y);
+        var fa=taperFade(py)*neuralShade(px,py,pz), fb=taperFade(y)*neuralShade(x,y,z);
         lcol.push(cc.r*fa,cc.g*fa,cc.b*fa,cc.r*fb,cc.g*fb,cc.b*fb);
         pairs.push([base+k-1,base+k]);
       }
@@ -399,7 +408,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         var v=vc;
         sBase.push(px,py,pz);
         sMeta.push(tv,a0);
-        cc.copy(fiberCol).multiplyScalar(0.35+0.65*endFade);
+        cc.copy(fiberCol).multiplyScalar((.18+.5*endFade)*neuralShade(px,py,pz));
         var ptOff=outPtsPos.length;
         outPtsPos.push(px,py,pz);
         outPtsCol.push(cc.r,cc.g,cc.b);
@@ -445,10 +454,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var lgeo=new THREE.BufferGeometry();
   lgeo.setAttribute('position',new THREE.Float32BufferAttribute(lpos,3));
   lgeo.setAttribute('color',new THREE.Float32BufferAttribute(lcol,3));
-  var linesObj=new THREE.LineSegments(lgeo,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:.52,blending:THREE.NormalBlending,depthWrite:false}));
+  var linesObj=new THREE.LineSegments(lgeo,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:.34,blending:THREE.NormalBlending,depthWrite:false}));
   linesObj.name='neural-lines';
   brain.add(dbgHide('walks',linesObj));
-  var wptsObj=pointsObj(wpos,wcol,.044,.6);
+  var wptsObj=pointsObj(wpos,wcol,.044,.36);
   wptsObj.name='neural-points';
   brain.add(dbgHide('wpts',wptsObj));
 
@@ -483,7 +492,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   }
   var xgeo=new THREE.BufferGeometry();
   xgeo.setAttribute('position',new THREE.Float32BufferAttribute(xpos,3));
-  brain.add(dbgHide('cross',new THREE.LineSegments(xgeo,new THREE.LineBasicMaterial({color:0xe7c56a,transparent:true,opacity:.3,blending:THREE.AdditiveBlending,depthWrite:false}))));
+  brain.add(dbgHide('cross',new THREE.LineSegments(xgeo,new THREE.LineBasicMaterial({color:0xe7c56a,transparent:true,opacity:.1,blending:THREE.AdditiveBlending,depthWrite:false}))));
 
   // --- Feines, wirres Liniengewebe: viele zusätzliche dünne Verbindungen
   // zwischen den goldenen Punkten, überzieht das Gehirn dichter ---
@@ -503,7 +512,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       if(d2f>fineMin2Cap(i,jf)&&d2f<FINE_MAX2&&Math.random()<FINE_PROB){
         finePos.push(pts[i].x,pts[i].y,pts[i].z,pts[jf].x,pts[jf].y,pts[jf].z);
         cc.copy(golds[Math.floor(Math.random()*golds.length)]);
-        var ffa=taperFade(pts[i].y), ffb=taperFade(pts[jf].y);
+        var ffa=taperFade(pts[i].y)*neuralShade(pts[i].x,pts[i].y,pts[i].z), ffb=taperFade(pts[jf].y)*neuralShade(pts[jf].x,pts[jf].y,pts[jf].z);
         fineCol.push(cc.r*ffa,cc.g*ffa,cc.b*ffa,cc.r*ffb,cc.g*ffb,cc.b*ffb);
         pairs.push([i,jf]);
         degFine[i]++; degFine[jf]++;
@@ -513,7 +522,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var fgeo=new THREE.BufferGeometry();
   fgeo.setAttribute('position',new THREE.Float32BufferAttribute(finePos,3));
   fgeo.setAttribute('color',new THREE.Float32BufferAttribute(fineCol,3));
-  brain.add(dbgHide('fine',new THREE.LineSegments(fgeo,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:.24,blending:THREE.AdditiveBlending,depthWrite:false}))));
+  brain.add(dbgHide('fine',new THREE.LineSegments(fgeo,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:.075,blending:THREE.AdditiveBlending,depthWrite:false}))));
 
   // --- Verbindungsgraph aller goldenen Linien (Walks + Cross-Links + Feingewebe),
   // dient den blauen Nervenblitzen als Wegenetz zum "Entlangfolgen" ---
@@ -521,7 +530,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   pairs.forEach(function(p){ graphAdj[p[0]].push(p[1]); graphAdj[p[1]].push(p[0]); });
 
   var npos=BR.nodes;
-  var nodesP=pointsObj(npos,null,.21,1);
+  var nodesP=pointsObj(npos,null,.21,.44);
   brain.add(dbgHide('nodes',nodesP));
 
   function halo(sc,op,hy){
@@ -529,7 +538,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var sp=new THREE.Sprite(sm); sp.scale.set(sc,sc,1); sp.position.y=hy; brain.add(sp);
   }
   if (typeof window==='undefined' || new URLSearchParams(window.location.search).get('nohalo')!=='1') {
-    halo(6.2,.22,0); halo(3.7,.3,.1); halo(1.9,.42,.2);
+    halo(6.2,.035,0); halo(3.7,.06,.1); halo(1.9,.11,.2);
   }
 
   var satelliteBrains=[];
@@ -640,9 +649,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     }
     var satelliteLines=satellite.getObjectByName('neural-lines');
     var satellitePoints=satellite.getObjectByName('neural-points');
-    satelliteLines.material.blending=THREE.AdditiveBlending;
-    satelliteLines.material.opacity=.92;
-    satellitePoints.material.opacity=.9;
+    satelliteLines.material.blending=THREE.NormalBlending;
+    satelliteLines.material.opacity=.42;
+    satellitePoints.material.opacity=.44;
     satellitePoints.material.size=.066;
     satelliteLines.frustumCulled=false;
     satellitePoints.frustumCulled=false;
@@ -705,7 +714,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           z=centerZ+satelliteWorldX.z*Math.cos(helixAngle)*helixRadius+satelliteWorldZ.z*Math.sin(helixAngle)*helixRadius;
         }
         var pulse=Math.max(0,Math.sin(flowTime*3.4*strand.flowDirection-progress*20*strand.flowDirection+fiberShape.phaseOffset));
-        var brightness=.48+pulse*.75;
+        var brightness=.3+pulse*.32;
         var colorR=strand.color.r*brightness, colorG=strand.color.g*brightness, colorB=strand.color.b*brightness;
         var pointIndex=pointOffset+(start+step)*3;
         strand.pointPositions[pointIndex]=x;
@@ -768,7 +777,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   Spark.prototype.update=function(dt){
     if(this.life>0){
       this.life-=dt;
-      this.mat.opacity=this.life>0?.5+Math.random()*.8:0;
+      this.mat.opacity=this.life>0?.12+Math.random()*.16:0;
       if(this.life<=0){this.mat.opacity=0;this.wait=.4+Math.random()*1.6;}
     } else { this.wait-=dt; if(this.wait<=0) this.spawn(); }
   };
@@ -854,7 +863,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     }
     this.line.geometry.attributes.position.needsUpdate=true;
     this.line.geometry.attributes.color.needsUpdate=true;
-    this.mat.opacity=.85;
+    this.mat.opacity=.34;
   };
 
   // --- Nervenblitze: hüpfen live über das Liniennetz (echte Graph-Kanten),
@@ -892,7 +901,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     this.hopsLeft=16+Math.floor(Math.random()*14);
     this.hopTimer=.05+Math.random()*.07;
     this.alive=true;
-    this.headMat.opacity=.65;
+    this.headMat.opacity=.24;
   };
   NerveBolt.prototype.stepOnce=function(){
     var neigh=graphAdj[this.cur];
@@ -941,7 +950,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     }
     this.line.geometry.attributes.position.needsUpdate=true;
     this.line.geometry.attributes.color.needsUpdate=true;
-    this.mat.opacity=.62;
+    this.mat.opacity=.22;
     var head=this.trail[this.trail.length-1];
     this.headArr[0]=head.x; this.headArr[1]=head.y; this.headArr[2]=head.z;
     this.headPt.geometry.attributes.position.needsUpdate=true;
@@ -1030,8 +1039,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var haloScale=coreScale*(3.1+envelope*1.9);
     this.core.scale.set(coreScale,coreScale,1);
     this.halo.scale.set(haloScale,haloScale,1);
-    this.coreMat.opacity=.55*envelope;
-    this.haloMat.opacity=.11*envelope;
+    this.coreMat.opacity=.22*envelope;
+    this.haloMat.opacity=.035*envelope;
     var directionX=this.to.x-this.from.x, directionY=this.to.y-this.from.y, directionZ=this.to.z-this.from.z;
     var directionLength=Math.sqrt(directionX*directionX+directionY*directionY+directionZ*directionZ)||1;
     directionX/=directionLength; directionY/=directionLength; directionZ/=directionLength;
@@ -1045,7 +1054,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       this.arcArr[arcIndex*3+2]=this.position.z-directionZ*trailDistance+Math.sin(flickerPhase*.81+1.5)*flickerAmount;
     }
     this.arc.geometry.attributes.position.needsUpdate=true;
-    this.arcMat.opacity=(.18+.38*Math.abs(Math.sin(this.elapsed*37)))*envelope;
+    this.arcMat.opacity=(.06+.12*Math.abs(Math.sin(this.elapsed*37)))*envelope;
   };
   var blueOrbs=[], BON=isMobile?5:12;
   for(i=0;i<BON;i++) blueOrbs.push(new BlueOrb(brain));
@@ -1334,7 +1343,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           satelliteBlueOrbs[satelliteOrbUpdateIndex].update(dt);
         }
       }
-      nodesP.material.opacity = .95;
+      nodesP.material.opacity = .44;
       var railSlowdown=cameraRailSlowdown(scrollP);
       var cameraInertia=1-Math.exp(-dt*7.2*railSlowdown);
       scrollP+=(targetScrollP-scrollP)*cameraInertia;
