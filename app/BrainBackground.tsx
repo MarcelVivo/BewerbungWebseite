@@ -2,8 +2,6 @@
 // @ts-nocheck
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { ConvexGeometry } from 'three/examples/jsm/geometries/ConvexGeometry.js';
-import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import brainData from './brainData.json';
 
 type BrainBackgroundProps = {
@@ -645,92 +643,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   // der lateralen z-Achse gesplittet. Links und rechts teilen sich dadurch
   // exakt dieselbe Rohform/Aussenkontur — keine zwei unabhängigen Konturen. ---
   var scatterPts=pts.slice(0,scatterN);
-  var leftScatterPts=scatterPts.filter(function(p){ return p.z<=0; });
   var rightScatterPts=scatterPts.filter(function(p){ return p.z>0; });
 
-  function hemisphereFoldNoise(x,y,z){
-    var largeFolds=Math.sin(y*9+z*7)*.052+Math.cos(x*8-y*11)*.044+Math.sin(z*13+x*6)*.034;
-    var fineWrinkles=Math.sin(x*27+y*19-z*15)*.014+Math.cos(y*31-z*23+x*11)*.011;
-    return largeFolds+fineWrinkles;
-  }
-
-  // Lineare Mittelpunkt-Unterteilung: bricht die grossen, flachen Hüllflächen
-  // in viele kleine Dreiecke auf, damit das Falten-Rauschen danach als
-  // organische Wölbung statt als grobe Facettierung sichtbar wird.
-  function subdivideTriangleSoup(positions,iterations){
-    var current=positions;
-    for(var iteration=0;iteration<iterations;iteration++){
-      var next=[];
-      for(var t=0;t<current.length;t+=9){
-        var ax=current[t],ay=current[t+1],az=current[t+2];
-        var bx=current[t+3],by=current[t+4],bz=current[t+5];
-        var cx=current[t+6],cy=current[t+7],cz=current[t+8];
-        var abx=(ax+bx)/2,aby=(ay+by)/2,abz=(az+bz)/2;
-        var bcx=(bx+cx)/2,bcy=(by+cy)/2,bcz=(bz+cz)/2;
-        var cax=(cx+ax)/2,cay=(cy+ay)/2,caz=(cz+az)/2;
-        next.push(ax,ay,az, abx,aby,abz, cax,cay,caz);
-        next.push(bx,by,bz, bcx,bcy,bcz, abx,aby,abz);
-        next.push(cx,cy,cz, cax,cay,caz, bcx,bcy,bcz);
-        next.push(abx,aby,abz, bcx,bcy,bcz, cax,cay,caz);
-      }
-      current=next;
-    }
-    return current;
-  }
-
-  // --- Links: menschliche Hälfte. Hüllfläche der linken Punktmenge, fein
-  // unterteilt und danach entlang der Normalen mit prozeduralem Falten-
-  // Rauschen verformt, damit sie organisch statt facettiert/glatt wirkt. ---
-  function buildOrganicHemisphere(){
-    if(leftScatterPts.length<4) return;
-    var rawHull=new ConvexGeometry(leftScatterPts);
-    var subdividedPositions=subdivideTriangleSoup(rawHull.getAttribute('position').array,3);
-    var soupGeometry=new THREE.BufferGeometry();
-    soupGeometry.setAttribute('position',new THREE.Float32BufferAttribute(subdividedPositions,3));
-    var hullGeometry=mergeVertices(soupGeometry);
-    hullGeometry.computeVertexNormals();
-    var positionAttribute=hullGeometry.getAttribute('position');
-    var normalAttribute=hullGeometry.getAttribute('normal');
-    var foldValues=new Float32Array(positionAttribute.count);
-    for(var vertexIndex=0;vertexIndex<positionAttribute.count;vertexIndex++){
-      var vx=positionAttribute.getX(vertexIndex), vy=positionAttribute.getY(vertexIndex), vz=positionAttribute.getZ(vertexIndex);
-      var nx=normalAttribute.getX(vertexIndex), ny=normalAttribute.getY(vertexIndex), nz=normalAttribute.getZ(vertexIndex);
-      var fold=hemisphereFoldNoise(vx,vy,vz);
-      foldValues[vertexIndex]=fold;
-      positionAttribute.setXYZ(vertexIndex,vx+nx*fold,vy+ny*fold,vz+nz*fold);
-    }
-    positionAttribute.needsUpdate=true;
-    hullGeometry.computeVertexNormals();
-    var hullColors=new Float32Array(positionAttribute.count*3);
-    var hemisphereColor=new THREE.Color();
-    for(var colorIndex=0;colorIndex<positionAttribute.count;colorIndex++){
-      var depthT=Math.max(0,Math.min(1,(foldValues[colorIndex]+.155)/.31));
-      hemisphereColor.copy(GOLD.deep).lerp(GOLD.core,depthT).lerp(GOLD.hot,depthT*depthT*.5);
-      hullColors[colorIndex*3]=hemisphereColor.r;
-      hullColors[colorIndex*3+1]=hemisphereColor.g;
-      hullColors[colorIndex*3+2]=hemisphereColor.b;
-    }
-    hullGeometry.setAttribute('color',new THREE.Float32BufferAttribute(hullColors,3));
-    var hemisphereMaterial=new THREE.MeshPhysicalMaterial({
-      color:0xffffff,
-      vertexColors:true,
-      metalness:.85,
-      roughness:.4,
-      clearcoat:.25,
-      clearcoatRoughness:.32,
-      emissive:0x140b02,
-      emissiveIntensity:.08,
-      side:THREE.FrontSide
-    });
-    var organicHemisphere=new THREE.Mesh(hullGeometry,hemisphereMaterial);
-    organicHemisphere.frustumCulled=false;
-    organicHemisphere.name='organic-hemisphere';
-    brain.add(organicHemisphere);
-  }
-
-  // --- Rechts: KI-Hälfte. Dieselbe rechte Punktmenge wird verdichtet (Punkte
-  // dazwischen eingefügt, bleibt innerhalb derselben Kontur) und zu einem
-  // Knoten-/Liniennetzwerk verbunden statt zu einem Volumen geschlossen. ---
   function densifyWithinMask(basePoints,targetCount){
     var result=basePoints.slice();
     var guard=0;
@@ -745,15 +659,28 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     return result;
   }
 
-  var networkNodes=[], networkAdjacency=[], networkPointsObj=null, networkHubIndices=[];
-  function buildNetworkHemisphere(){
+  var networkNodes=[], networkAdjacency=[], networkPointsObj=null;
+  function buildTechnicalBrain(){
     if(rightScatterPts.length<4) return;
-    networkNodes=densifyWithinMask(rightScatterPts,isMobile?150:380);
+    var rightNodes=densifyWithinMask(rightScatterPts,isMobile?150:380);
+    var halfNodeCount=rightNodes.length;
     var nodeColors=[];
-    for(var nodeIndex=0;nodeIndex<networkNodes.length;nodeIndex++){
-      networkAdjacency.push([]);
+    for(var nodeIndex=0;nodeIndex<halfNodeCount;nodeIndex++){
+      networkNodes.push(rightNodes[nodeIndex]);
+    }
+    for(nodeIndex=0;nodeIndex<halfNodeCount;nodeIndex++){
+      var mirroredNode=rightNodes[nodeIndex];
+      networkNodes.push(new THREE.Vector3(mirroredNode.x,mirroredNode.y,-mirroredNode.z));
+    }
+    var halfNodeColors=[];
+    for(nodeIndex=0;nodeIndex<halfNodeCount;nodeIndex++){
       var intensity=.38+rnd()*.62;
-      nodeColors.push(new THREE.Color(GOLD.deep).lerp(GOLD.hot,intensity));
+      halfNodeColors.push(new THREE.Color(GOLD.deep).lerp(GOLD.hot,intensity));
+    }
+    for(nodeIndex=0;nodeIndex<halfNodeCount;nodeIndex++) nodeColors.push(halfNodeColors[nodeIndex]);
+    for(nodeIndex=0;nodeIndex<halfNodeCount;nodeIndex++) nodeColors.push(halfNodeColors[nodeIndex].clone());
+    for(nodeIndex=0;nodeIndex<networkNodes.length;nodeIndex++){
+      networkAdjacency.push([]);
     }
     var techPointPositions=[], techPointColors=[];
     for(nodeIndex=0;nodeIndex<networkNodes.length;nodeIndex++){
@@ -762,11 +689,19 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       techPointColors.push(nodeColors[nodeIndex].r,nodeColors[nodeIndex].g,nodeColors[nodeIndex].b);
     }
     var techLinePositions=[], techLineColors=[];
-    for(var sourceIndex=0;sourceIndex<networkNodes.length;sourceIndex++){
+    function appendNetworkEdge(sourceIndex,targetIndex){
+      networkAdjacency[sourceIndex].push(targetIndex);
+      networkAdjacency[targetIndex].push(sourceIndex);
+      var sourceNode=networkNodes[sourceIndex], targetNode=networkNodes[targetIndex];
+      var sourceColor=nodeColors[sourceIndex], targetColor=nodeColors[targetIndex];
+      techLinePositions.push(sourceNode.x,sourceNode.y,sourceNode.z,targetNode.x,targetNode.y,targetNode.z);
+      techLineColors.push(sourceColor.r,sourceColor.g,sourceColor.b,targetColor.r,targetColor.g,targetColor.b);
+    }
+    for(var sourceIndex=0;sourceIndex<halfNodeCount;sourceIndex++){
       var nearestIndices=[], nearestDistances=[];
-      for(var targetIndex=0;targetIndex<networkNodes.length;targetIndex++){
+      for(var targetIndex=0;targetIndex<halfNodeCount;targetIndex++){
         if(sourceIndex===targetIndex) continue;
-        var distance=networkNodes[sourceIndex].distanceToSquared(networkNodes[targetIndex]);
+        var distance=rightNodes[sourceIndex].distanceToSquared(rightNodes[targetIndex]);
         for(var nearestSlot=0;nearestSlot<3;nearestSlot++){
           if(distance<(nearestDistances[nearestSlot]===undefined?Infinity:nearestDistances[nearestSlot])){
             nearestDistances.splice(nearestSlot,0,distance);
@@ -779,13 +714,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       }
       for(var nearestIndex=0;nearestIndex<nearestIndices.length;nearestIndex++){
         var neighborIndex=nearestIndices[nearestIndex];
-        networkAdjacency[sourceIndex].push(neighborIndex);
-        networkAdjacency[neighborIndex].push(sourceIndex);
         if(neighborIndex<sourceIndex) continue;
-        var sourceNode=networkNodes[sourceIndex], neighborNode=networkNodes[neighborIndex];
-        var sourceColor=nodeColors[sourceIndex], neighborColor=nodeColors[neighborIndex];
-        techLinePositions.push(sourceNode.x,sourceNode.y,sourceNode.z,neighborNode.x,neighborNode.y,neighborNode.z);
-        techLineColors.push(sourceColor.r,sourceColor.g,sourceColor.b,neighborColor.r,neighborColor.g,neighborColor.b);
+        appendNetworkEdge(sourceIndex,neighborIndex);
+        appendNetworkEdge(sourceIndex+halfNodeCount,neighborIndex+halfNodeCount);
       }
     }
     var techLineGeometry=new THREE.BufferGeometry();
@@ -798,61 +729,21 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     networkPointsObj.name='network-nodes';
     brain.add(techLines);
     brain.add(networkPointsObj);
-    // Grössere, hellere Hub-Knoten: jeder 12. Knoten, eigene Punktschicht
     var hubPositions=[], hubColors=[];
-    for(nodeIndex=0;nodeIndex<networkNodes.length;nodeIndex+=12){
-      networkHubIndices.push(nodeIndex);
-      var hubNode=networkNodes[nodeIndex];
-      hubPositions.push(hubNode.x,hubNode.y,hubNode.z);
-      hubColors.push(GOLD.hot.r,GOLD.hot.g,GOLD.hot.b);
+    for(nodeIndex=0;nodeIndex<halfNodeCount;nodeIndex+=12){
+      for(var hemisphereIndex=0;hemisphereIndex<2;hemisphereIndex++){
+        var hubNode=networkNodes[nodeIndex+hemisphereIndex*halfNodeCount];
+        hubPositions.push(hubNode.x,hubNode.y,hubNode.z);
+        hubColors.push(GOLD.hot.r,GOLD.hot.g,GOLD.hot.b);
+      }
     }
     var hubPoints=pointsObj(hubPositions,hubColors,.13,.85,THREE.AdditiveBlending);
     hubPoints.frustumCulled=false;
     brain.add(hubPoints);
   }
 
-  // --- Mitte: Trennlinie folgt echten Scatter-Punkten nahe der Symmetrieebene
-  // (z≈0) statt einer unabhängigen Formel — sitzt dadurch exakt auf der
-  // gemeinsamen Kontur zwischen beiden Hälften. ---
-  function buildDivider(){
-    var binCount=24;
-    var minY=-.9, maxY=.9;
-    var bins=[];
-    for(var binIndex=0;binIndex<=binCount;binIndex++) bins.push(null);
-    scatterPts.forEach(function(p){
-      var binIndex=Math.round(((p.y-minY)/(maxY-minY))*binCount);
-      if(binIndex<0||binIndex>binCount) return;
-      var absZ=Math.abs(p.z);
-      if(!bins[binIndex]||absZ<bins[binIndex].absZ) bins[binIndex]={x:p.x,y:p.y,z:p.z*0,absZ:absZ};
-    });
-    var dividerPoints=[];
-    for(binIndex=0;binIndex<=binCount;binIndex++){
-      if(bins[binIndex]) dividerPoints.push(new THREE.Vector3(bins[binIndex].x,bins[binIndex].y,0));
-    }
-    if(dividerPoints.length<4) return;
-    var dividerCurve=new THREE.CatmullRomCurve3(dividerPoints);
-    var dividerGeometry=new THREE.TubeGeometry(dividerCurve,42,.007,4,false);
-    var dividerMaterial=new THREE.MeshBasicMaterial({color:0xe7c56a,transparent:true,opacity:.46,toneMapped:false});
-    var divider=new THREE.Mesh(dividerGeometry,dividerMaterial);
-    divider.frustumCulled=false;
-    divider.name='hemisphere-divider';
-    brain.add(divider);
-  }
+  buildTechnicalBrain();
 
-  var organicKeyLight=new THREE.DirectionalLight(0xf6e3a1,2.15);
-  organicKeyLight.position.set(-4.2,4.8,5.6);
-  scene.add(organicKeyLight);
-  var organicFillLight=new THREE.HemisphereLight(0x3a260d,0x020202,.24);
-  scene.add(organicFillLight);
-  var organicRimLight=new THREE.PointLight(0xc89a3d,.72,12,2);
-  organicRimLight.position.set(3.6,1.8,-2.2);
-  scene.add(organicRimLight);
-  buildOrganicHemisphere();
-  buildNetworkHemisphere();
-  buildDivider();
-
-  // --- Ruhige Netzwerk-Lichtimpulse: gleiten golden über die rechte KI-Hälfte,
-  // analog zu NerveBolt aber langsamer, gedämpfter und in der Goldpalette. ---
   function NetworkPulse(){
     this.maxTrail=8;
     var pulseGeometry=new THREE.BufferGeometry();
