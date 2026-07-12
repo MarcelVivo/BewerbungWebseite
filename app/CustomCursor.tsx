@@ -50,10 +50,10 @@ export default function CustomCursor() {
       bolts.push({
         x, y,
         life: 1,
-        maxLife: 0.45 + Math.random() * 0.35,
-        size: 1.2 + Math.random() * 2.2,
-        dx: dx * (0.12 + Math.random() * 0.16) + (Math.random() - 0.5) * 0.6,
-        dy: dy * (0.12 + Math.random() * 0.16) + (Math.random() - 0.5) * 0.6,
+        maxLife: 0.28 + Math.random() * 0.18,
+        size: 0.7 + Math.random() * 1.0,
+        dx: dx * (0.07 + Math.random() * 0.09) + (Math.random() - 0.5) * 0.35,
+        dy: dy * (0.07 + Math.random() * 0.09) + (Math.random() - 0.5) * 0.35,
         seed: Math.random() * 1000,
       });
     }
@@ -75,8 +75,8 @@ export default function CustomCursor() {
       ctx!.lineWidth = size;
       ctx!.lineCap = 'round';
       ctx!.lineJoin = 'round';
-      ctx!.shadowColor = 'rgba(70,170,255,0.9)';
-      ctx!.shadowBlur = 8;
+      ctx!.shadowColor = 'rgba(70,170,255,0.7)';
+      ctx!.shadowBlur = 3;
       ctx!.stroke();
     }
 
@@ -95,7 +95,7 @@ export default function CustomCursor() {
       const moveDist = Math.hypot(core.x - lastSparkX, core.y - lastSparkY);
       if (moveDist > 6) {
         const dx = core.x - prevX, dy = core.y - prevY;
-        const count = Math.min(3, Math.floor(moveDist / 6));
+        const count = Math.min(2, Math.floor(moveDist / 9));
         for (let i = 0; i < count; i++) {
           spawnBolt(core.x, core.y, -dx, -dy);
         }
@@ -109,9 +109,9 @@ export default function CustomCursor() {
         b.life -= dt / b.maxLife;
         if (b.life <= 0) { bolts.splice(i, 1); continue; }
         b.x += b.dx; b.y += b.dy;
-        const alpha = Math.max(0, b.life) * 0.85;
+        const alpha = Math.max(0, b.life) * 0.45;
         const angle = Math.atan2(b.dy, b.dx);
-        const len = 6 + (1 - b.life) * 10;
+        const len = 3 + (1 - b.life) * 4;
         drawLightning(b.x, b.y, len, angle, b.seed, alpha, b.size);
       }
       ctx!.shadowBlur = 0;
