@@ -20,7 +20,7 @@ export default function HomeNavBar() {
 
   return (
     <header className="fixed top-0 inset-x-0 z-50 bg-black">
-      <div className="navbar-gold-divider absolute inset-x-0 bottom-0 h-[2px] pointer-events-none" aria-hidden="true" />
+      <div className="navbar-gold-divider absolute inset-x-0 bottom-0 h-px pointer-events-none" aria-hidden="true" />
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         {/* ── Logo ── */}
         <a href="/" aria-label="Marcel Spahr – Startseite" className="flex items-center select-none">
