@@ -247,6 +247,27 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   addDepthLayer(isMobile?34:76,10.6,16.5,.16,.045,0x7c5a1a,0xc89a3d);
   addDepthLayer(isMobile?16:36,16.6,23,.42,.02,0x7c5a1a,0xb8862b);
 
+  // --- Staubfeld: tausende feine, leuchtende Partikel, frei über alle drei
+  // Achsen im gesamten Raum verteilt (nicht nur in schmalen Radius-Ringen wie
+  // die Tiefenebenen oben), statisch positioniert wie die Ebenen — die
+  // Bewegung entsteht rein durch die vorbeifliegende Kamera. ---
+  function addStardustField(count,size,opacity){
+    var positions=[], colors=[], dustColors=[GOLD.core,GOLD.line,GOLD.hot,GOLD.white,GOLD.deep], tint=new THREE.Color();
+    for(var dustIndex=0;dustIndex<count;dustIndex++){
+      var angle=Math.random()*Math.PI*2;
+      var radius=1.3+Math.random()*28;
+      var y=cameraTargetEnd-9+Math.random()*(cameraTravel+18);
+      positions.push(Math.cos(angle)*radius,y,Math.sin(angle)*radius);
+      var flicker=.5+Math.random()*.5;
+      tint.copy(dustColors[Math.floor(Math.random()*dustColors.length)]).multiplyScalar(flicker);
+      colors.push(tint.r,tint.g,tint.b);
+    }
+    var stardust=pointsObj(positions,colors,size,opacity,THREE.AdditiveBlending);
+    stardust.frustumCulled=false;
+    world.add(stardust);
+  }
+  addStardustField(isMobile?1300:4200,.022,.5);
+
   var BR=brainData;
 
   var __hideSet = (typeof window!=='undefined' ? new URLSearchParams(window.location.search).get('hide')||'' : '').split(',');
@@ -689,6 +710,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       techPointColors.push(nodeColors[nodeIndex].r,nodeColors[nodeIndex].g,nodeColors[nodeIndex].b);
     }
     var techLinePositions=[], techLineColors=[];
+    var networkNeighborCount=9;
     function appendNetworkEdge(sourceIndex,targetIndex){
       networkAdjacency[sourceIndex].push(targetIndex);
       networkAdjacency[targetIndex].push(sourceIndex);
@@ -702,12 +724,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       for(var targetIndex=0;targetIndex<halfNodeCount;targetIndex++){
         if(sourceIndex===targetIndex) continue;
         var distance=rightNodes[sourceIndex].distanceToSquared(rightNodes[targetIndex]);
-        for(var nearestSlot=0;nearestSlot<3;nearestSlot++){
+        for(var nearestSlot=0;nearestSlot<networkNeighborCount;nearestSlot++){
           if(distance<(nearestDistances[nearestSlot]===undefined?Infinity:nearestDistances[nearestSlot])){
             nearestDistances.splice(nearestSlot,0,distance);
             nearestIndices.splice(nearestSlot,0,targetIndex);
-            nearestDistances.length=Math.min(nearestDistances.length,3);
-            nearestIndices.length=Math.min(nearestIndices.length,3);
+            nearestDistances.length=Math.min(nearestDistances.length,networkNeighborCount);
+            nearestIndices.length=Math.min(nearestIndices.length,networkNeighborCount);
             break;
           }
         }
