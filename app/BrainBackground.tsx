@@ -30,6 +30,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 0.58;
     var scene = new THREE.Scene();
+    // Tiefschwarzer, endloser Raum: die Szene selbst ist opak schwarz statt
+    // transparent (verlässt sich nicht mehr auf die CSS-Seitenfarbe dahinter),
+    // und Nebel lässt weit entfernte Partikel weich ins Schwarz ausblenden statt
+    // hart an der Sichtweite abzuschneiden.
+    scene.background = new THREE.Color(0x000000);
+    scene.fog = new THREE.Fog(0x000000, 18, 78);
     var camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 200);
     camera.position.set(0, 0.4, 9.2);
     camera.lookAt(0, -0.1, 0);
