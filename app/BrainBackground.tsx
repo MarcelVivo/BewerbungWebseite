@@ -693,6 +693,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   }
   function addSatelliteBrain(x,y,z,phase,colorHex){
     var satellite=brain.clone(true);
+    var satelliteLogo=satellite.getObjectByName('forehead-logo');
+    if(satelliteLogo&&satelliteLogo.parent) satelliteLogo.parent.remove(satelliteLogo);
     tintSatelliteBrain(satellite,colorHex);
     satellite.scale.setScalar(isMobile?0.6:1.32);
     satellite.position.set(x,y,z);
