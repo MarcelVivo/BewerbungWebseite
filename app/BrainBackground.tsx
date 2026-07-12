@@ -895,14 +895,14 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       pointOpacity:.58,
       pointSize:.072,
       topFunnel:1,
-      connectorShare:.46,
+      connectorShare:.5,
       joinRadius:.46,
       funnelSpread:1,
-      firstDroop:1,
-      secondDroop:1,
-      sidePull:.42,
-      endPull:.16,
-      sway:1,
+      firstDroop:1.22,
+      secondDroop:1.42,
+      sidePull:1,
+      endPull:.32,
+      sway:.75,
       helixLength:25.5,
       helixTurns:3.8,
       helixRadius:.46,
@@ -930,10 +930,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     return {
       phaseOffset:(Math.random()-.5)*.22,
       radiusOffset:(Math.random()-.5)*.07,
-      firstDroop:1.72+Math.random()*.34,
-      secondDroop:1.3+Math.random()*.28,
+      firstDroop:.92+Math.random()*.18,
+      secondDroop:1.08+Math.random()*.2,
       firstSway:(Math.random()-.5)*.2,
-      secondSway:(Math.random()-.5)*.15
+      secondSway:(Math.random()-.5)*.15,
+      windPhase:Math.random()*Math.PI*2
     };
   }
 
@@ -1048,12 +1049,16 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var joinX=targetX+satelliteWorldX.x*Math.cos(joinAngle)*joinRadius+satelliteWorldZ.x*Math.sin(joinAngle)*joinRadius;
       var joinY=targetY+satelliteWorldX.y*Math.cos(joinAngle)*joinRadius+satelliteWorldZ.y*Math.sin(joinAngle)*joinRadius;
       var joinZ=targetZ+satelliteWorldX.z*Math.cos(joinAngle)*joinRadius+satelliteWorldZ.z*Math.sin(joinAngle)*joinRadius;
-      var controlOneX=startX+(joinX-startX)*.23+satelliteWorldDown.x*fiberShape.firstDroop*params.firstDroop+satelliteWorldZ.x*fiberShape.firstSway*params.sway+satelliteWorldX.x*strand.sideSign*params.sidePull;
-      var controlOneY=startY+(joinY-startY)*.23+satelliteWorldDown.y*fiberShape.firstDroop*params.firstDroop+satelliteWorldZ.y*fiberShape.firstSway*params.sway+satelliteWorldX.y*strand.sideSign*params.sidePull;
-      var controlOneZ=startZ+(joinZ-startZ)*.23+satelliteWorldDown.z*fiberShape.firstDroop*params.firstDroop+satelliteWorldZ.z*fiberShape.firstSway*params.sway+satelliteWorldX.z*strand.sideSign*params.sidePull;
-      var controlTwoX=startX+(joinX-startX)*.77+satelliteWorldDown.x*fiberShape.secondDroop*params.secondDroop+satelliteWorldZ.x*fiberShape.secondSway*params.sway+satelliteWorldX.x*strand.sideSign*params.endPull;
-      var controlTwoY=startY+(joinY-startY)*.77+satelliteWorldDown.y*fiberShape.secondDroop*params.secondDroop+satelliteWorldZ.y*fiberShape.secondSway*params.sway+satelliteWorldX.y*strand.sideSign*params.endPull;
-      var controlTwoZ=startZ+(joinZ-startZ)*.77+satelliteWorldDown.z*fiberShape.secondDroop*params.secondDroop+satelliteWorldZ.z*fiberShape.secondSway*params.sway+satelliteWorldX.z*strand.sideSign*params.endPull;
+      var horizontalSpan=Math.sqrt((joinX-startX)*(joinX-startX)+(joinZ-startZ)*(joinZ-startZ));
+      var catenaryDepth=.52+Math.min(1.15,horizontalSpan*.18);
+      var firstSag=catenaryDepth*fiberShape.firstDroop*params.firstDroop;
+      var secondSag=catenaryDepth*fiberShape.secondDroop*params.secondDroop;
+      var controlOneX=startX+(joinX-startX)*.08+satelliteWorldDown.x*firstSag+satelliteWorldZ.x*fiberShape.firstSway*params.sway+satelliteWorldX.x*strand.sideSign*params.sidePull;
+      var controlOneY=startY+(joinY-startY)*.08+satelliteWorldDown.y*firstSag+satelliteWorldZ.y*fiberShape.firstSway*params.sway+satelliteWorldX.y*strand.sideSign*params.sidePull;
+      var controlOneZ=startZ+(joinZ-startZ)*.08+satelliteWorldDown.z*firstSag+satelliteWorldZ.z*fiberShape.firstSway*params.sway+satelliteWorldX.z*strand.sideSign*params.sidePull;
+      var controlTwoX=startX+(joinX-startX)*.72+satelliteWorldDown.x*secondSag+satelliteWorldZ.x*fiberShape.secondSway*params.sway+satelliteWorldX.x*strand.sideSign*params.endPull;
+      var controlTwoY=startY+(joinY-startY)*.72+satelliteWorldDown.y*secondSag+satelliteWorldZ.y*fiberShape.secondSway*params.sway+satelliteWorldX.y*strand.sideSign*params.endPull;
+      var controlTwoZ=startZ+(joinZ-startZ)*.72+satelliteWorldDown.z*secondSag+satelliteWorldZ.z*fiberShape.secondSway*params.sway+satelliteWorldX.z*strand.sideSign*params.endPull;
       var previousX=startX, previousY=startY, previousZ=startZ;
       var previousR=0, previousG=0, previousB=0, lineOffset=fiber.lineOffset;
       for(var step=0;step<fiber.len;step++){
@@ -1063,6 +1068,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           x=inverse*inverse*inverse*startX+3*inverse*inverse*connectorProgress*controlOneX+3*inverse*connectorProgress*connectorProgress*controlTwoX+connectorProgress*connectorProgress*connectorProgress*joinX;
           y=inverse*inverse*inverse*startY+3*inverse*inverse*connectorProgress*controlOneY+3*inverse*connectorProgress*connectorProgress*controlTwoY+connectorProgress*connectorProgress*connectorProgress*joinY;
           z=inverse*inverse*inverse*startZ+3*inverse*inverse*connectorProgress*controlOneZ+3*inverse*connectorProgress*connectorProgress*controlTwoZ+connectorProgress*connectorProgress*connectorProgress*joinZ;
+          var windEnvelope=Math.sin(connectorProgress*Math.PI);
+          var windSide=Math.sin(flowTime*.64+connectorProgress*5.4+fiberShape.windPhase)*params.sway*.045*windEnvelope;
+          var windDepth=Math.cos(flowTime*.49+connectorProgress*4.1+fiberShape.windPhase*1.37)*params.sway*.022*windEnvelope;
+          x+=satelliteWorldX.x*windSide+satelliteWorldZ.x*windDepth;
+          y+=satelliteWorldX.y*windSide+satelliteWorldZ.y*windDepth;
+          z+=satelliteWorldX.z*windSide+satelliteWorldZ.z*windDepth;
         } else {
           helixProgress=(progress-connectorShare)/(1-connectorShare);
           var helixAngle=strand.phase+params.phase+helixRotation+helixProgress*Math.PI*2*params.helixTurns+fiberShape.phaseOffset;
@@ -1775,12 +1786,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           lastWobbleUpdate = now;
           var linePosArr = linesObj.geometry.attributes.position.array;
           var ptsPosArr = wptsObj.geometry.attributes.position.array;
-          var airSwayX=Math.sin(t*WIND.speed)*WIND.sway*.65+Math.sin(t*WIND.speed*.43+1.2)*WIND.sway*.35;
-          var airSwayZ=Math.cos(t*WIND.speed*.84)*WIND.sway*.52+Math.sin(t*WIND.speed*.51+.7)*WIND.sway*.3;
           for (var v = 0; v < vc; v++) {
             var tv = sMeta[v * 2], ph = sMeta[v * 2 + 1];
-            wobbleX[v] = Math.sin(t*WIND.speed*2.95+tv*WIND.waveFrequency+ph)*WIND.wave*tv*tv+airSwayX*tv;
-            wobbleZ[v] = Math.cos(t*WIND.speed*2.43+tv*WIND.waveFrequency*.78+ph)*WIND.wave*.82*tv*tv+airSwayZ*tv;
+            wobbleX[v] = Math.sin(t*WIND.speed*2.95+tv*WIND.waveFrequency+ph)*WIND.wave*tv*tv
+              +Math.sin(t*WIND.speed*1.31+ph*2.7)*WIND.sway*.12*tv*tv;
+            wobbleZ[v] = Math.cos(t*WIND.speed*2.43+tv*WIND.waveFrequency*.78+ph)*WIND.wave*.82*tv*tv
+              +Math.cos(t*WIND.speed*1.07+ph*2.2)*WIND.sway*.08*tv*tv;
           }
           for (var wr = 0; wr < wobbleLineRefs.length; wr++) {
             var refL = wobbleLineRefs[wr], svL = refL.srcV, oL = refL.off;
