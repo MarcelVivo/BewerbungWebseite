@@ -232,6 +232,21 @@ body {
 
 .group:hover [class~="group-hover:text-[#c9a84c]"] { color: var(--gold-pale) !important; }
 
+/* ── Navbar-Trennlinie: glänzender Gold-Verlauf statt flacher Border ── */
+.navbar-gold-divider {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--gold-deep) 10%,
+    var(--gold-light) 35%,
+    var(--gold-highlight) 50%,
+    var(--gold-light) 65%,
+    var(--gold-deep) 90%,
+    transparent 100%
+  );
+  box-shadow: 0 0 10px rgba(231,197,106,.45), 0 0 22px rgba(200,154,61,.2);
+}
+
 /* Page animations – no JS needed, runs immediately from CSS */
 @keyframes ms-fade-up {
   from { opacity: 0; transform: translateY(22px); }
