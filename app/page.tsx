@@ -95,29 +95,31 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
   const viewportRef = useRef({ width: 0, height: 0 });
   const serviceGridRef = useRef<HTMLDivElement | null>(null);
 
-  // Neural Glass Panels: Materialisierung wird scroll-/viewport-getrieben
-  // über einen einzigen gemeinsamen IntersectionObserver ausgelöst (kein
-  // Autoplay-Timer, kein Loop pro Karte) — jede Karte bekommt nur einmal
-  // die Klasse .is-materialized, danach übernimmt reines CSS die Kaskade
-  // aus Partikeln → Fasern → Rahmen → Glas → Inhalt über transition-delay.
+  // Neural Glass Panels: erscheinen erst, nachdem der letzte Intro-Text
+  // durchgescrollt wurde (Schwelle = die bestehende #services-Ankerposition
+  // bei 18% der Section-Höhe), nicht durchgehend während der ganzen
+  // Sticky-Sektion sichtbar. Reine Scroll-Positions-Prüfung, kein
+  // zusätzlicher rAF-Loop — einmalig ausgelöst, danach übernimmt CSS die
+  // Kaskade aus Partikeln → Fasern → Rahmen → Glas → Inhalt.
   useEffect(() => {
     const grid = serviceGridRef.current;
-    if (!grid) return;
+    const section = document.getElementById('solution-spiral');
+    if (!grid || !section) return;
     const panels = Array.from(grid.querySelectorAll<HTMLElement>('.ngp-panel'));
-    if (!panels.length) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-materialized');
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.22 }
-    );
-    panels.forEach((panel) => observer.observe(panel));
-    return () => observer.disconnect();
+    let revealed = false;
+    const revealFraction = 0.18;
+    const onScroll = () => {
+      if (revealed) return;
+      const threshold = section.offsetTop + section.offsetHeight * revealFraction;
+      if (window.scrollY < threshold) return;
+      revealed = true;
+      grid.classList.add('ngp-grid-revealed');
+      panels.forEach((panel) => panel.classList.add('is-materialized'));
+      window.removeEventListener('scroll', onScroll);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   useEffect(() => {
@@ -415,8 +417,8 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       detailPoints: lang === 'de'
         ? ['KI-Workflows für wiederkehrende Aufgaben', 'Automatisierung von Kommunikation, Daten und Abläufen', 'Tool-Auswahl und Integration ohne KI-Chaos', 'Sichere, nachvollziehbare und wartbare Umsetzung']
         : ['AI workflows for recurring tasks', 'Automation of communication, data and operations', 'Tool selection and integration without AI chaos', 'Safe, explainable and maintainable implementation'],
-      accent: '#8ebef2',
-      accentRgb: '142,190,242',
+      accent: '#4dbf7f',
+      accentRgb: '77,191,127',
       icon: Bot,
     },
   ];
