@@ -1355,7 +1355,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   for(i=0;i<GPN;i++) goldenPulses.push(new GlidePulse('golden'));
   if(STRAND_ON&&sFibers.length) for(i=0;i<SPULN;i++) strandPulses.push(new GlidePulse('strand'));
 
-    var mouseX = 0, mouseY = 0;
+    var mouseX = 0, mouseY = 0, smoothMouseX = 0, smoothMouseY = 0;
     const onMouse = (e) => { mouseX = (e.clientX / innerWidth - 0.5) * 2; mouseY = (e.clientY / innerHeight - 0.5) * 2; };
     const resize = () => { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); };
     var scrollP = 0, targetScrollP = 0;
@@ -1381,14 +1381,17 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       if (!documentVisible) return;
       var dt = Math.min((now - last) / 1000 || 0.016, 0.05); last = now;
       if (SCENE_MOTION || OBJECT_FLOATING) t += dt;
+      var mouseEase=1-Math.exp(-dt*3.2);
+      smoothMouseX += (mouseX-smoothMouseX)*mouseEase;
+      smoothMouseY += (mouseY-smoothMouseY)*mouseEase;
       var brainSway=Math.sin(t*.08)*Math.PI/6;
-      brain.rotation.y = BASE_Y+brainSway;
-      brain.rotation.x = BASE_X+Math.sin(t*.23)*.012;
-      brain.rotation.z = Math.cos(t*.19+1.1)*.014;
+      brain.rotation.y = BASE_Y+brainSway+smoothMouseX*.22;
+      brain.rotation.x = BASE_X+Math.sin(t*.23)*.012+smoothMouseY*.12;
+      brain.rotation.z = Math.cos(t*.19+1.1)*.014+smoothMouseX*.03;
       stumpCenterOffset.copy(stumpCenterLocal).applyEuler(brain.rotation).multiplyScalar(brain.scale.x);
-      brain.position.x = -stumpCenterOffset.x;
+      brain.position.x = -stumpCenterOffset.x+smoothMouseX*.14;
       brain.position.z = -stumpCenterOffset.z;
-      brain.position.y = BRAIN_BASE_Y+Math.sin(t*.38)*.11;
+      brain.position.y = BRAIN_BASE_Y+Math.sin(t*.38)*.11-smoothMouseY*.08;
       strandInverseRotation.setFromEuler(brain.rotation).invert();
       worldVerticalInStrandLocal.set(0,1,0).applyQuaternion(strandInverseRotation);
       for (var satelliteIndex=0;satelliteIndex<satelliteBrains.length;satelliteIndex++) {
