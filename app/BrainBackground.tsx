@@ -564,6 +564,151 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   addSatelliteBrain(-5.7,-.62,-.7,.35,'#ff4d6d');
   addSatelliteBrain(5.7,-.44,-.9,2.7,'#4dd2ff');
 
+  // Verstärkt ausschließlich die bestehenden Seitentails: viele reale
+  // Stumpf-Ringfasern bilden einen Fächer, verdichten sich zum Bündel und
+  // hängen durch ihr Gewicht weich zur zentralen Struktur.
+  var sideFiberGroup=new THREE.Group();
+  sideFiberGroup.renderOrder=2;
+  world.add(sideFiberGroup);
+  var sideMainAnchor=new THREE.Vector3();
+  var sideSourceAnchor=new THREE.Vector3();
+  var sideFiberBundles=[];
+
+  function createLivingSideBundle(satellite,side,colorHex){
+    var fiberCount=isMobile?18:42, segments=isMobile?40:64;
+    var pointCount=fiberCount*(segments+1), lineCount=fiberCount*segments;
+    var linePositions=new Float32Array(lineCount*6);
+    var lineColors=new Float32Array(lineCount*6);
+    var pointPositions=new Float32Array(pointCount*3);
+    var pointColors=new Float32Array(pointCount*3);
+    var lineGeometry=new THREE.BufferGeometry();
+    lineGeometry.setAttribute('position',new THREE.BufferAttribute(linePositions,3));
+    lineGeometry.setAttribute('color',new THREE.BufferAttribute(lineColors,3));
+    var pointGeometry=new THREE.BufferGeometry();
+    pointGeometry.setAttribute('position',new THREE.BufferAttribute(pointPositions,3));
+    pointGeometry.setAttribute('color',new THREE.BufferAttribute(pointColors,3));
+    var fiberLines=new THREE.LineSegments(lineGeometry,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:.82,blending:THREE.AdditiveBlending,depthWrite:false}));
+    var fiberPoints=new THREE.Points(pointGeometry,new THREE.PointsMaterial({size:isMobile?.03:.042,map:sprite,transparent:true,opacity:.8,vertexColors:true,blending:THREE.AdditiveBlending,depthWrite:false}));
+    fiberLines.frustumCulled=false;
+    fiberPoints.frustumCulled=false;
+    fiberLines.renderOrder=2;
+    fiberPoints.renderOrder=3;
+    sideFiberGroup.add(fiberLines);
+    sideFiberGroup.add(fiberPoints);
+    var fibers=[];
+    for(var fiberIndex=0;fiberIndex<fiberCount;fiberIndex++){
+      fibers.push({
+        anchorLocal:roots[fiberIndex%roots.length].clone(),
+        fanOffset:(Math.random()-.5)*.44,
+        depthOffset:(Math.random()-.5)*.36,
+        bundleOffset:(Math.random()-.5)*.2,
+        targetAngle:Math.random()*Math.PI*2,
+        targetRadius:.07+Math.random()*.18,
+        targetHeight:(Math.random()-.5)*.2,
+        sag:.82+Math.random()*.38,
+        phase:Math.random()*Math.PI*2
+      });
+    }
+    sideFiberBundles.push({
+      satellite:satellite,
+      side:side,
+      color:new THREE.Color(colorHex),
+      fibers:fibers,
+      segments:segments,
+      linePositions:linePositions,
+      lineColors:lineColors,
+      pointPositions:pointPositions,
+      pointColors:pointColors,
+      lineGeometry:lineGeometry,
+      pointGeometry:pointGeometry
+    });
+  }
+
+  createLivingSideBundle(satelliteBrains[0],-1,'#ff4d6d');
+  createLivingSideBundle(satelliteBrains[1],1,'#4dd2ff');
+
+  function updateLivingSideBundle(bundle,flowTime){
+    var coreX=sideMainAnchor.x, coreY=sideMainAnchor.y, coreZ=sideMainAnchor.z;
+    var catenaryDenominator=1-1/Math.cosh(1.175);
+    var catenaryPeak=Math.pow(.628,1.35)*Math.pow(.372,.8);
+    for(var fiberIndex=0;fiberIndex<bundle.fibers.length;fiberIndex++){
+      var fiber=bundle.fibers[fiberIndex];
+      sideSourceAnchor.copy(fiber.anchorLocal);
+      bundle.satellite.localToWorld(sideSourceAnchor);
+      var sourceX=sideSourceAnchor.x, sourceY=sideSourceAnchor.y, sourceZ=sideSourceAnchor.z;
+      var targetX=coreX+Math.cos(fiber.targetAngle)*fiber.targetRadius;
+      var targetY=coreY+fiber.targetHeight;
+      var targetZ=coreZ+Math.sin(fiber.targetAngle)*fiber.targetRadius;
+      var horizontalX=targetX-sourceX, horizontalZ=targetZ-sourceZ;
+      var horizontalLength=Math.max(.001,Math.hypot(horizontalX,horizontalZ));
+      var normalX=-horizontalZ/horizontalLength, normalZ=horizontalX/horizontalLength;
+      var previousX=0, previousY=0, previousZ=0, previousR=0, previousG=0, previousB=0;
+      for(var segmentIndex=0;segmentIndex<=bundle.segments;segmentIndex++){
+        var progress=segmentIndex/bundle.segments;
+        var fanFade=1-smooth(progress/.28);
+        var bundleFade=smooth(progress/.24)*(1-smooth(Math.max(0,(progress-.78)/.22)));
+        var integrationFade=smooth(Math.max(0,(progress-.68)/.32));
+        var beta=Math.pow(progress,1.35)*Math.pow(1-progress,.8)/catenaryPeak;
+        var cat=(1-Math.cosh(2.35*(progress-.5))/Math.cosh(1.175))/catenaryDenominator;
+        var sagEnvelope=beta*.78+cat*.22;
+        var x=sourceX+(targetX-sourceX)*progress;
+        var y=sourceY+(targetY-sourceY)*progress-fiber.sag*sagEnvelope;
+        var z=sourceZ+(targetZ-sourceZ)*progress;
+        var crossOffset=fiber.fanOffset*fanFade+fiber.bundleOffset*bundleFade+Math.sin(fiber.phase+progress*5.4)*.025*bundleFade;
+        x+=normalX*crossOffset+Math.cos(fiber.phase)*fiber.depthOffset*fanFade*.32;
+        y+=Math.sin(fiber.phase*1.7)*fiber.depthOffset*fanFade*.18;
+        z+=normalZ*crossOffset+Math.sin(fiber.phase)*fiber.depthOffset*fanFade*.32;
+        x+=Math.cos(fiber.targetAngle)*fiber.targetRadius*integrationFade*.35;
+        z+=Math.sin(fiber.targetAngle)*fiber.targetRadius*integrationFade*.35;
+        var flow=Math.max(0,Math.sin(flowTime*2.4-progress*15+fiber.phase));
+        var centerFade=1-integrationFade*.38;
+        var brightness=(.52+flow*.58)*centerFade;
+        var goldBlend=integrationFade*.56;
+        var red=(bundle.color.r+(1-bundle.color.r)*goldBlend)*brightness;
+        var green=(bundle.color.g+(.843-bundle.color.g)*goldBlend)*brightness;
+        var blue=(bundle.color.b+(0-bundle.color.b)*goldBlend)*brightness;
+        var pointOffset=(fiberIndex*(bundle.segments+1)+segmentIndex)*3;
+        bundle.pointPositions[pointOffset]=x;
+        bundle.pointPositions[pointOffset+1]=y;
+        bundle.pointPositions[pointOffset+2]=z;
+        bundle.pointColors[pointOffset]=red;
+        bundle.pointColors[pointOffset+1]=green;
+        bundle.pointColors[pointOffset+2]=blue;
+        if(segmentIndex>0){
+          var lineOffset=(fiberIndex*bundle.segments+segmentIndex-1)*6;
+          bundle.linePositions[lineOffset]=previousX;
+          bundle.linePositions[lineOffset+1]=previousY;
+          bundle.linePositions[lineOffset+2]=previousZ;
+          bundle.linePositions[lineOffset+3]=x;
+          bundle.linePositions[lineOffset+4]=y;
+          bundle.linePositions[lineOffset+5]=z;
+          bundle.lineColors[lineOffset]=previousR;
+          bundle.lineColors[lineOffset+1]=previousG;
+          bundle.lineColors[lineOffset+2]=previousB;
+          bundle.lineColors[lineOffset+3]=red;
+          bundle.lineColors[lineOffset+4]=green;
+          bundle.lineColors[lineOffset+5]=blue;
+        }
+        previousX=x;
+        previousY=y;
+        previousZ=z;
+        previousR=red;
+        previousG=green;
+        previousB=blue;
+      }
+    }
+    bundle.lineGeometry.attributes.position.needsUpdate=true;
+    bundle.lineGeometry.attributes.color.needsUpdate=true;
+    bundle.pointGeometry.attributes.position.needsUpdate=true;
+    bundle.pointGeometry.attributes.color.needsUpdate=true;
+  }
+
+  function updateLivingSideBundles(flowTime){
+    sideMainAnchor.copy(stumpCenterLocal);
+    brain.localToWorld(sideMainAnchor);
+    for(var bundleIndex=0;bundleIndex<sideFiberBundles.length;bundleIndex++) updateLivingSideBundle(sideFiberBundles[bundleIndex],flowTime);
+  }
+
   var satelliteStrands=[];
   var satelliteTargetWorld=new THREE.Vector3();
   var satelliteTargetLocal=new THREE.Vector3();
@@ -1332,7 +1477,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     resize(); onScroll();
     renderer.render(scene, camera);
 
-    var t = 0, last = 0, rafId = 0, lastWobbleUpdate = 0, lastSatelliteStrandUpdate = 0;
+    var t = 0, last = 0, rafId = 0, lastWobbleUpdate = 0, lastSatelliteStrandUpdate = 0, lastSideFiberUpdate = 0;
     function tick(now) {
       rafId = requestAnimationFrame(tick);
       if (!documentVisible) return;
@@ -1363,6 +1508,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         lastSatelliteStrandUpdate=now;
         brain.updateWorldMatrix(true,false);
         for(var secondarySatelliteIndex=0;secondarySatelliteIndex<satelliteBrains.length;secondarySatelliteIndex++) satelliteBrains[secondarySatelliteIndex].updateWorldMatrix(true,false);
+        if(now-lastSideFiberUpdate>80){
+          lastSideFiberUpdate=now;
+          updateLivingSideBundles(t);
+        }
         updateSecondaryEnergySystem(t);
       }
       if (OBJECT_FLOATING) {
