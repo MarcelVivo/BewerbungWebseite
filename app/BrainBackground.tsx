@@ -179,10 +179,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   }
 
   if(!isMobile){
-    // Karte 0 (erste Leistungskarte) wird durch das DOM-Kartenraster
-    // (Neural Glass Panels) ersetzt und hier bewusst ausgelassen — die
-    // Helix-Position/Kamera-Slots aller anderen Karten bleiben unverändert.
-    serviceCards.forEach(function(card,index){ if(index===0) return; buildServiceCard(card,index,introTexts.length+index); });
+    // Alle 4 Leistungskarten werden durch die DOM-Kartenstationen (Neural
+    // Glass Panels) ersetzt und hier bewusst ausgelassen — die Helix-
+    // Positionen/Kamera-Slots (inkl. Platzhalterkarten danach) bleiben
+    // exakt unverändert, nur diese eine Mesh-Erzeugung wird übersprungen.
     placeholderCards.forEach(function(card,index){ buildServiceCard(card,index,introTexts.length+serviceCards.length+index); });
   }
 
@@ -419,11 +419,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         SBASE_Z+mz+Math.sin(mediumAngle)*mediumRadius
       );
       var largeCenter=new THREE.Vector3(
-        converge.x,
+        converge.x+(rnd()-.5)*.025,
         converge.y+(rnd()-.5)*.035,
-        converge.z
+        converge.z+(rnd()-.5)*.025
       );
-      var a0=f/fiberCount*6.283+(rnd()-.5)*.08, tw=(rnd()-.5)*SP.twist, rootWaveAmp=.016+rnd()*.018;
+      var a0=rnd()*6.283, tw=(rnd()-.5)*SP.twist, rootWaveAmp=.016+rnd()*.018;
       var frayJitter=0.4+rnd()*0.6;
       var endF=(f%4)?0.9+0.1*rnd():0.6+0.3*rnd();
       var legacyFunnelSteps=Math.max(3,Math.round(FN.funnelSegs));
@@ -1125,11 +1125,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     applySecondaryRendering(strand);
   }
 
-  if(satelliteBrains.length>1){
-    useExistingSatelliteStrand(satelliteBrains[0],Math.PI,'#a6425c',1,-1,RED_STRAND);
-    useExistingSatelliteStrand(satelliteBrains[1],0,'#4d7fbf',-1,1,BLUE_STRAND);
-  }
-
   function Spark(){
     var g3=new THREE.BufferGeometry();
     this.arr=new Float32Array(7*3);
@@ -1786,12 +1781,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           lastWobbleUpdate = now;
           var linePosArr = linesObj.geometry.attributes.position.array;
           var ptsPosArr = wptsObj.geometry.attributes.position.array;
+          var airSwayX=Math.sin(t*WIND.speed)*WIND.sway*.65+Math.sin(t*WIND.speed*.43+1.2)*WIND.sway*.35;
+          var airSwayZ=Math.cos(t*WIND.speed*.84)*WIND.sway*.52+Math.sin(t*WIND.speed*.51+.7)*WIND.sway*.3;
           for (var v = 0; v < vc; v++) {
             var tv = sMeta[v * 2], ph = sMeta[v * 2 + 1];
-            wobbleX[v] = Math.sin(t*WIND.speed*2.95+tv*WIND.waveFrequency+ph)*WIND.wave*tv*tv
-              +Math.sin(t*WIND.speed*1.31+ph*2.7)*WIND.sway*.12*tv*tv;
-            wobbleZ[v] = Math.cos(t*WIND.speed*2.43+tv*WIND.waveFrequency*.78+ph)*WIND.wave*.82*tv*tv
-              +Math.cos(t*WIND.speed*1.07+ph*2.2)*WIND.sway*.08*tv*tv;
+            wobbleX[v] = Math.sin(t*WIND.speed*2.95+tv*WIND.waveFrequency+ph)*WIND.wave*tv*tv+airSwayX*tv;
+            wobbleZ[v] = Math.cos(t*WIND.speed*2.43+tv*WIND.waveFrequency*.78+ph)*WIND.wave*.82*tv*tv+airSwayZ*tv;
           }
           for (var wr = 0; wr < wobbleLineRefs.length; wr++) {
             var refL = wobbleLineRefs[wr], svL = refL.srcV, oL = refL.off;

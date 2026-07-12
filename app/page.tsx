@@ -93,56 +93,64 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
   const lastFrameTimeRef = useRef(0);
   const lastStrandProgressRef = useRef(-1);
   const viewportRef = useRef({ width: 0, height: 0 });
-  const serviceGridRef = useRef<HTMLDivElement | null>(null);
+  const serviceStationsRef = useRef<HTMLDivElement | null>(null);
 
-  // Neural Glass Panels: sitzen fix auf der Helix-Achse, an der Stelle der
-  // ehemaligen ersten (gelben) 3D-Leistungskarte — zwischen dem letzten
-  // Intro-Text und der Karte "2D-/3D-Websites", die beide ebenfalls auf der
-  // Helix-Achse fixiert sind. Wie diese blenden sie beim Vorbeifliegen der
-  // Kamera EIN UND WIEDER AUS (kein dauerhaftes Sticky-Verharren), über
-  // dieselben Helix-Konstanten/Kamera-Fortschrittsformel wie
-  // BrainBackground.tsx (TEXT_START_Y=-5, HELIX_STEP=4.2, 13 Stopps, erste
-  // Servicekarte = Stopp Index 5; scrollP = (scrollY-(section.offsetTop-
-  // innerHeight))/section.offsetHeight; lookY = -scrollP*cameraTravel).
-  // Sichtbarkeit fällt symmetrisch mit dem Weltraum-Abstand zwischen
-  // aktueller Kamera-Y-Position und der Stopp-Position ab, analog zum
-  // bestehenden Fenster-Prinzip anderer Helix-Elemente. Reine
-  // Scroll-Berechnung, kein zusätzlicher rAF-Loop.
+  // Neural Glass Panels: vier unabhängige, feste Stationen auf der Helix-
+  // Achse — exakt an den ursprünglichen Weltkoordinaten der vier echten
+  // 3D-Leistungskarten (worldIndex = introStopCount + Kartenindex, also
+  // dieselben Stopps 5–8 wie zuvor in BrainBackground.tsx). Die Karten
+  // selbst bewegen sich nicht, skalieren sich nicht und fliegen nicht in
+  // den Viewport — ausschliesslich die Kamera bewegt sich an ihnen
+  // vorbei. Sichtbarkeit und Ausrichtung jeder einzelnen Station werden
+  // unabhängig aus derselben Distanz-/Kamerafortschritts-Logik wie bei den
+  // Intro-Texten und den restlichen 3D-Objekten berechnet (dieselben
+  // Helix-Konstanten TEXT_START_Y=-5, HELIX_STEP=4.2, dieselbe scrollP-
+  // Formel wie in BrainBackground.tsx: scrollP=(scrollY-(section.offsetTop
+  // -innerHeight))/section.offsetHeight, lookY=-scrollP*cameraTravel,
+  // orbit=scrollP*2π). Kein gemeinsames Raster, keine eigene Timeline.
   useEffect(() => {
-    const grid = serviceGridRef.current;
+    const container = serviceStationsRef.current;
     const section = document.getElementById('solution-spiral');
-    if (!grid || !section) return;
-    const panels = Array.from(grid.querySelectorAll<HTMLElement>('.ngp-panel'));
-    let materialized = false;
+    if (!container || !section) return;
+    const stations = Array.from(container.querySelectorAll<HTMLElement>('.spiral-service-station'));
+    if (!stations.length) return;
+    const materialized = stations.map(() => false);
     const HELIX_STEP = 4.2;
     const TEXT_START_Y = -5;
     const introStopCount = 5;
     const totalWorldStops = introStopCount + 4 + 4;
     const cameraTargetEnd = TEXT_START_Y - (totalWorldStops - 1) * HELIX_STEP - 2.1;
     const cameraTravel = 0 - cameraTargetEnd;
-    const firstCardWorldIndex = introStopCount;
-    const firstCardStopY = TEXT_START_Y - firstCardWorldIndex * HELIX_STEP;
-    // Exakt dieselbe Bedingung wie helixAngle()/cardMesh.rotation.y in
-    // BrainBackground.tsx: die Karte hat eine fixe Weltraum-Ausrichtung
-    // (firstCardAngle), die Kamera umkreist die Achse (orbit=scrollP*2π) —
-    // die scheinbare Drehung relativ zur Kamera ist die Differenz beider.
-    const firstCardAngle = (2 * Math.PI * (0 - firstCardStopY)) / cameraTravel;
+    // Fensterbreite in derselben Grössenordnung wie cameraRailSlowdown()s
+    // Fokusfenster in BrainBackground.tsx (kein neuer, frei erfundener Wert).
     const fadeWindow = HELIX_STEP * 1.35;
+    const maxRotateYDeg = 6;
+    const fixedTiltXDeg = 2.5;
+    const stationData = stations.map((_, i) => {
+      const worldIndex = introStopCount + i;
+      const stopY = TEXT_START_Y - worldIndex * HELIX_STEP;
+      const angle = (2 * Math.PI * (0 - stopY)) / cameraTravel;
+      return { stopY, angle };
+    });
     const onScroll = () => {
       const start = section.offsetTop - window.innerHeight;
       const scrollP = Math.max(0, Math.min(1, (window.scrollY - start) / Math.max(1, section.offsetHeight)));
       const lookY = 0 - scrollP * cameraTravel;
-      const distance = Math.abs(lookY - firstCardStopY);
-      const visibility = Math.max(0, Math.min(1, 1 - distance / fadeWindow));
       const orbit = scrollP * 2 * Math.PI;
-      const rotateYDeg = ((orbit - firstCardAngle) * 180) / Math.PI;
-      grid.style.opacity = String(visibility);
-      grid.style.transform = `translate3d(-50%, calc(-50% + ${(1 - visibility) * 16}px), 0) rotateY(${rotateYDeg}deg) scale(${0.96 + visibility * 0.04})`;
-      grid.style.pointerEvents = visibility > 0.55 ? 'auto' : 'none';
-      if (!materialized && visibility > 0.05) {
-        materialized = true;
-        panels.forEach((panel) => panel.classList.add('is-materialized'));
-      }
+      stations.forEach((station, i) => {
+        const { stopY, angle } = stationData[i];
+        const distance = Math.abs(lookY - stopY);
+        const visibility = Math.max(0, Math.min(1, 1 - distance / fadeWindow));
+        let rotateYDeg = ((orbit - angle) * 180) / Math.PI;
+        rotateYDeg = Math.max(-maxRotateYDeg, Math.min(maxRotateYDeg, rotateYDeg));
+        station.style.opacity = String(visibility);
+        station.style.transform = `rotateY(${rotateYDeg}deg) rotateX(${fixedTiltXDeg}deg)`;
+        station.style.pointerEvents = visibility > 0.55 ? 'auto' : 'none';
+        if (!materialized[i] && visibility > 0.05) {
+          materialized[i] = true;
+          station.classList.add('is-materialized');
+        }
+      });
     };
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -609,50 +617,49 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
         </div>
 
         <div
-          ref={serviceGridRef}
-          className={`spiral-service-grid ${activeService ? 'has-active-service' : ''}`}
+          ref={serviceStationsRef}
+          className="spiral-service-stations"
           aria-label={lang === 'de' ? 'Service Leistungen' : 'Services'}
         >
           {serviceCards.map((card, i) => {
             const isSelected = activeServiceSlug === card.slug;
             return (
-              <button
-                key={`${card.code}-service-${i}`}
-                type="button"
-                data-service-card
-                data-service-slug={card.slug}
-                data-side={i % 2 === 0 ? 'left' : 'right'}
-                className={`spiral-service-card ngp-panel ${isSelected ? 'is-selected' : ''}`}
-                style={{
-                  '--service-accent': card.accent,
-                  '--service-accent-rgb': card.accentRgb,
-                  '--ngp-delay': `${i * 90}ms`,
-                } as CSSProperties}
-                onClick={() => setActiveServiceSlug(card.slug)}
-              >
-                <span className="ngp-connector" aria-hidden="true" />
-                <span className="ngp-particles" aria-hidden="true">
-                  <i className="ngp-particle" />
-                  <i className="ngp-particle" />
-                  <i className="ngp-particle" />
-                  <i className="ngp-particle" />
-                </span>
-                <span className="ngp-surface" aria-hidden="true">
-                  <NeuralFiberField />
-                  <span className="ngp-sheen" />
-                </span>
-                <span className="ngp-core">
-                  <span className="spiral-intro-meta">
-                    <span className="spiral-intro-index">{card.code}</span>
-                    <span className="spiral-intro-icon">
-                      <NeuralNodeIcon variant={i} />
-                    </span>
+              <div key={`${card.code}-station-${i}`} className="spiral-service-station">
+                <button
+                  type="button"
+                  data-service-card
+                  data-service-slug={card.slug}
+                  className={`spiral-service-card ngp-panel ${isSelected ? 'is-selected' : ''}`}
+                  style={{
+                    '--service-accent': card.accent,
+                    '--service-accent-rgb': card.accentRgb,
+                  } as CSSProperties}
+                  onClick={() => setActiveServiceSlug(card.slug)}
+                >
+                  <span className="ngp-connector" aria-hidden="true" />
+                  <span className="ngp-particles" aria-hidden="true">
+                    <i className="ngp-particle" />
+                    <i className="ngp-particle" />
+                    <i className="ngp-particle" />
+                    <i className="ngp-particle" />
                   </span>
-                  <h3 className="spiral-service-title">{card.title}</h3>
-                  <p className="spiral-service-body">{card.body}</p>
-                  <span className="spiral-intro-rule" />
-                </span>
-              </button>
+                  <span className="ngp-surface" aria-hidden="true">
+                    <NeuralFiberField />
+                    <span className="ngp-sheen" />
+                  </span>
+                  <span className="ngp-core">
+                    <span className="spiral-intro-meta">
+                      <span className="spiral-intro-index">{card.code}</span>
+                      <span className="spiral-intro-icon">
+                        <NeuralNodeIcon variant={i} />
+                      </span>
+                    </span>
+                    <h3 className="spiral-service-title">{card.title}</h3>
+                    <p className="spiral-service-body">{card.body}</p>
+                    <span className="spiral-intro-rule" />
+                  </span>
+                </button>
+              </div>
             );
           })}
         </div>

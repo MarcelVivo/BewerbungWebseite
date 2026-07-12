@@ -526,35 +526,30 @@ body {
   display: none;
 }
 
-.spiral-service-grid {
+/* Vier unabhängige, feste Helix-Stationen statt eines gemeinsamen
+   2×2-Rasters — alle liegen exakt übereinander (grid-area 1/1), nur je
+   eine ist zu einem gegebenen Scroll-Zeitpunkt sichtbar/dominant. */
+.spiral-service-stations {
   position: absolute;
   left: 50%;
   top: 54%;
   z-index: 1280;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-  width: min(64rem, 78vw);
+  width: min(34rem, 88vw);
   transform: translate3d(-50%, -50%, 0);
   perspective: 900px;
-  transform-style: preserve-3d;
   pointer-events: none;
 }
 
-.spiral-service-grid .spiral-service-card {
-  opacity: 0;
-  transform: translate3d(0, 150px, 0);
-  transition:
-    opacity 360ms ease,
-    border-color 260ms ease,
-    box-shadow 260ms ease;
-  will-change: transform, opacity;
-  contain: layout paint style;
-  pointer-events: auto;
+.spiral-service-station {
+  grid-area: 1 / 1;
+  transform-style: preserve-3d;
 }
 
-.spiral-service-grid.has-active-service {
-  top: 54%;
+.spiral-service-station .spiral-service-card {
+  width: 100%;
+  will-change: opacity;
+  contain: layout paint style;
 }
 
 .spiral-detail-panel {
@@ -791,20 +786,6 @@ body {
   backdrop-filter: blur(10px) saturate(1.12);
 }
 
-.spiral-service-card[data-side="left"] {
-  text-align: right;
-  border-radius: 1.05rem 1.6rem 0.6rem 1.6rem;
-}
-
-.spiral-service-card[data-side="left"] .ngp-core {
-  align-items: flex-end;
-}
-
-.spiral-service-card[data-side="left"]::before {
-  left: auto;
-  right: 0;
-}
-
 .spiral-service-card::after {
   content: "";
   position: absolute;
@@ -878,10 +859,6 @@ body {
   opacity: 0.75;
 }
 
-.spiral-service-card[data-side="left"] .ngp-fibers {
-  transform: scaleX(-1);
-}
-
 .spiral-service-card:hover .ngp-fibers,
 .spiral-service-card.is-selected .ngp-fibers {
   opacity: 0.5;
@@ -892,9 +869,8 @@ body {
   50%      { opacity: 0.4; }
 }
 
-.ngp-panel.is-materialized:not(.ngp-panel-static) .ngp-fibers {
+.spiral-service-station.is-materialized .ngp-fibers {
   animation: ngp-fiber-pulse 7s ease-in-out infinite;
-  animation-delay: var(--ngp-delay, 0ms);
 }
 
 /* ── Living Light Layer: schmaler, seltener Lichtsweep, zeitversetzt ── */
@@ -910,9 +886,9 @@ body {
   pointer-events: none;
 }
 
-.ngp-panel.is-materialized:not(.ngp-panel-static) .ngp-sheen {
+.spiral-service-station.is-materialized .ngp-sheen {
   animation: ngp-sheen-sweep 9.5s ease-in-out infinite;
-  animation-delay: calc(var(--ngp-delay, 0ms) + 1.2s);
+  animation-delay: 1.2s;
 }
 
 @keyframes ngp-sheen-sweep {
@@ -948,9 +924,8 @@ body {
   box-shadow: 0 0 8px rgba(var(--service-accent-rgb),0.7);
 }
 
-.ngp-panel.is-materialized .ngp-connector {
+.spiral-service-station.is-materialized .ngp-connector {
   animation: ngp-connector-pulse 6.5s ease-in-out infinite;
-  animation-delay: var(--ngp-delay, 0ms);
 }
 
 @keyframes ngp-connector-pulse {
@@ -986,7 +961,7 @@ body {
 .ngp-particle:nth-child(3) { top: 20%; left: 92%; }
 .ngp-particle:nth-child(4) { top: 90%; left: 14%; }
 
-.ngp-panel.is-materialized:not(.ngp-panel-static) .ngp-particle {
+.spiral-service-station.is-materialized .ngp-particle {
   animation: ngp-particle-drift 11s ease-in-out infinite;
 }
 
@@ -1002,75 +977,23 @@ body {
   90%      { opacity: 0; }
 }
 
-/* ── Materialisierung: löst durch IntersectionObserver einmalig aus,
-   Unterebenen kommen zeitversetzt zur Ruhe (Partikel → Fasern/Glas →
-   Rahmen/Inhalt), gesteuert allein über transition-delay. ── */
-.ngp-panel {
-  opacity: 0;
-  transform: translateY(18px) scale(0.985);
-  transition-delay: var(--ngp-delay, 0ms);
-}
-
-.ngp-panel.is-materialized {
+/* ── Sichtbarkeit: die Karte selbst besitzt keine eigene Bewegung/Skalierung
+   mehr — Opacity, Rotation und Skalierung werden ausschliesslich von
+   .spiral-service-station per Inline-Style aus der Kameradistanz gesetzt
+   (siehe SpiralShowcase-Scroll-Effekt in page.tsx). Die inneren Ebenen sind
+   immer voll sichtbar und folgen der Station rein über CSS-Opacity-
+   Vererbung, ohne eigene Transition/Transform. .is-materialized schaltet
+   nur die dezenten, ortsfesten Innenanimationen (Fasern-Pulsieren,
+   Lichtsweep, Partikel-Twinkle, Connector-Puls) frei, sobald die Station
+   zum ersten Mal sichtbar wird. ── */
+.ngp-panel,
+.ngp-core,
+.ngp-surface {
   opacity: 1;
-  transform: translateY(0) scale(1);
-}
-
-.ngp-panel .ngp-surface {
-  opacity: 0;
-  transition: opacity 420ms ease;
-  transition-delay: calc(var(--ngp-delay, 0ms) + 90ms);
-}
-
-.ngp-panel.is-materialized .ngp-surface {
-  opacity: 1;
-}
-
-.ngp-panel .ngp-core {
-  opacity: 0;
-  transform: translateY(6px);
-  transition: opacity 420ms ease, transform 420ms ease;
-  transition-delay: calc(var(--ngp-delay, 0ms) + 260ms);
-}
-
-.ngp-panel.is-materialized .ngp-core {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.ngp-panel-static,
-.ngp-panel-static .ngp-surface,
-.ngp-panel-static .ngp-core {
-  opacity: 1 !important;
-  transform: none !important;
-  transition: none !important;
 }
 
 .ngp-panel-static .ngp-fibers {
   opacity: 0.22;
-}
-
-/* ── Schwebeverhalten: übernimmt den ruhigen, mehrachsigen Drift der
-   schwebenden 3D-Leistungskarten aus der Gehirn-Szene (leichte Positions-
-   und Rotationsschwankung, kein Kreisen, keine grosse Bewegung). Jede
-   Karte bekommt über --ngp-delay eine eigene Phase, damit nicht alle vier
-   synchron schweben. ── */
-@keyframes ngp-float {
-  0%   { transform: translate3d(0,0,0) rotate(0deg); }
-  25%  { transform: translate3d(1.5px,-3px,0) rotate(0.35deg); }
-  50%  { transform: translate3d(-1px,-1.5px,0) rotate(-0.25deg); }
-  75%  { transform: translate3d(-2px,2px,0) rotate(0.3deg); }
-  100% { transform: translate3d(0,0,0) rotate(0deg); }
-}
-
-.ngp-panel.is-materialized:not(.ngp-panel-static) {
-  animation: ngp-float 13s ease-in-out infinite;
-  animation-delay: var(--ngp-delay, 0ms);
-}
-
-.spiral-service-card:hover.ngp-panel:not(.ngp-panel-static),
-.spiral-service-card.is-selected.ngp-panel:not(.ngp-panel-static) {
-  animation: none;
 }
 
 .spiral-intro-meta {
@@ -1225,20 +1148,15 @@ body {
   pointer-events: none !important;
 }
 
-/* .spiral-service-grid war hier ebenfalls dauerhaft ausgeblendet (Relikt aus
-   CAMERA_ONLY_WORLD) — die Neural Glass Panels sind das echte, klickbare
-   Kartenraster. Es sitzt fix auf der Helix-Achse (siehe SpiralShowcase-
-   Scroll-Effekt) und blendet dort beim Vorbeifliegen der Kamera ein und
-   wieder aus, statt dauerhaft sticky zu bleiben — opacity/transform/
-   pointer-events werden pro Scroll-Frame per Inline-Style gesetzt, hier nur
-   der Übergang für weiche Werte zwischen den Scroll-Events. */
-.spiral-service-grid {
+/* Jede Station ist fix auf ihrer eigenen Helix-Position (siehe
+   SpiralShowcase-Scroll-Effekt in page.tsx) und blendet dort beim
+   Vorbeifliegen der Kamera ein und wieder aus. Opacity/Rotation werden pro
+   Scroll-Frame per Inline-Style aus der Kameradistanz gesetzt, hier nur der
+   Übergang für weiche Werte zwischen den Scroll-Events (kein eigenständiger
+   Bewegungsablauf). */
+.spiral-service-station {
   opacity: 0;
   transition: opacity 220ms linear, transform 220ms linear;
-}
-
-.spiral-service-grid .spiral-service-card {
-  pointer-events: auto;
 }
 
 /* ── Process timeline ──────────────────────────────────────── */
@@ -1758,9 +1676,7 @@ body {
     display: none;
   }
 
-  .ngp-panel,
-  .ngp-panel .ngp-surface,
-  .ngp-panel .ngp-core {
+  .spiral-service-station {
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;
