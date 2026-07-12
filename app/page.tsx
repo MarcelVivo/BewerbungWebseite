@@ -99,15 +99,17 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
   // Achse — exakt an den ursprünglichen Weltkoordinaten der vier echten
   // 3D-Leistungskarten (worldIndex = introStopCount + Kartenindex, also
   // dieselben Stopps 5–8 wie zuvor in BrainBackground.tsx). Die Karten
-  // selbst bewegen sich nicht, skalieren sich nicht und fliegen nicht in
-  // den Viewport — ausschliesslich die Kamera bewegt sich an ihnen
-  // vorbei. Sichtbarkeit und Ausrichtung jeder einzelnen Station werden
-  // unabhängig aus derselben Distanz-/Kamerafortschritts-Logik wie bei den
-  // Intro-Texten und den restlichen 3D-Objekten berechnet (dieselben
-  // Helix-Konstanten TEXT_START_Y=-5, HELIX_STEP=4.2, dieselbe scrollP-
-  // Formel wie in BrainBackground.tsx: scrollP=(scrollY-(section.offsetTop
-  // -innerHeight))/section.offsetHeight, lookY=-scrollP*cameraTravel,
-  // orbit=scrollP*2π). Kein gemeinsames Raster, keine eigene Timeline.
+  // selbst bewegen sich nicht, skalieren sich nicht, rotieren nicht
+  // scrollgesteuert und fliegen nicht in den Viewport — ausschliesslich
+  // die Kamera bewegt sich an ihnen vorbei, exakt wie bei den Intro-
+  // Texten und den restlichen 3D-Objekten. Einzige laufend berechnete
+  // Grösse ist die Sichtbarkeit (Opacity) aus dem Weltraum-Abstand
+  // zwischen aktueller Kamera-Y-Position und der Stations-Position
+  // (dieselben Helix-Konstanten TEXT_START_Y=-5, HELIX_STEP=4.2, dieselbe
+  // scrollP-Formel wie in BrainBackground.tsx: scrollP=(scrollY-
+  // (section.offsetTop-innerHeight))/section.offsetHeight, lookY=
+  // -scrollP*cameraTravel). Die Neigung ist eine feste, nie animierte
+  // Grundneigung. Kein gemeinsames Raster, keine eigene Timeline.
   useEffect(() => {
     const container = serviceStationsRef.current;
     const section = document.getElementById('solution-spiral');
@@ -124,27 +126,27 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
     // Fensterbreite in derselben Grössenordnung wie cameraRailSlowdown()s
     // Fokusfenster in BrainBackground.tsx (kein neuer, frei erfundener Wert).
     const fadeWindow = HELIX_STEP * 1.35;
-    const maxRotateYDeg = 6;
-    const fixedTiltXDeg = 2.5;
-    const stationData = stations.map((_, i) => {
+    // Feste, unveränderliche Grundneigung (keine Rotation, die vom
+    // Scrollfortschritt/Kamera-Orbitwinkel abhängt) — exakt wie gefordert:
+    // "Die Karte darf nur eine feste leichte Grundneigung besitzen. Die
+    // Kamerafahrt erzeugt die räumliche Perspektive." Die einzige laufend
+    // berechnete Grösse ist die Sichtbarkeit (Opacity) aus der Distanz.
+    const FIXED_TILT = 'rotateY(5deg) rotateX(3deg)';
+    const stationData = stations.map((station, i) => {
       const worldIndex = introStopCount + i;
       const stopY = TEXT_START_Y - worldIndex * HELIX_STEP;
-      const angle = (2 * Math.PI * (0 - stopY)) / cameraTravel;
-      return { stopY, angle };
+      station.style.transform = FIXED_TILT; // einmalig gesetzt, nie animiert
+      return { stopY };
     });
     const onScroll = () => {
       const start = section.offsetTop - window.innerHeight;
       const scrollP = Math.max(0, Math.min(1, (window.scrollY - start) / Math.max(1, section.offsetHeight)));
       const lookY = 0 - scrollP * cameraTravel;
-      const orbit = scrollP * 2 * Math.PI;
       stations.forEach((station, i) => {
-        const { stopY, angle } = stationData[i];
+        const { stopY } = stationData[i];
         const distance = Math.abs(lookY - stopY);
         const visibility = Math.max(0, Math.min(1, 1 - distance / fadeWindow));
-        let rotateYDeg = ((orbit - angle) * 180) / Math.PI;
-        rotateYDeg = Math.max(-maxRotateYDeg, Math.min(maxRotateYDeg, rotateYDeg));
         station.style.opacity = String(visibility);
-        station.style.transform = `rotateY(${rotateYDeg}deg) rotateX(${fixedTiltXDeg}deg)`;
         station.style.pointerEvents = visibility > 0.55 ? 'auto' : 'none';
         if (!materialized[i] && visibility > 0.05) {
           materialized[i] = true;
