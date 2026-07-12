@@ -549,8 +549,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       fiberShapes.push({
         phaseOffset:(Math.random()-.5)*.22,
         radiusOffset:(Math.random()-.5)*.07,
-        firstDroop:1.32+Math.random()*.28,
-        secondDroop:1.04+Math.random()*.22,
+        firstDroop:1.72+Math.random()*.34,
+        secondDroop:1.3+Math.random()*.28,
         firstSway:(Math.random()-.5)*.2,
         secondSway:(Math.random()-.5)*.15
       });
@@ -558,9 +558,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var satelliteLines=satellite.getObjectByName('neural-lines');
     var satellitePoints=satellite.getObjectByName('neural-points');
     satelliteLines.material.blending=THREE.AdditiveBlending;
-    satelliteLines.material.opacity=.78;
-    satellitePoints.material.opacity=.78;
-    satellitePoints.material.size=.052;
+    satelliteLines.material.opacity=.92;
+    satellitePoints.material.opacity=.9;
+    satellitePoints.material.size=.066;
+    satelliteLines.frustumCulled=false;
+    satellitePoints.frustumCulled=false;
     satelliteStrands.push({
       satellite:satellite,
       phase:phase,
@@ -585,12 +587,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     satelliteWorldZ.set(0,0,1).transformDirection(satelliteInverseMatrix);
     satelliteWorldDown.set(0,-1,0).transformDirection(satelliteInverseMatrix);
     var lineOffset=baseLinePos.length, pointOffset=baseWPos.length;
-    var connectorShare=.34, helixLength=25.5, helixTurns=4.75, helixRotation=flowTime*.075;
+    var connectorShare=.46, helixLength=25.5, helixTurns=3.8, helixRotation=flowTime*.075;
     for(var fiberIndex=0;fiberIndex<sFibers.length;fiberIndex++){
       var fiber=sFibers[fiberIndex], start=fiber.start, fiberShape=strand.fiberShapes[fiberIndex];
       var startX=sBase[start*3], startY=sBase[start*3+1], startZ=sBase[start*3+2];
       var joinAngle=strand.phase+helixRotation+fiberShape.phaseOffset;
-      var joinRadius=.4+fiberShape.radiusOffset;
+      var joinRadius=.46+fiberShape.radiusOffset;
       var joinX=satelliteTargetLocal.x+satelliteWorldX.x*Math.cos(joinAngle)*joinRadius+satelliteWorldZ.x*Math.sin(joinAngle)*joinRadius;
       var joinY=satelliteTargetLocal.y+satelliteWorldX.y*Math.cos(joinAngle)*joinRadius+satelliteWorldZ.y*Math.sin(joinAngle)*joinRadius;
       var joinZ=satelliteTargetLocal.z+satelliteWorldX.z*Math.cos(joinAngle)*joinRadius+satelliteWorldZ.z*Math.sin(joinAngle)*joinRadius;
@@ -614,7 +616,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         } else {
           helixProgress=(progress-connectorShare)/(1-connectorShare);
           var helixAngle=strand.phase+helixRotation+helixProgress*Math.PI*2*helixTurns+fiberShape.phaseOffset;
-          var helixRadius=.4+fiberShape.radiusOffset+Math.sin(helixProgress*Math.PI*4+fiberShape.phaseOffset)*.012;
+          var helixRadius=.46+fiberShape.radiusOffset+Math.sin(helixProgress*Math.PI*4+fiberShape.phaseOffset)*.012;
           var centerX=satelliteTargetLocal.x+satelliteWorldDown.x*helixProgress*helixLength;
           var centerY=satelliteTargetLocal.y+satelliteWorldDown.y*helixProgress*helixLength;
           var centerZ=satelliteTargetLocal.z+satelliteWorldDown.z*helixProgress*helixLength;
