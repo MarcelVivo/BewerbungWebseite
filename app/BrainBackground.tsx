@@ -23,7 +23,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     // neben dem Haupt-Gehirn auch Platz für die 3 Satelliten-Gehirne bleibt.
     var MOBILE_RADIUS_SCALE = isMobile ? 1.34 : 1;
     var renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'high-performance' });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.1 : 1.5));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     var scene = new THREE.Scene();
     var camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 200);
@@ -52,7 +52,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var HELIX_STEP=4.2;
   var TEXT_START_Y=-5;
   var placeholderCards=[1,2,3,4].map(function(number){
-    return {code:'P'+number,title:'Platzhalter'+number,body:'Weitere Inhalte folgen.',accent:'#d6b75a'};
+    return {code:'P'+number,title:'Platzhalter'+number,body:'Weitere Inhalte folgen.',accent:'#c89a3d'};
   });
   var totalWorldStops=introTexts.length+serviceCards.length+placeholderCards.length;
   var cameraTargetStart=0;
@@ -177,11 +177,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
 
   var BASE_Y=Math.PI/2+0.15, BASE_X=0.22; /* Front, leicht nach vorne geneigt: Oberseite mit Hirnstruktur sichtbar */
   var GOLD={
-    deep:new THREE.Color(0xff8a00),
-    core:new THREE.Color(0xffb000),
-    line:new THREE.Color(0xffd15a),
-    hot:new THREE.Color(0xffee8a),
-    white:new THREE.Color(0xffffcf)
+    deep:new THREE.Color(0x7c5a1a),
+    core:new THREE.Color(0xc89a3d),
+    line:new THREE.Color(0xe7c56a),
+    hot:new THREE.Color(0xf6e3a1),
+    white:new THREE.Color(0xf6e3a1)
   };
   var golds=[GOLD.core,GOLD.line,GOLD.hot,GOLD.white,GOLD.deep];
   var cc=new THREE.Color();
@@ -201,7 +201,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     g2.setAttribute('position',new THREE.Float32BufferAttribute(arr,3));
     if(cols) g2.setAttribute('color',new THREE.Float32BufferAttribute(cols,3));
     var m2=new THREE.PointsMaterial({size:size,map:sprite,transparent:true,opacity:op,
-      vertexColors:!!cols,color:cols?0xffffff:0xffd15a,blending:THREE.AdditiveBlending,depthWrite:false});
+      vertexColors:!!cols,color:cols?0xffffff:0xe7c56a,blending:THREE.AdditiveBlending,depthWrite:false});
     return new THREE.Points(g2,m2);
   }
 
@@ -222,11 +222,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
 
   // Fünf feste räumliche Ebenen: Die Partikel bewegen sich nicht selbst,
   // erzeugen durch die vorbeifliegende Kamera aber permanenten Vorder- und Hintergrund-Flow.
-  addDepthLayer(isMobile?24:52,1.4,3.6,.055,.42,0xffd76a,0xffffff);
-  addDepthLayer(isMobile?34:72,3.7,6.8,.075,.32,0xffa92f,0xffed9a);
-  addDepthLayer(isMobile?42:92,6.9,10.5,.11,.22,0x9d6b24,0xffd76a);
-  addDepthLayer(isMobile?34:76,10.6,16.5,.16,.14,0x5f4218,0xd6b75a);
-  addDepthLayer(isMobile?16:36,16.6,23,.42,.06,0x3d2a10,0xa8792b);
+  addDepthLayer(isMobile?24:52,1.4,3.6,.055,.42,0xe7c56a,0xf6e3a1);
+  addDepthLayer(isMobile?34:72,3.7,6.8,.075,.32,0xc89a3d,0xf6e3a1);
+  addDepthLayer(isMobile?42:92,6.9,10.5,.11,.22,0xb8862b,0xe7c56a);
+  addDepthLayer(isMobile?34:76,10.6,16.5,.16,.14,0x7c5a1a,0xc89a3d);
+  addDepthLayer(isMobile?16:36,16.6,23,.42,.06,0x7c5a1a,0xb8862b);
 
   var BR=brainData;
 
@@ -483,7 +483,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   }
   var xgeo=new THREE.BufferGeometry();
   xgeo.setAttribute('position',new THREE.Float32BufferAttribute(xpos,3));
-  brain.add(dbgHide('cross',new THREE.LineSegments(xgeo,new THREE.LineBasicMaterial({color:0xffc23a,transparent:true,opacity:.3,blending:THREE.AdditiveBlending,depthWrite:false}))));
+  brain.add(dbgHide('cross',new THREE.LineSegments(xgeo,new THREE.LineBasicMaterial({color:0xe7c56a,transparent:true,opacity:.3,blending:THREE.AdditiveBlending,depthWrite:false}))));
 
   // --- Feines, wirres Liniengewebe: viele zusätzliche dünne Verbindungen
   // zwischen den goldenen Punkten, überzieht das Gehirn dichter ---
@@ -525,7 +525,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   brain.add(dbgHide('nodes',nodesP));
 
   function halo(sc,op,hy){
-    var sm=new THREE.SpriteMaterial({map:sprite,color:0xffb000,transparent:true,opacity:op,blending:THREE.AdditiveBlending,depthWrite:false});
+    var sm=new THREE.SpriteMaterial({map:sprite,color:0xc89a3d,transparent:true,opacity:op,blending:THREE.AdditiveBlending,depthWrite:false});
     var sp=new THREE.Sprite(sm); sp.scale.set(sc,sc,1); sp.position.y=hy; brain.add(sp);
   }
   if (typeof window==='undefined' || new URLSearchParams(window.location.search).get('nohalo')!=='1') {
@@ -587,7 +587,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   function addSatelliteBrain(x,y,z,phase,colorHex){
     var satellite=brain.clone(true);
     tintSatelliteBrain(satellite,colorHex);
-    satellite.scale.setScalar(isMobile?0.92:1.32);
+    satellite.scale.setScalar(isMobile?0.6:1.32);
     satellite.position.set(x,y,z);
     satellite.rotation.set(BASE_X,BASE_Y,0);
     satellite.userData={baseX:x,baseY:y,baseZ:z,baseRotY:BASE_Y,phase:phase};
@@ -597,11 +597,23 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   // Auf schmalen Mobile-Viewports ist das horizontale Sichtfeld der Kamera
   // (gleiche vertikale FOV, aber viel kleineres Seitenverhältnis) deutlich
   // enger als auf Desktop — bei den Desktop-Offsets (±5.7) wären die
-  // Satelliten-Gehirne komplett ausserhalb des sichtbaren Bereichs. Näher
-  // an die Mitte rücken, damit alle 3 Gehirne im Hero-Screen schweben.
+  // Satelliten-Gehirne komplett ausserhalb des sichtbaren Bereichs.
+  // Position wird aus dem tatsächlichen Kamera-FOV/Seitenverhältnis
+  // berechnet (statt fest verdrahtet), damit sie sich proportional an
+  // jede Bildschirmgrösse anpasst und immer mit Rand vollständig sichtbar
+  // ist — nicht nur bei einer einzelnen getesteten Handybreite.
   if(isMobile){
-    addSatelliteBrain(-2.3,-.45,-.9,.35,'#ff4d6d');
-    addSatelliteBrain(2.3,-.32,-1.1,2.7,'#4dd2ff');
+    var satelliteZ=-.85;
+    var heroCameraDistance=(8.78+Math.sin(.6)*.46+Math.sin(1.7)*.22)*MOBILE_RADIUS_SCALE;
+    var halfVFovRad=THREE.MathUtils.degToRad(camera.fov/2);
+    var halfHFovRad=Math.atan(Math.tan(halfVFovRad)*camera.aspect);
+    var visibleHalfWidthAtSat=(heroCameraDistance-satelliteZ)*Math.tan(halfHFovRad);
+    // 78% der sichtbaren Halbbreite nutzen: Satelliten schweben nah am
+    // Bildschirmrand statt zentral über dem Text zu verschmelzen, mit
+    // Rand zur Bildschirmkante damit nichts angeschnitten wird.
+    var satelliteX=visibleHalfWidthAtSat*.78;
+    addSatelliteBrain(-satelliteX,.32,satelliteZ,.35,'#ff4d6d');
+    addSatelliteBrain(satelliteX,.46,satelliteZ-.2,2.7,'#4dd2ff');
   } else {
     addSatelliteBrain(-5.7,-.62,-.7,.35,'#ff4d6d');
     addSatelliteBrain(5.7,-.44,-.9,2.7,'#4dd2ff');
@@ -735,7 +747,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var g3=new THREE.BufferGeometry();
     this.arr=new Float32Array(7*3);
     g3.setAttribute('position',new THREE.BufferAttribute(this.arr,3));
-    this.mat=new THREE.LineBasicMaterial({color:0xffffb0,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
+    this.mat=new THREE.LineBasicMaterial({color:0xf6e3a1,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
     this.line=new THREE.Line(g3,this.mat);
     this.line.frustumCulled=false;
     this.life=0; this.wait=Math.random()*1.5;
@@ -1050,7 +1062,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     function sectionLabel(text){
       var s=document.createElement('div');
       s.textContent=text;
-      s.style.cssText='margin:12px 0 7px;color:#ffcf4a;font-weight:bold;letter-spacing:.08em;text-transform:uppercase;';
+      s.style.cssText='margin:12px 0 7px;color:#e7c56a;font-weight:bold;letter-spacing:.08em;text-transform:uppercase;';
       tunePanel.appendChild(s);
     }
     function addSlider(def,target,shouldRebuild){
@@ -1063,7 +1075,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       lab.appendChild(labName); lab.appendChild(labVal);
       var input=document.createElement('input');
       input.type='range'; input.min=String(min); input.max=String(max); input.step=String(step);
-      input.value=String(target[key]); input.style.cssText='width:100%;accent-color:#ffb000;';
+      input.value=String(target[key]); input.style.cssText='width:100%;accent-color:#c89a3d;';
       input.oninput=function(){
         target[key]=parseFloat(input.value);
         labVal.textContent=target[key].toFixed(step>=1?0:3);
@@ -1167,7 +1179,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     SLIDERS.forEach(function(def){ addSlider(def,SP); });
     var copyBtn=document.createElement('button');
     copyBtn.textContent='Werte kopieren';
-    copyBtn.style.cssText='margin-top:8px;width:100%;padding:6px;background:#ffb000;color:#000;'
+    copyBtn.style.cssText='margin-top:8px;width:100%;padding:6px;background:#c89a3d;color:#000;'
       +'border:none;border-radius:5px;font-weight:bold;cursor:pointer;';
     var out=document.createElement('textarea');
     out.style.cssText='width:100%;height:110px;margin-top:6px;font:10px/1.3 monospace;background:#111;color:#0f0;'
