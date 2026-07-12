@@ -112,7 +112,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     floatingObjects.push(textSprite);
   }
 
-  introTexts.forEach(buildIntroSprite);
+  // Auf Mobile zeigt .spiral-mobile den echten Inhalt als gestapelte DOM-Karten;
+  // diese schwebenden WebGL-Textkarten sind für die Desktop-3D-Spirale gedacht
+  // und würden auf Mobile nur mit dem echten Text überlappen (schlechte Lesbarkeit).
+  if(!isMobile) introTexts.forEach(buildIntroSprite);
 
   function buildServiceCard(card,index,worldIndex){
     var cardCanvas=document.createElement('canvas');
@@ -163,8 +166,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     floatingObjects.push(cardMesh);
   }
 
-  serviceCards.forEach(function(card,index){ buildServiceCard(card,index,introTexts.length+index); });
-  placeholderCards.forEach(function(card,index){ buildServiceCard(card,index,introTexts.length+serviceCards.length+index); });
+  if(!isMobile){
+    serviceCards.forEach(function(card,index){ buildServiceCard(card,index,introTexts.length+index); });
+    placeholderCards.forEach(function(card,index){ buildServiceCard(card,index,introTexts.length+serviceCards.length+index); });
+  }
 
   var BASE_Y=Math.PI/2+0.15, BASE_X=0.22; /* Front, leicht nach vorne geneigt: Oberseite mit Hirnstruktur sichtbar */
   var GOLD={
@@ -1181,7 +1186,16 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
 
     var mouseX = 0, mouseY = 0, smoothMouseX = 0, smoothMouseY = 0;
     const onMouse = (e) => { mouseX = (e.clientX / innerWidth - 0.5) * 2; mouseY = (e.clientY / innerHeight - 0.5) * 2; };
-    const resize = () => { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); };
+    const resize = () => {
+      // updateStyle=false: keep the canvas's own width:100%/height:100% CSS
+      // (set inline below) instead of letting Three.js stamp a literal
+      // innerWidth px value onto it — innerWidth can exceed the true CSS
+      // viewport width (scrollbar-gutter quirks), which caused horizontal
+      // overflow on mobile.
+      renderer.setSize(innerWidth, innerHeight, false);
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+    };
     var scrollP = 0, targetScrollP = 0;
     var documentVisible = document.visibilityState === 'visible';
     const onScroll = () => {

@@ -1096,17 +1096,17 @@ body {
   }
 
   .spiral-section {
-    min-height: 840vh;
+    min-height: auto;
     margin-top: 0;
-    padding: 0;
+    padding: 5rem 0;
   }
 
   .spiral-sticky {
-    display: block;
+    display: none;
   }
 
   .spiral-mobile {
-    display: none;
+    display: block;
   }
 
   .spiral-mobile > div {
@@ -1114,12 +1114,14 @@ body {
   }
 
   .spiral-mobile .spiral-intro-statement {
+    display: flex;
     width: 100%;
     min-width: 0;
     padding-left: 0.95rem;
   }
 
   .spiral-mobile .spiral-service-card {
+    display: flex;
     min-height: auto;
     padding: 1rem;
     border-radius: 1rem;

@@ -778,7 +778,7 @@ export default function HomePage() {
 
       {/* ── Hero ── */}
       <section className="home-hero relative z-10 min-h-screen overflow-hidden pt-16">
-        <div className="hero-top-copy absolute inset-x-0 top-10 sm:top-14 lg:top-20 z-10">
+        <div className="hero-top-copy absolute inset-x-0 top-20 sm:top-24 lg:top-24 z-10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <div className="hero-copy hero-copy-centered ms-anim">
               <h1 className="max-w-6xl mx-auto whitespace-pre-line text-xl sm:text-2xl lg:text-4xl xl:text-5xl font-bold text-white leading-[0.96] tracking-[-0.055em]">
