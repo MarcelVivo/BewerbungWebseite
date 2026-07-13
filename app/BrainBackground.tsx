@@ -1662,6 +1662,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     new THREE.Color(0xc4e3ff),
     new THREE.Color(0xf4f7ff)
   ];
+  var NERVE_FLASH_VISIBILITY=3;
   function smootherstep(x){x=x<0?0:x>1?1:x;return x*x*x*(x*(x*6-15)+10);}
 
   function GlidePulse(kind){
@@ -1778,7 +1779,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     this.hopsLeft=16+Math.floor(Math.random()*14);
     this.hopTimer=.05+Math.random()*.07;
     this.alive=true;
-    this.headMat.opacity=.24*this.flashIntensity;
+    this.headMat.opacity=.24*NERVE_FLASH_VISIBILITY*this.flashIntensity;
   };
   NerveBolt.prototype.stepOnce=function(){
     var neigh=graphAdj[this.cur];
@@ -1827,7 +1828,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     }
     this.line.geometry.attributes.position.needsUpdate=true;
     this.line.geometry.attributes.color.needsUpdate=true;
-    this.mat.opacity=.22*this.flashIntensity;
+    this.mat.opacity=.22*NERVE_FLASH_VISIBILITY*this.flashIntensity;
     var head=this.trail[this.trail.length-1];
     this.headArr[0]=head.x; this.headArr[1]=head.y; this.headArr[2]=head.z;
     this.headPt.geometry.attributes.position.needsUpdate=true;
