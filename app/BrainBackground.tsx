@@ -583,6 +583,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var wptsObj=pointsObj(wpos,wcol,SP.ptSize,GOLD_RENDER.pointOpacity);
   wptsObj.name='neural-points';
   brain.add(dbgHide('wpts',wptsObj));
+  var goldLineBaseColors=linesObj.geometry.attributes.color.array.slice();
+  var goldPointBaseColors=wptsObj.geometry.attributes.color.array.slice();
 
   function applyGoldRendering(){
     linesObj.material.opacity=Math.min(1,GOLD_RENDER.lineOpacity*GOLD_RENDER.intensity);
@@ -593,6 +595,17 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
 
   function goldStrandBendWeight(progress){
     return smooth((progress-.22)/.78);
+  }
+
+  var fusionRedColor=new THREE.Color(0xd9788a);
+  var fusionBlueColor=new THREE.Color(0x8ebef2);
+  function updateGoldFusionColor(targetColors,baseColors,offset,vertexIndex){
+    var fusionAmount=smooth((sMeta[vertexIndex*2]-.76)/.24)*.72;
+    var selector=Math.sin(sMeta[vertexIndex*2+1]*2.71+vertexIndex*.037);
+    var fusionColor=selector>.33?fusionRedColor:(selector<-.33?fusionBlueColor:GOLD.light);
+    targetColors[offset]=baseColors[offset]+(fusionColor.r-baseColors[offset])*fusionAmount;
+    targetColors[offset+1]=baseColors[offset+1]+(fusionColor.g-baseColors[offset+1])*fusionAmount;
+    targetColors[offset+2]=baseColors[offset+2]+(fusionColor.b-baseColors[offset+2])*fusionAmount;
   }
 
   function goldStrandVertexLocal(vertexIndex,out,includeEndOffset){
@@ -670,23 +683,29 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     }
     updateGoldEndOffset();
     var linePositionArray=linesObj.geometry.attributes.position.array;
+    var lineColorArray=linesObj.geometry.attributes.color.array;
     for(var lineReferenceIndex=0;lineReferenceIndex<wobbleLineRefs.length;lineReferenceIndex++){
       var lineReference=wobbleLineRefs[lineReferenceIndex];
       goldStrandVertexLocal(lineReference.srcV,goldDragScratch,true);
       linePositionArray[lineReference.off]=goldDragScratch.x;
       linePositionArray[lineReference.off+1]=goldDragScratch.y;
       linePositionArray[lineReference.off+2]=goldDragScratch.z;
+      updateGoldFusionColor(lineColorArray,goldLineBaseColors,lineReference.off,lineReference.srcV);
     }
     linesObj.geometry.attributes.position.needsUpdate=true;
+    linesObj.geometry.attributes.color.needsUpdate=true;
     var pointPositionArray=wptsObj.geometry.attributes.position.array;
+    var pointColorArray=wptsObj.geometry.attributes.color.array;
     for(var pointReferenceIndex=0;pointReferenceIndex<wobblePtsRefs.length;pointReferenceIndex++){
       var pointReference=wobblePtsRefs[pointReferenceIndex];
       goldStrandVertexLocal(pointReference.srcV,goldDragScratch,true);
       pointPositionArray[pointReference.off]=goldDragScratch.x;
       pointPositionArray[pointReference.off+1]=goldDragScratch.y;
       pointPositionArray[pointReference.off+2]=goldDragScratch.z;
+      updateGoldFusionColor(pointColorArray,goldPointBaseColors,pointReference.off,pointReference.srcV);
     }
     wptsObj.geometry.attributes.position.needsUpdate=true;
+    wptsObj.geometry.attributes.color.needsUpdate=true;
     goldStrandTipWorld(goldTipWorld,true);
     if(goldDragHandle){
       goldDragHandle.position.copy(goldTipWorld);
@@ -742,6 +761,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     nwg.setAttribute('color',new THREE.Float32BufferAttribute(newWCol,3));
     wptsObj.geometry.dispose();
     wptsObj.geometry=nwg;
+    goldLineBaseColors=linesObj.geometry.attributes.color.array.slice();
+    goldPointBaseColors=wptsObj.geometry.attributes.color.array.slice();
     applyGoldRendering();
     if(satelliteStrands&&satelliteStrands.length) rebuildSecondaryStrands();
   }
@@ -1136,6 +1157,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var satelliteWorldX=new THREE.Vector3();
   var satelliteWorldZ=new THREE.Vector3();
   var satelliteWorldDown=new THREE.Vector3();
+  var secondaryMergeTargetWorld=new THREE.Vector3();
+  var secondaryMergeTargetLocal=new THREE.Vector3();
 
   function makeSecondaryFiberShape(){
     return {
@@ -1243,11 +1266,16 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     satelliteWorldX.set(1,0,0).transformDirection(satelliteInverseMatrix);
     satelliteWorldZ.set(0,0,1).transformDirection(satelliteInverseMatrix);
     satelliteWorldDown.set(0,-1,0).transformDirection(satelliteInverseMatrix);
+    goldStrandTipWorld(secondaryMergeTargetWorld,true);
+    strand.satellite.worldToLocal(secondaryMergeTargetLocal.copy(secondaryMergeTargetWorld));
     strand.lineColors.fill(0);
     strand.pointColors.fill(0);
     var targetX=satelliteTargetLocal.x+params.posX;
     var targetY=satelliteTargetLocal.y+params.posY;
     var targetZ=satelliteTargetLocal.z+params.posZ;
+    var mergeX=secondaryMergeTargetLocal.x;
+    var mergeY=secondaryMergeTargetLocal.y;
+    var mergeZ=secondaryMergeTargetLocal.z;
     var connectorShare=Math.max(.08,Math.min(.92,params.connectorShare));
     var helixRotation=flowTime*params.flowSpeed*strand.flowDirection;
     for(var fiberIndex=0;fiberIndex<strand.fibers.length;fiberIndex++){
@@ -1273,7 +1301,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var previousX=startX, previousY=startY, previousZ=startZ;
       var previousR=0, previousG=0, previousB=0, lineOffset=fiber.lineOffset;
       for(var step=0;step<fiber.len;step++){
-        var progress=fiber.len>1?step/(fiber.len-1):0, x,y,z, helixProgress;
+        var progress=fiber.len>1?step/(fiber.len-1):0, x,y,z, helixProgress, terminalBlend=0;
         if(progress<connectorShare){
           var connectorProgress=progress/connectorShare, inverse=1-connectorProgress;
           x=inverse*inverse*inverse*startX+3*inverse*inverse*connectorProgress*controlOneX+3*inverse*connectorProgress*connectorProgress*controlTwoX+connectorProgress*connectorProgress*connectorProgress*joinX;
@@ -1288,17 +1316,25 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         } else {
           helixProgress=(progress-connectorShare)/(1-connectorShare);
           var helixAngle=strand.phase+params.phase+helixRotation+helixProgress*Math.PI*2*params.helixTurns+fiberShape.phaseOffset;
-          var helixRadius=params.helixRadius+fiberShape.radiusOffset*params.funnelSpread+Math.sin(helixProgress*Math.PI*4+fiberShape.phaseOffset)*params.helixWave;
-          var centerX=targetX+satelliteWorldDown.x*helixProgress*params.helixLength;
-          var centerY=targetY+satelliteWorldDown.y*helixProgress*params.helixLength;
-          var centerZ=targetZ+satelliteWorldDown.z*helixProgress*params.helixLength;
+          terminalBlend=smooth((helixProgress-.74)/.26);
+          var outerRadius=params.helixRadius+fiberShape.radiusOffset*params.funnelSpread+Math.sin(helixProgress*Math.PI*4+fiberShape.phaseOffset)*params.helixWave;
+          var innerRadius=.018+Math.abs(fiberShape.radiusOffset)*.045;
+          var helixRadius=outerRadius+(innerRadius-outerRadius)*terminalBlend;
+          var centerX=targetX+(mergeX-targetX)*helixProgress;
+          var centerY=targetY+(mergeY-targetY)*helixProgress;
+          var centerZ=targetZ+(mergeZ-targetZ)*helixProgress;
           x=centerX+satelliteWorldX.x*Math.cos(helixAngle)*helixRadius+satelliteWorldZ.x*Math.sin(helixAngle)*helixRadius;
           y=centerY+satelliteWorldX.y*Math.cos(helixAngle)*helixRadius+satelliteWorldZ.y*Math.sin(helixAngle)*helixRadius;
           z=centerZ+satelliteWorldX.z*Math.cos(helixAngle)*helixRadius+satelliteWorldZ.z*Math.sin(helixAngle)*helixRadius;
         }
         var pulse=Math.max(0,Math.sin(flowTime*params.pulseSpeed*strand.flowDirection-progress*20*strand.flowDirection+fiberShape.phaseOffset));
         var brightness=(params.baseBrightness+pulse*params.pulseStrength)*params.intensity;
-        var colorR=strand.color.r*brightness, colorG=strand.color.g*brightness, colorB=strand.color.b*brightness;
+        var colorSelector=Math.sin(fiberShape.phaseOffset*31+fiberIndex*1.618);
+        var terminalColor=colorSelector>.33?fusionRedColor:(colorSelector<-.33?fusionBlueColor:GOLD.light);
+        var colorBlend=terminalBlend*.78;
+        var colorR=(strand.color.r+(terminalColor.r-strand.color.r)*colorBlend)*brightness;
+        var colorG=(strand.color.g+(terminalColor.g-strand.color.g)*colorBlend)*brightness;
+        var colorB=(strand.color.b+(terminalColor.b-strand.color.b)*colorBlend)*brightness;
         var pointIndex=fiber.pointOffset+step*3;
         strand.pointPositions[pointIndex]=x;
         strand.pointPositions[pointIndex+1]=y;
@@ -1334,6 +1370,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     strand.pointMesh.geometry.attributes.position.needsUpdate=true;
     strand.pointMesh.geometry.attributes.color.needsUpdate=true;
     applySecondaryRendering(strand);
+  }
+
+  if(satelliteBrains.length>1){
+    useExistingSatelliteStrand(satelliteBrains[0],Math.PI,'#a6425c',1,-1,RED_STRAND);
+    useExistingSatelliteStrand(satelliteBrains[1],0,'#4d7fbf',-1,1,BLUE_STRAND);
   }
 
   function Spark(){
