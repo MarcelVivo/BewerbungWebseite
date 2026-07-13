@@ -1003,7 +1003,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   function addSatelliteBrain(x,y,z,phase,palette){
     var satellite=brain.clone(true);
     tintSatelliteBrain(satellite,palette);
-    satellite.scale.setScalar(isMobile?0.6:1.32);
+    satellite.scale.setScalar(isMobile?0.8:1.76);
     satellite.position.set(x,y,z);
     satellite.rotation.set(BASE_X,BASE_Y,0);
     satellite.userData={baseX:x,baseY:y,baseZ:z,baseRotY:BASE_Y,phase:phase};
