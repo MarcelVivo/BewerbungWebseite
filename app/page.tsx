@@ -425,7 +425,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
         detailScrollStepsRef.current += 1;
       }
 
-      if (detailScrollStepsRef.current >= 2) {
+      if (detailScrollStepsRef.current >= 3) {
         setActiveServiceSlug(null);
       }
     };
