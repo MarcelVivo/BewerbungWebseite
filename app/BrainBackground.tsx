@@ -533,11 +533,20 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         var v=vc;
         sBase.push(px,py,pz);
         sMeta.push(tv,a0);
-        // Derselbe Helligkeitsbereich (0.72–1.0) wie taperFade() beim
-        // Gehirn selbst, damit der goldene Strang optisch exakt gleich hell
-        // wirkt wie das Gehirn, statt mit einer eigenen, dunkleren Formel
-        // (vorher .18–.68) sichtbar abzufallen.
-        cc.copy(fiberCol).multiplyScalar((.72+.28*endFade)*neuralShade(px,py,pz));
+        // neuralShade() bewertet Licht als Skalarprodukt der Richtung ab dem
+        // WELT-Ursprung mit der Lichtrichtung. Beim kompakten Gehirn (Punkte
+        // rundum den Ursprung) ergibt das eine natürliche Verteilung heller/
+        // dunkler Stellen. Beim Strang, der weit unterhalb des Ursprungs
+        // fast senkrecht nach unten verläuft, zeigt diese Richtung für JEDEN
+        // Punkt fast exakt nach unten — das Skalarprodukt kollabiert auf den
+        // Minimalwert, der Strang bleibt dadurch komplett dunkel, egal wie
+        // hoch der Helligkeits-Multiplikator ist. Fix: die Radialrichtung
+        // relativ zur eigenen (senkrechten) Strangachse verwenden statt der
+        // absoluten Weltposition — dann variiert die Beleuchtung wie bei
+        // einem echten beleuchteten Kabel nach Umfangswinkel (helle/dunkle
+        // Seite), genau wie beim Gehirn nach Kugelwinkel.
+        var radialX=px-(SBASE_X+mx), radialZ=pz-(SBASE_Z+mz);
+        cc.copy(fiberCol).multiplyScalar((.72+.28*endFade)*neuralShade(radialX,0,radialZ));
         var ptOff=outPtsPos.length;
         outPtsPos.push(px,py,pz);
         outPtsCol.push(cc.r,cc.g,cc.b);
