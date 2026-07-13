@@ -1443,8 +1443,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   }
 
   if(satelliteBrains.length>1){
-    useExistingSatelliteStrand(satelliteBrains[0],Math.PI,'#d9788a',1,-1,RED_STRAND);
-    useExistingSatelliteStrand(satelliteBrains[1],0,'#8ebef2',-1,1,BLUE_STRAND);
+    // Identische Primärtöne für Gehirn und Faserbündel: Der Trichter darf
+    // nicht als separat eingefärbtes Objekt wahrgenommen werden.
+    useExistingSatelliteStrand(satelliteBrains[0],Math.PI,'#a6425c',1,-1,RED_STRAND);
+    useExistingSatelliteStrand(satelliteBrains[1],0,'#4d7fbf',-1,1,BLUE_STRAND);
   }
 
   function Spark(){
