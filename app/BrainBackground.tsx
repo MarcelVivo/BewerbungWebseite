@@ -113,8 +113,15 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var texture=new THREE.CanvasTexture(textCanvas);
     texture.colorSpace=THREE.SRGBColorSpace;
     texture.minFilter=THREE.LinearFilter;
-    var material=new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false,depthTest:true,opacity:.98,side:THREE.FrontSide,toneMapped:false});
+    // depthTest:false + ein renderOrder oberhalb aller Stränge (Gold ohne
+    // eigenen renderOrder ≈0, Satelliten-Stränge renderOrder 4/5) stellt
+    // sicher, dass die Überschrift immer VOR den Nervensträngen gezeichnet
+    // wird und nie durch Faserlinien verdeckt wird — unabhängig vom
+    // Blickwinkel/Scroll-Fortschritt, ohne Strang-Animation, -Farben oder
+    // -Position zu verändern.
+    var material=new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false,depthTest:false,opacity:.98,side:THREE.FrontSide,toneMapped:false});
     var textSprite=new THREE.Mesh(new THREE.PlaneGeometry(isMobile?3.77:5.65,isMobile?1.25:1.88),material);
+    textSprite.renderOrder=20;
     var textAngle=helixAngle(index);
     var textRadius=2.65;
     textSprite.position.set(Math.sin(textAngle)*textRadius,TEXT_START_Y-index*HELIX_STEP,Math.cos(textAngle)*textRadius);
