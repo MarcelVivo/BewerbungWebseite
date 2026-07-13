@@ -78,6 +78,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   }
 
   function cameraRailSlowdown(progress){
+    // Die Textstationen sollen die Fahrt nur minimal entschleunigen. Die
+    // Kamera rollt durchgehend weiter und darf nicht mehr an jeder Station
+    // wie eine klassische Scroll-Snap-Animation abbremsen.
     var focusWindow=.028, slowdown=1;
     for(var stopIndex=0;stopIndex<totalWorldStops;stopIndex++){
       var stopY=TEXT_START_Y-stopIndex*HELIX_STEP;
@@ -85,9 +88,55 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var distance=Math.abs(progress-stopProgress);
       if(distance>=focusWindow) continue;
       var proximity=1-distance/focusWindow;
-      slowdown=Math.min(slowdown,.3+.7*(1-proximity)*(1-proximity));
+      slowdown=Math.min(slowdown,.82+.18*(1-proximity)*(1-proximity));
     }
     return slowdown;
+  }
+
+  function createIntroTextMaterial(texture){
+    var uniforms={
+      map:{value:texture},
+      uOpacity:{value:1},
+      uBlur:{value:0},
+      uBrightness:{value:1}
+    };
+    return new THREE.ShaderMaterial({
+      uniforms:uniforms,
+      transparent:true,
+      depthWrite:false,
+      depthTest:false,
+      side:THREE.FrontSide,
+      toneMapped:false,
+      vertexShader:[
+        'varying vec2 vUv;',
+        'void main(){',
+        '  vUv=uv;',
+        '  gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);',
+        '}'
+      ].join('\n'),
+      fragmentShader:[
+        'uniform sampler2D map;',
+        'uniform float uOpacity;',
+        'uniform float uBlur;',
+        'uniform float uBrightness;',
+        'varying vec2 vUv;',
+        'void main(){',
+        '  vec2 x=vec2(uBlur,0.0);',
+        '  vec2 y=vec2(0.0,uBlur);',
+        '  vec4 color=texture2D(map,vUv)*0.28;',
+        '  color+=texture2D(map,vUv+x)*0.12;',
+        '  color+=texture2D(map,vUv-x)*0.12;',
+        '  color+=texture2D(map,vUv+y)*0.12;',
+        '  color+=texture2D(map,vUv-y)*0.12;',
+        '  color+=texture2D(map,vUv+x+y)*0.06;',
+        '  color+=texture2D(map,vUv+x-y)*0.06;',
+        '  color+=texture2D(map,vUv-x+y)*0.06;',
+        '  color+=texture2D(map,vUv-x-y)*0.06;',
+        '  color.rgb*=uBrightness;',
+        '  gl_FragColor=vec4(color.rgb,color.a*uOpacity);',
+        '}'
+      ].join('\n')
+    });
   }
 
   function buildIntroSprite(label,index){
@@ -119,17 +168,16 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     // wird und nie durch Faserlinien verdeckt wird — unabhängig vom
     // Blickwinkel/Scroll-Fortschritt, ohne Strang-Animation, -Farben oder
     // -Position zu verändern.
-    var material=new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false,depthTest:false,opacity:.98,side:THREE.FrontSide,toneMapped:false});
+    var material=createIntroTextMaterial(texture);
     var textSprite=new THREE.Mesh(new THREE.PlaneGeometry(isMobile?3.77:5.65,isMobile?1.25:1.88),material);
     textSprite.renderOrder=20;
     var textAngle=helixAngle(index);
     var textRadius=2.65;
     textSprite.position.set(Math.sin(textAngle)*textRadius,TEXT_START_Y-index*HELIX_STEP,Math.cos(textAngle)*textRadius);
     textSprite.rotation.y=textAngle;
-    textSprite.userData={baseX:textSprite.position.x,baseY:textSprite.position.y,baseZ:textSprite.position.z,baseRotY:textAngle,phase:index*1.37};
+    textSprite.userData={baseX:textSprite.position.x,baseY:textSprite.position.y,baseZ:textSprite.position.z,baseRotY:textAngle,phase:index*1.37,textUniforms:material.uniforms};
     introTextGroup.add(textSprite);
     introSprites.push(textSprite);
-    floatingObjects.push(textSprite);
   }
 
   // Dieselbe 3D-Scroll-Spirale wie am Desktop läuft jetzt auch auf Mobile
@@ -2365,7 +2413,16 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       camera.aspect = innerWidth / innerHeight;
       camera.updateProjectionMatrix();
     };
+    // Scroll setzt nur das gewünschte Ziel auf der Schiene. Die tatsächliche
+    // Fahrt wird darunter als gedämpfte Masse integriert: Beschleunigung,
+    // Geschwindigkeit und Trägheit bleiben zwischen einzelnen Scroll-Events
+    // erhalten, damit die Kamera kurz weich ausrollt statt hart zu stoppen.
     var scrollP = 0, targetScrollP = 0;
+    var cameraProgress = 0, cameraVelocity = 0, cameraAimY = cameraTargetStart;
+    var CAMERA_MASS = 1.48;
+    var CAMERA_SPRING = 15.5;
+    var CAMERA_DAMPING = 7.25;
+    var textWorldPosition = new THREE.Vector3();
     var documentVisible = document.visibilityState === 'visible';
     const onScroll = () => {
       var journey=document.getElementById('solution-spiral');
@@ -2510,16 +2567,25 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         }
       }
       nodesP.material.opacity = .44;
-      var railSlowdown=cameraRailSlowdown(scrollP);
-      var cameraInertia=1-Math.exp(-dt*7.2*railSlowdown);
-      scrollP+=(targetScrollP-scrollP)*cameraInertia;
-      if(Math.abs(targetScrollP-scrollP)<.00008) scrollP=targetScrollP;
-      var sf = scrollP;
+      var railSlowdown=cameraRailSlowdown(cameraProgress);
+      var cameraAcceleration=((targetScrollP-cameraProgress)*CAMERA_SPRING*railSlowdown-cameraVelocity*CAMERA_DAMPING)/CAMERA_MASS;
+      cameraVelocity+=cameraAcceleration*dt;
+      cameraProgress+=cameraVelocity*dt;
+      if(cameraProgress<0){ cameraProgress=0; cameraVelocity=Math.max(0,cameraVelocity); }
+      if(cameraProgress>1){ cameraProgress=1; cameraVelocity=Math.min(0,cameraVelocity); }
+      if(Math.abs(targetScrollP-cameraProgress)<.00003&&Math.abs(cameraVelocity)<.00008){
+        cameraProgress=targetScrollP;
+        cameraVelocity=0;
+      }
+      scrollP=cameraProgress;
+      var sf = cameraProgress;
       var orbit=sf*Math.PI*2;
       var lookY=cameraTargetStart-sf*cameraTravel;
       var heroPerspective=Math.max(0,1-sf/.11);
       var cameraY=lookY+.24+heroPerspective*.16;
-      var cameraLookY=lookY-heroPerspective*.1;
+      var desiredCameraLookY=lookY-heroPerspective*.1-cameraVelocity*.55;
+      var aimEase=1-Math.exp(-dt*5.4);
+      cameraAimY+=(desiredCameraLookY-cameraAimY)*aimEase;
       var cameraRadius=(8.78
         +Math.sin(sf*Math.PI*2*3.15+.6)*.46
         +Math.sin(sf*Math.PI*2*6.4+1.7)*.22)*MOBILE_RADIUS_SCALE;
@@ -2532,7 +2598,44 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       world.rotation.y = 0;
       world.position.y = 0;
       camera.position.set(Math.sin(orbit)*cameraRadius, cameraY, Math.cos(orbit)*cameraRadius);
-      camera.lookAt(0, cameraLookY, 0);
+      camera.lookAt(0, cameraAimY, 0);
+      // Die fünf Texte bleiben vollständig an ihren Weltstationen. Nur ihre
+      // Materialwirkung folgt der echten Kameradistanz: der nächstgelegene
+      // Text bleibt klar, alle übrigen werden weich, dunkel und zunehmend
+      // transparent. Das ist kein CSS-Overlay, sondern ein Shader direkt auf
+      // dem Canvas-Texture-Material der bestehenden Meshes.
+      var closestText=null, closestTextDistance=Infinity;
+      for(var introDistanceIndex=0;introDistanceIndex<introSprites.length;introDistanceIndex++){
+        var distanceSprite=introSprites[introDistanceIndex];
+        distanceSprite.getWorldPosition(textWorldPosition);
+        var distanceToCamera=camera.position.distanceTo(textWorldPosition);
+        if(distanceToCamera<closestTextDistance){
+          closestTextDistance=distanceToCamera;
+          closestText=distanceSprite;
+        }
+      }
+      for(var introFocusIndex=0;introFocusIndex<introSprites.length;introFocusIndex++){
+        var introSprite=introSprites[introFocusIndex];
+        var introUniforms=introSprite.userData.textUniforms;
+        introSprite.getWorldPosition(textWorldPosition);
+        var textDistance=camera.position.distanceTo(textWorldPosition);
+        var distanceFade=THREE.MathUtils.clamp((textDistance-4.4)/10.5,0,1);
+        var isFocused=introSprite===closestText;
+        var targetOpacity=isFocused?1:Math.max(0,.23*(1-distanceFade)*(1-distanceFade));
+        var targetBlur=isFocused?0:(.0035+distanceFade*.0062);
+        var targetBrightness=isFocused?1.05:.42+.18*(1-distanceFade);
+        introUniforms.uOpacity.value+=(targetOpacity-introUniforms.uOpacity.value)*(1-Math.exp(-dt*7.2));
+        introUniforms.uBlur.value+=(targetBlur-introUniforms.uBlur.value)*(1-Math.exp(-dt*6.4));
+        introUniforms.uBrightness.value+=(targetBrightness-introUniforms.uBrightness.value)*(1-Math.exp(-dt*5.8));
+        // Limitiertes Billboard: Der Text bleibt Teil der Spirale und dreht
+        // sich maximal wenige Grad zur Kamera, statt ihr wie ein HUD zu folgen.
+        if(!reduced){
+          var desiredTextYaw=Math.atan2(camera.position.x-textWorldPosition.x,camera.position.z-textWorldPosition.z);
+          var yawDelta=THREE.MathUtils.euclideanModulo(desiredTextYaw-introSprite.userData.baseRotY+Math.PI,Math.PI*2)-Math.PI;
+          var limitedTextYaw=introSprite.userData.baseRotY+THREE.MathUtils.clamp(yawDelta,-.12,.12);
+          introSprite.rotation.y+=(limitedTextYaw-introSprite.rotation.y)*(1-Math.exp(-dt*3.2));
+        }
+      }
       // Live-Kamerastatus veröffentlichen, damit DOM-Elemente ausserhalb der
       // WebGL-Szene (z. B. die Kartengruppe in page.tsx) sich Frame für
       // Frame exakt an derselben, bereits gedämpften Kameraposition
@@ -2540,7 +2643,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       // Kamera-Berechnung zu duplizieren.
       if (typeof window !== 'undefined') {
         window.__cardsCameraState = {
-          orbit: orbit, cameraY: cameraY, cameraLookY: cameraLookY,
+          orbit: orbit, cameraY: cameraY, cameraLookY: cameraAimY,
           cameraRadius: cameraRadius, fov: camera.fov, aspect: camera.aspect,
         };
       }
