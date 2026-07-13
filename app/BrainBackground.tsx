@@ -1653,13 +1653,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   // --- Blaue Nerven-Glitzer: feine, langsame Impulse, die entlang der goldenen
   // Linien bzw. am Nervenstrang hoch/runter gleiten (statt zu blitzen) ---
   var BLUE=new THREE.Color(0x4d7fbf);
-  // Jede Entladung erhält beim Start einen eigenen Blau-bis-Weiss-Ton.
-  // Dadurch pulsiert das Netz organisch, ohne die Grundfarben der Gehirne
-  // oder Stränge zu verändern.
+  // Die Nervenblitze bleiben bewusst neutral weiss. So heben sie sich von
+  // Gold, Bordeaux und Blau ab, ohne deren Materialfarben zu verfälschen.
   var NERVE_FLASH_SHADES=[
-    new THREE.Color(0x4d7fbf),
-    new THREE.Color(0x8ebef2),
-    new THREE.Color(0xc4e3ff),
+    new THREE.Color(0xffffff),
+    new THREE.Color(0xfffdf5),
+    new THREE.Color(0xf8fbff),
     new THREE.Color(0xf4f7ff)
   ];
   var NERVE_FLASH_VISIBILITY=3;
@@ -1765,6 +1764,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     this.headPt=new THREE.Points(gh,this.headMat);
     this.headPt.frustumCulled=false;
     parentGroup.add(this.headPt);
+    this.flareSize=.14+Math.random()*.08;
+    this.flareMat=new THREE.SpriteMaterial({map:sprite,color:0xffffff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
+    this.flare=new THREE.Sprite(this.flareMat);
+    this.flare.frustumCulled=false;
+    parentGroup.add(this.flare);
     this.trail=[];
     this.alive=false;
     this.wait=Math.random()*1.2;
@@ -1780,6 +1784,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     this.hopTimer=.05+Math.random()*.07;
     this.alive=true;
     this.headMat.opacity=.24*NERVE_FLASH_VISIBILITY*this.flashIntensity;
+    this.flareMat.opacity=.14*NERVE_FLASH_VISIBILITY*this.flashIntensity;
   };
   NerveBolt.prototype.stepOnce=function(){
     var neigh=graphAdj[this.cur];
@@ -1802,6 +1807,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         this.alive=false;
         this.mat.opacity=0;
         this.headMat.opacity=0;
+        this.flareMat.opacity=0;
         this.wait=.8+Math.random()*2.2;
         return;
       }
@@ -1832,6 +1838,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var head=this.trail[this.trail.length-1];
     this.headArr[0]=head.x; this.headArr[1]=head.y; this.headArr[2]=head.z;
     this.headPt.geometry.attributes.position.needsUpdate=true;
+    var flareFlicker=.78+.22*Math.abs(Math.sin(this.hopTimer*95+this.hopsLeft*1.7));
+    var flareScale=this.flareSize*flareFlicker;
+    this.flare.position.copy(head);
+    this.flare.scale.set(flareScale,flareScale,1);
+    this.flareMat.opacity=.14*NERVE_FLASH_VISIBILITY*this.flashIntensity*flareFlicker;
   };
   var nerveBolts=[], NBN=isMobile?12:34;
   for(i=0;i<NBN;i++) nerveBolts.push(new NerveBolt(brain));
