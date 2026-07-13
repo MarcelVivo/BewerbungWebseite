@@ -1135,6 +1135,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var secondaryMergeTargetWorld=new THREE.Vector3();
   var secondarySatelliteWorld=new THREE.Vector3();
   var secondaryRenderPoint=new THREE.Vector3();
+  var secondaryGoldJoinLocal=new THREE.Vector3();
+  var secondaryGoldJoinWorld=new THREE.Vector3();
 
   function makeSecondaryFiberShape(){
     return {
@@ -1144,7 +1146,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       secondDroop:1.08+Math.random()*.2,
       firstSway:(Math.random()-.5)*.2,
       secondSway:(Math.random()-.5)*.15,
-      windPhase:Math.random()*Math.PI*2
+      windPhase:Math.random()*Math.PI*2,
+      goldFiberIndex:Math.floor(Math.random()*Math.max(1,sFibers.length)),
+      goldFiberProgress:.78+Math.random()*.2
     };
   }
 
@@ -1251,6 +1255,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var terminalStart=Math.max(.84,Math.min(.96,.96-params.endPull*.08));
     for(var fiberIndex=0;fiberIndex<strand.fibers.length;fiberIndex++){
       var fiber=strand.fibers[fiberIndex], fiberShape=fiber.shape;
+      var goldJoinFiber=sFibers[fiberShape.goldFiberIndex%sFibers.length];
+      var goldJoinVertex=goldJoinFiber.start+Math.floor((goldJoinFiber.len-1)*fiberShape.goldFiberProgress);
+      goldStrandVertexLocal(goldJoinVertex,secondaryGoldJoinLocal,true);
+      secondaryGoldJoinWorld.copy(secondaryGoldJoinLocal);
+      brain.localToWorld(secondaryGoldJoinWorld);
       var sourceScale=strand.satellite.scale.x*params.topFunnel;
       var startX=secondarySatelliteWorld.x+Math.cos(fiber.sourceAngle)*fiber.sourceRadius*sourceScale;
       var startY=secondarySatelliteWorld.y-strand.satellite.scale.x*.76-fiber.sourceDrop*sourceScale;
@@ -1281,7 +1290,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         var windSide=Math.sin(flowTime*.64+progress*5.4+fiberShape.windPhase)*params.sway*.045*windEnvelope;
         var windDepth=Math.cos(flowTime*.49+progress*4.1+fiberShape.windPhase*1.37)*params.sway*.022*windEnvelope;
         var manualEnvelope=sagEnvelope*(1-terminalBlend);
-        var endSpread=(.008+Math.abs(fiberShape.radiusOffset)*.022)*terminalBlend;
+        var fiberSplit=smooth((progress-.82)/.18);
+        var endSpread=(.008+Math.abs(fiberShape.radiusOffset)*.022)*terminalBlend*(1-fiberSplit);
         var endOffsetX=Math.cos(fiberAngle)*endSpread;
         var endOffsetZ=Math.sin(fiberAngle)*endSpread;
         var manualVertical=params.posY*manualEnvelope;
@@ -1289,12 +1299,15 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         y=startY+(mergeY-startY)*progress-hangingSag-manualVertical;
         z=startZ+(mergeZ-startZ)*inwardProgress;
         var helixProgress=smooth((progress-params.helixStart)/(1-params.helixStart));
-        var helixRadius=Math.max(.018,(params.helixRadius+fiberShape.radiusOffset*.45)*(1-helixProgress*.88));
+        var helixRadius=Math.max(.004,(params.helixRadius+fiberShape.radiusOffset*.45)*(1-helixProgress*.97));
         var helixAngle=strand.phase+strand.flowDirection*helixProgress*Math.PI*2*params.helixTurns+fiberShape.phaseOffset*.9;
         var helixX=mergeX+Math.cos(helixAngle)*helixRadius;
         var helixZ=mergeZ+Math.sin(helixAngle)*helixRadius;
         x+=(helixX-x)*helixProgress;
         z+=(helixZ-z)*helixProgress;
+        x+=(secondaryGoldJoinWorld.x-x)*fiberSplit;
+        y+=(secondaryGoldJoinWorld.y-y)*fiberSplit;
+        z+=(secondaryGoldJoinWorld.z-z)*fiberSplit;
         x+=sideX*(Math.cos(fiberAngle)*looseSpread+windSide+params.posX*manualEnvelope+endOffsetX)
           +depthX*(Math.sin(fiberAngle)*looseSpread+windDepth+params.posZ*manualEnvelope+endOffsetZ);
         z+=sideZ*(Math.cos(fiberAngle)*looseSpread+windSide+params.posX*manualEnvelope+endOffsetX)
@@ -1302,7 +1315,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         var pulse=Math.max(0,Math.sin(flowTime*params.pulseSpeed*strand.flowDirection-progress*20*strand.flowDirection+fiberShape.phaseOffset));
         var brightness=(params.baseBrightness+pulse*params.pulseStrength)*params.intensity;
         var terminalColor=GOLD.light;
-        var colorBlend=terminalBlend*.42;
+        var colorBlend=Math.max(terminalBlend*.42,fiberSplit);
         var colorR=(strand.color.r+(terminalColor.r-strand.color.r)*colorBlend)*brightness;
         var colorG=(strand.color.g+(terminalColor.g-strand.color.g)*colorBlend)*brightness;
         var colorB=(strand.color.b+(terminalColor.b-strand.color.b)*colorBlend)*brightness;
