@@ -1131,6 +1131,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   BLUE_STRAND.pulseStrength=.14;
   var secondaryMergeTargetWorld=new THREE.Vector3();
   var secondarySatelliteWorld=new THREE.Vector3();
+  var secondaryRenderPoint=new THREE.Vector3();
 
   function makeSecondaryFiberShape(){
     return {
@@ -1210,11 +1211,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     pointMesh.frustumCulled=false;
     pointMesh.renderOrder=5;
     tailGroup.add(pointMesh);
-    // Die Fasergeometrie liegt bewusst direkt in der Szenen-Welt: Start und
-    // Ende werden beide in Weltkoordinaten bestimmt. Dadurch bleibt der
-    // Strang bei den schwebenden Satelliten sichtbar verankert und kann nicht
-    // durch lokale Skalierung oder Rotation ausserhalb der Kamera geraten.
-    scene.add(tailGroup);
+    brain.add(tailGroup);
     var strand={
       satellite:satellite,
       phase:phase,
@@ -1238,6 +1235,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   function curveExistingSatelliteStrand(strand,flowTime){
     if(!strand.fibers.length) return;
     var params=strand.params;
+    brain.updateWorldMatrix(true,false);
     strand.satellite.updateWorldMatrix(true,false);
     strand.satellite.getWorldPosition(secondarySatelliteWorld);
     goldStrandTipWorld(secondaryMergeTargetWorld,true);
@@ -1298,6 +1296,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         var colorR=(strand.color.r+(terminalColor.r-strand.color.r)*colorBlend)*brightness;
         var colorG=(strand.color.g+(terminalColor.g-strand.color.g)*colorBlend)*brightness;
         var colorB=(strand.color.b+(terminalColor.b-strand.color.b)*colorBlend)*brightness;
+        secondaryRenderPoint.set(x,y,z);
+        brain.worldToLocal(secondaryRenderPoint);
+        x=secondaryRenderPoint.x;
+        y=secondaryRenderPoint.y;
+        z=secondaryRenderPoint.z;
         var pointIndex=fiber.pointOffset+step*3;
         strand.pointPositions[pointIndex]=x;
         strand.pointPositions[pointIndex+1]=y;
