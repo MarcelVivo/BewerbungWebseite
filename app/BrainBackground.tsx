@@ -533,7 +533,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         var v=vc;
         sBase.push(px,py,pz);
         sMeta.push(tv,a0);
-        cc.copy(fiberCol).multiplyScalar((.18+.5*endFade)*neuralShade(px,py,pz));
+        // Derselbe Helligkeitsbereich (0.72–1.0) wie taperFade() beim
+        // Gehirn selbst, damit der goldene Strang optisch exakt gleich hell
+        // wirkt wie das Gehirn, statt mit einer eigenen, dunkleren Formel
+        // (vorher .18–.68) sichtbar abzufallen.
+        cc.copy(fiberCol).multiplyScalar((.72+.28*endFade)*neuralShade(px,py,pz));
         var ptOff=outPtsPos.length;
         outPtsPos.push(px,py,pz);
         outPtsCol.push(cc.r,cc.g,cc.b);
@@ -1123,6 +1127,15 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   RED_STRAND.pointOpacity=GOLD_RENDER.pointOpacity;
   BLUE_STRAND.lineOpacity=GOLD_RENDER.lineOpacity;
   BLUE_STRAND.pointOpacity=GOLD_RENDER.pointOpacity;
+  // Die Vertex-Helligkeit (baseBrightness+pulse*pulseStrength) pendelte
+  // bisher zwischen .3 und .62 — deutlich dunkler als der 0.72–1.0-Bereich,
+  // den taperFade() beim Gehirn und die goldene Strang-Faserfarbe jetzt
+  // verwenden. Auf denselben Bereich angehoben, damit alle 3 Stränge
+  // wirklich gleich hell wie die Gehirne leuchten.
+  RED_STRAND.baseBrightness=.72;
+  RED_STRAND.pulseStrength=.28;
+  BLUE_STRAND.baseBrightness=.72;
+  BLUE_STRAND.pulseStrength=.28;
   var satelliteTargetWorld=new THREE.Vector3();
   var satelliteTargetLocal=new THREE.Vector3();
   var satelliteInverseMatrix=new THREE.Matrix4();
