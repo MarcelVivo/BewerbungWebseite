@@ -13,6 +13,12 @@ import BrainBackground from './BrainBackground';
 import ContactFormClient from './ContactFormClient';
 import { useLanguage } from './LanguageContext';
 import { T } from '../lib/translations';
+import { HELIX_STEP, computeCameraTravel, helixAngleForWorldIndex, helixPositionForWorldIndex } from './lib/helixGeometry';
+
+// Radius, den die reale 3D-Leistungskarte ("Karte 01") in BrainBackground.tsx
+// hatte, bevor sie durch dieses DOM-Kartenpanel ersetzt wurde — dieselbe
+// Weltkoordinate, kein neuer/geschätzter Wert.
+const CARD_GROUP_RADIUS = 1.68;
 
 export const dynamic = 'force-static';
 
@@ -94,66 +100,129 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
   const lastStrandProgressRef = useRef(-1);
   const viewportRef = useRef({ width: 0, height: 0 });
   const serviceStationsRef = useRef<HTMLDivElement | null>(null);
+  const cardsWorldRef = useRef<HTMLDivElement | null>(null);
 
   // Neural Glass Panels: die vier Karten bilden EIN zusammenstehendes
-  // 2×2-Element (2 nebeneinander, 2 darunter), fixiert an EINER festen
-  // Helix-Position (worldIndex 5, exakt derselbe Weltkoordinaten-Stopp wie
-  // zuvor die erste echte 3D-Leistungskarte in BrainBackground.tsx). Das
-  // Element selbst bewegt sich nicht, skaliert sich nicht und rotiert nicht
-  // scrollgesteuert — ausschliesslich die Kamera fährt auf der Helix daran
-  // vorbei, exakt wie bei den Intro-Texten und den restlichen 3D-Objekten.
-  // Einzige laufend berechnete Grösse ist die Sichtbarkeit (Opacity) aus
-  // dem Weltraum-Abstand zwischen aktueller Kamera-Y-Position und dieser
-  // einen Station (dieselben Helix-Konstanten TEXT_START_Y=-5,
-  // HELIX_STEP=4.2, dieselbe scrollP-Formel wie in BrainBackground.tsx:
-  // scrollP=(scrollY-(section.offsetTop-innerHeight))/section.offsetHeight,
-  // lookY=-scrollP*cameraTravel). Die Neigung ist eine feste, nie
-  // animierte Grundneigung. Keine eigene Timeline pro Karte.
+  // 2×2-Element (CardsHelixGroup), fixiert an EINER festen Helix-Position
+  // (worldIndex 5, exakt derselbe Weltkoordinaten-Stopp wie zuvor die
+  // erste echte 3D-Leistungskarte in BrainBackground.tsx: nach dem
+  // 5. Intro-Text, vor der ersten Platzhalterkarte, Radius 1.68 — also
+  // derselbe Stationsabstand wie zwischen den vorherigen Texten, da
+  // HELIX_STEP zwischen allen Stopps konstant ist).
+  //
+  // CardsHelixWorld (cardsWorldRef) bildet AUSSCHLIESSLICH die
+  // Gegenbewegung der Three.js-Kamera ab: Position, Skalierung und
+  // Rotation werden jeden Frame aus derselben, bereits gedämpften
+  // Kamera-Live-Daten (window.__cardsCameraState, von BrainBackground.tsx
+  // im Tick veröffentlicht) über eine echte Perspektiv-Projektion
+  // berechnet — keine eigene Scrollberechnung, kein zweiter Timeline.
+  // CardsHelixGroup (serviceStationsRef) behält ihre feste 2×2-Anordnung
+  // und alle internen Karten-Animationen unverändert; hier wird nur noch
+  // Sichtbarkeit (Opacity/pointer-events/is-materialized) gesetzt.
   useEffect(() => {
-    const block = serviceStationsRef.current;
-    const section = document.getElementById('solution-spiral');
-    if (!block || !section) return;
-    let materialized = false;
-    const HELIX_STEP = 4.2;
-    const TEXT_START_Y = -5;
+    const world = cardsWorldRef.current;
+    const group = serviceStationsRef.current;
+    if (!world || !group) return;
+
     const introStopCount = 5;
     const totalWorldStops = introStopCount + 4 + 4;
-    const cameraTargetEnd = TEXT_START_Y - (totalWorldStops - 1) * HELIX_STEP - 2.1;
-    const cameraTravel = 0 - cameraTargetEnd;
-    const blockWorldIndex = introStopCount;
-    const blockStopY = TEXT_START_Y - blockWorldIndex * HELIX_STEP;
+    const cameraTravel = computeCameraTravel(totalWorldStops);
+    const worldIndex = introStopCount;
+    const stationAngle = helixAngleForWorldIndex(worldIndex, cameraTravel);
+    const stationPos = helixPositionForWorldIndex(worldIndex, cameraTravel, CARD_GROUP_RADIUS);
+    // Feste radiale Ausrichtung nach aussen, zum Goldstrang hin orientiert
+    // (dieselbe Konvention wie rotation.y=angle bei den Intro-Texten).
+    const stationNormal = { x: Math.sin(stationAngle), y: 0, z: Math.cos(stationAngle) };
     // Fensterbreite in derselben Grössenordnung wie cameraRailSlowdown()s
     // Fokusfenster in BrainBackground.tsx (kein neuer, frei erfundener Wert).
     const fadeWindow = HELIX_STEP * 1.35;
-    // Feste, unveränderliche Grundneigung (keine Rotation, die vom
-    // Scrollfortschritt/Kamera-Orbitwinkel abhängt) — exakt wie gefordert:
-    // "Die Karte darf nur eine feste leichte Grundneigung besitzen. Die
-    // Kamerafahrt erzeugt die räumliche Perspektive."
-    // translate3d hält die feste zentrierte Position, rotateY/rotateX ist
-    // die einmalig gesetzte Grundneigung — beides wird hier zusammen
-    // gesetzt, weil eine Inline-Style-Zuweisung die gesamte transform-
-    // Eigenschaft ersetzt statt sie mit der CSS-Regel zu verschmelzen.
-    block.style.transform = 'translate3d(-50%, -50%, 0) rotateY(5deg) rotateX(3deg)'; // einmalig gesetzt, nie animiert
-    const onScroll = () => {
-      const start = section.offsetTop - window.innerHeight;
-      const scrollP = Math.max(0, Math.min(1, (window.scrollY - start) / Math.max(1, section.offsetHeight)));
-      const lookY = 0 - scrollP * cameraTravel;
-      const distance = Math.abs(lookY - blockStopY);
+
+    let materialized = false;
+    let referenceViewZ: number | null = null;
+    let rafId = 0;
+
+    const frame = () => {
+      rafId = requestAnimationFrame(frame);
+      const cam = (window as any).__cardsCameraState;
+      if (!cam) return;
+
+      const camPos = {
+        x: Math.sin(cam.orbit) * cam.cameraRadius,
+        y: cam.cameraY,
+        z: Math.cos(cam.orbit) * cam.cameraRadius,
+      };
+
+      let fx = 0 - camPos.x;
+      let fy = cam.cameraLookY - camPos.y;
+      let fz = 0 - camPos.z;
+      const fLen = Math.hypot(fx, fy, fz) || 1;
+      fx /= fLen; fy /= fLen; fz /= fLen;
+
+      // right = normalize(cross(forward, worldUp)); up = cross(right, forward)
+      let rx = fy * 0 - fz * 1;
+      let ry = fz * 0 - fx * 0;
+      let rz = fx * 1 - fy * 0;
+      const rLen = Math.hypot(rx, ry, rz) || 1;
+      rx /= rLen; ry /= rLen; rz /= rLen;
+      const ux = ry * fz - rz * fy;
+      const uy = rz * fx - rx * fz;
+      const uz = rx * fy - ry * fx;
+
+      const relX = stationPos.x - camPos.x;
+      const relY = stationPos.y - camPos.y;
+      const relZ = stationPos.z - camPos.z;
+
+      const viewX = relX * rx + relY * ry + relZ * rz;
+      const viewY = relX * ux + relY * uy + relZ * uz;
+      const viewZ = relX * fx + relY * fy + relZ * fz;
+
+      const distance = Math.abs(cam.cameraLookY - stationPos.y);
       const visibility = Math.max(0, Math.min(1, 1 - distance / fadeWindow));
-      block.style.opacity = String(visibility);
-      block.style.pointerEvents = visibility > 0.55 ? 'auto' : 'none';
+
+      if (viewZ <= 0.001 || visibility <= 0) {
+        group.style.opacity = '0';
+        group.style.pointerEvents = 'none';
+        return;
+      }
+
+      // Referenztiefe bei nächster Annäherung (Kamera und Station auf
+      // gleichem Winkel): Kameraradius minus Kartenradius, plus die feste
+      // vertikale Kameraversetzung — aus echten Live-Kameradaten kalibriert,
+      // kein geschätzter Pixelwert.
+      if (referenceViewZ === null) {
+        referenceViewZ = Math.hypot(cam.cameraRadius - CARD_GROUP_RADIUS, 0.24);
+      }
+
+      const tanHalfFovY = Math.tan((cam.fov * Math.PI) / 360);
+      const ndcX = viewX / (viewZ * tanHalfFovY * cam.aspect);
+      const ndcY = viewY / (viewZ * tanHalfFovY);
+
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const screenX = (ndcX * 0.5 + 0.5) * vw;
+      const screenY = (1 - (ndcY * 0.5 + 0.5)) * vh;
+      const scale = Math.max(0.4, Math.min(1.6, referenceViewZ / viewZ));
+
+      // Foreshortening-Yaw: feste Weltnormale der Station, ausgedrückt in
+      // der live Kamerabasis — 0° wenn die Station direkt zur Kamera zeigt,
+      // wächst, während die Kamera an der fixen Station vorbeifliegt.
+      const dotNormalRight = stationNormal.x * rx + stationNormal.z * rz;
+      const dotNormalForward = stationNormal.x * fx + stationNormal.z * fz;
+      const yawRad = Math.atan2(dotNormalRight, -dotNormalForward);
+      const yawDeg = (yawRad * 180) / Math.PI;
+
+      world.style.transform = `translate3d(${screenX.toFixed(2)}px, ${screenY.toFixed(2)}px, 0) scale(${scale.toFixed(4)}) rotateY(${yawDeg.toFixed(3)}deg)`;
+
+      group.style.opacity = String(visibility);
+      group.style.pointerEvents = visibility > 0.55 ? 'auto' : 'none';
       if (!materialized && visibility > 0.05) {
         materialized = true;
-        block.classList.add('is-materialized');
+        group.classList.add('is-materialized');
       }
     };
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
-    };
+
+    rafId = requestAnimationFrame(frame);
+    return () => cancelAnimationFrame(rafId);
   }, []);
 
   useEffect(() => {
@@ -611,6 +680,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
           ) : null}
         </div>
 
+        <div ref={cardsWorldRef} className="spiral-cards-world">
         <div
           ref={serviceStationsRef}
           className="spiral-service-stations"
@@ -656,6 +726,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
               </button>
             );
           })}
+        </div>
         </div>
       </div>
 

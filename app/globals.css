@@ -526,18 +526,32 @@ body {
   display: none;
 }
 
-/* Die vier Karten bilden EIN zusammenstehendes 2×2-Element, fixiert an
-   einer einzigen Helix-Position — kein Aufsplitten in Einzelstationen. */
-.spiral-service-stations {
+/* CardsHelixWorld: bildet ausschliesslich die Gegenbewegung der Three.js-
+   Kamera ab (Position/Skalierung/Rotation werden pro Frame in page.tsx aus
+   den echten, gedämpften Kamera-Live-Daten berechnet und als transform
+   gesetzt). .spiral-stage ist inset:0 auf einem position:sticky-Viewport,
+   daher entsprechen die hier berechneten Pixelwerte direkt der
+   Stage-Fläche. */
+.spiral-cards-world {
   position: absolute;
-  left: 50%;
-  top: 54%;
+  left: 0;
+  top: 0;
   z-index: 1280;
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* CardsHelixGroup: die vier Karten bilden EIN zusammenstehendes
+   2×2-Element, mit einer festen, nie animierten Grundneigung. Die
+   räumliche Montage auf der Helix übernimmt ausschliesslich der äussere
+   .spiral-cards-world-Wrapper — hier bleiben nur Layout und Sichtbarkeit
+   (Opacity/pointer-events/is-materialized) übrig. */
+.spiral-service-stations {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
   width: min(64rem, 78vw);
-  transform: translate3d(-50%, -50%, 0);
+  transform: translate3d(-50%, -50%, 0) rotateX(3deg);
   perspective: 900px;
   transform-style: preserve-3d;
   pointer-events: none;
@@ -1140,12 +1154,12 @@ body {
   pointer-events: none !important;
 }
 
-/* Das 2×2-Element ist fix auf einer einzigen Helix-Position (siehe
-   SpiralShowcase-Scroll-Effekt in page.tsx) und blendet dort beim
-   Vorbeifliegen der Kamera ein und wieder aus. Nur die Opacity wird pro
-   Scroll-Frame aus der Kameradistanz gesetzt; die Neigung ist eine feste,
-   einmalig gesetzte Grundneigung und ändert sich nie (keine vom
-   Scrollfortschritt gesteuerte Rotation, keine Eigenbewegung). */
+/* Das 2×2-Element (CardsHelixGroup) ist fix auf einer einzigen
+   Helix-Position montiert (räumliche Montage: .spiral-cards-world, siehe
+   CardsHelixWorld-Effekt in page.tsx) und blendet dort beim Vorbeifliegen
+   der Kamera ein und wieder aus. Nur die Opacity wird pro Frame aus der
+   echten Kameradistanz gesetzt; die Grundneigung ist fest und ändert sich
+   nie (keine vom Scrollfortschritt gesteuerte Eigenbewegung). */
 .spiral-service-stations {
   opacity: 0;
   transition: opacity 220ms linear;

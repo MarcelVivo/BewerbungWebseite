@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import brainData from './brainData.json';
+import { HELIX_STEP, TEXT_START_Y, CAMERA_TARGET_START, computeCameraTravel, helixAngleForWorldIndex } from './lib/helixGeometry';
 
 type BrainBackgroundProps = {
   introTexts?: string[];
@@ -57,23 +58,23 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var introTextGroup=new THREE.Group(); world.add(introTextGroup);
   var introSprites=[];
   var floatingObjects=[];
-  var HELIX_STEP=4.2;
-  var TEXT_START_Y=-5;
+  // HELIX_STEP/TEXT_START_Y kommen jetzt aus der gemeinsamen Geometrie-Datei
+  // (app/lib/helixGeometry.ts) statt hier lokal dupliziert zu sein — dieselbe
+  // Quelle wird auch von der Kartengruppe in page.tsx verwendet.
   var placeholderCards=[1,2,3,4].map(function(number){
     return {code:'P'+number,title:'Platzhalter'+number,body:'Weitere Inhalte folgen.',accent:'#c89a3d'};
   });
   var totalWorldStops=introTexts.length+serviceCards.length+placeholderCards.length;
-  var cameraTargetStart=0;
-  var cameraTargetEnd=TEXT_START_Y-(totalWorldStops-1)*HELIX_STEP-2.1;
-  var cameraTravel=cameraTargetStart-cameraTargetEnd;
+  var cameraTargetStart=CAMERA_TARGET_START;
+  var cameraTravel=computeCameraTravel(totalWorldStops);
+  var cameraTargetEnd=cameraTargetStart-cameraTravel;
   var SCENE_MOTION=false;
   var OBJECT_FLOATING=true;
   var NEURAL_ACTIVITY=true;
   var lastCameraFov=camera.fov;
 
   function helixAngle(worldIndex){
-    var stopY=TEXT_START_Y-worldIndex*HELIX_STEP;
-    return Math.PI*2*(cameraTargetStart-stopY)/cameraTravel;
+    return helixAngleForWorldIndex(worldIndex,cameraTravel);
   }
 
   function cameraRailSlowdown(progress){
@@ -377,7 +378,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   // Bereich und läuft über eine kurze, sanft gekrümmte Kurve zu einem
   // Konvergenzpunkt auf der Mittelachse, bevor sie in das bestehende
   // Bündel (Taper/Droop/Fray) übergeht.
-  var FN={ count:isMobile?96:220, anchorRadius:0.59, funnelHeight:0.19, funnelSegs:3, convergePull:0.65, randomness:1 };
+  var FN={ count:isMobile?96:220, anchorRadius:0.59, funnelHeight:0.19, funnelSegs:3, convergePull:0.65,
+           outletRadius:0.16, outletHeightSpread:0.22, randomness:1 };
   var MP={ moveLeft:0, moveRight:0, moveForward:0, moveBack:0, moveVertical:0.01 };
   var WIND={ sway:0.04, speed:0.37, wave:0.036, waveFrequency:9 };
   var GOLD_RENDER={ intensity:1, lineOpacity:.34, pointOpacity:.36 };
@@ -448,14 +450,16 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       // gleichmässig durchgemischt über alle verfügbaren Punkte zyklisch.
       var anchorRaw=stumpAnchorPts[anchorOrder[f%anchorOrder.length]];
       var anchor=new THREE.Vector3(anchorRaw.x+mx,anchorRaw.y+my,anchorRaw.z+mz);
-      var convY=SBASE_Y+my-FN.funnelHeight*(0.7+rnd()*0.6);
-      var converge=new THREE.Vector3(SBASE_X+mx,convY,SBASE_Z+mz);
       var bundlePull=FN.convergePull*(0.75+rnd()*0.5);
       var microGroup=f%15, mediumGroup=Math.floor(f/15)%5;
       var microAngle=microGroup/15*6.283+(rnd()-.5)*.2;
-      var mediumAngle=mediumGroup/5*6.283+(rnd()-.5)*.18;
+      var outletAngle=pairProfile.angle+(f%2?Math.PI:0)+(rnd()-.5)*.18;
+      var outletRadius=Math.max(SP.rStr*1.35,FN.outletRadius*(.72+rnd()*.58)*(1-bundlePull*.2));
+      var outletDrop=Math.max(.06,FN.funnelHeight*(1.05+rnd()*.65)+(rnd()-.5)*FN.outletHeightSpread);
+      var outletY=SBASE_Y+my-outletDrop;
+      var mediumAngle=outletAngle+(rnd()-.5)*.46+mediumGroup*.035;
       var microRadius=(.16+rnd()*.05)*(1.18-bundlePull*.18);
-      var mediumRadius=(.065+rnd()*.025)*(1.16-bundlePull*.16);
+      var mediumRadius=outletRadius*(1.08+rnd()*.62);
       var microCenter=new THREE.Vector3(
         SBASE_X+mx+Math.cos(microAngle)*microRadius,
         SBASE_Y+my+.035+rnd()*.1,
@@ -463,13 +467,16 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       );
       var mediumCenter=new THREE.Vector3(
         SBASE_X+mx+Math.cos(mediumAngle)*mediumRadius,
-        convY+.035+rnd()*.055,
+        outletY+FN.funnelHeight*(.14+rnd()*.18),
         SBASE_Z+mz+Math.sin(mediumAngle)*mediumRadius
       );
+      // Jede Faser verlässt den Trichter an einem eigenen Punkt am unteren
+      // Ring: über den ganzen Radius verteilt und mit leicht abweichender
+      // Höhe. Es gibt dadurch keine gemeinsame Nadelspitze mehr.
       var largeCenter=new THREE.Vector3(
-        converge.x,
-        converge.y+(rnd()-.5)*.035,
-        converge.z
+        SBASE_X+mx+Math.cos(outletAngle)*outletRadius,
+        outletY,
+        SBASE_Z+mz+Math.sin(outletAngle)*outletRadius
       );
       var a0=pairProfile.angle+(f%2?Math.PI:0), tw=pairProfile.twist, rootWaveAmp=.016+rnd()*.018;
       var frayJitter=pairProfile.frayJitter;
@@ -514,8 +521,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           var frayEnv=smooth(Math.max(0,(btv-SP.frayStart)/Math.max(.001,1-SP.frayStart)));
           var fraySpread=frayEnv*SP.fraySpread*frayJitter;
           var droop=SP.droop*btv*btv;
-          px=largeCenter.x+SP.curve*Math.sin(btv*2.1)+Math.cos(ang)*(swirl+fraySpread)+droop*DROOP_DX;
-          pz=largeCenter.z+0.7*SP.curve*Math.sin(btv*1.6+1.0)+Math.sin(ang)*(swirl+fraySpread)+droop*DROOP_DZ;
+          var outletSettle=smooth(Math.min(1,btv/.2));
+          var bundleCenterX=largeCenter.x+(SBASE_X+mx-largeCenter.x)*outletSettle;
+          var bundleCenterZ=largeCenter.z+(SBASE_Z+mz-largeCenter.z)*outletSettle;
+          px=bundleCenterX+SP.curve*Math.sin(btv*2.1)+Math.cos(ang)*(swirl+fraySpread)+droop*DROOP_DX;
+          pz=bundleCenterZ+0.7*SP.curve*Math.sin(btv*1.6+1.0)+Math.sin(ang)*(swirl+fraySpread)+droop*DROOP_DZ;
           py=largeCenter.y-br*bundleSpacing*bundleScale;
         }
         // sanftes Ausblenden im letzten Abschnitt statt hartem Ende
@@ -2116,6 +2126,17 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       world.position.y = 0;
       camera.position.set(Math.sin(orbit)*cameraRadius, cameraY, Math.cos(orbit)*cameraRadius);
       camera.lookAt(0, cameraLookY, 0);
+      // Live-Kamerastatus veröffentlichen, damit DOM-Elemente ausserhalb der
+      // WebGL-Szene (z. B. die Kartengruppe in page.tsx) sich Frame für
+      // Frame exakt an derselben, bereits gedämpften Kameraposition
+      // ausrichten können, statt eine zweite, unabhängige Scroll-/
+      // Kamera-Berechnung zu duplizieren.
+      if (typeof window !== 'undefined') {
+        window.__cardsCameraState = {
+          orbit: orbit, cameraY: cameraY, cameraLookY: cameraLookY,
+          cameraRadius: cameraRadius, fov: camera.fov, aspect: camera.aspect,
+        };
+      }
       renderer.render(scene, camera);
     }
     rafId = requestAnimationFrame(tick);
