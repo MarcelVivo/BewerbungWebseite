@@ -600,7 +600,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var fusionRedColor=new THREE.Color(0xd9788a);
   var fusionBlueColor=new THREE.Color(0x8ebef2);
   function updateGoldFusionColor(targetColors,baseColors,offset,vertexIndex){
-    var fusionAmount=smooth((sMeta[vertexIndex*2]-.76)/.24)*.72;
+    var fusionAmount=smooth((sMeta[vertexIndex*2]-.93)/.07)*.72;
     var selector=Math.sin(sMeta[vertexIndex*2+1]*2.71+vertexIndex*.037);
     var fusionColor=selector>.33?fusionRedColor:(selector<-.33?fusionBlueColor:GOLD.light);
     targetColors[offset]=baseColors[offset]+(fusionColor.r-baseColors[offset])*fusionAmount;
@@ -1107,26 +1107,20 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       pointOpacity:.58,
       pointSize:.072,
       topFunnel:1,
-      connectorShare:.5,
-      joinRadius:.46,
+      connectorShare:.18,
+      joinRadius:.08,
       funnelSpread:1,
       firstDroop:1.22,
       secondDroop:1.42,
-      sidePull:1,
-      endPull:.32,
+      sidePull:.8,
+      endPull:1,
       sway:.75,
-      helixLength:25.5,
-      helixTurns:3.8,
-      helixRadius:.46,
-      helixWave:.012,
-      flowSpeed:.075,
       pulseSpeed:3.4,
       pulseStrength:.32,
       baseBrightness:.3,
       posX:0,
       posY:0,
-      posZ:0,
-      phase:0
+      posZ:0
     };
   }
   var RED_STRAND=createSecondaryStrandParams();
@@ -1151,8 +1145,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   RED_STRAND.pulseStrength=.28;
   BLUE_STRAND.baseBrightness=.72;
   BLUE_STRAND.pulseStrength=.28;
-  var satelliteTargetWorld=new THREE.Vector3();
-  var satelliteTargetLocal=new THREE.Vector3();
   var satelliteInverseMatrix=new THREE.Matrix4();
   var satelliteWorldX=new THREE.Vector3();
   var satelliteWorldZ=new THREE.Vector3();
@@ -1259,9 +1251,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   function curveExistingSatelliteStrand(strand,flowTime){
     if(!strand.fibers.length) return;
     var params=strand.params;
-    satelliteTargetWorld.copy(stumpCenterLocal);
-    brain.localToWorld(satelliteTargetWorld);
-    strand.satellite.worldToLocal(satelliteTargetLocal.copy(satelliteTargetWorld));
     satelliteInverseMatrix.copy(strand.satellite.matrixWorld).invert();
     satelliteWorldX.set(1,0,0).transformDirection(satelliteInverseMatrix);
     satelliteWorldZ.set(0,0,1).transformDirection(satelliteInverseMatrix);
@@ -1270,63 +1259,53 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     strand.satellite.worldToLocal(secondaryMergeTargetLocal.copy(secondaryMergeTargetWorld));
     strand.lineColors.fill(0);
     strand.pointColors.fill(0);
-    var targetX=satelliteTargetLocal.x+params.posX;
-    var targetY=satelliteTargetLocal.y+params.posY;
-    var targetZ=satelliteTargetLocal.z+params.posZ;
     var mergeX=secondaryMergeTargetLocal.x;
     var mergeY=secondaryMergeTargetLocal.y;
     var mergeZ=secondaryMergeTargetLocal.z;
-    var connectorShare=Math.max(.08,Math.min(.92,params.connectorShare));
-    var helixRotation=flowTime*params.flowSpeed*strand.flowDirection;
+    var inwardStart=Math.max(.05,Math.min(.65,params.connectorShare+params.sidePull*.06));
+    var terminalStart=Math.max(.84,Math.min(.96,.96-params.endPull*.08));
     for(var fiberIndex=0;fiberIndex<strand.fibers.length;fiberIndex++){
       var fiber=strand.fibers[fiberIndex], start=fiber.sourceStart, fiberShape=fiber.shape;
       var startX=SBASE_X+(sBase[start*3]-SBASE_X)*params.topFunnel;
       var startY=SBASE_Y+(sBase[start*3+1]-SBASE_Y)*params.topFunnel;
       var startZ=SBASE_Z+(sBase[start*3+2]-SBASE_Z)*params.topFunnel;
-      var joinAngle=strand.phase+params.phase+helixRotation+fiberShape.phaseOffset;
-      var joinRadius=params.joinRadius+fiberShape.radiusOffset*params.funnelSpread;
-      var joinX=targetX+satelliteWorldX.x*Math.cos(joinAngle)*joinRadius+satelliteWorldZ.x*Math.sin(joinAngle)*joinRadius;
-      var joinY=targetY+satelliteWorldX.y*Math.cos(joinAngle)*joinRadius+satelliteWorldZ.y*Math.sin(joinAngle)*joinRadius;
-      var joinZ=targetZ+satelliteWorldX.z*Math.cos(joinAngle)*joinRadius+satelliteWorldZ.z*Math.sin(joinAngle)*joinRadius;
-      var horizontalSpan=Math.sqrt((joinX-startX)*(joinX-startX)+(joinZ-startZ)*(joinZ-startZ));
-      var catenaryDepth=.52+Math.min(1.15,horizontalSpan*.18);
+      var horizontalSpan=Math.sqrt((mergeX-startX)*(mergeX-startX)+(mergeZ-startZ)*(mergeZ-startZ));
+      var catenaryDepth=.16+Math.min(.46,horizontalSpan*.045);
       var firstSag=catenaryDepth*fiberShape.firstDroop*params.firstDroop;
       var secondSag=catenaryDepth*fiberShape.secondDroop*params.secondDroop;
-      var controlOneX=startX+satelliteWorldDown.x*firstSag+satelliteWorldZ.x*fiberShape.firstSway*params.sway+satelliteWorldX.x*strand.sideSign*params.sidePull;
-      var controlOneY=startY+satelliteWorldDown.y*firstSag+satelliteWorldZ.y*fiberShape.firstSway*params.sway+satelliteWorldX.y*strand.sideSign*params.sidePull;
-      var controlOneZ=startZ+satelliteWorldDown.z*firstSag+satelliteWorldZ.z*fiberShape.firstSway*params.sway+satelliteWorldX.z*strand.sideSign*params.sidePull;
-      var controlTwoX=joinX+satelliteWorldDown.x*secondSag+satelliteWorldZ.x*fiberShape.secondSway*params.sway+satelliteWorldX.x*strand.sideSign*params.endPull;
-      var controlTwoY=joinY+satelliteWorldDown.y*secondSag+satelliteWorldZ.y*fiberShape.secondSway*params.sway+satelliteWorldX.y*strand.sideSign*params.endPull;
-      var controlTwoZ=joinZ+satelliteWorldDown.z*secondSag+satelliteWorldZ.z*fiberShape.secondSway*params.sway+satelliteWorldX.z*strand.sideSign*params.endPull;
+      var fiberAngle=fiberShape.phaseOffset*17+fiberIndex*.618;
       var previousX=startX, previousY=startY, previousZ=startZ;
       var previousR=0, previousG=0, previousB=0, lineOffset=fiber.lineOffset;
       for(var step=0;step<fiber.len;step++){
-        var progress=fiber.len>1?step/(fiber.len-1):0, x,y,z, helixProgress, terminalBlend=0;
-        if(progress<connectorShare){
-          var connectorProgress=progress/connectorShare, inverse=1-connectorProgress;
-          x=inverse*inverse*inverse*startX+3*inverse*inverse*connectorProgress*controlOneX+3*inverse*connectorProgress*connectorProgress*controlTwoX+connectorProgress*connectorProgress*connectorProgress*joinX;
-          y=inverse*inverse*inverse*startY+3*inverse*inverse*connectorProgress*controlOneY+3*inverse*connectorProgress*connectorProgress*controlTwoY+connectorProgress*connectorProgress*connectorProgress*joinY;
-          z=inverse*inverse*inverse*startZ+3*inverse*inverse*connectorProgress*controlOneZ+3*inverse*connectorProgress*connectorProgress*controlTwoZ+connectorProgress*connectorProgress*connectorProgress*joinZ;
-          var windEnvelope=Math.sin(connectorProgress*Math.PI);
-          var windSide=Math.sin(flowTime*.64+connectorProgress*5.4+fiberShape.windPhase)*params.sway*.045*windEnvelope;
-          var windDepth=Math.cos(flowTime*.49+connectorProgress*4.1+fiberShape.windPhase*1.37)*params.sway*.022*windEnvelope;
-          x+=satelliteWorldX.x*windSide+satelliteWorldZ.x*windDepth;
-          y+=satelliteWorldX.y*windSide+satelliteWorldZ.y*windDepth;
-          z+=satelliteWorldX.z*windSide+satelliteWorldZ.z*windDepth;
-        } else {
-          helixProgress=(progress-connectorShare)/(1-connectorShare);
-          var helixAngle=strand.phase+params.phase+helixRotation+helixProgress*Math.PI*2*params.helixTurns+fiberShape.phaseOffset;
-          terminalBlend=smooth((helixProgress-.74)/.26);
-          var outerRadius=params.helixRadius+fiberShape.radiusOffset*params.funnelSpread+Math.sin(helixProgress*Math.PI*4+fiberShape.phaseOffset)*params.helixWave;
-          var innerRadius=.018+Math.abs(fiberShape.radiusOffset)*.045;
-          var helixRadius=outerRadius+(innerRadius-outerRadius)*terminalBlend;
-          var centerX=targetX+(mergeX-targetX)*helixProgress;
-          var centerY=targetY+(mergeY-targetY)*helixProgress;
-          var centerZ=targetZ+(mergeZ-targetZ)*helixProgress;
-          x=centerX+satelliteWorldX.x*Math.cos(helixAngle)*helixRadius+satelliteWorldZ.x*Math.sin(helixAngle)*helixRadius;
-          y=centerY+satelliteWorldX.y*Math.cos(helixAngle)*helixRadius+satelliteWorldZ.y*Math.sin(helixAngle)*helixRadius;
-          z=centerZ+satelliteWorldX.z*Math.cos(helixAngle)*helixRadius+satelliteWorldZ.z*Math.sin(helixAngle)*helixRadius;
-        }
+        var progress=fiber.len>1?step/(fiber.len-1):0;
+        var inwardProgress=progress<=inwardStart?0:smooth((progress-inwardStart)/(1-inwardStart));
+        var terminalBlend=smooth((progress-terminalStart)/(1-terminalStart));
+        var sagEnvelope=Math.sin(progress*Math.PI);
+        var hangingSag=(firstSag*(1-progress)+secondSag*progress)*sagEnvelope;
+        var looseSpread=(params.joinRadius*(.28+Math.abs(fiberShape.radiusOffset)*1.8)+params.funnelSpread*.018)*sagEnvelope*(1-terminalBlend);
+        var windEnvelope=sagEnvelope*(1-terminalBlend);
+        var windSide=Math.sin(flowTime*.64+progress*5.4+fiberShape.windPhase)*params.sway*.045*windEnvelope;
+        var windDepth=Math.cos(flowTime*.49+progress*4.1+fiberShape.windPhase*1.37)*params.sway*.022*windEnvelope;
+        var manualEnvelope=sagEnvelope*(1-terminalBlend);
+        var endSpread=(.008+Math.abs(fiberShape.radiusOffset)*.022)*terminalBlend;
+        var endOffsetX=Math.cos(fiberAngle)*endSpread;
+        var endOffsetZ=Math.sin(fiberAngle)*endSpread;
+        var manualVertical=params.posY*manualEnvelope;
+        x=startX+(mergeX-startX)*inwardProgress+satelliteWorldDown.x*hangingSag;
+        y=startY+(mergeY-startY)*progress+satelliteWorldDown.y*hangingSag;
+        z=startZ+(mergeZ-startZ)*inwardProgress+satelliteWorldDown.z*hangingSag;
+        x+=satelliteWorldX.x*(Math.cos(fiberAngle)*looseSpread+windSide+params.posX*manualEnvelope)
+          +satelliteWorldZ.x*(Math.sin(fiberAngle)*looseSpread+windDepth+params.posZ*manualEnvelope)
+          +satelliteWorldDown.x*manualVertical
+          +satelliteWorldX.x*endOffsetX+satelliteWorldZ.x*endOffsetZ;
+        y+=satelliteWorldX.y*(Math.cos(fiberAngle)*looseSpread+windSide+params.posX*manualEnvelope)
+          +satelliteWorldZ.y*(Math.sin(fiberAngle)*looseSpread+windDepth+params.posZ*manualEnvelope)
+          +satelliteWorldDown.y*manualVertical
+          +satelliteWorldX.y*endOffsetX+satelliteWorldZ.y*endOffsetZ;
+        z+=satelliteWorldX.z*(Math.cos(fiberAngle)*looseSpread+windSide+params.posX*manualEnvelope)
+          +satelliteWorldZ.z*(Math.sin(fiberAngle)*looseSpread+windDepth+params.posZ*manualEnvelope)
+          +satelliteWorldDown.z*manualVertical
+          +satelliteWorldX.z*endOffsetX+satelliteWorldZ.z*endOffsetZ;
         var pulse=Math.max(0,Math.sin(flowTime*params.pulseSpeed*strand.flowDirection-progress*20*strand.flowDirection+fiberShape.phaseOffset));
         var brightness=(params.baseBrightness+pulse*params.pulseStrength)*params.intensity;
         var colorSelector=Math.sin(fiberShape.phaseOffset*31+fiberIndex*1.618);
@@ -1773,21 +1752,14 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var SECONDARY_GEOMETRY_SLIDERS=[
       ['fiberAmount','Faseranteil',0.08,1,0.01],
       ['topFunnel','Trichter oben',0.2,3,0.01],
-      ['connectorShare','Hängeabschnitt',0.08,0.92,0.01],
-      ['joinRadius','Trichter unten',0.05,1.2,0.01],
+      ['connectorShare','Einwärtsneigung ab',0.05,0.65,0.01],
+      ['joinRadius','Endbündel-Radius',0.01,0.22,0.005],
       ['funnelSpread','Faser-Streuung',0,2,0.01],
       ['firstDroop','Durchhang Start',0.1,2.5,0.01],
       ['secondDroop','Durchhang Mitte',0.1,2.5,0.01],
-      ['sidePull','Seitenzug',0,1.1,0.01],
-      ['endPull','Endzug',0,0.9,0.01],
+      ['sidePull','Seitenhalt',0,1.8,0.01],
+      ['endPull','End-Anziehung',0,1.5,0.01],
       ['sway','Seitenschwingung',0,2.5,0.01]
-    ];
-    var SECONDARY_HELIX_SLIDERS=[
-      ['helixLength','Helix-Länge',3,40,0.1],
-      ['helixTurns','Windungen',0,8,0.05],
-      ['helixRadius','Helix-Radius',0.04,1.2,0.01],
-      ['helixWave','Helix-Welle',0,0.08,0.001],
-      ['phase','Phasenversatz',-3.14,3.14,0.01]
     ];
     var SECONDARY_LIGHT_SLIDERS=[
       ['intensity','Lichtintensität',0.05,3,0.01],
@@ -1869,10 +1841,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       sectionLabel(name+' • Faserbündel',color);
       SECONDARY_GEOMETRY_SLIDERS.forEach(function(def){
         addSlider(def,strand.params,function(){ refreshSecondaryStrand(strand,def[0]==='fiberAmount'); });
-      });
-      sectionLabel(name+' • Doppelhelix',color);
-      SECONDARY_HELIX_SLIDERS.forEach(function(def){
-        addSlider(def,strand.params,function(){ refreshSecondaryStrand(strand,false); });
       });
       sectionLabel(name+' • Licht & Energie',color);
       SECONDARY_LIGHT_SLIDERS.forEach(function(def){
