@@ -1200,20 +1200,26 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
 
   function rebuildSecondaryStrandGeometry(strand){
     var params=strand.params;
-    var fiberCount=Math.max(48,Math.round((isMobile?112:180)*params.fiberAmount));
+    // Kompakter Kern aus vielen feinen Einzelfasern, ergänzt durch eine
+    // kleinere Schicht loser Randfasern. So bleibt es ein Faserbündel und
+    // wird niemals zu einem glatten Leuchtschlauch.
+    var fiberCount=Math.max(96,Math.round((isMobile?148:360)*params.fiberAmount));
     var fiberSegments=isMobile?64:92;
     var fibers=[], pointValueCount=0, lineValueCount=0;
     for(var selectedIndex=0;selectedIndex<fiberCount;selectedIndex++){
       var sourceAngle=Math.PI*2*selectedIndex/fiberCount+(Math.random()-.5)*.16;
+      var radialDistribution=Math.pow(Math.random(),2.65);
       fibers.push({
         sourceAngle:sourceAngle,
-        sourceRadius:.14+Math.sqrt(Math.random())*.24,
+        sourceRadius:.035+radialDistribution*.345,
         sourceDrop:.04+Math.random()*.16,
         len:fiberSegments,
         pointOffset:pointValueCount,
         lineOffset:lineValueCount,
         shape:makeSecondaryFiberShape(),
-        metallicPhase:Math.random()*Math.PI*2
+        metallicPhase:Math.random()*Math.PI*2,
+        edgeWeight:smooth((radialDistribution-.52)/.48),
+        branchPhase:Math.random()*Math.PI*2
       });
       pointValueCount+=fiberSegments*3;
       lineValueCount+=Math.max(0,fiberSegments-1)*6;
@@ -1343,7 +1349,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var funnelScale=sourceScale*fiberShape.funnelVariation;
       var funnelLength=params.funnelLength*sourceScale;
       var funnelMicroX=secondarySatelliteWorld.x+funnelCos*params.funnelTopRadius*funnelScale;
-      var funnelMicroY=secondarySatelliteWorld.y-funnelLength*.36;
+      var funnelMicroY=secondarySatelliteWorld.y-funnelLength*.36-fiber.sourceDrop*sourceScale;
       var funnelMicroZ=secondarySatelliteWorld.z+funnelSin*params.funnelTopRadius*funnelScale;
       var funnelMediumX=secondarySatelliteWorld.x+funnelCos*params.funnelTopRadius*funnelScale*.48;
       var funnelMediumY=secondarySatelliteWorld.y-funnelLength*.67;
@@ -1364,6 +1370,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var firstSag=catenaryDepth*fiberShape.firstDroop*params.firstDroop;
       var secondSag=catenaryDepth*fiberShape.secondDroop*params.secondDroop;
       var fiberAngle=fiberShape.phaseOffset*17+fiberIndex*.618;
+      var edgeWeight=fiber.edgeWeight;
       var previousX=startX, previousY=startY, previousZ=startZ;
       var previousR=0, previousG=0, previousB=0, lineOffset=fiber.lineOffset;
       for(var step=0;step<fiber.len;step++){
@@ -1390,10 +1397,17 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         var pathProgress=smooth((progress-funnelEnd)/(1-funnelEnd));
         var sagEnvelope=Math.sin(pathProgress*Math.PI);
         var hangingSag=(firstSag*(1-pathProgress)+secondSag*pathProgress)*sagEnvelope;
-        var looseSpread=(params.joinRadius*(.32+Math.abs(fiberShape.radiusOffset)*1.8)+params.funnelSpread*.018)*sagEnvelope*(1-helixBlend*.82);
+        var looseSpread=(.005+fiber.sourceRadius*.15+params.funnelSpread*.008)*sagEnvelope*(1-helixBlend*.82);
         var windEnvelope=sagEnvelope*(1-helixBlend*.88);
         var windSide=Math.sin(flowTime*.64+pathProgress*5.4+fiberShape.windPhase)*params.sway*.045*windEnvelope;
         var windDepth=Math.cos(flowTime*.49+pathProgress*4.1+fiberShape.windPhase*1.37)*params.sway*.022*windEnvelope;
+        // Nur die lockeren äusseren Fasern dürfen sichtbar aus dem dichten
+        // Kern ausbrechen. Ihre Wellen sind phasenverschoben, damit keine
+        // dekorative Parallelwelle entsteht.
+        var edgeWaveEnvelope=sagEnvelope*(.28+.72*(1-helixBlend));
+        var edgeWave=(.006+edgeWeight*.07)*edgeWaveEnvelope;
+        var edgeWaveSide=Math.sin(pathProgress*(7.4+edgeWeight*5.1)+fiber.branchPhase+flowTime*.31)*edgeWave;
+        var edgeWaveDepth=Math.cos(pathProgress*(6.2+edgeWeight*4.3)+fiber.branchPhase*1.43+flowTime*.24)*edgeWave*.72;
         var manualEnvelope=sagEnvelope*(1-helixBlend*.88);
         var endSpread=(.008+Math.abs(fiberShape.radiusOffset)*.022)*(1-helixBlend*.84);
         var endOffsetX=Math.cos(fiberAngle)*endSpread;
@@ -1409,10 +1423,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         x=pathX+(funnelX-pathX)*funnelRelease;
         y=pathY+(funnelY-pathY)*funnelRelease;
         z=pathZ+(funnelZ-pathZ)*funnelRelease;
-        x+=sideX*(Math.cos(fiberAngle)*looseSpread+windSide+params.posX*manualEnvelope+endOffsetX)
-          +depthX*(Math.sin(fiberAngle)*looseSpread+windDepth+params.posZ*manualEnvelope+endOffsetZ);
-        z+=sideZ*(Math.cos(fiberAngle)*looseSpread+windSide+params.posX*manualEnvelope+endOffsetX)
-          +depthZ*(Math.sin(fiberAngle)*looseSpread+windDepth+params.posZ*manualEnvelope+endOffsetZ);
+        x+=sideX*(Math.cos(fiberAngle)*looseSpread+windSide+edgeWaveSide+params.posX*manualEnvelope+endOffsetX)
+          +depthX*(Math.sin(fiberAngle)*looseSpread+windDepth+edgeWaveDepth+params.posZ*manualEnvelope+endOffsetZ);
+        z+=sideZ*(Math.cos(fiberAngle)*looseSpread+windSide+edgeWaveSide+params.posX*manualEnvelope+endOffsetX)
+          +depthZ*(Math.sin(fiberAngle)*looseSpread+windDepth+edgeWaveDepth+params.posZ*manualEnvelope+endOffsetZ);
         if(helixBlend>0){
           var helixAngle=strand.phase+helixBlend*Math.PI*2*helixTurns+fiberShape.phaseOffset*.48;
           var helixRadius=(.09+Math.abs(fiberShape.radiusOffset)*.25)*(1-helixBlend*.18);
