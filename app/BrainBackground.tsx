@@ -1125,32 +1125,17 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   }
   var RED_STRAND=createSecondaryStrandParams();
   var BLUE_STRAND=createSecondaryStrandParams();
-  // Alle 3 nach unten wachsenden Nervenstränge (Gold aus dem Hauptgehirn,
-  // Rot/Blau aus den schwebenden Satelliten-Gehirnen) sollen in derselben
-  // Leucht-Intensität erscheinen wie die Gehirne selbst — die Gehirn-Meshes
-  // (inklusive des goldenen Strangs, der dieselbe Geometrie teilt) rendern
-  // mit GOLD_RENDER.lineOpacity/pointOpacity, daher werden die separaten
-  // Rot-/Blau-Strang-Parameter hier auf denselben Wert angeglichen statt
-  // einen eigenen, helleren Wert zu verwenden.
-  RED_STRAND.lineOpacity=GOLD_RENDER.lineOpacity;
-  RED_STRAND.pointOpacity=GOLD_RENDER.pointOpacity;
-  BLUE_STRAND.lineOpacity=GOLD_RENDER.lineOpacity;
-  BLUE_STRAND.pointOpacity=GOLD_RENDER.pointOpacity;
-  // Die Vertex-Helligkeit (baseBrightness+pulse*pulseStrength) pendelte
-  // bisher zwischen .3 und .62 — deutlich dunkler als der 0.72–1.0-Bereich,
-  // den taperFade() beim Gehirn und die goldene Strang-Faserfarbe jetzt
-  // verwenden. Auf denselben Bereich angehoben, damit alle 3 Stränge
-  // wirklich gleich hell wie die Gehirne leuchten.
-  RED_STRAND.baseBrightness=.72;
-  RED_STRAND.pulseStrength=.28;
-  BLUE_STRAND.baseBrightness=.72;
-  BLUE_STRAND.pulseStrength=.28;
-  var satelliteInverseMatrix=new THREE.Matrix4();
-  var satelliteWorldX=new THREE.Vector3();
-  var satelliteWorldZ=new THREE.Vector3();
-  var satelliteWorldDown=new THREE.Vector3();
+  RED_STRAND.lineOpacity=.56;
+  RED_STRAND.pointOpacity=.66;
+  RED_STRAND.baseBrightness=.8;
+  RED_STRAND.pulseStrength=.2;
+  BLUE_STRAND.lineOpacity=.56;
+  BLUE_STRAND.pointOpacity=.66;
+  BLUE_STRAND.baseBrightness=.8;
+  BLUE_STRAND.pulseStrength=.2;
   var secondaryMergeTargetWorld=new THREE.Vector3();
-  var secondaryMergeTargetLocal=new THREE.Vector3();
+  var secondaryStartLocal=new THREE.Vector3();
+  var secondaryStartWorld=new THREE.Vector3();
 
   function makeSecondaryFiberShape(){
     return {
@@ -1227,7 +1212,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var pointMesh=new THREE.Points(pointGeometry,new THREE.PointsMaterial({size:params.pointSize,map:sprite,transparent:true,opacity:params.pointOpacity,vertexColors:true,color:0xffffff,blending:THREE.AdditiveBlending,depthWrite:false}));
     pointMesh.frustumCulled=false;
     tailGroup.add(pointMesh);
-    satellite.add(tailGroup);
+    // Die Fasergeometrie liegt bewusst direkt in der Szenen-Welt: Start und
+    // Ende werden beide in Weltkoordinaten bestimmt. Dadurch bleibt der
+    // Strang bei den schwebenden Satelliten sichtbar verankert und kann nicht
+    // durch lokale Skalierung oder Rotation ausserhalb der Kamera geraten.
+    scene.add(tailGroup);
     var strand={
       satellite:satellite,
       phase:phase,
@@ -1245,30 +1234,43 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     };
     satelliteStrands.push(strand);
     rebuildSecondaryStrandGeometry(strand);
+    brain.updateWorldMatrix(true,false);
+    satellite.updateWorldMatrix(true,false);
+    curveExistingSatelliteStrand(strand,0);
     return strand;
   }
 
   function curveExistingSatelliteStrand(strand,flowTime){
     if(!strand.fibers.length) return;
     var params=strand.params;
-    satelliteInverseMatrix.copy(strand.satellite.matrixWorld).invert();
-    satelliteWorldX.set(1,0,0).transformDirection(satelliteInverseMatrix);
-    satelliteWorldZ.set(0,0,1).transformDirection(satelliteInverseMatrix);
-    satelliteWorldDown.set(0,-1,0).transformDirection(satelliteInverseMatrix);
+    strand.satellite.updateWorldMatrix(true,false);
     goldStrandTipWorld(secondaryMergeTargetWorld,true);
-    strand.satellite.worldToLocal(secondaryMergeTargetLocal.copy(secondaryMergeTargetWorld));
     strand.lineColors.fill(0);
     strand.pointColors.fill(0);
-    var mergeX=secondaryMergeTargetLocal.x;
-    var mergeY=secondaryMergeTargetLocal.y;
-    var mergeZ=secondaryMergeTargetLocal.z;
+    var mergeX=secondaryMergeTargetWorld.x;
+    var mergeY=secondaryMergeTargetWorld.y;
+    var mergeZ=secondaryMergeTargetWorld.z;
     var inwardStart=Math.max(.05,Math.min(.65,params.connectorShare+params.sidePull*.06));
     var terminalStart=Math.max(.84,Math.min(.96,.96-params.endPull*.08));
     for(var fiberIndex=0;fiberIndex<strand.fibers.length;fiberIndex++){
       var fiber=strand.fibers[fiberIndex], start=fiber.sourceStart, fiberShape=fiber.shape;
-      var startX=SBASE_X+(sBase[start*3]-SBASE_X)*params.topFunnel;
-      var startY=SBASE_Y+(sBase[start*3+1]-SBASE_Y)*params.topFunnel;
-      var startZ=SBASE_Z+(sBase[start*3+2]-SBASE_Z)*params.topFunnel;
+      secondaryStartLocal.set(
+        SBASE_X+(sBase[start*3]-SBASE_X)*params.topFunnel,
+        SBASE_Y+(sBase[start*3+1]-SBASE_Y)*params.topFunnel,
+        SBASE_Z+(sBase[start*3+2]-SBASE_Z)*params.topFunnel
+      );
+      strand.satellite.localToWorld(secondaryStartWorld.copy(secondaryStartLocal));
+      var startX=secondaryStartWorld.x;
+      var startY=secondaryStartWorld.y;
+      var startZ=secondaryStartWorld.z;
+      var sideX=startX-mergeX;
+      var sideZ=startZ-mergeZ;
+      var sideLength=Math.sqrt(sideX*sideX+sideZ*sideZ);
+      if(sideLength<.0001){ sideX=strand.sideSign; sideZ=0; sideLength=1; }
+      sideX/=sideLength;
+      sideZ/=sideLength;
+      var depthX=-sideZ;
+      var depthZ=sideX;
       var horizontalSpan=Math.sqrt((mergeX-startX)*(mergeX-startX)+(mergeZ-startZ)*(mergeZ-startZ));
       var catenaryDepth=.16+Math.min(.46,horizontalSpan*.045);
       var firstSag=catenaryDepth*fiberShape.firstDroop*params.firstDroop;
@@ -1291,21 +1293,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         var endOffsetX=Math.cos(fiberAngle)*endSpread;
         var endOffsetZ=Math.sin(fiberAngle)*endSpread;
         var manualVertical=params.posY*manualEnvelope;
-        x=startX+(mergeX-startX)*inwardProgress+satelliteWorldDown.x*hangingSag;
-        y=startY+(mergeY-startY)*progress+satelliteWorldDown.y*hangingSag;
-        z=startZ+(mergeZ-startZ)*inwardProgress+satelliteWorldDown.z*hangingSag;
-        x+=satelliteWorldX.x*(Math.cos(fiberAngle)*looseSpread+windSide+params.posX*manualEnvelope)
-          +satelliteWorldZ.x*(Math.sin(fiberAngle)*looseSpread+windDepth+params.posZ*manualEnvelope)
-          +satelliteWorldDown.x*manualVertical
-          +satelliteWorldX.x*endOffsetX+satelliteWorldZ.x*endOffsetZ;
-        y+=satelliteWorldX.y*(Math.cos(fiberAngle)*looseSpread+windSide+params.posX*manualEnvelope)
-          +satelliteWorldZ.y*(Math.sin(fiberAngle)*looseSpread+windDepth+params.posZ*manualEnvelope)
-          +satelliteWorldDown.y*manualVertical
-          +satelliteWorldX.y*endOffsetX+satelliteWorldZ.y*endOffsetZ;
-        z+=satelliteWorldX.z*(Math.cos(fiberAngle)*looseSpread+windSide+params.posX*manualEnvelope)
-          +satelliteWorldZ.z*(Math.sin(fiberAngle)*looseSpread+windDepth+params.posZ*manualEnvelope)
-          +satelliteWorldDown.z*manualVertical
-          +satelliteWorldX.z*endOffsetX+satelliteWorldZ.z*endOffsetZ;
+        x=startX+(mergeX-startX)*inwardProgress;
+        y=startY+(mergeY-startY)*progress-hangingSag-manualVertical;
+        z=startZ+(mergeZ-startZ)*inwardProgress;
+        x+=sideX*(Math.cos(fiberAngle)*looseSpread+windSide+params.posX*manualEnvelope+endOffsetX)
+          +depthX*(Math.sin(fiberAngle)*looseSpread+windDepth+params.posZ*manualEnvelope+endOffsetZ);
+        z+=sideZ*(Math.cos(fiberAngle)*looseSpread+windSide+params.posX*manualEnvelope+endOffsetX)
+          +depthZ*(Math.sin(fiberAngle)*looseSpread+windDepth+params.posZ*manualEnvelope+endOffsetZ);
         var pulse=Math.max(0,Math.sin(flowTime*params.pulseSpeed*strand.flowDirection-progress*20*strand.flowDirection+fiberShape.phaseOffset));
         var brightness=(params.baseBrightness+pulse*params.pulseStrength)*params.intensity;
         var colorSelector=Math.sin(fiberShape.phaseOffset*31+fiberIndex*1.618);
