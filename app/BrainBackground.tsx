@@ -231,6 +231,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     return 0.72+0.28*t;
   }
   var TAPER_Y_EARLY=-0.15;
+  // Der originale Datensatz enthält unterhalb des Gehirns einen separaten,
+  // stark verdichteten Hirnstamm. In diesem Bereich soll ausschliesslich der
+  // prozedurale Goldtrichter sichtbar sein.
+  var ORIGINAL_STUMP_CUTOFF=-.62;
 
   function pointsObj(arr,cols,size,op,blending){
     var g2=new THREE.BufferGeometry();
@@ -326,6 +330,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var sca=BR.scatter;
   for(var i=0;i<sca.length;i+=3){
     var vx=sca[i],vy=sca[i+1],vz=sca[i+2];
+    if(vy<ORIGINAL_STUMP_CUTOFF) continue;
     pts.push(new THREE.Vector3(vx,vy,vz));
     ppos.push(vx,vy,vz);
     cc.copy(golds[Math.floor(Math.random()*golds.length)]).multiplyScalar(taperFade(vy)*neuralShade(vx,vy,vz));
@@ -569,9 +574,28 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     wobbleZ=new Float32Array(vc);
   }
 
-  var baseLinePos=lpos.slice(), baseLineCol=lcol.slice();
-  var baseWPos=wpos.slice(), baseWCol=wcol.slice();
+  var originalWalkLineLength=lpos.length, originalWalkPointLength=wpos.length;
+  var baseLinePos, baseLineCol, baseWPos, baseWCol;
   if(STRAND_ON) genStrandInto(lpos,lcol,wpos,wcol);
+  for(var originalPointOffset=0;originalPointOffset<originalWalkPointLength;originalPointOffset+=3){
+    if(wpos[originalPointOffset+1]>=ORIGINAL_STUMP_CUTOFF) continue;
+    wcol[originalPointOffset]=0;
+    wcol[originalPointOffset+1]=0;
+    wcol[originalPointOffset+2]=0;
+  }
+  for(var originalLineOffset=0;originalLineOffset<originalWalkLineLength;originalLineOffset+=6){
+    if(lpos[originalLineOffset+1]>=ORIGINAL_STUMP_CUTOFF&&lpos[originalLineOffset+4]>=ORIGINAL_STUMP_CUTOFF) continue;
+    lcol[originalLineOffset]=0;
+    lcol[originalLineOffset+1]=0;
+    lcol[originalLineOffset+2]=0;
+    lcol[originalLineOffset+3]=0;
+    lcol[originalLineOffset+4]=0;
+    lcol[originalLineOffset+5]=0;
+  }
+  baseLinePos=lpos.slice(0,originalWalkLineLength);
+  baseLineCol=lcol.slice(0,originalWalkLineLength);
+  baseWPos=wpos.slice(0,originalWalkPointLength);
+  baseWCol=wcol.slice(0,originalWalkPointLength);
   resetWobbleBuffers();
 
   var lgeo=new THREE.BufferGeometry();
@@ -818,7 +842,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var graphAdj=[]; for(i=0;i<pts.length;i++) graphAdj.push([]);
   pairs.forEach(function(p){ graphAdj[p[0]].push(p[1]); graphAdj[p[1]].push(p[0]); });
 
-  var npos=BR.nodes;
+  var npos=[];
+  for(var nodeOffset=0;nodeOffset<BR.nodes.length;nodeOffset+=3){
+    if(BR.nodes[nodeOffset+1]<ORIGINAL_STUMP_CUTOFF) continue;
+    npos.push(BR.nodes[nodeOffset],BR.nodes[nodeOffset+1],BR.nodes[nodeOffset+2]);
+  }
   var nodesP=pointsObj(npos,null,.21,.44);
   brain.add(dbgHide('nodes',nodesP));
 
