@@ -1653,6 +1653,15 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   // --- Blaue Nerven-Glitzer: feine, langsame Impulse, die entlang der goldenen
   // Linien bzw. am Nervenstrang hoch/runter gleiten (statt zu blitzen) ---
   var BLUE=new THREE.Color(0x4d7fbf);
+  // Jede Entladung erhält beim Start einen eigenen Blau-bis-Weiss-Ton.
+  // Dadurch pulsiert das Netz organisch, ohne die Grundfarben der Gehirne
+  // oder Stränge zu verändern.
+  var NERVE_FLASH_SHADES=[
+    new THREE.Color(0x4d7fbf),
+    new THREE.Color(0x8ebef2),
+    new THREE.Color(0xc4e3ff),
+    new THREE.Color(0xf4f7ff)
+  ];
   function smootherstep(x){x=x<0?0:x>1?1:x;return x*x*x*(x*(x*6-15)+10);}
 
   function GlidePulse(kind){
@@ -1749,7 +1758,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var gh=new THREE.BufferGeometry();
     this.headArr=new Float32Array(3);
     gh.setAttribute('position',new THREE.BufferAttribute(this.headArr,3));
-    this.headMat=new THREE.PointsMaterial({size:.052,map:sprite,transparent:true,opacity:0,color:0xc4e3ff,blending:THREE.AdditiveBlending,depthWrite:false});
+    this.flashColor=NERVE_FLASH_SHADES[Math.floor(Math.random()*NERVE_FLASH_SHADES.length)].clone();
+    this.flashIntensity=.78+Math.random()*.32;
+    this.headMat=new THREE.PointsMaterial({size:.052,map:sprite,transparent:true,opacity:0,color:this.flashColor,blending:THREE.AdditiveBlending,depthWrite:false});
     this.headPt=new THREE.Points(gh,this.headMat);
     this.headPt.frustumCulled=false;
     parentGroup.add(this.headPt);
@@ -1767,7 +1778,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     this.hopsLeft=16+Math.floor(Math.random()*14);
     this.hopTimer=.05+Math.random()*.07;
     this.alive=true;
-    this.headMat.opacity=.24;
+    this.headMat.opacity=.24*this.flashIntensity;
   };
   NerveBolt.prototype.stepOnce=function(){
     var neigh=graphAdj[this.cur];
@@ -1811,21 +1822,21 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         var frac=n>1?srcIdx/(n-1):1;
         var alpha=Math.sqrt(frac);
         this.posArr[k*3]=p.x; this.posArr[k*3+1]=p.y; this.posArr[k*3+2]=p.z;
-        this.colArr[k*3]=BLUE.r*alpha; this.colArr[k*3+1]=BLUE.g*alpha; this.colArr[k*3+2]=BLUE.b*alpha;
+        this.colArr[k*3]=this.flashColor.r*alpha*this.flashIntensity; this.colArr[k*3+1]=this.flashColor.g*alpha*this.flashIntensity; this.colArr[k*3+2]=this.flashColor.b*alpha*this.flashIntensity;
       }
     }
     this.line.geometry.attributes.position.needsUpdate=true;
     this.line.geometry.attributes.color.needsUpdate=true;
-    this.mat.opacity=.22;
+    this.mat.opacity=.22*this.flashIntensity;
     var head=this.trail[this.trail.length-1];
     this.headArr[0]=head.x; this.headArr[1]=head.y; this.headArr[2]=head.z;
     this.headPt.geometry.attributes.position.needsUpdate=true;
   };
-  var nerveBolts=[], NBN=isMobile?10:28;
+  var nerveBolts=[], NBN=isMobile?12:34;
   for(i=0;i<NBN;i++) nerveBolts.push(new NerveBolt(brain));
   var satelliteNerveBolts=[];
   satelliteBrains.forEach(function(satellite){
-    for(var satelliteBoltIndex=0;satelliteBoltIndex<(isMobile?3:5);satelliteBoltIndex++) satelliteNerveBolts.push(new NerveBolt(satellite));
+    for(var satelliteBoltIndex=0;satelliteBoltIndex<(isMobile?4:8);satelliteBoltIndex++) satelliteNerveBolts.push(new NerveBolt(satellite));
   });
 
   function BlueOrb(parentGroup){
