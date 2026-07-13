@@ -1118,6 +1118,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       pulseSpeed:3.4,
       pulseStrength:.32,
       baseBrightness:.3,
+      helixStart:.72,
+      helixTurns:1.18,
+      helixRadius:.24,
       posX:0,
       posY:0,
       posZ:0
@@ -1147,9 +1150,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
 
   function applySecondaryRendering(strand){
     var params=strand.params;
-    strand.lineMesh.material.opacity=Math.min(1,params.lineOpacity*params.intensity);
-    strand.pointMesh.material.opacity=Math.min(1,params.pointOpacity*params.intensity);
-    strand.pointMesh.material.size=params.pointSize;
+    strand.lineMesh.material.opacity=Math.min(1,GOLD_RENDER.lineOpacity*params.intensity);
+    strand.pointMesh.material.opacity=Math.min(1,GOLD_RENDER.pointOpacity*params.intensity);
+    strand.pointMesh.material.size=SP.ptSize;
   }
 
   function rebuildSecondaryStrandGeometry(strand){
@@ -1200,14 +1203,14 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var lineGeometry=new THREE.BufferGeometry();
     lineGeometry.setAttribute('position',new THREE.BufferAttribute(new Float32Array(0),3));
     lineGeometry.setAttribute('color',new THREE.BufferAttribute(new Float32Array(0),3));
-    var lineMesh=new THREE.LineSegments(lineGeometry,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:params.lineOpacity,blending:THREE.AdditiveBlending,depthWrite:false,depthTest:false,fog:false,toneMapped:false}));
+    var lineMesh=new THREE.LineSegments(lineGeometry,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:GOLD_RENDER.lineOpacity,blending:THREE.NormalBlending,depthWrite:false}));
     lineMesh.frustumCulled=false;
     lineMesh.renderOrder=4;
     tailGroup.add(lineMesh);
     var pointGeometry=new THREE.BufferGeometry();
     pointGeometry.setAttribute('position',new THREE.BufferAttribute(new Float32Array(0),3));
     pointGeometry.setAttribute('color',new THREE.BufferAttribute(new Float32Array(0),3));
-    var pointMesh=new THREE.Points(pointGeometry,new THREE.PointsMaterial({size:params.pointSize,map:sprite,transparent:true,opacity:params.pointOpacity,vertexColors:true,color:0xffffff,blending:THREE.AdditiveBlending,depthWrite:false,depthTest:false,fog:false,toneMapped:false}));
+    var pointMesh=new THREE.Points(pointGeometry,new THREE.PointsMaterial({size:SP.ptSize,map:sprite,transparent:true,opacity:GOLD_RENDER.pointOpacity,vertexColors:true,color:0xffffff,blending:THREE.NormalBlending,depthWrite:false}));
     pointMesh.frustumCulled=false;
     pointMesh.renderOrder=5;
     tailGroup.add(pointMesh);
@@ -1285,15 +1288,21 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         x=startX+(mergeX-startX)*inwardProgress;
         y=startY+(mergeY-startY)*progress-hangingSag-manualVertical;
         z=startZ+(mergeZ-startZ)*inwardProgress;
+        var helixProgress=smooth((progress-params.helixStart)/(1-params.helixStart));
+        var helixRadius=Math.max(.018,(params.helixRadius+fiberShape.radiusOffset*.45)*(1-helixProgress*.88));
+        var helixAngle=strand.phase+strand.flowDirection*helixProgress*Math.PI*2*params.helixTurns+fiberShape.phaseOffset*.9;
+        var helixX=mergeX+Math.cos(helixAngle)*helixRadius;
+        var helixZ=mergeZ+Math.sin(helixAngle)*helixRadius;
+        x+=(helixX-x)*helixProgress;
+        z+=(helixZ-z)*helixProgress;
         x+=sideX*(Math.cos(fiberAngle)*looseSpread+windSide+params.posX*manualEnvelope+endOffsetX)
           +depthX*(Math.sin(fiberAngle)*looseSpread+windDepth+params.posZ*manualEnvelope+endOffsetZ);
         z+=sideZ*(Math.cos(fiberAngle)*looseSpread+windSide+params.posX*manualEnvelope+endOffsetX)
           +depthZ*(Math.sin(fiberAngle)*looseSpread+windDepth+params.posZ*manualEnvelope+endOffsetZ);
         var pulse=Math.max(0,Math.sin(flowTime*params.pulseSpeed*strand.flowDirection-progress*20*strand.flowDirection+fiberShape.phaseOffset));
         var brightness=(params.baseBrightness+pulse*params.pulseStrength)*params.intensity;
-        var colorSelector=Math.sin(fiberShape.phaseOffset*31+fiberIndex*1.618);
-        var terminalColor=colorSelector>.33?fusionRedColor:(colorSelector<-.33?fusionBlueColor:GOLD.light);
-        var colorBlend=terminalBlend*.78;
+        var terminalColor=GOLD.light;
+        var colorBlend=terminalBlend*.42;
         var colorR=(strand.color.r+(terminalColor.r-strand.color.r)*colorBlend)*brightness;
         var colorG=(strand.color.g+(terminalColor.g-strand.color.g)*colorBlend)*brightness;
         var colorB=(strand.color.b+(terminalColor.b-strand.color.b)*colorBlend)*brightness;
