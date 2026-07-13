@@ -1147,6 +1147,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       firstSway:(Math.random()-.5)*.2,
       secondSway:(Math.random()-.5)*.15,
       windPhase:Math.random()*Math.PI*2,
+      funnelVariation:.82+Math.random()*.36,
       goldFiberIndex:Math.floor(Math.random()*Math.max(1,sFibers.length)),
       goldFiberProgress:.78+Math.random()*.2
     };
@@ -1264,6 +1265,18 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var startX=secondarySatelliteWorld.x+Math.cos(fiber.sourceAngle)*fiber.sourceRadius*sourceScale;
       var startY=secondarySatelliteWorld.y-strand.satellite.scale.x*.76-fiber.sourceDrop*sourceScale;
       var startZ=secondarySatelliteWorld.z+Math.sin(fiber.sourceAngle)*fiber.sourceRadius*sourceScale;
+      var funnelAngle=fiber.sourceAngle+fiberShape.phaseOffset*.42;
+      var funnelCos=Math.cos(funnelAngle), funnelSin=Math.sin(funnelAngle);
+      var funnelScale=sourceScale*fiberShape.funnelVariation;
+      var funnelMicroX=secondarySatelliteWorld.x+funnelCos*funnelScale*.25;
+      var funnelMicroY=secondarySatelliteWorld.y-sourceScale*.91;
+      var funnelMicroZ=secondarySatelliteWorld.z+funnelSin*funnelScale*.25;
+      var funnelMediumX=secondarySatelliteWorld.x+funnelCos*funnelScale*.13;
+      var funnelMediumY=secondarySatelliteWorld.y-sourceScale*1.12;
+      var funnelMediumZ=secondarySatelliteWorld.z+funnelSin*funnelScale*.13;
+      var funnelOutletX=secondarySatelliteWorld.x+funnelCos*funnelScale*.045;
+      var funnelOutletY=secondarySatelliteWorld.y-sourceScale*1.34;
+      var funnelOutletZ=secondarySatelliteWorld.z+funnelSin*funnelScale*.045;
       var sideX=startX-mergeX;
       var sideZ=startZ-mergeZ;
       var sideLength=Math.sqrt(sideX*sideX+sideZ*sideZ);
@@ -1298,6 +1311,28 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         x=startX+(mergeX-startX)*inwardProgress;
         y=startY+(mergeY-startY)*progress-hangingSag-manualVertical;
         z=startZ+(mergeZ-startZ)*inwardProgress;
+        var funnelProgress=Math.min(1,progress/.24);
+        var funnelX, funnelY, funnelZ, funnelStage;
+        if(funnelProgress<.34){
+          funnelStage=smooth(funnelProgress/.34);
+          funnelX=startX+(funnelMicroX-startX)*funnelStage;
+          funnelY=startY+(funnelMicroY-startY)*funnelStage;
+          funnelZ=startZ+(funnelMicroZ-startZ)*funnelStage;
+        } else if(funnelProgress<.72){
+          funnelStage=smooth((funnelProgress-.34)/.38);
+          funnelX=funnelMicroX+(funnelMediumX-funnelMicroX)*funnelStage;
+          funnelY=funnelMicroY+(funnelMediumY-funnelMicroY)*funnelStage;
+          funnelZ=funnelMicroZ+(funnelMediumZ-funnelMicroZ)*funnelStage;
+        } else {
+          funnelStage=smooth((funnelProgress-.72)/.28);
+          funnelX=funnelMediumX+(funnelOutletX-funnelMediumX)*funnelStage;
+          funnelY=funnelMediumY+(funnelOutletY-funnelMediumY)*funnelStage;
+          funnelZ=funnelMediumZ+(funnelOutletZ-funnelMediumZ)*funnelStage;
+        }
+        var funnelRelease=smooth(progress/.24);
+        x+=(funnelX-x)*(1-funnelRelease);
+        y+=(funnelY-y)*(1-funnelRelease);
+        z+=(funnelZ-z)*(1-funnelRelease);
         var helixProgress=smooth((progress-params.helixStart)/(1-params.helixStart));
         var helixRadius=Math.max(.004,(params.helixRadius+fiberShape.radiusOffset*.45)*(1-helixProgress*.97));
         var helixAngle=strand.phase+strand.flowDirection*helixProgress*Math.PI*2*params.helixTurns+fiberShape.phaseOffset*.9;
