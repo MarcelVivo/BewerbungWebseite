@@ -203,6 +203,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   GOLD.line=GOLD.light;
   GOLD.hot=GOLD.highlight;
   GOLD.white=GOLD.highlight;
+  var SATELLITE_METALS={
+    red:{ deep:new THREE.Color(0x37131d), primary:new THREE.Color(0x6a263b), light:new THREE.Color(0xd9788a) },
+    blue:{ deep:new THREE.Color(0x102a4a), primary:new THREE.Color(0x244d82), light:new THREE.Color(0x8ebef2) }
+  };
   // Dieselbe gewichtete Metallic-Palette treibt das gesamte Hauptgehirn und
   // den direkt daraus wachsenden Goldstrang: tiefe Schatten, ein warmer Kern
   // und seltene Glanzlichter erzeugen den seidigen Metallverlauf.
@@ -887,15 +891,22 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     satellitePoints.geometry.attributes.position.needsUpdate=true;
     satellitePoints.geometry.attributes.color.needsUpdate=true;
   }
-  function tintSatelliteBrain(satellite,colorHex){
-    var tintColor=new THREE.Color(colorHex);
+  function tintSatelliteBrain(satellite,palette){
+    var tintColor=palette.primary;
     satellite.traverse(function(part){
       if(part.geometry&&part.geometry.attributes&&part.geometry.attributes.color){
         var tintedGeometry=part.geometry.clone();
         var colorAttribute=tintedGeometry.attributes.color;
         for(var colorIndex=0;colorIndex<colorAttribute.count;colorIndex++){
           var brightness=Math.max(colorAttribute.getX(colorIndex),colorAttribute.getY(colorIndex),colorAttribute.getZ(colorIndex));
-          colorAttribute.setXYZ(colorIndex,tintColor.r*brightness,tintColor.g*brightness,tintColor.b*brightness);
+          // Derselbe seidige Metallic-Verlauf wie im Faserbündel: tiefe
+          // Schatten, Bordeaux/Blau als Grundton und seltene Glanzlichter.
+          var metallic=.5+.5*Math.sin(colorIndex*12.9898+colorIndex*.071);
+          var from=metallic<.5?palette.deep:palette.primary;
+          var to=metallic<.5?palette.primary:palette.light;
+          var blend=metallic<.5?metallic*2:(metallic-.5)*2;
+          var shade=.34+brightness*.76;
+          colorAttribute.setXYZ((from.r+(to.r-from.r)*blend)*shade,(from.g+(to.g-from.g)*blend)*shade,(from.b+(to.b-from.b)*blend)*shade);
         }
         colorAttribute.needsUpdate=true;
         part.geometry=tintedGeometry;
@@ -910,9 +921,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       }
     });
   }
-  function addSatelliteBrain(x,y,z,phase,colorHex){
+  function addSatelliteBrain(x,y,z,phase,palette){
     var satellite=brain.clone(true);
-    tintSatelliteBrain(satellite,colorHex);
+    tintSatelliteBrain(satellite,palette);
     satellite.scale.setScalar(isMobile?0.6:1.32);
     satellite.position.set(x,y,z);
     satellite.rotation.set(BASE_X,BASE_Y,0);
@@ -938,11 +949,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     // Bildschirmrand statt zentral über dem Text zu verschmelzen, mit
     // Rand zur Bildschirmkante damit nichts angeschnitten wird.
     var satelliteX=visibleHalfWidthAtSat*.78;
-    addSatelliteBrain(-satelliteX,.32,satelliteZ,.35,'#a6425c');
-    addSatelliteBrain(satelliteX,.46,satelliteZ-.2,2.7,'#4d7fbf');
+    addSatelliteBrain(-satelliteX,.32,satelliteZ,.35,SATELLITE_METALS.red);
+    addSatelliteBrain(satelliteX,.46,satelliteZ-.2,2.7,SATELLITE_METALS.blue);
   } else {
-    addSatelliteBrain(-5.7,-.62,-.7,.35,'#a6425c');
-    addSatelliteBrain(5.7,-.44,-.9,2.7,'#4d7fbf');
+    addSatelliteBrain(-5.7,-.62,-.7,.35,SATELLITE_METALS.red);
+    addSatelliteBrain(5.7,-.44,-.9,2.7,SATELLITE_METALS.blue);
   }
 
   // --- Verbindliche Maske für beide Gehirnhälften: dieselbe Scatter-Punktwolke
@@ -1198,7 +1209,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         len:fiberSegments,
         pointOffset:pointValueCount,
         lineOffset:lineValueCount,
-        shape:makeSecondaryFiberShape()
+        shape:makeSecondaryFiberShape(),
+        metallicPhase:Math.random()*Math.PI*2
       });
       pointValueCount+=fiberSegments*3;
       lineValueCount+=Math.max(0,fiberSegments-1)*6;
@@ -1225,7 +1237,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     for(var rebuildIndex=0;rebuildIndex<satelliteStrands.length;rebuildIndex++) rebuildSecondaryStrandGeometry(satelliteStrands[rebuildIndex]);
   }
 
-  function useExistingSatelliteStrand(satellite,phase,colorHex,flowDirection,sideSign,params){
+  function useExistingSatelliteStrand(satellite,phase,palette,flowDirection,sideSign,params){
     hideSatelliteTail(satellite);
     var tailGroup=new THREE.Group();
     tailGroup.name='secondary-energy-strand';
@@ -1247,7 +1259,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var strand={
       satellite:satellite,
       phase:phase,
-      color:new THREE.Color(colorHex),
+      palette:palette,
       flowDirection:flowDirection,
       sideSign:sideSign,
       params:params,
@@ -1395,11 +1407,15 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           +depthZ*(Math.sin(fiberAngle)*looseSpread+windDepth+params.posZ*manualEnvelope+endOffsetZ);
         var pulse=Math.max(0,Math.sin(flowTime*params.pulseSpeed*strand.flowDirection-progress*20*strand.flowDirection+fiberShape.phaseOffset));
         var brightness=(params.baseBrightness+pulse*params.pulseStrength)*params.intensity;
-        // Die drei Bündel bleiben im gemeinsamen unteren Bereich als
-        // parallele Einzelfasern klar unterscheidbar: keine Farbmischung.
-        var colorR=strand.color.r*brightness;
-        var colorG=strand.color.g*brightness;
-        var colorB=strand.color.b*brightness;
+        // Jede Faser bleibt innerhalb ihrer eigenen Metallic-Palette. Der
+        // Verlauf verschiebt sich sanft, ohne Rot und Blau zu vermischen.
+        var metallic=.5+.5*Math.sin(fiber.metallicPhase+progress*7.2+flowTime*.28);
+        var metallicFrom=metallic<.5?strand.palette.deep:strand.palette.primary;
+        var metallicTo=metallic<.5?strand.palette.primary:strand.palette.light;
+        var metallicBlend=metallic<.5?metallic*2:(metallic-.5)*2;
+        var colorR=(metallicFrom.r+(metallicTo.r-metallicFrom.r)*metallicBlend)*brightness;
+        var colorG=(metallicFrom.g+(metallicTo.g-metallicFrom.g)*metallicBlend)*brightness;
+        var colorB=(metallicFrom.b+(metallicTo.b-metallicFrom.b)*metallicBlend)*brightness;
         secondaryRenderPoint.set(x,y,z);
         brain.worldToLocal(secondaryRenderPoint);
         x=secondaryRenderPoint.x;
@@ -1443,10 +1459,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   }
 
   if(satelliteBrains.length>1){
-    // Identische Primärtöne für Gehirn und Faserbündel: Der Trichter darf
-    // nicht als separat eingefärbtes Objekt wahrgenommen werden.
-    useExistingSatelliteStrand(satelliteBrains[0],Math.PI,'#a6425c',1,-1,RED_STRAND);
-    useExistingSatelliteStrand(satelliteBrains[1],0,'#4d7fbf',-1,1,BLUE_STRAND);
+    useExistingSatelliteStrand(satelliteBrains[0],Math.PI,SATELLITE_METALS.red,1,-1,RED_STRAND);
+    useExistingSatelliteStrand(satelliteBrains[1],0,SATELLITE_METALS.blue,-1,1,BLUE_STRAND);
   }
 
   function Spark(){
