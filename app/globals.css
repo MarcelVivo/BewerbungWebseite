@@ -7,6 +7,9 @@
    Premium Metallic Edition
    ========================================================== */
 :root {
+  --font-inter: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-playfair: Georgia, "Times New Roman", serif;
+
   --background-primary:   #0F1012;
   --background-secondary: #121315;
   --background-card:      #1A1C20;

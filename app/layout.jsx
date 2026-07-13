@@ -1,14 +1,6 @@
 import './globals.css';
-import { Inter } from 'next/font/google';
 import { LanguageProvider } from './LanguageContext';
 import CustomCursor from './CustomCursor';
-
-const inter = Inter({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-inter',
-  preload: true,
-});
 
 export const metadata = {
   title: {
@@ -136,7 +128,7 @@ const jsonLd = [
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="de" className={inter.variable}>
+    <html lang="de">
       <head>
         <script
           type="application/ld+json"
