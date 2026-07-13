@@ -1502,23 +1502,6 @@ body {
     padding-bottom: max(2rem, env(safe-area-inset-bottom));
   }
 
-  .hero-copy {
-    max-width: 100%;
-    text-align: center;
-  }
-
-  .hero-copy h1 {
-    max-width: 22rem;
-    margin-inline: auto;
-    font-size: clamp(2.45rem, 12vw, 4.4rem);
-    line-height: 0.92;
-  }
-
-  .hero-copy p {
-    max-width: 22rem;
-    margin-inline: auto;
-  }
-
   .spiral-mobile > div {
     max-width: 30rem;
   }
@@ -1607,21 +1590,6 @@ body {
 }
 
 @media (max-width: 480px) {
-  .home-hero .mx-auto {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-
-  .hero-copy h1 {
-    max-width: 19rem;
-    font-size: clamp(2.2rem, 13vw, 3.25rem);
-  }
-
-  .hero-copy p {
-    max-width: 19.5rem;
-    font-size: 0.98rem;
-  }
-
   .spiral-mobile {
     padding-left: 1rem;
     padding-right: 1rem;

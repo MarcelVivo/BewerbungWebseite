@@ -14,6 +14,7 @@ import ContactFormClient from './ContactFormClient';
 import { useLanguage } from './LanguageContext';
 import { T } from '../lib/translations';
 import { HELIX_STEP, computeCameraTravel, helixAngleForWorldIndex, helixPositionForWorldIndex } from './lib/helixGeometry';
+import { getEffectiveViewport, REF_WIDTH, REF_HEIGHT } from './lib/viewport';
 
 // Radius, den die reale 3D-Leistungskarte ("Karte 01") in BrainBackground.tsx
 // hatte, bevor sie durch dieses DOM-Kartenpanel ersetzt wurde — dieselbe
@@ -961,6 +962,21 @@ function ProcessTimeline({ lang }: { lang: 'de' | 'en' }) {
 export default function HomePage() {
   const { lang } = useLanguage();
   const t = T[lang];
+  // Auf schmalen Bildschirmen (<900px, dieselbe Schwelle wie
+  // getEffectiveViewport()) wird die komplette Hero-Komposition (Gehirne +
+  // Überschrift + Buttons) exakt wie am Desktop aufgebaut und danach
+  // gleichmässig auf die echte Fensterbreite herunterskaliert, statt Text
+  // und Buttons responsiv umzubrechen — dieselben Grössenverhältnisse wie
+  // am Desktop bleiben dadurch überall erhalten.
+  const [heroScale, setHeroScale] = useState(1);
+  useEffect(() => {
+    const updateHeroScale = () => {
+      setHeroScale(getEffectiveViewport(window.innerWidth, window.innerHeight).scale);
+    };
+    updateHeroScale();
+    window.addEventListener('resize', updateHeroScale);
+    return () => window.removeEventListener('resize', updateHeroScale);
+  }, []);
   const introWorldTexts = useMemo(() => lang === 'de'
     ? ['Alles beginnt\nmit einer\nIdee.', 'Aus Ideen\nentstehen Heraus-\nforderungen.', 'Aus Heraus-\nforderungen entstehen\nChancen.', 'Ich mache aus\nKomplexität einfache\nLösungen.', 'Digital.\nIntelligent.\nZukunftssicher.']
     : ['I build\nthe right solution.', 'for\nyour company', 'Your\nchallenge.', 'My\nsolution.', 'Fully custom.\nBuilt as one system.'], [lang]);
@@ -985,33 +1001,48 @@ export default function HomePage() {
 
       {/* ── Hero ── */}
       <section className="home-hero relative z-10 min-h-screen overflow-hidden pt-16">
-        <div className="hero-top-copy absolute inset-x-0 top-20 sm:top-24 lg:top-24 z-10">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6">
-            <div className="hero-copy hero-copy-centered ms-anim">
-              <h1 className="max-w-6xl mx-auto whitespace-pre-line text-xl sm:text-2xl lg:text-4xl xl:text-5xl font-bold text-white leading-[0.96] tracking-[-0.055em]">
-                {lang === 'de' ? 'Digitale Lösungen.\nFür Unternehmen mit Zukunft.' : 'Digital solutions built as one system.'}
-              </h1>
+        <div
+          className={heroScale !== 1 ? 'absolute left-0' : undefined}
+          style={heroScale !== 1 ? {
+            // Feste, NICHT skalierte Distanz zur echten (ebenfalls nicht
+            // skalierten) Fixed-Navbar — sonst würde der Abstand zwischen
+            // Navbar und Überschrift mitschrumpfen und die Überschrift
+            // könnte hinter der Navbar verschwinden.
+            top: '4rem',
+            width: `${REF_WIDTH}px`,
+            height: `${REF_HEIGHT}px`,
+            transform: `scale(${heroScale})`,
+            transformOrigin: 'top left',
+          } : undefined}
+        >
+          <div className="hero-top-copy absolute inset-x-0 top-24 z-10">
+            <div className="mx-auto max-w-7xl px-6">
+              <div className="hero-copy hero-copy-centered ms-anim">
+                <h1 className="max-w-6xl mx-auto whitespace-pre-line text-5xl font-bold text-white leading-[0.96] tracking-[-0.055em]">
+                  {lang === 'de' ? 'Digitale Lösungen.\nFür Unternehmen mit Zukunft.' : 'Digital solutions built as one system.'}
+                </h1>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="hero-bottom-copy absolute inset-x-0 bottom-0 z-10 pb-4 sm:pb-5 lg:pb-6">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6">
-            <div className="hero-copy hero-copy-centered ms-anim" style={{ animationDelay: '0.12s' }}>
-              <p className="max-w-lg mx-auto text-base sm:text-lg text-[#d8ccb3] leading-relaxed">
-                {lang === 'de'
-                  ? 'Websites, Software, KI und Automatisierungen. Strategisch geplant, technisch sauber umgesetzt und auf nachhaltiges Wachstum ausgerichtet.'
-                  : 'Websites, systems, databases, automation and AI — clearly planned, fast to build and made to last.'}
-              </p>
-            </div>
-            <div style={{ animationDelay: '0.18s' }} className="ms-anim mt-7 flex flex-col sm:flex-row items-stretch sm:items-start justify-center gap-3 sm:gap-4">
-              <a href="#contact" className="group brand-gold-fill flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-[#0c0a06] font-bold transition-all">
-                {t.hero.cta}
-                <ChevronRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
-              </a>
-              <a href="#about" className="px-6 py-3 rounded-xl border border-[#f4edd8]/25 hover:border-[#f4edd8]/60 text-[#f4edd8] font-medium text-center transition-all backdrop-blur-sm">
-                {t.hero.more}
-              </a>
+          <div className="hero-bottom-copy absolute inset-x-0 bottom-0 z-10 pb-6">
+            <div className="mx-auto max-w-7xl px-6">
+              <div className="hero-copy hero-copy-centered ms-anim" style={{ animationDelay: '0.12s' }}>
+                <p className="max-w-lg mx-auto text-lg text-[#d8ccb3] leading-relaxed">
+                  {lang === 'de'
+                    ? 'Websites, Software, KI und Automatisierungen. Strategisch geplant, technisch sauber umgesetzt und auf nachhaltiges Wachstum ausgerichtet.'
+                    : 'Websites, systems, databases, automation and AI — clearly planned, fast to build and made to last.'}
+                </p>
+              </div>
+              <div style={{ animationDelay: '0.18s' }} className="ms-anim mt-7 flex flex-row items-start justify-center gap-4">
+                <a href="#contact" className="group brand-gold-fill flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-[#0c0a06] font-bold transition-all">
+                  {t.hero.cta}
+                  <ChevronRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
+                </a>
+                <a href="#about" className="px-6 py-3 rounded-xl border border-[#f4edd8]/25 hover:border-[#f4edd8]/60 text-[#f4edd8] font-medium text-center transition-all backdrop-blur-sm">
+                  {t.hero.more}
+                </a>
+              </div>
             </div>
           </div>
         </div>

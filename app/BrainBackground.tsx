@@ -391,6 +391,21 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var MP={ moveLeft:0, moveRight:0, moveForward:0, moveBack:0, moveVertical:0.01 };
   var WIND={ sway:0.04, speed:0.37, wave:0.036, waveFrequency:9 };
   var GOLD_RENDER={ intensity:1, lineOpacity:.34, pointOpacity:.36 };
+  var GOLD_STRAND_TUNING={
+    topThickness:1,
+    bottomThickness:1,
+    escapeAmount:0,
+    escapeAmplitude:1,
+    escapeFrequency:1,
+    escapeWavelength:1,
+    escapeSpeed:1,
+    colorHue:0,
+    colorSaturation:1,
+    colorLightness:1,
+    colorIntensity:1,
+    topBrightness:1,
+    bottomBrightness:1
+  };
   function moveX(){ return SP.offX + MP.moveRight - MP.moveLeft; }
   function moveY(){ return SP.offY + MP.moveVertical; }
   function moveZ(){ return SP.offZ + MP.moveForward - MP.moveBack; }
@@ -400,6 +415,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var sBase=[], sMeta=[], sFibers=[], vc=0;
   var wobbleLineRefs=[], wobblePtsRefs=[];
   var wobbleX=new Float32Array(0), wobbleZ=new Float32Array(0);
+  var goldEscapeWeights=[], goldEscapePhases=[], goldEscapeFrequencies=[], goldEscapeSpeeds=[];
   var GOLD_STRAND_END_KEY='ms-gold-strand-end-v1';
   var strandEndTargetWorld=null;
   var strandEndOffsetWorld=new THREE.Vector3();
@@ -429,6 +445,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var DROOP_DX=0, DROOP_DZ=0;
   function genStrandInto(outPos,outCol,outPtsPos,outPtsCol){
     sBase=[]; sMeta=[]; sFibers=[]; vc=0; wobbleLineRefs=[]; wobblePtsRefs=[];
+    goldEscapeWeights=[]; goldEscapePhases=[]; goldEscapeFrequencies=[]; goldEscapeSpeeds=[];
     var N=Math.max(20,Math.round(SP.length/SP.spacing));
     var mx=moveX(), my=moveY(), mz=moveZ();
     // Echte goldene Vertex-Positionen im Stumpf-Bereich (Kugel um SBASE) als
@@ -450,7 +467,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           angle:pairIndex/Math.max(1,fiberCount*.5)*6.283+(rnd()-.5)*.025,
           twist:(rnd()-.5)*SP.twist,
           frayJitter:.4+rnd()*.6,
-          endF:(pairIndex%4)?0.9+0.1*rnd():0.6+0.3*rnd()
+          endF:(pairIndex%4)?0.9+0.1*rnd():0.6+0.3*rnd(),
+          escapeWeight:(rnd()<GOLD_STRAND_TUNING.escapeAmount)?(.5+rnd()*.5):0,
+          escapePhase:rnd()*Math.PI*2,
+          escapeFrequency:7+rnd()*9,
+          escapeSpeed:.46+rnd()*.52
         };
         pairProfiles[pairIndex]=pairProfile;
       }
@@ -462,7 +483,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var microGroup=f%15, mediumGroup=Math.floor(f/15)%5;
       var outletAngle=pairProfile.angle+(f%2?Math.PI:0)+(rnd()-.5)*.18;
       var microAngle=outletAngle+(rnd()-.5)*.1+microGroup*.006;
-      var outletRadius=Math.max(SP.rStr*1.35,FN.outletRadius*(.84+rnd()*.32)*(1-bundlePull*.2));
+      var outletRadius=Math.max(SP.rStr*1.35,FN.outletRadius*(.84+rnd()*.32)*(1-bundlePull*.2))*GOLD_STRAND_TUNING.topThickness;
       var outletDrop=Math.max(.06,FN.funnelHeight*(1.05+rnd()*.65)+(rnd()-.5)*FN.outletHeightSpread);
       var outletY=SBASE_Y+my-outletDrop;
       var mediumAngle=outletAngle+(rnd()-.5)*.14+mediumGroup*.012;
@@ -525,15 +546,21 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           var btv=bundleSteps>1?br/(bundleSteps-1):0;
           var ang=a0+btv*tw;
           var bundleScale=1-SP.taper*btv;
-          var swirl=SP.rStr*smooth(Math.min(1,btv/Math.max(SP.gather,.001)));
+          var thicknessScale=GOLD_STRAND_TUNING.topThickness+(GOLD_STRAND_TUNING.bottomThickness-GOLD_STRAND_TUNING.topThickness)*btv;
+          var swirl=SP.rStr*smooth(Math.min(1,btv/Math.max(SP.gather,.001)))*thicknessScale;
           var frayEnv=smooth(Math.max(0,(btv-SP.frayStart)/Math.max(.001,1-SP.frayStart)));
-          var fraySpread=frayEnv*SP.fraySpread*frayJitter;
+          var fraySpread=frayEnv*SP.fraySpread*frayJitter*thicknessScale;
+          var escapeEnvelope=smooth((btv-.08)/.2)*smooth((.96-btv)/.18);
+          var escapeTravel=btv*pairProfile.escapeFrequency*GOLD_STRAND_TUNING.escapeFrequency/GOLD_STRAND_TUNING.escapeWavelength
+            -pairProfile.escapeSpeed*GOLD_STRAND_TUNING.escapeSpeed;
+          var escapeWave=(Math.sin(escapeTravel+pairProfile.escapePhase)+Math.sin(escapeTravel*1.71+pairProfile.escapePhase*.43)*.36)
+            *pairProfile.escapeWeight*GOLD_STRAND_TUNING.escapeAmplitude*escapeEnvelope*thicknessScale*.18;
           var droop=SP.droop*btv*btv;
           var outletSettle=smooth(Math.min(1,btv/.38));
           var bundleCenterX=largeCenter.x+(SBASE_X+mx-largeCenter.x)*outletSettle;
           var bundleCenterZ=largeCenter.z+(SBASE_Z+mz-largeCenter.z)*outletSettle;
-          px=bundleCenterX+SP.curve*Math.sin(btv*2.1)+Math.cos(ang)*(swirl+fraySpread)+droop*DROOP_DX;
-          pz=bundleCenterZ+0.7*SP.curve*Math.sin(btv*1.6+1.0)+Math.sin(ang)*(swirl+fraySpread)+droop*DROOP_DZ;
+          px=bundleCenterX+SP.curve*Math.sin(btv*2.1)+Math.cos(ang)*(swirl+fraySpread+escapeWave)+droop*DROOP_DX;
+          pz=bundleCenterZ+0.7*SP.curve*Math.sin(btv*1.6+1.0)+Math.sin(ang)*(swirl+fraySpread+escapeWave*.72)+droop*DROOP_DZ;
           py=largeCenter.y-br*bundleSpacing*bundleScale;
         }
         // sanftes Ausblenden im letzten Abschnitt statt hartem Ende
@@ -542,6 +569,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         var v=vc;
         sBase.push(px,py,pz);
         sMeta.push(tv,a0);
+        goldEscapeWeights.push(pairProfile.escapeWeight);
+        goldEscapePhases.push(pairProfile.escapePhase);
+        goldEscapeFrequencies.push(pairProfile.escapeFrequency);
+        goldEscapeSpeeds.push(pairProfile.escapeSpeed);
         // neuralShade() bewertet Licht als Skalarprodukt der Richtung ab dem
         // WELT-Ursprung mit der Lichtrichtung. Beim kompakten Gehirn (Punkte
         // rundum den Ursprung) ergibt das eine natürliche Verteilung heller/
@@ -576,6 +607,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   function resetWobbleBuffers(){
     wobbleX=new Float32Array(vc);
     wobbleZ=new Float32Array(vc);
+    goldEscapeWeights=new Float32Array(goldEscapeWeights);
+    goldEscapePhases=new Float32Array(goldEscapePhases);
+    goldEscapeFrequencies=new Float32Array(goldEscapeFrequencies);
+    goldEscapeSpeeds=new Float32Array(goldEscapeSpeeds);
   }
 
   var originalWalkLineLength=lpos.length, originalWalkPointLength=wpos.length;
@@ -621,6 +656,21 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   }
   applyGoldRendering();
 
+  var goldStrandHsl={h:0,s:0,l:0};
+  var goldTunedColor=new THREE.Color();
+  function tuneGoldStrandColor(target,red,green,blue,progress){
+    target.setRGB(red,green,blue);
+    target.getHSL(goldStrandHsl);
+    target.setHSL(
+      ((goldStrandHsl.h+GOLD_STRAND_TUNING.colorHue)%1+1)%1,
+      THREE.MathUtils.clamp(goldStrandHsl.s*GOLD_STRAND_TUNING.colorSaturation,0,1),
+      THREE.MathUtils.clamp(goldStrandHsl.l*GOLD_STRAND_TUNING.colorLightness,0,1)
+    );
+    var verticalBrightness=GOLD_STRAND_TUNING.topBrightness
+      +(GOLD_STRAND_TUNING.bottomBrightness-GOLD_STRAND_TUNING.topBrightness)*progress;
+    target.multiplyScalar(GOLD_STRAND_TUNING.colorIntensity*verticalBrightness);
+  }
+
   function goldStrandBendWeight(progress){
     return smooth((progress-.22)/.78);
   }
@@ -631,9 +681,17 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var fusionAmount=smooth((sMeta[vertexIndex*2]-.93)/.07)*.72;
     var selector=Math.sin(sMeta[vertexIndex*2+1]*2.71+vertexIndex*.037);
     var fusionColor=selector>.33?fusionRedColor:(selector<-.33?fusionBlueColor:GOLD.light);
-    targetColors[offset]=baseColors[offset]+(fusionColor.r-baseColors[offset])*fusionAmount;
-    targetColors[offset+1]=baseColors[offset+1]+(fusionColor.g-baseColors[offset+1])*fusionAmount;
-    targetColors[offset+2]=baseColors[offset+2]+(fusionColor.b-baseColors[offset+2])*fusionAmount;
+    var progress=sMeta[vertexIndex*2];
+    tuneGoldStrandColor(
+      goldTunedColor,
+      baseColors[offset]+(fusionColor.r-baseColors[offset])*fusionAmount,
+      baseColors[offset+1]+(fusionColor.g-baseColors[offset+1])*fusionAmount,
+      baseColors[offset+2]+(fusionColor.b-baseColors[offset+2])*fusionAmount,
+      progress
+    );
+    targetColors[offset]=goldTunedColor.r;
+    targetColors[offset+1]=goldTunedColor.g;
+    targetColors[offset+2]=goldTunedColor.b;
   }
 
   function goldStrandVertexLocal(vertexIndex,out,includeEndOffset){
@@ -708,6 +766,17 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         +Math.sin(time*WIND.speed*1.31+strandPhase)*WIND.sway*.08*strandProgress*strandProgress;
       wobbleZ[strandVertexIndex]=Math.cos(time*WIND.speed*2.43+strandProgress*WIND.waveFrequency*.78+strandPhase)*WIND.wave*.82*strandProgress*strandProgress
         +Math.cos(time*WIND.speed*1.07+strandPhase)*WIND.sway*.06*strandProgress*strandProgress;
+      var goldEscapeWeight=goldEscapeWeights[strandVertexIndex]||0;
+      if(goldEscapeWeight){
+        var goldEscapeEnvelope=smooth((strandProgress-.08)/.2)*smooth((.96-strandProgress)/.18);
+        var goldEscapeTravel=strandProgress*goldEscapeFrequencies[strandVertexIndex]*GOLD_STRAND_TUNING.escapeFrequency/GOLD_STRAND_TUNING.escapeWavelength
+          -time*goldEscapeSpeeds[strandVertexIndex]*GOLD_STRAND_TUNING.escapeSpeed;
+        var goldEscapeWave=(Math.sin(goldEscapeTravel+goldEscapePhases[strandVertexIndex])
+          +Math.sin(goldEscapeTravel*1.71+goldEscapePhases[strandVertexIndex]*.43)*.36)
+          *goldEscapeWeight*GOLD_STRAND_TUNING.escapeAmplitude*goldEscapeEnvelope*.18;
+        wobbleX[strandVertexIndex]+=Math.cos(strandPhase)*goldEscapeWave;
+        wobbleZ[strandVertexIndex]+=Math.sin(strandPhase)*goldEscapeWave*.72;
+      }
     }
     updateGoldEndOffset();
     var linePositionArray=linesObj.geometry.attributes.position.array;
@@ -1935,6 +2004,27 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var GOLD_POINT_SLIDERS=[
       ['ptSize','Faser-Dicke',0.004,0.12,0.001]
     ];
+    var GOLD_THICKNESS_SLIDERS=[
+      ['topThickness','Gesamtdicke oben',0.25,3,0.01],
+      ['bottomThickness','Gesamtdicke unten',0.25,3,0.01]
+    ];
+    var GOLD_ESCAPE_SLIDERS=[
+      ['escapeAmount','Ausreisser-Menge',0,1,0.01],
+      ['escapeAmplitude','Ausreisser-Ausschlag',0,3,0.01],
+      ['escapeFrequency','Wellen-Häufigkeit',0.1,3,0.01],
+      ['escapeWavelength','Wellenlänge',0.2,4,0.01],
+      ['escapeSpeed','Wellen-Fluss',0,3,0.01]
+    ];
+    var GOLD_COLOR_SLIDERS=[
+      ['colorHue','Metall-Farbton',-0.14,0.14,0.001],
+      ['colorSaturation','Metall-Sättigung',0,1.6,0.01],
+      ['colorLightness','Metall-Helligkeit',0.2,1.6,0.01],
+      ['colorIntensity','Farbintensität',0,3,0.01]
+    ];
+    var GOLD_LIGHT_GRADIENT_SLIDERS=[
+      ['topBrightness','Belichtung oben',0,3,0.01],
+      ['bottomBrightness','Belichtung unten',0,3,0.01]
+    ];
     var SECONDARY_GEOMETRY_SLIDERS=[
       ['fiberAmount','Faseranzahl',0.08,1.6,0.01],
       ['topFunnel','Trichter oben',0.2,3,0.01],
@@ -1984,9 +2074,26 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     tunePanel.style.cssText='position:fixed;top:80px;right:10px;z-index:99999;'
       +'background:rgba(10,10,10,.88);color:#fff;font:11px/1.4 monospace;padding:12px;border-radius:8px;'
       +'max-height:80vh;overflow:auto;width:276px;box-shadow:0 4px 20px rgba(0,0,0,.5);';
+    var TUNING_PANEL_POSITION_KEY='ms-strand-tuning-panel-position-v1';
+    function persistTuningPanelPosition(){
+      try {
+        window.localStorage.setItem(TUNING_PANEL_POSITION_KEY,JSON.stringify({
+          left:parseFloat(tunePanel.style.left),
+          top:parseFloat(tunePanel.style.top)
+        }));
+      } catch(_) {}
+    }
+    try {
+      var savedTuningPanelPosition=JSON.parse(window.localStorage.getItem(TUNING_PANEL_POSITION_KEY)||'null');
+      if(savedTuningPanelPosition&&Number.isFinite(savedTuningPanelPosition.left)&&Number.isFinite(savedTuningPanelPosition.top)){
+        tunePanel.style.left=savedTuningPanelPosition.left+'px';
+        tunePanel.style.top=savedTuningPanelPosition.top+'px';
+        tunePanel.style.right='auto';
+      }
+    } catch(_) {}
     tunePanel.style.display=tuneStartsOpen?'block':'none';
     var title=document.createElement('div');
-    title.textContent='☰ 3-Strang-Tuning';
+    title.textContent='☰ 3-Strang-Tuning · ziehen zum Platzieren';
     title.style.cssText='font-weight:bold;margin-bottom:8px;font-size:12px;cursor:move;'
       +'user-select:none;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.15);';
     tunePanel.appendChild(title);
@@ -2021,7 +2128,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         panel.style.top=(startTop+(clientY-startY))+'px';
         clamp();
       }
-      function onUp(){ dragging=false; }
+      function onUp(){
+        if(!dragging) return;
+        dragging=false;
+        persistTuningPanelPosition();
+      }
       handle.addEventListener('mousedown',function(e){ e.preventDefault(); onDown(e.clientX,e.clientY); });
       window.addEventListener('mousemove',function(e){ if(dragging) onMove(e.clientX,e.clientY); });
       window.addEventListener('mouseup',onUp);
@@ -2035,6 +2146,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       if(rebuildGeometry) rebuildSecondaryStrandGeometry(strand);
       curveExistingSatelliteStrand(strand,typeof t==='number'?t:0);
       applySecondaryRendering(strand);
+    }
+
+    function refreshGoldStrand(rebuildGeometry){
+      if(rebuildGeometry) rebuildStrand();
+      updateGoldStrandGeometry(typeof t==='number'?t:0);
+      applyGoldRendering();
     }
 
     function appendSecondaryControls(name,strand,color){
@@ -2075,7 +2192,16 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     WIND_SLIDERS.forEach(function(def){ addSlider(def,WIND,false); });
     sectionLabel('Gold • Faserbündel','#f6e3a1');
     PRIMARY_SHAPE_SLIDERS.forEach(function(def){ addSlider(def,SP); });
-    sectionLabel('Gold • Licht & Dicke','#f6e3a1');
+    sectionLabel('Gold • Gesamtdicke','#f6e3a1');
+    GOLD_THICKNESS_SLIDERS.forEach(function(def){ addSlider(def,GOLD_STRAND_TUNING,function(){ refreshGoldStrand(true); }); });
+    sectionLabel('Gold • Ausreisser-Fasern','#f6e3a1');
+    GOLD_ESCAPE_SLIDERS.forEach(function(def){
+      addSlider(def,GOLD_STRAND_TUNING,function(){ refreshGoldStrand(def[0]==='escapeAmount'); });
+    });
+    sectionLabel('Gold • Metallfarbe','#f6e3a1');
+    GOLD_COLOR_SLIDERS.forEach(function(def){ addSlider(def,GOLD_STRAND_TUNING,function(){ refreshGoldStrand(false); }); });
+    sectionLabel('Gold • Lichtverlauf & Dicke','#f6e3a1');
+    GOLD_LIGHT_GRADIENT_SLIDERS.forEach(function(def){ addSlider(def,GOLD_STRAND_TUNING,function(){ refreshGoldStrand(false); }); });
     GOLD_RENDER_SLIDERS.forEach(function(def){ addSlider(def,GOLD_RENDER,function(){ applyGoldRendering(); }); });
     GOLD_POINT_SLIDERS.forEach(function(def){ addSlider(def,SP,function(){ applyGoldRendering(); }); });
 
@@ -2089,7 +2215,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       +'border:1px solid rgba(231,197,106,.52);border-radius:5px;font-weight:bold;cursor:pointer;';
     resetGoldEndBtn.onclick=resetGoldStrandEnd;
     tunePanel.appendChild(resetGoldEndBtn);
-    window.__strandTuning={SP:SP,FN:FN,MP:MP,WIND:WIND,GOLD_RENDER:GOLD_RENDER,RED_STRAND:RED_STRAND,BLUE_STRAND:BLUE_STRAND,resetGoldEnd:resetGoldStrandEnd};
+    window.__strandTuning={SP:SP,FN:FN,MP:MP,WIND:WIND,GOLD_RENDER:GOLD_RENDER,GOLD_STRAND_TUNING:GOLD_STRAND_TUNING,RED_STRAND:RED_STRAND,BLUE_STRAND:BLUE_STRAND,resetGoldEnd:resetGoldStrandEnd};
     var copyBtn=document.createElement('button');
     copyBtn.textContent='Werte kopieren';
     copyBtn.style.cssText='margin-top:8px;width:100%;padding:6px;background:#c89a3d;color:#000;'
@@ -2111,6 +2237,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         +'WIND={ sway:'+WIND.sway+', speed:'+WIND.speed+', wave:'+WIND.wave+', waveFrequency:'+WIND.waveFrequency+' }\\n'
         +'stumpCenter=['+SBASE_X+','+SBASE_Y+','+SBASE_Z+']\n'
         +'GOLD_RENDER='+JSON.stringify(GOLD_RENDER)+'\n'
+        +'GOLD_STRAND_TUNING='+JSON.stringify(GOLD_STRAND_TUNING)+'\n'
         +'GOLD_END='+(strandEndTargetWorld?JSON.stringify({x:strandEndTargetWorld.x,y:strandEndTargetWorld.y,z:strandEndTargetWorld.z}):'null')+'\n'
         +'RED_STRAND='+JSON.stringify(RED_STRAND)+'\n'
         +'BLUE_STRAND='+JSON.stringify(BLUE_STRAND);
