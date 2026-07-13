@@ -192,13 +192,26 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var MAIN_BRAIN_MOUSE_YAW=THREE.MathUtils.degToRad(4);
   var MAIN_BRAIN_MOUSE_PITCH=THREE.MathUtils.degToRad(3);
   var GOLD={
-    deep:new THREE.Color(0x7c5a1a),
-    core:new THREE.Color(0xc89a3d),
-    line:new THREE.Color(0xe7c56a),
-    hot:new THREE.Color(0xf6e3a1),
-    white:new THREE.Color(0xf6e3a1)
+    primary:new THREE.Color(0xc89a3d),
+    light:new THREE.Color(0xe7c56a),
+    highlight:new THREE.Color(0xf6e3a1),
+    medium:new THREE.Color(0xb8862b),
+    deep:new THREE.Color(0x7c5a1a)
   };
-  var golds=[GOLD.core,GOLD.line,GOLD.hot,GOLD.white,GOLD.deep];
+  GOLD.core=GOLD.primary;
+  GOLD.line=GOLD.light;
+  GOLD.hot=GOLD.highlight;
+  GOLD.white=GOLD.highlight;
+  // Dieselbe gewichtete Metallic-Palette treibt das gesamte Hauptgehirn und
+  // den direkt daraus wachsenden Goldstrang: tiefe Schatten, ein warmer Kern
+  // und seltene Glanzlichter erzeugen den seidigen Metallverlauf.
+  var golds=[
+    GOLD.deep,
+    GOLD.medium,GOLD.medium,
+    GOLD.primary,GOLD.primary,GOLD.primary,
+    GOLD.light,GOLD.light,
+    GOLD.highlight
+  ];
   var cc=new THREE.Color();
   var keyLightDirection=new THREE.Vector3(-.42,.64,.64).normalize();
   function neuralShade(x,y,z){
@@ -223,7 +236,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     g2.setAttribute('position',new THREE.Float32BufferAttribute(arr,3));
     if(cols) g2.setAttribute('color',new THREE.Float32BufferAttribute(cols,3));
     var m2=new THREE.PointsMaterial({size:size,map:sprite,transparent:true,opacity:op,
-      vertexColors:!!cols,color:cols?0xffffff:0xe7c56a,blending:blending||THREE.NormalBlending,depthWrite:false});
+      vertexColors:!!cols,color:cols?0xffffff:GOLD.line,blending:blending||THREE.NormalBlending,depthWrite:false});
     return new THREE.Points(g2,m2);
   }
 
@@ -694,7 +707,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
 
   goldDragHandleMaterial=new THREE.SpriteMaterial({
     map:sprite,
-    color:0xe7c56a,
+    color:GOLD.line,
     transparent:true,
     opacity:.42,
     blending:THREE.AdditiveBlending,
@@ -740,7 +753,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   }
   var xgeo=new THREE.BufferGeometry();
   xgeo.setAttribute('position',new THREE.Float32BufferAttribute(xpos,3));
-  brain.add(dbgHide('cross',new THREE.LineSegments(xgeo,new THREE.LineBasicMaterial({color:0xe7c56a,transparent:true,opacity:.1,blending:THREE.AdditiveBlending,depthWrite:false}))));
+  brain.add(dbgHide('cross',new THREE.LineSegments(xgeo,new THREE.LineBasicMaterial({color:GOLD.line,transparent:true,opacity:.1,blending:THREE.AdditiveBlending,depthWrite:false}))));
 
   // --- Feines, wirres Liniengewebe: viele zusätzliche dünne Verbindungen
   // zwischen den goldenen Punkten, überzieht das Gehirn dichter ---
@@ -782,7 +795,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   brain.add(dbgHide('nodes',nodesP));
 
   function halo(sc,op,hy){
-    var sm=new THREE.SpriteMaterial({map:sprite,color:0xc89a3d,transparent:true,opacity:op,blending:THREE.AdditiveBlending,depthWrite:false});
+    var sm=new THREE.SpriteMaterial({map:sprite,color:GOLD.core,transparent:true,opacity:op,blending:THREE.AdditiveBlending,depthWrite:false});
     var sp=new THREE.Sprite(sm); sp.scale.set(sc,sc,1); sp.position.y=hy; brain.add(sp);
   }
   if (typeof window==='undefined' || new URLSearchParams(window.location.search).get('nohalo')!=='1') {
@@ -913,7 +926,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var halfNodeColors=[];
     for(nodeIndex=0;nodeIndex<halfNodeCount;nodeIndex++){
       var intensity=.38+rnd()*.62;
-      halfNodeColors.push(new THREE.Color(GOLD.deep).lerp(GOLD.hot,intensity));
+      halfNodeColors.push(new THREE.Color(GOLD.core).lerp(GOLD.line,intensity));
     }
     for(nodeIndex=0;nodeIndex<halfNodeCount;nodeIndex++) nodeColors.push(halfNodeColors[nodeIndex]);
     for(nodeIndex=0;nodeIndex<halfNodeCount;nodeIndex++) nodeColors.push(halfNodeColors[nodeIndex].clone());
@@ -973,7 +986,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       for(var hemisphereIndex=0;hemisphereIndex<2;hemisphereIndex++){
         var hubNode=networkNodes[nodeIndex+hemisphereIndex*halfNodeCount];
         hubPositions.push(hubNode.x,hubNode.y,hubNode.z);
-        hubColors.push(GOLD.hot.r,GOLD.hot.g,GOLD.hot.b);
+        hubColors.push(GOLD.line.r,GOLD.line.g,GOLD.line.b);
       }
     }
     var hubPoints=pointsObj(hubPositions,hubColors,.13,.85,THREE.AdditiveBlending);
@@ -1300,7 +1313,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var g3=new THREE.BufferGeometry();
     this.arr=new Float32Array(7*3);
     g3.setAttribute('position',new THREE.BufferAttribute(this.arr,3));
-    this.mat=new THREE.LineBasicMaterial({color:0xf6e3a1,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
+    this.mat=new THREE.LineBasicMaterial({color:GOLD.line,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
     this.line=new THREE.Line(g3,this.mat);
     this.line.frustumCulled=false;
     this.life=0; this.wait=Math.random()*1.5;
