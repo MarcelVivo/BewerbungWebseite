@@ -1130,8 +1130,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   BLUE_STRAND.baseBrightness=.95;
   BLUE_STRAND.pulseStrength=.14;
   var secondaryMergeTargetWorld=new THREE.Vector3();
-  var secondaryStartLocal=new THREE.Vector3();
-  var secondaryStartWorld=new THREE.Vector3();
+  var secondarySatelliteWorld=new THREE.Vector3();
 
   function makeSecondaryFiberShape(){
     return {
@@ -1159,11 +1158,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var fibers=[], pointValueCount=0, lineValueCount=0;
     for(var selectedIndex=0;selectedIndex<fiberCount;selectedIndex++){
       var sourceAngle=Math.PI*2*selectedIndex/fiberCount+(Math.random()-.5)*.16;
-      var sourceRadius=(.13+Math.sqrt(Math.random())*.27)*params.topFunnel;
       fibers.push({
-        sourceX:SBASE_X+Math.cos(sourceAngle)*sourceRadius,
-        sourceY:SBASE_Y-(.025+Math.random()*.16)*params.topFunnel,
-        sourceZ:SBASE_Z+Math.sin(sourceAngle)*sourceRadius,
+        sourceAngle:sourceAngle,
+        sourceRadius:.14+Math.sqrt(Math.random())*.24,
+        sourceDrop:.04+Math.random()*.16,
         len:fiberSegments,
         pointOffset:pointValueCount,
         lineOffset:lineValueCount,
@@ -1241,25 +1239,20 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     if(!strand.fibers.length) return;
     var params=strand.params;
     strand.satellite.updateWorldMatrix(true,false);
+    strand.satellite.getWorldPosition(secondarySatelliteWorld);
     goldStrandTipWorld(secondaryMergeTargetWorld,true);
     strand.lineColors.fill(0);
     strand.pointColors.fill(0);
     var mergeX=secondaryMergeTargetWorld.x;
     var mergeY=secondaryMergeTargetWorld.y;
     var mergeZ=secondaryMergeTargetWorld.z;
-    var inwardStart=Math.max(.05,Math.min(.65,params.connectorShare+params.sidePull*.06));
     var terminalStart=Math.max(.84,Math.min(.96,.96-params.endPull*.08));
     for(var fiberIndex=0;fiberIndex<strand.fibers.length;fiberIndex++){
       var fiber=strand.fibers[fiberIndex], fiberShape=fiber.shape;
-      secondaryStartLocal.set(
-        fiber.sourceX,
-        fiber.sourceY,
-        fiber.sourceZ
-      );
-      strand.satellite.localToWorld(secondaryStartWorld.copy(secondaryStartLocal));
-      var startX=secondaryStartWorld.x;
-      var startY=secondaryStartWorld.y;
-      var startZ=secondaryStartWorld.z;
+      var sourceScale=strand.satellite.scale.x*params.topFunnel;
+      var startX=secondarySatelliteWorld.x+Math.cos(fiber.sourceAngle)*fiber.sourceRadius*sourceScale;
+      var startY=secondarySatelliteWorld.y-strand.satellite.scale.x*.76-fiber.sourceDrop*sourceScale;
+      var startZ=secondarySatelliteWorld.z+Math.sin(fiber.sourceAngle)*fiber.sourceRadius*sourceScale;
       var sideX=startX-mergeX;
       var sideZ=startZ-mergeZ;
       var sideLength=Math.sqrt(sideX*sideX+sideZ*sideZ);
@@ -1277,7 +1270,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var previousR=0, previousG=0, previousB=0, lineOffset=fiber.lineOffset;
       for(var step=0;step<fiber.len;step++){
         var progress=fiber.len>1?step/(fiber.len-1):0;
-        var inwardProgress=progress<=inwardStart?0:smooth((progress-inwardStart)/(1-inwardStart));
+        var inwardProgress=progress;
         var terminalBlend=smooth((progress-terminalStart)/(1-terminalStart));
         var sagEnvelope=Math.sin(progress*Math.PI);
         var hangingSag=(firstSag*(1-progress)+secondSag*progress)*sagEnvelope;
