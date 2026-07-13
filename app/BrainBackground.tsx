@@ -374,10 +374,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
            curve:0, twist:5.2, jitter:0, rungs:0.68, ptSize:0.044, spacing:0.06,
            ringSpread:0.1, offX:0, offY:0, offZ:0,
            droop:1.5, frayStart:0.98, fraySpread:0.12 };
-  // Trichter: jede Faser startet an einem echten goldenen Vertex im Stumpf-
-  // Bereich und läuft über eine kurze, sanft gekrümmte Kurve zu einem
-  // Konvergenzpunkt auf der Mittelachse, bevor sie in das bestehende
-  // Bündel (Taper/Droop/Fray) übergeht.
+  // Trichter: Jede Faser startet an einem echten goldenen Vertex im Stumpf-
+  // Bereich, läuft über einen organischen Fächer zu einem individuellen Punkt
+  // auf dem unteren Auslassring und ordnet sich erst danach weich im Bündel.
   var FN={ count:isMobile?96:220, anchorRadius:0.59, funnelHeight:0.19, funnelSegs:3, convergePull:0.65,
            outletRadius:0.16, outletHeightSpread:0.22, randomness:1 };
   var MP={ moveLeft:0, moveRight:0, moveForward:0, moveBack:0, moveVertical:0.01 };
@@ -1683,6 +1682,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       ['funnelHeight','Trichter-Höhe',0.05,0.9,0.01],
       ['funnelSegs','Trichter-Segmente',3,20,1],
       ['convergePull','Konvergenz-Stärke',0.1,1,0.01],
+      ['outletRadius','Auslass-Radius unten',0.04,0.42,0.005],
+      ['outletHeightSpread','Auslass-Höhenstreuung',0,0.5,0.005],
       ['randomness','Zufälligkeit',0,1,0.01]
     ];
     var WIND_SLIDERS=[
@@ -1860,7 +1861,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         +', ringSpread:'+SP.ringSpread+', offX:'+SP.offX+', offY:'+SP.offY+', offZ:'+SP.offZ
         +', droop:'+SP.droop+', frayStart:'+SP.frayStart+', fraySpread:'+SP.fraySpread+' }\\n'
         +'FN={ count:'+FN.count+', anchorRadius:'+FN.anchorRadius+', funnelHeight:'+FN.funnelHeight
-        +', funnelSegs:'+FN.funnelSegs+', convergePull:'+FN.convergePull+', randomness:'+FN.randomness+' }\\n'
+        +', funnelSegs:'+FN.funnelSegs+', convergePull:'+FN.convergePull+', outletRadius:'+FN.outletRadius
+        +', outletHeightSpread:'+FN.outletHeightSpread+', randomness:'+FN.randomness+' }\\n'
         +'MP={ moveLeft:'+MP.moveLeft+', moveRight:'+MP.moveRight+', moveForward:'+MP.moveForward
         +', moveBack:'+MP.moveBack+', moveVertical:'+MP.moveVertical+' }\\n'
         +'WIND={ sway:'+WIND.sway+', speed:'+WIND.speed+', wave:'+WIND.wave+', waveFrequency:'+WIND.waveFrequency+' }\\n'
