@@ -1201,14 +1201,14 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var lineGeometry=new THREE.BufferGeometry();
     lineGeometry.setAttribute('position',new THREE.BufferAttribute(new Float32Array(0),3));
     lineGeometry.setAttribute('color',new THREE.BufferAttribute(new Float32Array(0),3));
-    var lineMesh=new THREE.LineSegments(lineGeometry,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:params.lineOpacity,blending:THREE.AdditiveBlending,depthWrite:false,depthTest:false}));
+    var lineMesh=new THREE.LineSegments(lineGeometry,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:params.lineOpacity,blending:THREE.AdditiveBlending,depthWrite:false,depthTest:false,fog:false,toneMapped:false}));
     lineMesh.frustumCulled=false;
     lineMesh.renderOrder=4;
     tailGroup.add(lineMesh);
     var pointGeometry=new THREE.BufferGeometry();
     pointGeometry.setAttribute('position',new THREE.BufferAttribute(new Float32Array(0),3));
     pointGeometry.setAttribute('color',new THREE.BufferAttribute(new Float32Array(0),3));
-    var pointMesh=new THREE.Points(pointGeometry,new THREE.PointsMaterial({size:params.pointSize,map:sprite,transparent:true,opacity:params.pointOpacity,vertexColors:true,color:0xffffff,blending:THREE.AdditiveBlending,depthWrite:false,depthTest:false}));
+    var pointMesh=new THREE.Points(pointGeometry,new THREE.PointsMaterial({size:params.pointSize,map:sprite,transparent:true,opacity:params.pointOpacity,vertexColors:true,color:0xffffff,blending:THREE.AdditiveBlending,depthWrite:false,depthTest:false,fog:false,toneMapped:false}));
     pointMesh.frustumCulled=false;
     pointMesh.renderOrder=5;
     tailGroup.add(pointMesh);
