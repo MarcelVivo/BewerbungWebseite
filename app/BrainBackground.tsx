@@ -125,10 +125,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     floatingObjects.push(textSprite);
   }
 
-  // Auf Mobile zeigt .spiral-mobile den echten Inhalt als gestapelte DOM-Karten;
-  // diese schwebenden WebGL-Textkarten sind für die Desktop-3D-Spirale gedacht
-  // und würden auf Mobile nur mit dem echten Text überlappen (schlechte Lesbarkeit).
-  if(!isMobile) introTexts.forEach(buildIntroSprite);
+  // Dieselbe 3D-Scroll-Spirale wie am Desktop läuft jetzt auch auf Mobile
+  // (.spiral-mobile-Fallback ist deaktiviert), daher werden die schwebenden
+  // WebGL-Textkarten auf allen Geräten gebaut.
+  introTexts.forEach(buildIntroSprite);
 
   function buildServiceCard(card,index,worldIndex){
     var cardCanvas=document.createElement('canvas');

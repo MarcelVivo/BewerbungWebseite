@@ -1488,20 +1488,6 @@ body {
     margin-inline: auto;
   }
 
-  .spiral-section {
-    min-height: auto;
-    margin-top: 0;
-    padding: 5rem 0;
-  }
-
-  .spiral-sticky {
-    display: none;
-  }
-
-  .spiral-mobile {
-    display: block;
-  }
-
   .spiral-mobile > div {
     max-width: 30rem;
   }
@@ -1574,6 +1560,18 @@ body {
   .faq-section {
     padding-top: 4.5rem;
     padding-bottom: 4.5rem;
+  }
+}
+
+@media (max-width: 700px) {
+  /* Unter 700px (derselbe Schwellenwert wie isMobile in BrainBackground.tsx)
+     ist die 2×2-Kartengruppe zu schmal für zwei Spalten nebeneinander —
+     eine Spalte bleibt lesbar, ohne das Layout/die Animationen der
+     einzelnen Karten (ngp-*) zu verändern. */
+  .spiral-service-stations {
+    grid-template-columns: 1fr;
+    width: min(24rem, 84vw);
+    gap: 0.85rem;
   }
 }
 
