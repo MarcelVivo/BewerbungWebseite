@@ -914,8 +914,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       if(part.material){
         var tintedMaterial=part.material.clone();
         if(tintedMaterial.color){
-          if(tintedMaterial.vertexColors) tintedMaterial.color.set(0xffffff);
-          else tintedMaterial.color.copy(tintColor);
+          // Die Satelliten dürfen niemals Restfarben des goldenen
+          // Ausgangsgehirns durch Vertex-Farben übernehmen. Ihre komplette
+          // Drahtstruktur bleibt deshalb strikt in der eigenen Metallpalette.
+          tintedMaterial.vertexColors=false;
+          tintedMaterial.color.copy(part.isPoints?palette.light:tintColor);
         }
         part.material=tintedMaterial;
       }
