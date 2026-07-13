@@ -1138,6 +1138,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       connectorShare:.18,
       joinRadius:.08,
       funnelSpread:1,
+      funnelLength:.72,
+      funnelTopRadius:.31,
+      funnelOutletRadius:.052,
       firstDroop:1.22,
       secondDroop:1.42,
       sidePull:.8,
@@ -1146,9 +1149,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       pulseSpeed:3.4,
       pulseStrength:.32,
       baseBrightness:.3,
-      helixStart:.72,
-      helixTurns:1.18,
-      helixRadius:.24,
       posX:0,
       posY:0,
       posZ:0
@@ -1163,8 +1163,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var secondaryMergeTargetWorld=new THREE.Vector3();
   var secondarySatelliteWorld=new THREE.Vector3();
   var secondaryRenderPoint=new THREE.Vector3();
-  var secondaryGoldJoinLocal=new THREE.Vector3();
-  var secondaryGoldJoinWorld=new THREE.Vector3();
 
   function makeSecondaryFiberShape(){
     return {
@@ -1175,9 +1173,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       firstSway:(Math.random()-.5)*.2,
       secondSway:(Math.random()-.5)*.15,
       windPhase:Math.random()*Math.PI*2,
-      funnelVariation:.82+Math.random()*.36,
-      goldFiberIndex:Math.floor(Math.random()*Math.max(1,sFibers.length)),
-      goldFiberProgress:.78+Math.random()*.2
+      funnelVariation:.82+Math.random()*.36
     };
   }
 
@@ -1261,7 +1257,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       linePositions:null,
       pointPositions:null,
       lineColors:null,
-      pointColors:null
+      pointColors:null,
+      lowerAnchors:null
     };
     satelliteStrands.push(strand);
     rebuildSecondaryStrandGeometry(strand);
@@ -1281,43 +1278,64 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var mergeX=secondaryMergeTargetWorld.x;
     var mergeY=secondaryMergeTargetWorld.y;
     var mergeZ=secondaryMergeTargetWorld.z;
-    var terminalStart=Math.max(.84,Math.min(.96,.96-params.endPull*.08));
+    // Der goldene Trichter arbeitet mit einem breiten Faserursprung, drei
+    // weichen Sammelstufen (.34/.38/.28) und einer relativ langen
+    // Wurzelzone. Die roten/blauen Trichter nutzen exakt diese Logik, nur
+    // proportional zur Skalierung ihres jeweiligen Satelliten-Gehirns.
+    if(!strand.lowerAnchors){
+      var satellitePoints=strand.satellite.getObjectByName('neural-points');
+      var sourceAttribute=satellitePoints&&satellitePoints.geometry&&satellitePoints.geometry.attributes.position;
+      var anchors=[];
+      if(sourceAttribute){
+        var sourcePositions=sourceAttribute.array;
+        var minY=Infinity, maxY=-Infinity;
+        for(var sourceIndex=0;sourceIndex<sourceAttribute.count;sourceIndex++){
+          var sourceY=sourcePositions[sourceIndex*3+1];
+          minY=Math.min(minY,sourceY); maxY=Math.max(maxY,sourceY);
+        }
+        var lowerLimit=minY+(maxY-minY)*.34;
+        for(var lowerIndex=0;lowerIndex<sourceAttribute.count;lowerIndex++){
+          var lowerY=sourcePositions[lowerIndex*3+1];
+          if(lowerY<=lowerLimit) anchors.push(new THREE.Vector3(sourcePositions[lowerIndex*3],lowerY,sourcePositions[lowerIndex*3+2]));
+        }
+      }
+      // Fallback bleibt bewusst breit verteilt, falls ein Modell keine
+      // neural-points-Geometrie besitzt.
+      if(!anchors.length) anchors=[new THREE.Vector3(-.24,-.42,0),new THREE.Vector3(.24,-.42,0),new THREE.Vector3(0,-.48,.18),new THREE.Vector3(0,-.48,-.18)];
+      strand.lowerAnchors=anchors;
+    }
+    var funnelEnd=.27;
+    var terminalStart=.94;
     for(var fiberIndex=0;fiberIndex<strand.fibers.length;fiberIndex++){
       var fiber=strand.fibers[fiberIndex], fiberShape=fiber.shape;
-      var goldJoinFiber=sFibers[fiberShape.goldFiberIndex%sFibers.length];
-      var goldJoinVertex=goldJoinFiber.start+Math.floor((goldJoinFiber.len-1)*fiberShape.goldFiberProgress);
-      goldStrandVertexLocal(goldJoinVertex,secondaryGoldJoinLocal,true);
-      secondaryGoldJoinWorld.copy(secondaryGoldJoinLocal);
-      brain.localToWorld(secondaryGoldJoinWorld);
       var sourceScale=strand.satellite.scale.x*params.topFunnel;
-      var startX=secondarySatelliteWorld.x+Math.cos(fiber.sourceAngle)*fiber.sourceRadius*sourceScale;
-      // Die Faseranker liegen bewusst bereits innerhalb der unteren
-      // Gehirnoberfläche. So wächst der Trichter aus dem Netzwerk heraus,
-      // statt mit einer sichtbaren Lücke darunter zu beginnen.
-      var startY=secondarySatelliteWorld.y-strand.satellite.scale.x*.44-fiber.sourceDrop*sourceScale;
-      var startZ=secondarySatelliteWorld.z+Math.sin(fiber.sourceAngle)*fiber.sourceRadius*sourceScale;
+      var anchorLocal=strand.lowerAnchors[(fiberIndex*37)%strand.lowerAnchors.length];
+      var anchorWorld=anchorLocal.clone();
+      strand.satellite.localToWorld(anchorWorld);
+      var startX=anchorWorld.x, startY=anchorWorld.y, startZ=anchorWorld.z;
       var funnelAngle=fiber.sourceAngle+fiberShape.phaseOffset*.42;
       var funnelCos=Math.cos(funnelAngle), funnelSin=Math.sin(funnelAngle);
       var funnelScale=sourceScale*fiberShape.funnelVariation;
-      var funnelMicroX=secondarySatelliteWorld.x+funnelCos*funnelScale*.25;
-      var funnelMicroY=secondarySatelliteWorld.y-sourceScale*.63;
-      var funnelMicroZ=secondarySatelliteWorld.z+funnelSin*funnelScale*.25;
-      var funnelMediumX=secondarySatelliteWorld.x+funnelCos*funnelScale*.13;
-      var funnelMediumY=secondarySatelliteWorld.y-sourceScale*.89;
-      var funnelMediumZ=secondarySatelliteWorld.z+funnelSin*funnelScale*.13;
-      var funnelOutletX=secondarySatelliteWorld.x+funnelCos*funnelScale*.045;
-      var funnelOutletY=secondarySatelliteWorld.y-sourceScale*1.16;
-      var funnelOutletZ=secondarySatelliteWorld.z+funnelSin*funnelScale*.045;
-      var sideX=startX-mergeX;
-      var sideZ=startZ-mergeZ;
+      var funnelLength=params.funnelLength*sourceScale;
+      var funnelMicroX=secondarySatelliteWorld.x+funnelCos*params.funnelTopRadius*funnelScale;
+      var funnelMicroY=secondarySatelliteWorld.y-funnelLength*.36;
+      var funnelMicroZ=secondarySatelliteWorld.z+funnelSin*params.funnelTopRadius*funnelScale;
+      var funnelMediumX=secondarySatelliteWorld.x+funnelCos*params.funnelTopRadius*funnelScale*.48;
+      var funnelMediumY=secondarySatelliteWorld.y-funnelLength*.67;
+      var funnelMediumZ=secondarySatelliteWorld.z+funnelSin*params.funnelTopRadius*funnelScale*.48;
+      var funnelOutletX=secondarySatelliteWorld.x+funnelCos*params.funnelOutletRadius*funnelScale;
+      var funnelOutletY=secondarySatelliteWorld.y-funnelLength;
+      var funnelOutletZ=secondarySatelliteWorld.z+funnelSin*params.funnelOutletRadius*funnelScale;
+      var sideX=funnelOutletX-mergeX;
+      var sideZ=funnelOutletZ-mergeZ;
       var sideLength=Math.sqrt(sideX*sideX+sideZ*sideZ);
       if(sideLength<.0001){ sideX=strand.sideSign; sideZ=0; sideLength=1; }
       sideX/=sideLength;
       sideZ/=sideLength;
       var depthX=-sideZ;
       var depthZ=sideX;
-      var horizontalSpan=Math.sqrt((mergeX-startX)*(mergeX-startX)+(mergeZ-startZ)*(mergeZ-startZ));
-      var catenaryDepth=.16+Math.min(.46,horizontalSpan*.045);
+      var horizontalSpan=Math.sqrt((mergeX-funnelOutletX)*(mergeX-funnelOutletX)+(mergeZ-funnelOutletZ)*(mergeZ-funnelOutletZ));
+      var catenaryDepth=.2+Math.min(.62,horizontalSpan*.09);
       var firstSag=catenaryDepth*fiberShape.firstDroop*params.firstDroop;
       var secondSag=catenaryDepth*fiberShape.secondDroop*params.secondDroop;
       var fiberAngle=fiberShape.phaseOffset*17+fiberIndex*.618;
@@ -1325,24 +1343,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var previousR=0, previousG=0, previousB=0, lineOffset=fiber.lineOffset;
       for(var step=0;step<fiber.len;step++){
         var progress=fiber.len>1?step/(fiber.len-1):0;
-        var inwardProgress=progress;
         var terminalBlend=smooth((progress-terminalStart)/(1-terminalStart));
-        var sagEnvelope=Math.sin(progress*Math.PI);
-        var hangingSag=(firstSag*(1-progress)+secondSag*progress)*sagEnvelope;
-        var looseSpread=(params.joinRadius*(.28+Math.abs(fiberShape.radiusOffset)*1.8)+params.funnelSpread*.018)*sagEnvelope*(1-terminalBlend);
-        var windEnvelope=sagEnvelope*(1-terminalBlend);
-        var windSide=Math.sin(flowTime*.64+progress*5.4+fiberShape.windPhase)*params.sway*.045*windEnvelope;
-        var windDepth=Math.cos(flowTime*.49+progress*4.1+fiberShape.windPhase*1.37)*params.sway*.022*windEnvelope;
-        var manualEnvelope=sagEnvelope*(1-terminalBlend);
-        var fiberSplit=smooth((progress-.82)/.18);
-        var endSpread=(.008+Math.abs(fiberShape.radiusOffset)*.022)*terminalBlend*(1-fiberSplit);
-        var endOffsetX=Math.cos(fiberAngle)*endSpread;
-        var endOffsetZ=Math.sin(fiberAngle)*endSpread;
-        var manualVertical=params.posY*manualEnvelope;
-        x=startX+(mergeX-startX)*inwardProgress;
-        y=startY+(mergeY-startY)*progress-hangingSag-manualVertical;
-        z=startZ+(mergeZ-startZ)*inwardProgress;
-        var funnelProgress=Math.min(1,progress/.24);
+        var funnelProgress=Math.min(1,progress/funnelEnd);
         var funnelX, funnelY, funnelZ, funnelStage;
         if(funnelProgress<.34){
           funnelStage=smooth(funnelProgress/.34);
@@ -1360,31 +1362,39 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           funnelY=funnelMediumY+(funnelOutletY-funnelMediumY)*funnelStage;
           funnelZ=funnelMediumZ+(funnelOutletZ-funnelMediumZ)*funnelStage;
         }
-        var funnelRelease=smooth(progress/.24);
-        x+=(funnelX-x)*(1-funnelRelease);
-        y+=(funnelY-y)*(1-funnelRelease);
-        z+=(funnelZ-z)*(1-funnelRelease);
-        var helixProgress=smooth((progress-params.helixStart)/(1-params.helixStart));
-        var helixRadius=Math.max(.004,(params.helixRadius+fiberShape.radiusOffset*.45)*(1-helixProgress*.97));
-        var helixAngle=strand.phase+strand.flowDirection*helixProgress*Math.PI*2*params.helixTurns+fiberShape.phaseOffset*.9;
-        var helixX=mergeX+Math.cos(helixAngle)*helixRadius;
-        var helixZ=mergeZ+Math.sin(helixAngle)*helixRadius;
-        x+=(helixX-x)*helixProgress;
-        z+=(helixZ-z)*helixProgress;
-        x+=(secondaryGoldJoinWorld.x-x)*fiberSplit;
-        y+=(secondaryGoldJoinWorld.y-y)*fiberSplit;
-        z+=(secondaryGoldJoinWorld.z-z)*fiberSplit;
+        var pathProgress=smooth((progress-funnelEnd)/(1-funnelEnd));
+        var sagEnvelope=Math.sin(pathProgress*Math.PI);
+        var hangingSag=(firstSag*(1-pathProgress)+secondSag*pathProgress)*sagEnvelope;
+        var looseSpread=(params.joinRadius*(.32+Math.abs(fiberShape.radiusOffset)*1.8)+params.funnelSpread*.018)*sagEnvelope*(1-terminalBlend);
+        var windEnvelope=sagEnvelope*(1-terminalBlend);
+        var windSide=Math.sin(flowTime*.64+pathProgress*5.4+fiberShape.windPhase)*params.sway*.045*windEnvelope;
+        var windDepth=Math.cos(flowTime*.49+pathProgress*4.1+fiberShape.windPhase*1.37)*params.sway*.022*windEnvelope;
+        var manualEnvelope=sagEnvelope*(1-terminalBlend);
+        var endSpread=(.008+Math.abs(fiberShape.radiusOffset)*.022)*(1-terminalBlend);
+        var endOffsetX=Math.cos(fiberAngle)*endSpread;
+        var endOffsetZ=Math.sin(fiberAngle)*endSpread;
+        var manualVertical=params.posY*manualEnvelope;
+        var pathX=funnelOutletX+(mergeX-funnelOutletX)*pathProgress;
+        var pathY=funnelOutletY+(mergeY-funnelOutletY)*pathProgress-hangingSag-manualVertical;
+        var pathZ=funnelOutletZ+(mergeZ-funnelOutletZ)*pathProgress;
+        // Im Trichter nur die drei Gold-Referenzstufen. Danach folgt die
+        // vollständige, lange Diagonale – keine Helix und kein Gold-Join vor
+        // dem letzten Endbereich.
+        var funnelRelease=1-smooth(progress/funnelEnd);
+        x=pathX+(funnelX-pathX)*funnelRelease;
+        y=pathY+(funnelY-pathY)*funnelRelease;
+        z=pathZ+(funnelZ-pathZ)*funnelRelease;
         x+=sideX*(Math.cos(fiberAngle)*looseSpread+windSide+params.posX*manualEnvelope+endOffsetX)
           +depthX*(Math.sin(fiberAngle)*looseSpread+windDepth+params.posZ*manualEnvelope+endOffsetZ);
         z+=sideZ*(Math.cos(fiberAngle)*looseSpread+windSide+params.posX*manualEnvelope+endOffsetX)
           +depthZ*(Math.sin(fiberAngle)*looseSpread+windDepth+params.posZ*manualEnvelope+endOffsetZ);
         var pulse=Math.max(0,Math.sin(flowTime*params.pulseSpeed*strand.flowDirection-progress*20*strand.flowDirection+fiberShape.phaseOffset));
         var brightness=(params.baseBrightness+pulse*params.pulseStrength)*params.intensity;
-        var terminalColor=GOLD.light;
-        var colorBlend=Math.max(terminalBlend*.42,fiberSplit);
-        var colorR=(strand.color.r+(terminalColor.r-strand.color.r)*colorBlend)*brightness;
-        var colorG=(strand.color.g+(terminalColor.g-strand.color.g)*colorBlend)*brightness;
-        var colorB=(strand.color.b+(terminalColor.b-strand.color.b)*colorBlend)*brightness;
+        // Die drei Bündel bleiben im gemeinsamen unteren Bereich als
+        // parallele Einzelfasern klar unterscheidbar: keine Farbmischung.
+        var colorR=strand.color.r*brightness;
+        var colorG=strand.color.g*brightness;
+        var colorB=strand.color.b*brightness;
         secondaryRenderPoint.set(x,y,z);
         brain.worldToLocal(secondaryRenderPoint);
         x=secondaryRenderPoint.x;
