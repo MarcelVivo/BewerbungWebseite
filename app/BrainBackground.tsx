@@ -1263,19 +1263,22 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       brain.localToWorld(secondaryGoldJoinWorld);
       var sourceScale=strand.satellite.scale.x*params.topFunnel;
       var startX=secondarySatelliteWorld.x+Math.cos(fiber.sourceAngle)*fiber.sourceRadius*sourceScale;
-      var startY=secondarySatelliteWorld.y-strand.satellite.scale.x*.76-fiber.sourceDrop*sourceScale;
+      // Die Faseranker liegen bewusst bereits innerhalb der unteren
+      // Gehirnoberfläche. So wächst der Trichter aus dem Netzwerk heraus,
+      // statt mit einer sichtbaren Lücke darunter zu beginnen.
+      var startY=secondarySatelliteWorld.y-strand.satellite.scale.x*.44-fiber.sourceDrop*sourceScale;
       var startZ=secondarySatelliteWorld.z+Math.sin(fiber.sourceAngle)*fiber.sourceRadius*sourceScale;
       var funnelAngle=fiber.sourceAngle+fiberShape.phaseOffset*.42;
       var funnelCos=Math.cos(funnelAngle), funnelSin=Math.sin(funnelAngle);
       var funnelScale=sourceScale*fiberShape.funnelVariation;
       var funnelMicroX=secondarySatelliteWorld.x+funnelCos*funnelScale*.25;
-      var funnelMicroY=secondarySatelliteWorld.y-sourceScale*.91;
+      var funnelMicroY=secondarySatelliteWorld.y-sourceScale*.63;
       var funnelMicroZ=secondarySatelliteWorld.z+funnelSin*funnelScale*.25;
       var funnelMediumX=secondarySatelliteWorld.x+funnelCos*funnelScale*.13;
-      var funnelMediumY=secondarySatelliteWorld.y-sourceScale*1.12;
+      var funnelMediumY=secondarySatelliteWorld.y-sourceScale*.89;
       var funnelMediumZ=secondarySatelliteWorld.z+funnelSin*funnelScale*.13;
       var funnelOutletX=secondarySatelliteWorld.x+funnelCos*funnelScale*.045;
-      var funnelOutletY=secondarySatelliteWorld.y-sourceScale*1.34;
+      var funnelOutletY=secondarySatelliteWorld.y-sourceScale*1.16;
       var funnelOutletZ=secondarySatelliteWorld.z+funnelSin*funnelScale*.045;
       var sideX=startX-mergeX;
       var sideZ=startZ-mergeZ;
