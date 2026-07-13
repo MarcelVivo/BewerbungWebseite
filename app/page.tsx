@@ -101,6 +101,8 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
   const viewportRef = useRef({ width: 0, height: 0 });
   const serviceStationsRef = useRef<HTMLDivElement | null>(null);
   const cardsWorldRef = useRef<HTMLDivElement | null>(null);
+  const detailScrollDistanceRef = useRef(0);
+  const detailScrollStepsRef = useRef(0);
 
   // Neural Glass Panels: die vier Karten bilden EIN zusammenstehendes
   // 2×2-Element (CardsHelixGroup), fixiert an EINER festen Helix-Position
@@ -409,11 +411,23 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
     if (!activeServiceSlug) return;
 
     let lastScrollY = window.scrollY;
+    detailScrollDistanceRef.current = 0;
+    detailScrollStepsRef.current = 0;
 
     const handleScroll = () => {
       const delta = Math.abs(window.scrollY - lastScrollY);
       lastScrollY = window.scrollY;
-      if (delta >= 6) setActiveServiceSlug(null);
+      if (delta < 4) return;
+
+      detailScrollDistanceRef.current += delta;
+      while (detailScrollDistanceRef.current >= 90) {
+        detailScrollDistanceRef.current -= 90;
+        detailScrollStepsRef.current += 1;
+      }
+
+      if (detailScrollStepsRef.current >= 2) {
+        setActiveServiceSlug(null);
+      }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });

@@ -566,6 +566,7 @@ body {
 }
 
 .spiral-service-stations.is-detail-open .spiral-service-card {
+  opacity: 0 !important;
   pointer-events: none;
 }
 
