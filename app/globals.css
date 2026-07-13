@@ -598,14 +598,17 @@ body {
   pointer-events: none;
   transform: translate3d(0, 0, 24px) scale(0.975);
   transition:
-    opacity 360ms ease,
-    transform 620ms cubic-bezier(.2,.9,.18,1);
+    opacity 260ms ease,
+    transform 360ms cubic-bezier(.2,.9,.18,1);
 }
 
 .spiral-detail-panel.is-open {
   opacity: 1;
   pointer-events: auto;
   transform: translate3d(0, 0, 24px) scale(1);
+  transition:
+    opacity 360ms ease 300ms,
+    transform 620ms cubic-bezier(.2,.9,.18,1) 300ms;
 }
 
 .spiral-detail-panel::before {
