@@ -2032,7 +2032,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var satelliteSway=Math.sin(t*.08)*Math.PI/6;
       brain.rotation.y = THREE.MathUtils.clamp(mainBrainYaw,BASE_Y-MAX_MAIN_BRAIN_YAW,BASE_Y+MAX_MAIN_BRAIN_YAW);
       brain.rotation.x = THREE.MathUtils.clamp(MAIN_BRAIN_BASE_X+Math.sin(t*.23)*.012+smoothMouseY*MAIN_BRAIN_MOUSE_PITCH,.24,.34);
-      brain.rotation.z = Math.cos(t*.19+1.1)*.014+smoothMouseX*.03;
+      // Keine seitliche Roll-Neigung: das Gehirn soll exakt horizontal
+      // schweben, ohne Neigung auf irgendeine Seite — nur Blickrichtung
+      // (Y, oben) und Nicken (X, oben) bleiben animiert.
+      brain.rotation.z = 0;
       stumpCenterOffset.copy(stumpCenterLocal).applyEuler(brain.rotation).multiplyScalar(brain.scale.x);
       brain.position.x = -stumpCenterOffset.x+smoothMouseX*.14;
       brain.position.z = -stumpCenterOffset.z;
@@ -2048,7 +2051,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         satelliteBrain.position.z=satelliteData.baseZ+Math.sin(satelliteTime*1.43+1.4)*.12;
         satelliteBrain.rotation.x=BASE_X+Math.sin(satelliteTime*.81)*.025;
         satelliteBrain.rotation.y=satelliteData.baseRotY+satelliteSway;
-        satelliteBrain.rotation.z=Math.sin(satelliteTime*.92+1.2)*.022;
+        // Keine seitliche Roll-Neigung, siehe Kommentar beim Hauptgehirn.
+        satelliteBrain.rotation.z=0;
       }
       if(now-lastSatelliteStrandUpdate>48){
         lastSatelliteStrandUpdate=now;
