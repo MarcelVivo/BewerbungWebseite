@@ -71,7 +71,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var SCENE_MOTION=false;
   var OBJECT_FLOATING=true;
   var NEURAL_INFORMATION_ACTIVE=true;
-  var NEURAL_IMPULSE_INTENSITY=2;
+  var NEURAL_IMPULSE_INTENSITY=5;
   var lastCameraFov=camera.fov;
 
   function helixAngle(worldIndex){
@@ -1657,12 +1657,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     this.samplePoint=new THREE.Vector3();
     this.active=false;
   }
-  NeuralImpulse.prototype.begin=function(route,duration){
+  NeuralImpulse.prototype.begin=function(route,duration,onComplete){
     if(route.length<2) return false;
     this.route=route;
     this.duration=duration;
     this.elapsed=0;
     this.lastNode=-1;
+    this.onComplete=onComplete||null;
     this.active=true;
     return true;
   };
@@ -1719,6 +1720,127 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       this.trailMaterial.opacity=0;
       this.coreMaterial.opacity=0;
       this.glowMaterial.opacity=0;
+      var onComplete=this.onComplete;
+      this.onComplete=null;
+      if(onComplete) onComplete();
+    }
+  };
+  function NeuralConvergenceNode(parentGroup){
+    this.maxCharge=3;
+    this.charge=0;
+    this.pendingDischarge=0;
+    this.anchor=new THREE.Vector3(SBASE_X,SBASE_Y+.035,SBASE_Z);
+    this.coreMaterial=new THREE.SpriteMaterial({map:sprite,color:GOLD.highlight,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
+    this.core=new THREE.Sprite(this.coreMaterial);
+    this.core.position.copy(this.anchor);
+    this.core.frustumCulled=false;
+    parentGroup.add(this.core);
+    this.haloMaterial=new THREE.SpriteMaterial({map:sprite,color:GOLD.light,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
+    this.halo=new THREE.Sprite(this.haloMaterial);
+    this.halo.position.copy(this.anchor);
+    this.halo.frustumCulled=false;
+    parentGroup.add(this.halo);
+    this.discharge=new GoldStrandDischarge(parentGroup);
+  }
+  NeuralConvergenceNode.prototype.addCharge=function(){
+    this.charge=Math.min(this.maxCharge,this.charge+1);
+    if(this.charge===this.maxCharge) this.pendingDischarge=.28;
+  };
+  NeuralConvergenceNode.prototype.update=function(dt){
+    if(this.pendingDischarge>0){
+      this.pendingDischarge-=dt;
+      if(this.pendingDischarge<=0){
+        this.discharge.trigger();
+        this.charge=0;
+      }
+    }
+    var chargeLevel=this.charge/this.maxCharge;
+    var breathing=.94+Math.sin(performance.now()*.006)*.06;
+    var coreSize=(.055+chargeLevel*.115)*breathing;
+    this.core.scale.set(coreSize,coreSize,1);
+    this.halo.scale.set(coreSize*(2.25+chargeLevel*.8),coreSize*(2.25+chargeLevel*.8),1);
+    this.coreMaterial.opacity=(.06+chargeLevel*.56)*NEURAL_IMPULSE_INTENSITY/5;
+    this.haloMaterial.opacity=(.014+chargeLevel*.12)*NEURAL_IMPULSE_INTENSITY/5;
+    this.discharge.update(dt);
+  };
+  function GoldStrandDischarge(parentGroup){
+    this.sampleCount=18;
+    this.positions=new Float32Array(this.sampleCount*3);
+    this.colors=new Float32Array(this.sampleCount*3);
+    var geometry=new THREE.BufferGeometry();
+    geometry.setAttribute('position',new THREE.BufferAttribute(this.positions,3));
+    geometry.setAttribute('color',new THREE.BufferAttribute(this.colors,3));
+    this.material=new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
+    this.line=new THREE.Line(geometry,this.material);
+    this.line.frustumCulled=false;
+    parentGroup.add(this.line);
+    this.headMaterial=new THREE.SpriteMaterial({map:sprite,color:GOLD.highlight,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
+    this.head=new THREE.Sprite(this.headMaterial);
+    this.head.frustumCulled=false;
+    parentGroup.add(this.head);
+    this.haloMaterial=new THREE.SpriteMaterial({map:sprite,color:GOLD.light,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
+    this.halo=new THREE.Sprite(this.haloMaterial);
+    this.halo.frustumCulled=false;
+    parentGroup.add(this.halo);
+    this.fiberIndices=[];
+    var fiberStride=Math.max(1,Math.floor(sFibers.length/8));
+    for(var fiberIndex=0;fiberIndex<sFibers.length;fiberIndex+=fiberStride) this.fiberIndices.push(fiberIndex);
+    this.sampleScratch=new THREE.Vector3();
+    this.active=false;
+    this.elapsed=0;
+    this.duration=.72;
+  }
+  GoldStrandDischarge.prototype.sampleCenterline=function(progress,target){
+    var totalX=0,totalY=0,totalZ=0,count=0;
+    for(var fiberIndex=0;fiberIndex<this.fiberIndices.length;fiberIndex++){
+      var fiber=sFibers[this.fiberIndices[fiberIndex]];
+      if(!fiber) continue;
+      var vertexIndex=fiber.start+Math.round(THREE.MathUtils.clamp(progress,0,1)*(fiber.len-1));
+      goldStrandVertexLocal(vertexIndex,this.sampleScratch,true);
+      totalX+=this.sampleScratch.x;
+      totalY+=this.sampleScratch.y;
+      totalZ+=this.sampleScratch.z;
+      count++;
+    }
+    return target.set(totalX/Math.max(1,count),totalY/Math.max(1,count),totalZ/Math.max(1,count));
+  };
+  GoldStrandDischarge.prototype.trigger=function(){
+    if(this.active) return;
+    this.elapsed=0;
+    this.active=true;
+  };
+  GoldStrandDischarge.prototype.update=function(dt){
+    if(!this.active) return;
+    this.elapsed+=dt;
+    var progress=THREE.MathUtils.clamp(this.elapsed/this.duration,0,1);
+    var tailProgress=Math.max(0,progress-.31);
+    for(var sampleIndex=0;sampleIndex<this.sampleCount;sampleIndex++){
+      var sampleProgress=tailProgress+(progress-tailProgress)*(sampleIndex/(this.sampleCount-1));
+      var point=this.sampleCenterline(sampleProgress,this.sampleScratch);
+      var alpha=Math.pow(sampleIndex/(this.sampleCount-1),1.45)*Math.sin(progress*Math.PI);
+      this.positions[sampleIndex*3]=point.x;
+      this.positions[sampleIndex*3+1]=point.y;
+      this.positions[sampleIndex*3+2]=point.z;
+      this.colors[sampleIndex*3]=GOLD.highlight.r*alpha;
+      this.colors[sampleIndex*3+1]=GOLD.highlight.g*alpha;
+      this.colors[sampleIndex*3+2]=GOLD.highlight.b*alpha;
+    }
+    this.line.geometry.attributes.position.needsUpdate=true;
+    this.line.geometry.attributes.color.needsUpdate=true;
+    this.material.opacity=.72*NEURAL_IMPULSE_INTENSITY/5;
+    var headPoint=this.sampleCenterline(progress,this.sampleScratch);
+    this.head.position.copy(headPoint);
+    this.halo.position.copy(headPoint);
+    var headSize=.055+Math.sin(progress*Math.PI)*.055;
+    this.head.scale.set(headSize,headSize,1);
+    this.halo.scale.set(headSize*3.4,headSize*3.4,1);
+    this.headMaterial.opacity=.82*Math.sin(progress*Math.PI);
+    this.haloMaterial.opacity=.12*Math.sin(progress*Math.PI);
+    if(progress>=1){
+      this.active=false;
+      this.material.opacity=0;
+      this.headMaterial.opacity=0;
+      this.haloMaterial.opacity=0;
     }
   };
   function NeuralActivityController(){
@@ -1729,8 +1851,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     };
     this.sequenceIndex=0;
     this.sequenceTime=0;
-    this.cooldown=1.8;
+    this.cooldown=.85;
     this.steps=[];
+    this.goldConvergence=new NeuralConvergenceNode(brain);
     this.sequences=[
       [{actor:'gold',delay:0,hops:14,duration:2.05},{actor:'red',delay:.86,hops:11,duration:2.25}],
       [{actor:'gold',delay:0,hops:13,duration:1.95},{actor:'blue',delay:.78,hops:12,duration:1.85}],
@@ -1748,6 +1871,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     this.impulses.gold.update(dt);
     this.impulses.red.update(dt);
     this.impulses.blue.update(dt);
+    this.goldConvergence.update(dt);
     if(this.cooldown>0){
       this.cooldown-=dt;
       if(this.cooldown<=0) this.startSequence();
@@ -1763,10 +1887,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var impulse=this.impulses[step.actor];
       if(impulse.active) continue;
       var seed=this.sequenceIndex*31+stepIndex*7+(step.actor==='gold'?1:step.actor==='red'?2:3);
-      impulse.begin(buildNeuralRoute(seed,step.actor,step.hops),step.duration);
+      var controller=this;
+      impulse.begin(buildNeuralRoute(seed,step.actor,step.hops),step.duration,step.actor==='gold'?function(){ controller.goldConvergence.addCharge(); }:null);
       step.started=true;
     }
-    if(allStarted&&!this.impulses.gold.active&&!this.impulses.red.active&&!this.impulses.blue.active) this.cooldown=3.2+(this.sequenceIndex%4)*.68;
+    if(allStarted&&!this.impulses.gold.active&&!this.impulses.red.active&&!this.impulses.blue.active) this.cooldown=1.1+(this.sequenceIndex%4)*.24;
   };
   var neuralActivityController=new NeuralActivityController();
 
