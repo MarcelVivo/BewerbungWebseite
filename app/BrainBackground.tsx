@@ -1112,6 +1112,17 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   }
   var RED_STRAND=createSecondaryStrandParams();
   var BLUE_STRAND=createSecondaryStrandParams();
+  // Alle 3 nach unten wachsenden Nervenstränge (Gold aus dem Hauptgehirn,
+  // Rot/Blau aus den schwebenden Satelliten-Gehirnen) sollen in derselben
+  // Leucht-Intensität erscheinen wie die Gehirne selbst — die Gehirn-Meshes
+  // (inklusive des goldenen Strangs, der dieselbe Geometrie teilt) rendern
+  // mit GOLD_RENDER.lineOpacity/pointOpacity, daher werden die separaten
+  // Rot-/Blau-Strang-Parameter hier auf denselben Wert angeglichen statt
+  // einen eigenen, helleren Wert zu verwenden.
+  RED_STRAND.lineOpacity=GOLD_RENDER.lineOpacity;
+  RED_STRAND.pointOpacity=GOLD_RENDER.pointOpacity;
+  BLUE_STRAND.lineOpacity=GOLD_RENDER.lineOpacity;
+  BLUE_STRAND.pointOpacity=GOLD_RENDER.pointOpacity;
   var satelliteTargetWorld=new THREE.Vector3();
   var satelliteTargetLocal=new THREE.Vector3();
   var satelliteInverseMatrix=new THREE.Matrix4();
