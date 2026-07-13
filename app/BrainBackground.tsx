@@ -1662,6 +1662,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     new THREE.Color(0xf4f7ff)
   ];
   var NERVE_FLASH_VISIBILITY=3;
+  var NERVE_FLASH_INTERVAL=2;
   function smootherstep(x){x=x<0?0:x>1?1:x;return x*x*x*(x*(x*6-15)+10);}
 
   function GlidePulse(kind){
@@ -1764,19 +1765,19 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     this.headPt=new THREE.Points(gh,this.headMat);
     this.headPt.frustumCulled=false;
     parentGroup.add(this.headPt);
-    this.flareSize=.14+Math.random()*.08;
+    this.flareSize=.07+Math.random()*.04;
     this.flareMat=new THREE.SpriteMaterial({map:sprite,color:0xffffff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
     this.flare=new THREE.Sprite(this.flareMat);
     this.flare.frustumCulled=false;
     parentGroup.add(this.flare);
     this.trail=[];
     this.alive=false;
-    this.wait=Math.random()*1.2;
+    this.wait=Math.random()*1.2*NERVE_FLASH_INTERVAL;
   }
   NerveBolt.prototype.startChain=function(){
     var s=0, tries=0;
     do{ s=Math.floor(Math.random()*graphAdj.length); tries++; }while(graphAdj[s].length===0&&tries<60);
-    if(!graphAdj[s].length){ this.alive=false; this.wait=.5+Math.random()*1.5; return; }
+    if(!graphAdj[s].length){ this.alive=false; this.wait=(.5+Math.random()*1.5)*NERVE_FLASH_INTERVAL; return; }
     this.cur=s;
     this.prev=-1;
     this.trail=[pts[s]];
@@ -1784,7 +1785,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     this.hopTimer=.05+Math.random()*.07;
     this.alive=true;
     this.headMat.opacity=.24*NERVE_FLASH_VISIBILITY*this.flashIntensity;
-    this.flareMat.opacity=.14*NERVE_FLASH_VISIBILITY*this.flashIntensity;
+    this.flareMat.opacity=.07*NERVE_FLASH_VISIBILITY*this.flashIntensity;
   };
   NerveBolt.prototype.stepOnce=function(){
     var neigh=graphAdj[this.cur];
@@ -1808,7 +1809,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         this.mat.opacity=0;
         this.headMat.opacity=0;
         this.flareMat.opacity=0;
-        this.wait=.8+Math.random()*2.2;
+        this.wait=(.8+Math.random()*2.2)*NERVE_FLASH_INTERVAL;
         return;
       }
       for(var s2=0;s2<this.stride;s2++){ if(!this.stepOnce()) break; }
@@ -1842,7 +1843,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var flareScale=this.flareSize*flareFlicker;
     this.flare.position.copy(head);
     this.flare.scale.set(flareScale,flareScale,1);
-    this.flareMat.opacity=.14*NERVE_FLASH_VISIBILITY*this.flashIntensity*flareFlicker;
+    this.flareMat.opacity=.07*NERVE_FLASH_VISIBILITY*this.flashIntensity*flareFlicker;
   };
   var nerveBolts=[], NBN=isMobile?12:34;
   for(i=0;i<NBN;i++) nerveBolts.push(new NerveBolt(brain));
