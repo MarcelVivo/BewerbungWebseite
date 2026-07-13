@@ -47,6 +47,13 @@ const PORTFOLIO_META = [
 const USP_ICONS = [Zap, Users, CheckCircle, Award];
 const PROCESS_ICONS = [MessageSquare, Search, Compass, Wrench, Heart];
 const CAMERA_ONLY_WORLD = true;
+const INTRO_SEQUENCE = [
+  'Deine Idee.',
+  'Deine Herausforderung.',
+  'Deine Vision.',
+  'Deine Lösung.',
+  'Deine Erfolgsgeschichte.',
+];
 
 // ── Neural Glass Panels: eigenes, reduziertes Knoten-Icon statt generischer
 // Stock-Icons — vier leicht unterschiedliche Netzwerk-Topologien, gezeichnet
@@ -439,31 +446,31 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
     {
       kind: 'intro',
       code: 'INTRO 01',
-      title: lang === 'de' ? 'Alles beginnt\nmit einer\nIdee.' : 'I build\nthe right solution.',
+      title: INTRO_SEQUENCE[0],
       icon: Wrench,
     },
     {
       kind: 'intro',
       code: 'INTRO 02',
-      title: lang === 'de' ? 'Aus Ideen\nentstehen Heraus-\nforderungen.' : 'for\nyour company',
+      title: INTRO_SEQUENCE[1],
       icon: Users,
     },
     {
       kind: 'intro',
       code: 'INTRO 03',
-      title: lang === 'de' ? 'Aus Heraus-\nforderungen entstehen\nChancen.' : 'Your\nchallenge.',
+      title: INTRO_SEQUENCE[2],
       icon: Compass,
     },
     {
       kind: 'intro',
       code: 'INTRO 04',
-      title: lang === 'de' ? 'Ich mache aus\nKomplexität einfache\nLösungen.' : 'My\nsolution.',
+      title: INTRO_SEQUENCE[3],
       icon: Lightbulb,
     },
     {
       kind: 'intro',
       code: 'INTRO 05',
-      title: lang === 'de' ? 'Digital.\nIntelligent.\nZukunftssicher.' : 'Fully custom.\nBuilt as one system.',
+      title: INTRO_SEQUENCE[4],
       icon: Workflow,
     },
     {
@@ -977,9 +984,7 @@ export default function HomePage() {
     window.addEventListener('resize', updateHeroScale);
     return () => window.removeEventListener('resize', updateHeroScale);
   }, []);
-  const introWorldTexts = useMemo(() => lang === 'de'
-    ? ['Alles beginnt\nmit einer\nIdee.', 'Aus Ideen\nentstehen Heraus-\nforderungen.', 'Aus Heraus-\nforderungen entstehen\nChancen.', 'Ich mache aus\nKomplexität einfache\nLösungen.', 'Digital.\nIntelligent.\nZukunftssicher.']
-    : ['I build\nthe right solution.', 'for\nyour company', 'Your\nchallenge.', 'My\nsolution.', 'Fully custom.\nBuilt as one system.'], [lang]);
+  const introWorldTexts = useMemo(() => INTRO_SEQUENCE, []);
   const serviceWorldCards = useMemo(() => lang === 'de'
     ? [
         { code: '01', title: 'Corporate Design\n& Webauftritt', body: 'Marke, Gestaltung, Wirkung und digitale Präsentation sauber aus einem System gedacht.', accent: '#c89a3d' },
