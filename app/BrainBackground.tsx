@@ -1235,6 +1235,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   function curveExistingSatelliteStrand(strand,flowTime){
     if(!strand.fibers.length) return;
     var params=strand.params;
+    var x=0, y=0, z=0;
     brain.updateWorldMatrix(true,false);
     strand.satellite.updateWorldMatrix(true,false);
     strand.satellite.getWorldPosition(secondarySatelliteWorld);
