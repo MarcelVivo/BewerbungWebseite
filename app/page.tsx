@@ -101,6 +101,8 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
   const viewportRef = useRef({ width: 0, height: 0 });
   const serviceStationsRef = useRef<HTMLDivElement | null>(null);
   const cardsWorldRef = useRef<HTMLDivElement | null>(null);
+  const detailScrollDistanceRef = useRef(0);
+  const detailScrollStepsRef = useRef(0);
 
   // Neural Glass Panels: die vier Karten bilden EIN zusammenstehendes
   // 2×2-Element (CardsHelixGroup), fixiert an EINER festen Helix-Position
@@ -265,11 +267,6 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
 
     const renderProgress = (currentProgress: number, activeLayoutProgress: number) => {
       const rotationTravel = (spiralAngleStep * totalTravel) / verticalStep;
-      if (section.dataset.activeService && (currentProgress < 0.61 || currentProgress > 0.97)) {
-        section.dataset.activeService = '';
-        setActiveServiceSlug(null);
-      }
-
       items.forEach((item, i) => {
         const angle = i * spiralAngleStep - currentProgress * rotationTravel;
         const rad = (angle * Math.PI) / 180;
@@ -362,22 +359,15 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       }
 
       serviceItems.forEach((item, i) => {
-        const activeSlug = section.dataset.activeService || '';
-        const isSelected = item.dataset.serviceSlug === activeSlug;
-        const side = item.dataset.side || (i % 2 === 0 ? 'left' : 'right');
         const rowDelay = i > 1 ? 0.11 : 0;
         const raw = (currentProgress - 0.56 - rowDelay) / 0.2;
         const clamped = Math.max(0, Math.min(1, raw));
         const eased = 1 - Math.pow(1 - clamped, 3);
         const y = (1 - eased) * 150;
-        const direction = side === 'left' ? -1 : 1;
-        const x = direction * (isSelected ? 220 : 330) * activeLayoutProgress;
-        const z = (isSelected ? 150 : 96) * activeLayoutProgress;
-        const rotateY = direction * -42 * activeLayoutProgress;
 
-        item.style.transform = `translate3d(${x}px, ${y}px, ${z}px) rotateY(${rotateY}deg)`;
-        item.style.opacity = String(Math.max(eased, activeLayoutProgress));
-        item.style.zIndex = String(isSelected ? 1280 : 1260);
+        item.style.transform = `translate3d(0, ${y}px, 0)`;
+        item.style.opacity = String(eased * (1 - activeLayoutProgress));
+        item.style.zIndex = '1260';
       });
     };
 
@@ -416,6 +406,33 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       window.removeEventListener('resize', handleResize);
     };
   }, []);
+
+  useEffect(() => {
+    if (!activeServiceSlug) return;
+
+    let lastScrollY = window.scrollY;
+    detailScrollDistanceRef.current = 0;
+    detailScrollStepsRef.current = 0;
+
+    const handleScroll = () => {
+      const delta = Math.abs(window.scrollY - lastScrollY);
+      lastScrollY = window.scrollY;
+      if (delta < 4) return;
+
+      detailScrollDistanceRef.current += delta;
+      while (detailScrollDistanceRef.current >= 90) {
+        detailScrollDistanceRef.current -= 90;
+        detailScrollStepsRef.current += 1;
+      }
+
+      if (detailScrollStepsRef.current >= 2) {
+        setActiveServiceSlug(null);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [activeServiceSlug]);
 
   const cards = [
     {
@@ -530,6 +547,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
   const introCards = cards.filter((card) => card.kind === 'intro');
   const serviceCards = cards.filter((card) => card.kind === 'service');
   const activeService = serviceCards.find((card) => card.slug === activeServiceSlug) || null;
+  const detailService = activeService || serviceCards[0];
   const totalTravel = introCards.length * verticalStep + 780;
   const radius = 520;
   const spiralAngleStep = 58;
@@ -645,45 +663,10 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
           })}
         </div>
 
-        <div
-          className={`spiral-detail-panel ${activeService ? 'is-open' : ''}`}
-          aria-hidden={!activeService}
-          style={activeService ? {
-            '--service-accent': activeService.accent,
-            '--service-accent-rgb': activeService.accentRgb,
-          } as CSSProperties : undefined}
-        >
-          {activeService ? (
-            <>
-              <button
-                type="button"
-                className="spiral-detail-close"
-                onClick={() => setActiveServiceSlug(null)}
-                aria-label={lang === 'de' ? 'Detail schließen' : 'Close detail'}
-              >
-                ×
-              </button>
-              <span className="spiral-intro-meta">
-                <span className="spiral-intro-index">{activeService.code}</span>
-                <span className="spiral-intro-icon">
-                  {activeService.icon ? <activeService.icon size={15} strokeWidth={1.8} /> : null}
-                </span>
-              </span>
-              <h3 className="spiral-detail-title">{activeService.detailTitle}</h3>
-              <p className="spiral-detail-text">{activeService.detailText}</p>
-              <div className="spiral-detail-list">
-                {activeService.detailPoints?.map((point) => (
-                  <span key={point}>{point}</span>
-                ))}
-              </div>
-            </>
-          ) : null}
-        </div>
-
         <div ref={cardsWorldRef} className="spiral-cards-world">
         <div
           ref={serviceStationsRef}
-          className="spiral-service-stations"
+          className={`spiral-service-stations ${activeService ? 'is-detail-open' : ''}`}
           aria-label={lang === 'de' ? 'Service Leistungen' : 'Services'}
         >
           {serviceCards.map((card, i) => {
@@ -699,7 +682,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
                   '--service-accent': card.accent,
                   '--service-accent-rgb': card.accentRgb,
                 } as CSSProperties}
-                onClick={() => setActiveServiceSlug(card.slug)}
+                onClick={() => setActiveServiceSlug(card.slug || null)}
               >
                 <span className="ngp-connector" aria-hidden="true" />
                 <span className="ngp-particles" aria-hidden="true">
@@ -723,9 +706,42 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
                   <p className="spiral-service-body">{card.body}</p>
                   <span className="spiral-intro-rule" />
                 </span>
+                <span className="spiral-service-more">
+                  {lang === 'de' ? 'Mehr erfahren' : 'Learn more'}
+                </span>
               </button>
             );
           })}
+          <button
+            type="button"
+            className={`spiral-detail-panel ${activeService ? 'is-open' : ''}`}
+            aria-hidden={!activeService}
+            tabIndex={activeService ? 0 : -1}
+            onClick={() => {
+              if (activeService) setActiveServiceSlug(null);
+            }}
+            style={{
+              '--service-accent': detailService.accent,
+              '--service-accent-rgb': detailService.accentRgb,
+            } as CSSProperties}
+          >
+            <span className="spiral-detail-close">
+              {lang === 'de' ? 'Schliessen' : 'Close'}
+            </span>
+            <span className="spiral-intro-meta">
+              <span className="spiral-intro-index">{detailService.code}</span>
+              <span className="spiral-intro-icon">
+                {detailService.icon ? <detailService.icon size={15} strokeWidth={1.8} /> : null}
+              </span>
+            </span>
+            <span className="spiral-detail-title">{detailService.detailTitle}</span>
+            <span className="spiral-detail-text">{detailService.detailText}</span>
+            <span className="spiral-detail-list">
+              {detailService.detailPoints?.map((point) => (
+                <span key={point}>{point}</span>
+              ))}
+            </span>
+          </button>
         </div>
         </div>
       </div>

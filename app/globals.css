@@ -547,6 +547,7 @@ body {
    .spiral-cards-world-Wrapper — hier bleiben nur Layout und Sichtbarkeit
    (Opacity/pointer-events/is-materialized) übrig. */
 .spiral-service-stations {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
@@ -559,21 +560,30 @@ body {
 
 .spiral-service-stations .spiral-service-card {
   width: 100%;
-  will-change: opacity;
+  will-change: opacity, transform;
   contain: layout paint style;
+  transition: opacity 380ms ease, transform 380ms ease;
+}
+
+.spiral-service-stations.is-detail-open .spiral-service-card {
+  pointer-events: none;
 }
 
 .spiral-detail-panel {
   --service-accent: var(--gold);
   --service-accent-rgb: 200,154,61;
-  position: absolute;
-  left: 50%;
-  top: 58%;
-  z-index: 1260;
-  width: min(30rem, 38vw);
-  min-height: min(58vh, 36rem);
-  max-height: min(74vh, 44rem);
-  padding: 1.55rem 1.65rem 1.7rem;
+  position: relative;
+  grid-column: 1 / -1;
+  grid-row: 1 / -1;
+  z-index: 4;
+  width: 100%;
+  min-height: 100%;
+  padding: clamp(1.35rem, 2.4vw, 2.4rem);
+  overflow: hidden;
+  appearance: none;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
   border: 1px solid rgba(var(--service-accent-rgb),0.24);
   border-radius: 1.45rem;
   background:
@@ -586,7 +596,7 @@ body {
     inset 0 1px 0 rgba(246,227,161,0.1);
   opacity: 0;
   pointer-events: none;
-  transform: translate3d(-50%, -46%, 120px) scale(0.96);
+  transform: translate3d(0, 0, 24px) scale(0.975);
   transition:
     opacity 360ms ease,
     transform 620ms cubic-bezier(.2,.9,.18,1);
@@ -595,7 +605,7 @@ body {
 .spiral-detail-panel.is-open {
   opacity: 1;
   pointer-events: auto;
-  transform: translate3d(-50%, -50%, 120px) scale(1);
+  transform: translate3d(0, 0, 24px) scale(1);
 }
 
 .spiral-detail-panel::before {
@@ -622,24 +632,27 @@ body {
 
 .spiral-detail-close {
   position: absolute;
-  top: 0.85rem;
-  right: 0.95rem;
+  top: 1.1rem;
+  right: 1.2rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border: 1px solid rgba(var(--service-accent-rgb),0.28);
+  padding: 0.42rem 0.7rem;
+  border: 1px solid rgba(var(--service-accent-rgb),0.34);
   border-radius: 999px;
-  color: rgba(244,245,247,0.78);
-  background: rgba(0,0,0,0.24);
-  font-size: 1.35rem;
+  color: rgba(246,227,161,0.9);
+  background: rgba(0,0,0,0.2);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   line-height: 1;
-  cursor: pointer;
 }
 
 .spiral-detail-title {
+  display: block;
   margin-top: 0.85rem;
+  max-width: min(34rem, 78%);
   color: #fff;
   font-size: clamp(1.35rem, 2.25vw, 2.6rem);
   font-weight: 900;
@@ -651,6 +664,7 @@ body {
 }
 
 .spiral-detail-text {
+  display: block;
   margin-top: 0.95rem;
   color: rgba(244,245,247,0.82);
   font-size: clamp(0.86rem, 1vw, 1rem);
@@ -666,7 +680,7 @@ body {
   margin-top: 1rem;
 }
 
-.spiral-detail-list span {
+.spiral-detail-list > span {
   position: relative;
   padding-left: 0.95rem;
   color: rgba(246,227,161,0.76);
@@ -675,7 +689,7 @@ body {
   line-height: 1.35;
 }
 
-.spiral-detail-list span::before {
+.spiral-detail-list > span::before {
   content: "";
   position: absolute;
   left: 0;
@@ -801,6 +815,20 @@ body {
   height: 1px;
   background: linear-gradient(90deg, rgba(var(--service-accent-rgb),0.95), rgba(var(--service-accent-rgb),0.16), transparent);
   box-shadow: 0 0 16px rgba(var(--service-accent-rgb),0.24);
+}
+
+.spiral-service-more {
+  position: absolute;
+  top: 1rem;
+  right: 1.12rem;
+  z-index: 3;
+  color: rgba(var(--service-accent-rgb),0.94);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.115em;
+  line-height: 1;
+  text-transform: uppercase;
+  text-shadow: 0 0 12px rgba(var(--service-accent-rgb),0.32);
 }
 
 .spiral-service-card .spiral-intro-index,
@@ -1148,8 +1176,7 @@ body {
   display: none;
 }
 
-.spiral-intro-line,
-.spiral-detail-panel {
+.spiral-intro-line {
   opacity: 0 !important;
   pointer-events: none !important;
 }
