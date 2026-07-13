@@ -71,6 +71,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var SCENE_MOTION=false;
   var OBJECT_FLOATING=true;
   var NEURAL_INFORMATION_ACTIVE=true;
+  var NEURAL_IMPULSE_INTENSITY=2;
   var lastCameraFov=camera.fov;
 
   function helixAngle(worldIndex){
@@ -1677,7 +1678,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       if(glow.life<=0) continue;
       glow.life-=dt;
       var glowFade=Math.max(0,glow.life/.36);
-      glow.material.opacity=.07*glowFade*glowFade;
+      glow.material.opacity=.07*NEURAL_IMPULSE_INTENSITY*glowFade*glowFade;
       var glowSize=.07+(.11*(1-glowFade));
       glow.node.scale.set(glowSize,glowSize,1);
     }
@@ -1697,8 +1698,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var coreSize=.042+envelope*.022;
     this.core.scale.set(coreSize,coreSize,1);
     this.glow.scale.set(coreSize*2.5,coreSize*2.5,1);
-    this.coreMaterial.opacity=.32*envelope;
-    this.glowMaterial.opacity=.045*envelope;
+    this.coreMaterial.opacity=.32*NEURAL_IMPULSE_INTENSITY*envelope;
+    this.glowMaterial.opacity=.045*NEURAL_IMPULSE_INTENSITY*envelope;
     for(var trailIndex=0;trailIndex<this.maxTrail;trailIndex++){
       var trailProgress=Math.max(0,progress-(this.maxTrail-1-trailIndex)*.026);
       var trailSample=this.sample(trailProgress,this.samplePoint);
@@ -1712,7 +1713,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     }
     this.trail.geometry.attributes.position.needsUpdate=true;
     this.trail.geometry.attributes.color.needsUpdate=true;
-    this.trailMaterial.opacity=.23*envelope;
+    this.trailMaterial.opacity=.23*NEURAL_IMPULSE_INTENSITY*envelope;
     if(progress>=1){
       this.active=false;
       this.trailMaterial.opacity=0;
