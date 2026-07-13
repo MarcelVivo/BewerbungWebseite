@@ -1219,7 +1219,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         shape:makeSecondaryFiberShape(),
         metallicPhase:Math.random()*Math.PI*2,
         edgeWeight:smooth((radialDistribution-.52)/.48),
-        branchPhase:Math.random()*Math.PI*2
+        branchPhase:Math.random()*Math.PI*2,
+        // Nur einige Randfasern lösen sich sichtbar aus dem Kern. Diese
+        // gezielten Ausreisser geben dem Bündel die organische, lebendige
+        // Silhouette, ohne die tragende Gesamtform zu verlieren.
+        escapeWeight:Math.random()<.17 ? .72+Math.random()*.28 : 0
       });
       pointValueCount+=fiberSegments*3;
       lineValueCount+=Math.max(0,fiberSegments-1)*6;
@@ -1405,9 +1409,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         // Kern ausbrechen. Ihre Wellen sind phasenverschoben, damit keine
         // dekorative Parallelwelle entsteht.
         var edgeWaveEnvelope=sagEnvelope*(.28+.72*(1-helixBlend));
-        var edgeWave=(.006+edgeWeight*.07)*edgeWaveEnvelope;
+        var escapeEnvelope=smooth((pathProgress-.06)/.2)*smooth((.94-pathProgress)/.2)*(1-helixBlend*.72);
+        var edgeWave=(.01+edgeWeight*.09+fiber.escapeWeight*.18)*edgeWaveEnvelope;
         var edgeWaveSide=Math.sin(pathProgress*(7.4+edgeWeight*5.1)+fiber.branchPhase+flowTime*.31)*edgeWave;
         var edgeWaveDepth=Math.cos(pathProgress*(6.2+edgeWeight*4.3)+fiber.branchPhase*1.43+flowTime*.24)*edgeWave*.72;
+        var escapeSide=Math.sin(pathProgress*(11.5+edgeWeight*3.6)+fiber.branchPhase*2.1+flowTime*.42)*fiber.escapeWeight*.16*escapeEnvelope;
+        var escapeDepth=Math.cos(pathProgress*(9.4+edgeWeight*4.8)+fiber.branchPhase*.71+flowTime*.34)*fiber.escapeWeight*.115*escapeEnvelope;
         var manualEnvelope=sagEnvelope*(1-helixBlend*.88);
         var endSpread=(.008+Math.abs(fiberShape.radiusOffset)*.022)*(1-helixBlend*.84);
         var endOffsetX=Math.cos(fiberAngle)*endSpread;
@@ -1423,10 +1430,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         x=pathX+(funnelX-pathX)*funnelRelease;
         y=pathY+(funnelY-pathY)*funnelRelease;
         z=pathZ+(funnelZ-pathZ)*funnelRelease;
-        x+=sideX*(Math.cos(fiberAngle)*looseSpread+windSide+edgeWaveSide+params.posX*manualEnvelope+endOffsetX)
-          +depthX*(Math.sin(fiberAngle)*looseSpread+windDepth+edgeWaveDepth+params.posZ*manualEnvelope+endOffsetZ);
-        z+=sideZ*(Math.cos(fiberAngle)*looseSpread+windSide+edgeWaveSide+params.posX*manualEnvelope+endOffsetX)
-          +depthZ*(Math.sin(fiberAngle)*looseSpread+windDepth+edgeWaveDepth+params.posZ*manualEnvelope+endOffsetZ);
+        x+=sideX*(Math.cos(fiberAngle)*looseSpread+windSide+edgeWaveSide+escapeSide+params.posX*manualEnvelope+endOffsetX)
+          +depthX*(Math.sin(fiberAngle)*looseSpread+windDepth+edgeWaveDepth+escapeDepth+params.posZ*manualEnvelope+endOffsetZ);
+        z+=sideZ*(Math.cos(fiberAngle)*looseSpread+windSide+edgeWaveSide+escapeSide+params.posX*manualEnvelope+endOffsetX)
+          +depthZ*(Math.sin(fiberAngle)*looseSpread+windDepth+edgeWaveDepth+escapeDepth+params.posZ*manualEnvelope+endOffsetZ);
         if(helixBlend>0){
           var helixAngle=strand.phase+helixBlend*Math.PI*2*helixTurns+fiberShape.phaseOffset*.48;
           var helixRadius=(.09+Math.abs(fiberShape.radiusOffset)*.25)*(1-helixBlend*.18);
