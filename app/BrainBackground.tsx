@@ -371,7 +371,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     roots.push(new THREE.Vector3(BR.stumpRing[ri],BR.stumpRing[ri+1],BR.stumpRing[ri+2]));
   }
   var SP={ length:9.05, rStr:0.08, gather:0.25, taper:0.24,
-           curve:0, twist:5.2, jitter:0, rungs:0.68, ptSize:0.044, spacing:0.06,
+           curve:0, twist:5.2, jitter:0, ptSize:0.044, spacing:0.06,
            ringSpread:0.1, offX:0, offY:0, offZ:0,
            droop:1.5, frayStart:0.98, fraySpread:0.12 };
   // Trichter: Jede Faser startet an einem echten goldenen Vertex im Stumpf-
@@ -451,14 +451,14 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var anchor=new THREE.Vector3(anchorRaw.x+mx,anchorRaw.y+my,anchorRaw.z+mz);
       var bundlePull=FN.convergePull*(0.75+rnd()*0.5);
       var microGroup=f%15, mediumGroup=Math.floor(f/15)%5;
-      var microAngle=microGroup/15*6.283+(rnd()-.5)*.2;
       var outletAngle=pairProfile.angle+(f%2?Math.PI:0)+(rnd()-.5)*.18;
-      var outletRadius=Math.max(SP.rStr*1.35,FN.outletRadius*(.72+rnd()*.58)*(1-bundlePull*.2));
+      var microAngle=outletAngle+(rnd()-.5)*.1+microGroup*.006;
+      var outletRadius=Math.max(SP.rStr*1.35,FN.outletRadius*(.84+rnd()*.32)*(1-bundlePull*.2));
       var outletDrop=Math.max(.06,FN.funnelHeight*(1.05+rnd()*.65)+(rnd()-.5)*FN.outletHeightSpread);
       var outletY=SBASE_Y+my-outletDrop;
-      var mediumAngle=outletAngle+(rnd()-.5)*.46+mediumGroup*.035;
-      var microRadius=(.16+rnd()*.05)*(1.18-bundlePull*.18);
-      var mediumRadius=outletRadius*(1.08+rnd()*.62);
+      var mediumAngle=outletAngle+(rnd()-.5)*.14+mediumGroup*.012;
+      var microRadius=outletRadius*(1.3+rnd()*.24)*(1.12-bundlePull*.1);
+      var mediumRadius=outletRadius*(1.04+rnd()*.18);
       var microCenter=new THREE.Vector3(
         SBASE_X+mx+Math.cos(microAngle)*microRadius,
         SBASE_Y+my+.035+rnd()*.1,
@@ -477,7 +477,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         outletY,
         SBASE_Z+mz+Math.sin(outletAngle)*outletRadius
       );
-      var a0=pairProfile.angle+(f%2?Math.PI:0), tw=pairProfile.twist, rootWaveAmp=.016+rnd()*.018;
+      var a0=pairProfile.angle+(f%2?Math.PI:0), tw=pairProfile.twist, rootWaveAmp=.006+rnd()*.008;
       var frayJitter=pairProfile.frayJitter;
       var endF=pairProfile.endF;
       var legacyFunnelSteps=Math.max(3,Math.round(FN.funnelSegs));
@@ -520,7 +520,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           var frayEnv=smooth(Math.max(0,(btv-SP.frayStart)/Math.max(.001,1-SP.frayStart)));
           var fraySpread=frayEnv*SP.fraySpread*frayJitter;
           var droop=SP.droop*btv*btv;
-          var outletSettle=smooth(Math.min(1,btv/.2));
+          var outletSettle=smooth(Math.min(1,btv/.38));
           var bundleCenterX=largeCenter.x+(SBASE_X+mx-largeCenter.x)*outletSettle;
           var bundleCenterZ=largeCenter.z+(SBASE_Z+mz-largeCenter.z)*outletSettle;
           px=bundleCenterX+SP.curve*Math.sin(btv*2.1)+Math.cos(ang)*(swirl+fraySpread)+droop*DROOP_DX;
@@ -560,21 +560,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           wobbleLineRefs.push({off:lnOff+3,srcV:v});
         }
         vc++;
-      }
-    }
-    var stepsSpan=Math.round(SP.length/SP.spacing);
-    for(var i2=0;i2<vc;i2+=2){
-      var j2=i2+stepsSpan;
-      if(j2>=0&&j2<vc&&sMeta[i2*2]>SP.gather&&Math.abs(sBase[i2*3+1]-sBase[j2*3+1])<0.1){
-        var dx=sBase[i2*3]-sBase[j2*3], dz=sBase[i2*3+2]-sBase[j2*3+2];
-        if(Math.sqrt(dx*dx+dz*dz)<0.05&&rnd()<SP.rungs){
-          cc.copy(golds[Math.floor(rnd()*golds.length)]);
-          var rOff=outPos.length;
-          outPos.push(sBase[i2*3],sBase[i2*3+1],sBase[i2*3+2],sBase[j2*3],sBase[j2*3+1],sBase[j2*3+2]);
-          outCol.push(cc.r,cc.g,cc.b,cc.r,cc.g,cc.b);
-          wobbleLineRefs.push({off:rOff,srcV:i2});
-          wobbleLineRefs.push({off:rOff+3,srcV:j2});
-        }
       }
     }
   }
@@ -1702,7 +1687,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       ['curve','Schwung',0,0.15,0.005],
       ['twist','Verdrehung',0,10,0.1],
       ['jitter','Zittern',0,0.03,0.001],
-      ['rungs','Quersprossen',0,1,0.02],
       ['spacing','Punktabstand',0.015,0.06,0.001],
       ['ringSpread','Ring-Streuung',0.1,4,0.05],
       ['droop','Schwerkraft-Durchhang',0,1.5,0.01],
@@ -1890,7 +1874,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     copyBtn.onclick=function(){
       var snippet='SP={ length:'+SP.length+', rStr:'+SP.rStr+', gather:'+SP.gather
         +', taper:'+SP.taper+', curve:'+SP.curve+', twist:'+SP.twist+', jitter:'+SP.jitter
-        +', rungs:'+SP.rungs+', ptSize:'+SP.ptSize+', spacing:'+SP.spacing
+        +', ptSize:'+SP.ptSize+', spacing:'+SP.spacing
         +', ringSpread:'+SP.ringSpread+', offX:'+SP.offX+', offY:'+SP.offY+', offZ:'+SP.offZ
         +', droop:'+SP.droop+', frayStart:'+SP.frayStart+', fraySpread:'+SP.fraySpread+' }\\n'
         +'FN={ count:'+FN.count+', anchorRadius:'+FN.anchorRadius+', funnelHeight:'+FN.funnelHeight
