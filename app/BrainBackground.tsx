@@ -1288,13 +1288,18 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var anchors=[];
       if(sourceAttribute){
         var sourcePositions=sourceAttribute.array;
+        // Der geklonte Satellit enthält hinter den originalen Gehirnpunkten
+        // noch die bereits versteckte Alt-Strang-Geometrie. Diese kollabierten
+        // Punkte dürfen niemals als Trichteranker dienen, sonst entsteht eine
+        // freie seitliche Spitze unter dem kleinen Gehirn.
+        var sourceCount=Math.min(sourceAttribute.count,Math.floor(baseWPos.length/3));
         var minY=Infinity, maxY=-Infinity;
-        for(var sourceIndex=0;sourceIndex<sourceAttribute.count;sourceIndex++){
+        for(var sourceIndex=0;sourceIndex<sourceCount;sourceIndex++){
           var sourceY=sourcePositions[sourceIndex*3+1];
           minY=Math.min(minY,sourceY); maxY=Math.max(maxY,sourceY);
         }
         var lowerLimit=minY+(maxY-minY)*.34;
-        for(var lowerIndex=0;lowerIndex<sourceAttribute.count;lowerIndex++){
+        for(var lowerIndex=0;lowerIndex<sourceCount;lowerIndex++){
           var lowerY=sourcePositions[lowerIndex*3+1];
           if(lowerY<=lowerLimit) anchors.push(new THREE.Vector3(sourcePositions[lowerIndex*3],lowerY,sourcePositions[lowerIndex*3+2]));
         }
