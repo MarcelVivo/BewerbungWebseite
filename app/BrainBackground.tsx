@@ -1234,9 +1234,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     };
     satelliteStrands.push(strand);
     rebuildSecondaryStrandGeometry(strand);
-    brain.updateWorldMatrix(true,false);
-    satellite.updateWorldMatrix(true,false);
-    curveExistingSatelliteStrand(strand,0);
     return strand;
   }
 
