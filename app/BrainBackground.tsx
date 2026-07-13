@@ -1103,9 +1103,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     return {
       fiberAmount:isMobile?.42:.58,
       intensity:1,
-      lineOpacity:.48,
-      pointOpacity:.58,
-      pointSize:.072,
+      lineOpacity:.62,
+      pointOpacity:.76,
+      pointSize:.1,
       topFunnel:1,
       connectorShare:.18,
       joinRadius:.08,
@@ -1125,14 +1125,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   }
   var RED_STRAND=createSecondaryStrandParams();
   var BLUE_STRAND=createSecondaryStrandParams();
-  RED_STRAND.lineOpacity=.56;
-  RED_STRAND.pointOpacity=.66;
-  RED_STRAND.baseBrightness=.8;
-  RED_STRAND.pulseStrength=.2;
-  BLUE_STRAND.lineOpacity=.56;
-  BLUE_STRAND.pointOpacity=.66;
-  BLUE_STRAND.baseBrightness=.8;
-  BLUE_STRAND.pulseStrength=.2;
+  RED_STRAND.baseBrightness=.95;
+  RED_STRAND.pulseStrength=.14;
+  BLUE_STRAND.baseBrightness=.95;
+  BLUE_STRAND.pulseStrength=.14;
   var secondaryMergeTargetWorld=new THREE.Vector3();
   var secondaryStartLocal=new THREE.Vector3();
   var secondaryStartWorld=new THREE.Vector3();
@@ -1157,22 +1153,24 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   }
 
   function rebuildSecondaryStrandGeometry(strand){
-    if(!sFibers.length) return;
     var params=strand.params;
-    var fiberCount=Math.max(8,Math.min(sFibers.length,Math.round(sFibers.length*params.fiberAmount)));
+    var fiberCount=Math.max(48,Math.round((isMobile?112:180)*params.fiberAmount));
+    var fiberSegments=isMobile?64:92;
     var fibers=[], pointValueCount=0, lineValueCount=0;
     for(var selectedIndex=0;selectedIndex<fiberCount;selectedIndex++){
-      var sourceIndex=Math.min(sFibers.length-1,Math.floor(selectedIndex*sFibers.length/fiberCount));
-      var sourceFiber=sFibers[sourceIndex];
+      var sourceAngle=Math.PI*2*selectedIndex/fiberCount+(Math.random()-.5)*.16;
+      var sourceRadius=(.13+Math.sqrt(Math.random())*.27)*params.topFunnel;
       fibers.push({
-        sourceStart:sourceFiber.start,
-        len:sourceFiber.len,
+        sourceX:SBASE_X+Math.cos(sourceAngle)*sourceRadius,
+        sourceY:SBASE_Y-(.025+Math.random()*.16)*params.topFunnel,
+        sourceZ:SBASE_Z+Math.sin(sourceAngle)*sourceRadius,
+        len:fiberSegments,
         pointOffset:pointValueCount,
         lineOffset:lineValueCount,
         shape:makeSecondaryFiberShape()
       });
-      pointValueCount+=sourceFiber.len*3;
-      lineValueCount+=Math.max(0,sourceFiber.len-1)*6;
+      pointValueCount+=fiberSegments*3;
+      lineValueCount+=Math.max(0,fiberSegments-1)*6;
     }
     strand.fibers=fibers;
     strand.linePositions=new Float32Array(lineValueCount);
@@ -1203,14 +1201,16 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var lineGeometry=new THREE.BufferGeometry();
     lineGeometry.setAttribute('position',new THREE.BufferAttribute(new Float32Array(0),3));
     lineGeometry.setAttribute('color',new THREE.BufferAttribute(new Float32Array(0),3));
-    var lineMesh=new THREE.LineSegments(lineGeometry,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:params.lineOpacity,blending:THREE.NormalBlending,depthWrite:false}));
+    var lineMesh=new THREE.LineSegments(lineGeometry,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:params.lineOpacity,blending:THREE.AdditiveBlending,depthWrite:false,depthTest:false}));
     lineMesh.frustumCulled=false;
+    lineMesh.renderOrder=4;
     tailGroup.add(lineMesh);
     var pointGeometry=new THREE.BufferGeometry();
     pointGeometry.setAttribute('position',new THREE.BufferAttribute(new Float32Array(0),3));
     pointGeometry.setAttribute('color',new THREE.BufferAttribute(new Float32Array(0),3));
-    var pointMesh=new THREE.Points(pointGeometry,new THREE.PointsMaterial({size:params.pointSize,map:sprite,transparent:true,opacity:params.pointOpacity,vertexColors:true,color:0xffffff,blending:THREE.AdditiveBlending,depthWrite:false}));
+    var pointMesh=new THREE.Points(pointGeometry,new THREE.PointsMaterial({size:params.pointSize,map:sprite,transparent:true,opacity:params.pointOpacity,vertexColors:true,color:0xffffff,blending:THREE.AdditiveBlending,depthWrite:false,depthTest:false}));
     pointMesh.frustumCulled=false;
+    pointMesh.renderOrder=5;
     tailGroup.add(pointMesh);
     // Die Fasergeometrie liegt bewusst direkt in der Szenen-Welt: Start und
     // Ende werden beide in Weltkoordinaten bestimmt. Dadurch bleibt der
@@ -1250,11 +1250,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var inwardStart=Math.max(.05,Math.min(.65,params.connectorShare+params.sidePull*.06));
     var terminalStart=Math.max(.84,Math.min(.96,.96-params.endPull*.08));
     for(var fiberIndex=0;fiberIndex<strand.fibers.length;fiberIndex++){
-      var fiber=strand.fibers[fiberIndex], start=fiber.sourceStart, fiberShape=fiber.shape;
+      var fiber=strand.fibers[fiberIndex], fiberShape=fiber.shape;
       secondaryStartLocal.set(
-        SBASE_X+(sBase[start*3]-SBASE_X)*params.topFunnel,
-        SBASE_Y+(sBase[start*3+1]-SBASE_Y)*params.topFunnel,
-        SBASE_Z+(sBase[start*3+2]-SBASE_Z)*params.topFunnel
+        fiber.sourceX,
+        fiber.sourceY,
+        fiber.sourceZ
       );
       strand.satellite.localToWorld(secondaryStartWorld.copy(secondaryStartLocal));
       var startX=secondaryStartWorld.x;
@@ -1343,8 +1343,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   }
 
   if(satelliteBrains.length>1){
-    useExistingSatelliteStrand(satelliteBrains[0],Math.PI,'#a6425c',1,-1,RED_STRAND);
-    useExistingSatelliteStrand(satelliteBrains[1],0,'#4d7fbf',-1,1,BLUE_STRAND);
+    useExistingSatelliteStrand(satelliteBrains[0],Math.PI,'#d9788a',1,-1,RED_STRAND);
+    useExistingSatelliteStrand(satelliteBrains[1],0,'#8ebef2',-1,1,BLUE_STRAND);
   }
 
   function Spark(){
@@ -1831,7 +1831,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       });
       sectionLabel(name+' • Faserbündel',color);
       SECONDARY_GEOMETRY_SLIDERS.forEach(function(def){
-        addSlider(def,strand.params,function(){ refreshSecondaryStrand(strand,def[0]==='fiberAmount'); });
+        addSlider(def,strand.params,function(){ refreshSecondaryStrand(strand,def[0]==='fiberAmount'||def[0]==='topFunnel'); });
       });
       sectionLabel(name+' • Licht & Energie',color);
       SECONDARY_LIGHT_SLIDERS.forEach(function(def){
