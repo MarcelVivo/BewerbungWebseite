@@ -70,7 +70,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var cameraTargetEnd=cameraTargetStart-cameraTravel;
   var SCENE_MOTION=false;
   var OBJECT_FLOATING=true;
-  var NEURAL_ACTIVITY=true;
+  var NEURAL_INFORMATION_ACTIVE=true;
   var lastCameraFov=camera.fov;
 
   function helixAngle(worldIndex){
@@ -1190,80 +1190,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
 
   buildTechnicalBrain();
 
-  function NetworkPulse(){
-    this.maxTrail=8;
-    var pulseGeometry=new THREE.BufferGeometry();
-    this.posArr=new Float32Array(this.maxTrail*3);
-    this.colArr=new Float32Array(this.maxTrail*3);
-    pulseGeometry.setAttribute('position',new THREE.BufferAttribute(this.posArr,3));
-    pulseGeometry.setAttribute('color',new THREE.BufferAttribute(this.colArr,3));
-    this.mat=new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
-    this.line=new THREE.Line(pulseGeometry,this.mat);
-    this.line.frustumCulled=false;
-    brain.add(this.line);
-    this.trail=[];
-    this.alive=false;
-    this.wait=1+rnd()*3;
-  }
-  NetworkPulse.prototype.startChain=function(){
-    if(!networkNodes.length){ this.wait=2; return; }
-    var start=0, tries=0;
-    do{ start=Math.floor(rnd()*networkAdjacency.length); tries++; }while((!networkAdjacency[start]||!networkAdjacency[start].length)&&tries<60);
-    if(!networkAdjacency[start]||!networkAdjacency[start].length){ this.alive=false; this.wait=1+rnd()*2; return; }
-    this.cur=start; this.prev=-1;
-    this.trail=[networkNodes[start]];
-    this.hopsLeft=10+Math.floor(rnd()*10);
-    this.hopTimer=.22+rnd()*.18;
-    this.alive=true;
-  };
-  NetworkPulse.prototype.update=function(dt){
-    if(!this.alive){ this.wait-=dt; if(this.wait<=0) this.startChain(); return; }
-    this.hopTimer-=dt;
-    if(this.hopTimer<=0){
-      var neigh=networkAdjacency[this.cur];
-      if(this.hopsLeft<=0||!neigh.length){
-        this.alive=false; this.mat.opacity=0; this.wait=2+rnd()*4; return;
-      }
-      var forward=neigh.filter(function(n){return n!==this.prev;},this);
-      var pool=forward.length?forward:neigh;
-      this.prev=this.cur;
-      this.cur=pool[Math.floor(rnd()*pool.length)];
-      this.trail.push(networkNodes[this.cur]);
-      if(this.trail.length>this.maxTrail) this.trail.shift();
-      this.hopsLeft--;
-      this.hopTimer=.22+rnd()*.18;
-    }
-    var n=this.trail.length;
-    for(var k=0;k<this.maxTrail;k++){
-      var srcIdx=k-(this.maxTrail-n);
-      if(srcIdx<0||!this.trail[srcIdx]){
-        var fallback=this.trail[0]||networkNodes[0];
-        this.posArr[k*3]=fallback.x; this.posArr[k*3+1]=fallback.y; this.posArr[k*3+2]=fallback.z;
-        this.colArr[k*3]=0; this.colArr[k*3+1]=0; this.colArr[k*3+2]=0;
-      } else {
-        var p=this.trail[srcIdx];
-        var frac=n>1?srcIdx/(n-1):1;
-        var alpha=.22*Math.sqrt(frac);
-        this.posArr[k*3]=p.x; this.posArr[k*3+1]=p.y; this.posArr[k*3+2]=p.z;
-        this.colArr[k*3]=GOLD.hot.r*alpha; this.colArr[k*3+1]=GOLD.hot.g*alpha; this.colArr[k*3+2]=GOLD.hot.b*alpha;
-      }
-    }
-    this.line.geometry.attributes.position.needsUpdate=true;
-    this.line.geometry.attributes.color.needsUpdate=true;
-    this.mat.opacity=.3;
-  };
-  var networkPulses=[], NPN=isMobile?2:5;
-  for(i=0;i<NPN;i++) networkPulses.push(new NetworkPulse());
-
-  // --- Sehr sanftes Knotenpulsieren: Helligkeit einzelner Netzwerk-Knoten
-  // schwankt langsam und phasenversetzt, kein Blinken, kein Disco-Effekt. ---
-  var networkBaseColors=null, networkPhases=[];
-  if(networkPointsObj){
-    networkBaseColors=networkPointsObj.geometry.attributes.color.array.slice();
-    for(var phaseIndex=0;phaseIndex<networkNodes.length;phaseIndex++) networkPhases.push(rnd()*Math.PI*2);
-  }
-  var lastNetworkPulseUpdate=0;
-
   var satelliteStrands=[];
   function createSecondaryStrandParams(){
     return {
@@ -1666,340 +1592,182 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     useExistingSatelliteStrand(satelliteBrains[1],0,SATELLITE_METALS.blue,-1,1,BLUE_STRAND);
   }
 
-  function Spark(){
-    var g3=new THREE.BufferGeometry();
-    this.arr=new Float32Array(7*3);
-    g3.setAttribute('position',new THREE.BufferAttribute(this.arr,3));
-    this.mat=new THREE.LineBasicMaterial({color:GOLD.line,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
-    this.line=new THREE.Line(g3,this.mat);
-    this.line.frustumCulled=false;
-    this.life=0; this.wait=Math.random()*1.5;
-    brain.add(this.line);
+  // Zentraler Controller für alle drei Gehirne. Er benutzt ausschliesslich
+  // bestehende Knoten und Kanten des neuronalen Graphen; es gibt keine freien
+  // Blitze, keine globalen Flashes und keine unabhängigen Zufallstimer mehr.
+  function neuralHash(value){
+    var seed=Math.sin(value*12.9898+78.233)*43758.5453;
+    return seed-Math.floor(seed);
   }
-  Spark.prototype.spawn=function(){
-    var pr=pairs[Math.floor(Math.random()*pairs.length)];
-    var a=pts[pr[0]], b=pts[pr[1]];
-    for(var k=0;k<7;k++){
-      var tt=k/6, jag=(k>0&&k<6)?1:0;
-      this.arr[k*3]  =a.x+(b.x-a.x)*tt+jag*(Math.random()-.5)*.09;
-      this.arr[k*3+1]=a.y+(b.y-a.y)*tt+jag*(Math.random()-.5)*.09;
-      this.arr[k*3+2]=a.z+(b.z-a.z)*tt+jag*(Math.random()-.5)*.09;
+  var neuralStartNodes=[];
+  for(var neuralNodeIndex=0;neuralNodeIndex<graphAdj.length;neuralNodeIndex++){
+    if(graphAdj[neuralNodeIndex]&&graphAdj[neuralNodeIndex].length&&pts[neuralNodeIndex].y>-.55) neuralStartNodes.push(neuralNodeIndex);
+  }
+  function buildNeuralRoute(seed,kind,hops){
+    if(!neuralStartNodes.length) return [];
+    var current=neuralStartNodes[Math.floor(neuralHash(seed+kind.length)*neuralStartNodes.length)];
+    var previous=-1, route=[current];
+    for(var routeStep=0;routeStep<hops;routeStep++){
+      var neighbours=graphAdj[current]||[], candidates=[];
+      for(var neighbourIndex=0;neighbourIndex<neighbours.length;neighbourIndex++) if(neighbours[neighbourIndex]!==previous) candidates.push(neighbours[neighbourIndex]);
+      if(!candidates.length) candidates=neighbours.slice();
+      if(!candidates.length) break;
+      candidates.sort(function(a,b){
+        var downA=(pts[current].y-pts[a].y)*(kind==='gold'?1.45:(kind==='blue'?.8:.45));
+        var downB=(pts[current].y-pts[b].y)*(kind==='gold'?1.45:(kind==='blue'?.8:.45));
+        return downB-downA;
+      });
+      var choiceCount=kind==='blue'?Math.min(2,candidates.length):Math.min(4,candidates.length);
+      var choice=Math.floor(neuralHash(seed*3.17+routeStep*1.91+(kind==='red'?4:9))*choiceCount);
+      previous=current;
+      current=candidates[choice];
+      route.push(current);
     }
-    this.line.geometry.attributes.position.needsUpdate=true;
-    this.life=.12+Math.random()*.18;
-  };
-  Spark.prototype.update=function(dt){
-    if(this.life>0){
-      this.life-=dt;
-      this.mat.opacity=this.life>0?.12+Math.random()*.16:0;
-      if(this.life<=0){this.mat.opacity=0;this.wait=.4+Math.random()*1.6;}
-    } else { this.wait-=dt; if(this.wait<=0) this.spawn(); }
-  };
-  var sparks=[], SPN=isMobile?6:12;
-  for(i=0;i<SPN;i++) sparks.push(new Spark());
-
-  // --- Blaue Nerven-Glitzer: feine, langsame Impulse, die entlang der goldenen
-  // Linien bzw. am Nervenstrang hoch/runter gleiten (statt zu blitzen) ---
-  var BLUE=new THREE.Color(0x4d7fbf);
-  // Die Nervenblitze bleiben bewusst neutral weiss. So heben sie sich von
-  // Gold, Bordeaux und Blau ab, ohne deren Materialfarben zu verfälschen.
-  var NERVE_FLASH_SHADES=[
-    new THREE.Color(0xffffff),
-    new THREE.Color(0xfffdf5),
-    new THREE.Color(0xf8fbff),
-    new THREE.Color(0xf4f7ff)
-  ];
-  var NERVE_FLASH_VISIBILITY=3;
-  var NERVE_FLASH_INTERVAL=2;
-  function smootherstep(x){x=x<0?0:x>1?1:x;return x*x*x*(x*(x*6-15)+10);}
-
-  function GlidePulse(kind){
-    this.kind=kind; // 'golden' | 'strand'
-    this.winPts=6;
-    var g4=new THREE.BufferGeometry();
-    this.posArr=new Float32Array(this.winPts*3);
-    this.colArr=new Float32Array(this.winPts*3);
-    g4.setAttribute('position',new THREE.BufferAttribute(this.posArr,3));
-    g4.setAttribute('color',new THREE.BufferAttribute(this.colArr,3));
-    this.mat=new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
-    this.line=new THREE.Line(g4,this.mat);
-    this.line.frustumCulled=false;
-    brain.add(this.line);
+    return route;
+  }
+  function NeuralImpulse(parentGroup,palette){
+    this.maxTrail=9;
+    this.positions=new Float32Array(this.maxTrail*3);
+    this.colors=new Float32Array(this.maxTrail*3);
+    var trailGeometry=new THREE.BufferGeometry();
+    trailGeometry.setAttribute('position',new THREE.BufferAttribute(this.positions,3));
+    trailGeometry.setAttribute('color',new THREE.BufferAttribute(this.colors,3));
+    this.trailMaterial=new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
+    this.trail=new THREE.Line(trailGeometry,this.trailMaterial);
+    this.trail.frustumCulled=false;
+    parentGroup.add(this.trail);
+    this.coreMaterial=new THREE.SpriteMaterial({map:sprite,color:palette.highlight,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
+    this.core=new THREE.Sprite(this.coreMaterial);
+    this.core.frustumCulled=false;
+    parentGroup.add(this.core);
+    this.glowMaterial=new THREE.SpriteMaterial({map:sprite,color:palette.primary,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
+    this.glow=new THREE.Sprite(this.glowMaterial);
+    this.glow.frustumCulled=false;
+    parentGroup.add(this.glow);
+    this.nodeGlows=[];
+    for(var glowIndex=0;glowIndex<3;glowIndex++){
+      var material=new THREE.SpriteMaterial({map:sprite,color:palette.light,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
+      var node=new THREE.Sprite(material);
+      node.frustumCulled=false;
+      parentGroup.add(node);
+      this.nodeGlows.push({node:node,material:material,life:0});
+    }
+    this.palette=palette;
+    this.samplePoint=new THREE.Vector3();
     this.active=false;
-    this.wait=2+Math.random()*5;
   }
-  GlidePulse.prototype.activate=function(){
-    this.dir=Math.random()<0.5?1:-1;
-    this.duration=5+Math.random()*5;
-    this.progress=0;
-    if(this.kind==='golden'){
-      this.path=walkPaths[Math.floor(Math.random()*walkPaths.length)];
-    } else {
-      this.fiber=sFibers[Math.floor(Math.random()*sFibers.length)];
-    }
+  NeuralImpulse.prototype.begin=function(route,duration){
+    if(route.length<2) return false;
+    this.route=route;
+    this.duration=duration;
+    this.elapsed=0;
+    this.lastNode=-1;
     this.active=true;
-  };
-  GlidePulse.prototype.sample=function(idxFloat){
-    var N, gx,gy,gz;
-    if(this.kind==='golden'){
-      N=this.path.length;
-      var i0=Math.max(0,Math.min(N-1,Math.floor(idxFloat)));
-      var i1=Math.min(N-1,i0+1);
-      var lt=idxFloat-i0;
-      var a=this.path[i0], b=this.path[i1];
-      gx=a.x+(b.x-a.x)*lt; gy=a.y+(b.y-a.y)*lt; gz=a.z+(b.z-a.z)*lt;
-    } else {
-      N=this.fiber.len;
-      var j0=Math.max(0,Math.min(N-1,Math.floor(idxFloat)));
-      var j1=Math.min(N-1,j0+1);
-      var lt2=idxFloat-j0;
-      var base=this.fiber.start, pa2=sBase;
-      var ax=pa2[(base+j0)*3],ay=pa2[(base+j0)*3+1],az=pa2[(base+j0)*3+2];
-      var bx=pa2[(base+j1)*3],by=pa2[(base+j1)*3+1],bz=pa2[(base+j1)*3+2];
-      gx=ax+(bx-ax)*lt2; gy=ay+(by-ay)*lt2; gz=az+(bz-az)*lt2;
-    }
-    return [gx,gy,gz];
-  };
-  GlidePulse.prototype.update=function(dt){
-    if(!this.active){
-      this.wait-=dt;
-      if(this.wait<=0) this.activate();
-      return;
-    }
-    this.progress+=dt/this.duration;
-    if(this.progress>=1){
-      this.active=false;
-      this.mat.opacity=0;
-      this.wait=3+Math.random()*7;
-      return;
-    }
-    var N=this.kind==='golden'?this.path.length:this.fiber.len;
-    var headIdx=this.dir>0?this.progress*(N-1):(N-1)-this.progress*(N-1);
-    var step=this.dir*1.1;
-    var envelope=Math.min(1,this.progress*6,(1-this.progress)*6);
-    for(var k=0;k<this.winPts;k++){
-      var idxFloat=headIdx-(this.winPts-1-k)*step;
-      var frac=k/(this.winPts-1);
-      var alpha=smootherstep(frac)*envelope;
-      var pXyz=this.sample(idxFloat);
-      this.posArr[k*3]=pXyz[0]; this.posArr[k*3+1]=pXyz[1]; this.posArr[k*3+2]=pXyz[2];
-      this.colArr[k*3]=BLUE.r*alpha; this.colArr[k*3+1]=BLUE.g*alpha; this.colArr[k*3+2]=BLUE.b*alpha;
-    }
-    this.line.geometry.attributes.position.needsUpdate=true;
-    this.line.geometry.attributes.color.needsUpdate=true;
-    this.mat.opacity=.34;
-  };
-
-  // --- Nervenblitze: hüpfen live über das Liniennetz (echte Graph-Kanten),
-  // ein kurzer heller Kopf mit ausblassender Schweifspur, folgt zufällig ---
-  function NerveBolt(parentGroup){
-    this.maxTrail=10;
-    this.stride=5; // Graph-Kanten pro sichtbarem Hop, macht die Bewegung über die feinen Mesh-Kanten sichtbar
-    var g5=new THREE.BufferGeometry();
-    this.posArr=new Float32Array(this.maxTrail*3);
-    this.colArr=new Float32Array(this.maxTrail*3);
-    g5.setAttribute('position',new THREE.BufferAttribute(this.posArr,3));
-    g5.setAttribute('color',new THREE.BufferAttribute(this.colArr,3));
-    this.mat=new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
-    this.line=new THREE.Line(g5,this.mat);
-    this.line.frustumCulled=false;
-    parentGroup.add(this.line);
-    var gh=new THREE.BufferGeometry();
-    this.headArr=new Float32Array(3);
-    gh.setAttribute('position',new THREE.BufferAttribute(this.headArr,3));
-    this.flashColor=NERVE_FLASH_SHADES[Math.floor(Math.random()*NERVE_FLASH_SHADES.length)].clone();
-    this.flashIntensity=.78+Math.random()*.32;
-    this.headMat=new THREE.PointsMaterial({size:.052,map:sprite,transparent:true,opacity:0,color:this.flashColor,blending:THREE.AdditiveBlending,depthWrite:false});
-    this.headPt=new THREE.Points(gh,this.headMat);
-    this.headPt.frustumCulled=false;
-    parentGroup.add(this.headPt);
-    this.flareSize=.07+Math.random()*.04;
-    this.flareMat=new THREE.SpriteMaterial({map:sprite,color:0xffffff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
-    this.flare=new THREE.Sprite(this.flareMat);
-    this.flare.frustumCulled=false;
-    parentGroup.add(this.flare);
-    this.trail=[];
-    this.alive=false;
-    this.wait=Math.random()*1.2*NERVE_FLASH_INTERVAL;
-  }
-  NerveBolt.prototype.startChain=function(){
-    var s=0, tries=0;
-    do{ s=Math.floor(Math.random()*graphAdj.length); tries++; }while(graphAdj[s].length===0&&tries<60);
-    if(!graphAdj[s].length){ this.alive=false; this.wait=(.5+Math.random()*1.5)*NERVE_FLASH_INTERVAL; return; }
-    this.cur=s;
-    this.prev=-1;
-    this.trail=[pts[s]];
-    this.hopsLeft=16+Math.floor(Math.random()*14);
-    this.hopTimer=.05+Math.random()*.07;
-    this.alive=true;
-    this.headMat.opacity=.24*NERVE_FLASH_VISIBILITY*this.flashIntensity;
-    this.flareMat.opacity=.07*NERVE_FLASH_VISIBILITY*this.flashIntensity;
-  };
-  NerveBolt.prototype.stepOnce=function(){
-    var neigh=graphAdj[this.cur];
-    if(!neigh.length) return false;
-    var forward=neigh.filter(function(n){return n!==this.prev;},this);
-    var pool=forward.length?forward:neigh;
-    this.prev=this.cur;
-    this.cur=pool[Math.floor(Math.random()*pool.length)];
     return true;
   };
-  NerveBolt.prototype.update=function(dt){
-    if(!this.alive){
-      this.wait-=dt;
-      if(this.wait<=0) this.startChain();
-      return;
-    }
-    this.hopTimer-=dt;
-    if(this.hopTimer<=0){
-      if(this.hopsLeft<=0||!graphAdj[this.cur].length){
-        this.alive=false;
-        this.mat.opacity=0;
-        this.headMat.opacity=0;
-        this.flareMat.opacity=0;
-        this.wait=(.8+Math.random()*2.2)*NERVE_FLASH_INTERVAL;
-        return;
-      }
-      for(var s2=0;s2<this.stride;s2++){ if(!this.stepOnce()) break; }
-      this.trail.push(pts[this.cur]);
-      if(this.trail.length>this.maxTrail) this.trail.shift();
-      this.hopsLeft--;
-      this.hopTimer=.05+Math.random()*.08;
-    }
-    var n=this.trail.length;
-    for(var k=0;k<this.maxTrail;k++){
-      var srcIdx=k-(this.maxTrail-n);
-      if(srcIdx<0){
-        var p0=this.trail[0];
-        this.posArr[k*3]=p0.x; this.posArr[k*3+1]=p0.y; this.posArr[k*3+2]=p0.z;
-        this.colArr[k*3]=0; this.colArr[k*3+1]=0; this.colArr[k*3+2]=0;
-      } else {
-        var p=this.trail[srcIdx];
-        var frac=n>1?srcIdx/(n-1):1;
-        var alpha=Math.sqrt(frac);
-        this.posArr[k*3]=p.x; this.posArr[k*3+1]=p.y; this.posArr[k*3+2]=p.z;
-        this.colArr[k*3]=this.flashColor.r*alpha*this.flashIntensity; this.colArr[k*3+1]=this.flashColor.g*alpha*this.flashIntensity; this.colArr[k*3+2]=this.flashColor.b*alpha*this.flashIntensity;
-      }
-    }
-    this.line.geometry.attributes.position.needsUpdate=true;
-    this.line.geometry.attributes.color.needsUpdate=true;
-    this.mat.opacity=.22*NERVE_FLASH_VISIBILITY*this.flashIntensity;
-    var head=this.trail[this.trail.length-1];
-    this.headArr[0]=head.x; this.headArr[1]=head.y; this.headArr[2]=head.z;
-    this.headPt.geometry.attributes.position.needsUpdate=true;
-    var flareFlicker=.78+.22*Math.abs(Math.sin(this.hopTimer*95+this.hopsLeft*1.7));
-    var flareScale=this.flareSize*flareFlicker;
-    this.flare.position.copy(head);
-    this.flare.scale.set(flareScale,flareScale,1);
-    this.flareMat.opacity=.07*NERVE_FLASH_VISIBILITY*this.flashIntensity*flareFlicker;
+  NeuralImpulse.prototype.sample=function(progress,target){
+    var segmentFloat=THREE.MathUtils.clamp(progress,0,1)*(this.route.length-1);
+    var segment=Math.min(this.route.length-2,Math.floor(segmentFloat));
+    target.copy(pts[this.route[segment]]).lerp(pts[this.route[segment+1]],segmentFloat-segment);
+    return {point:target,nodeIndex:this.route[Math.round(segmentFloat)]};
   };
-  var nerveBolts=[], NBN=isMobile?12:34;
-  for(i=0;i<NBN;i++) nerveBolts.push(new NerveBolt(brain));
-  var satelliteNerveBolts=[];
-  satelliteBrains.forEach(function(satellite){
-    for(var satelliteBoltIndex=0;satelliteBoltIndex<(isMobile?4:8);satelliteBoltIndex++) satelliteNerveBolts.push(new NerveBolt(satellite));
-  });
-
-  function BlueOrb(parentGroup){
-    this.coreMat=new THREE.SpriteMaterial({map:sprite,color:0xc4e3ff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
-    this.core=new THREE.Sprite(this.coreMat);
-    this.haloMat=new THREE.SpriteMaterial({map:sprite,color:0x244d82,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
-    this.halo=new THREE.Sprite(this.haloMat);
-    var arcGeometry=new THREE.BufferGeometry();
-    this.arcArr=new Float32Array(6*3);
-    arcGeometry.setAttribute('position',new THREE.BufferAttribute(this.arcArr,3));
-    this.arcMat=new THREE.LineBasicMaterial({color:0x8ebef2,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
-    this.arc=new THREE.Line(arcGeometry,this.arcMat);
-    this.arc.frustumCulled=false;
-    parentGroup.add(this.arc); parentGroup.add(this.halo); parentGroup.add(this.core);
-    this.active=false;
-    this.wait=Math.random()*1.6;
-    this.life=0;
-    this.baseSize=.027+Math.random()*.025;
-    this.from=new THREE.Vector3();
-    this.to=new THREE.Vector3();
-    this.position=new THREE.Vector3();
-  }
-  BlueOrb.prototype.activate=function(){
-    var start=0, tries=0;
-    do { start=Math.floor(Math.random()*graphAdj.length); tries++; } while((!graphAdj[start].length||pts[start].y<-.25)&&tries<80);
-    if(!graphAdj[start].length){ this.wait=.4+Math.random(); return; }
-    this.cur=start;
-    this.prev=-1;
-    this.hopsLeft=5+Math.floor(Math.random()*8);
-    this.life=.85+Math.random()*1.25;
-    this.elapsed=0;
-    this.advanceEdge();
-    this.active=true;
-  };
-  BlueOrb.prototype.advanceEdge=function(){
-    var neighbors=graphAdj[this.cur];
-    if(!neighbors.length){ this.hopsLeft=0; return; }
-    var forward=neighbors.filter(function(nodeIndex){ return nodeIndex!==this.prev; },this);
-    var options=forward.length?forward:neighbors;
-    var next=options[Math.floor(Math.random()*options.length)];
-    this.prev=this.cur;
-    this.cur=next;
-    this.from.copy(pts[this.prev]);
-    this.to.copy(pts[this.cur]);
-    this.edgeProgress=0;
-    this.edgeDuration=.1+Math.random()*.14;
-  };
-  BlueOrb.prototype.update=function(dt){
-    if(!this.active){
-      this.wait-=dt;
-      if(this.wait<=0) this.activate();
-      return;
+  NeuralImpulse.prototype.update=function(dt){
+    for(var glowIndex=0;glowIndex<this.nodeGlows.length;glowIndex++){
+      var glow=this.nodeGlows[glowIndex];
+      if(glow.life<=0) continue;
+      glow.life-=dt;
+      var glowFade=Math.max(0,glow.life/.36);
+      glow.material.opacity=.07*glowFade*glowFade;
+      var glowSize=.07+(.11*(1-glowFade));
+      glow.node.scale.set(glowSize,glowSize,1);
     }
+    if(!this.active) return;
     this.elapsed+=dt;
-    var progress=this.elapsed/this.life;
+    var progress=THREE.MathUtils.clamp(this.elapsed/this.duration,0,1);
+    var envelope=Math.sin(progress*Math.PI);
+    var head=this.sample(progress,this.samplePoint);
+    if(head.nodeIndex!==this.lastNode){
+      this.lastNode=head.nodeIndex;
+      var nodeGlow=this.nodeGlows[head.nodeIndex%this.nodeGlows.length];
+      nodeGlow.node.position.copy(pts[head.nodeIndex]);
+      nodeGlow.life=.36;
+    }
+    this.core.position.copy(head.point);
+    this.glow.position.copy(head.point);
+    var coreSize=.042+envelope*.022;
+    this.core.scale.set(coreSize,coreSize,1);
+    this.glow.scale.set(coreSize*2.5,coreSize*2.5,1);
+    this.coreMaterial.opacity=.32*envelope;
+    this.glowMaterial.opacity=.045*envelope;
+    for(var trailIndex=0;trailIndex<this.maxTrail;trailIndex++){
+      var trailProgress=Math.max(0,progress-(this.maxTrail-1-trailIndex)*.026);
+      var trailSample=this.sample(trailProgress,this.samplePoint);
+      var trailAlpha=(trailIndex/(this.maxTrail-1))*envelope;
+      this.positions[trailIndex*3]=trailSample.point.x;
+      this.positions[trailIndex*3+1]=trailSample.point.y;
+      this.positions[trailIndex*3+2]=trailSample.point.z;
+      this.colors[trailIndex*3]=this.palette.light.r*trailAlpha;
+      this.colors[trailIndex*3+1]=this.palette.light.g*trailAlpha;
+      this.colors[trailIndex*3+2]=this.palette.light.b*trailAlpha;
+    }
+    this.trail.geometry.attributes.position.needsUpdate=true;
+    this.trail.geometry.attributes.color.needsUpdate=true;
+    this.trailMaterial.opacity=.23*envelope;
     if(progress>=1){
       this.active=false;
-      this.coreMat.opacity=0;
-      this.haloMat.opacity=0;
-      this.arcMat.opacity=0;
-      this.wait=.28+Math.random()*1.35;
+      this.trailMaterial.opacity=0;
+      this.coreMaterial.opacity=0;
+      this.glowMaterial.opacity=0;
+    }
+  };
+  function NeuralActivityController(){
+    this.impulses={
+      gold:new NeuralImpulse(brain,{primary:GOLD.primary,light:GOLD.light,highlight:GOLD.highlight}),
+      red:new NeuralImpulse(satelliteBrains[0],{primary:SATELLITE_METALS.red.primary,light:SATELLITE_METALS.red.light,highlight:new THREE.Color(0xf3b0b9)}),
+      blue:new NeuralImpulse(satelliteBrains[1],{primary:SATELLITE_METALS.blue.primary,light:SATELLITE_METALS.blue.light,highlight:new THREE.Color(0xc4e3ff)})
+    };
+    this.sequenceIndex=0;
+    this.sequenceTime=0;
+    this.cooldown=1.8;
+    this.steps=[];
+    this.sequences=[
+      [{actor:'gold',delay:0,hops:14,duration:2.05},{actor:'red',delay:.86,hops:11,duration:2.25}],
+      [{actor:'gold',delay:0,hops:13,duration:1.95},{actor:'blue',delay:.78,hops:12,duration:1.85}],
+      [{actor:'gold',delay:0,hops:11,duration:1.9},{actor:'red',delay:.7,hops:10,duration:2.1},{actor:'blue',delay:1.58,hops:12,duration:1.8},{actor:'gold',delay:2.35,hops:8,duration:1.45}]
+    ];
+  }
+  NeuralActivityController.prototype.startSequence=function(){
+    var sequence=this.sequences[this.sequenceIndex%this.sequences.length];
+    this.steps=[];
+    for(var stepIndex=0;stepIndex<sequence.length;stepIndex++) this.steps.push({actor:sequence[stepIndex].actor,delay:sequence[stepIndex].delay,hops:sequence[stepIndex].hops,duration:sequence[stepIndex].duration,started:false});
+    this.sequenceTime=0;
+    this.sequenceIndex++;
+  };
+  NeuralActivityController.prototype.update=function(dt){
+    this.impulses.gold.update(dt);
+    this.impulses.red.update(dt);
+    this.impulses.blue.update(dt);
+    if(this.cooldown>0){
+      this.cooldown-=dt;
+      if(this.cooldown<=0) this.startSequence();
       return;
     }
-    this.edgeProgress+=dt/this.edgeDuration;
-    if(this.edgeProgress>=1){
-      this.hopsLeft--;
-      if(this.hopsLeft<=0){
-        this.elapsed=this.life;
-        this.edgeProgress=1;
-      } else this.advanceEdge();
+    this.sequenceTime+=dt;
+    var allStarted=true;
+    for(var stepIndex=0;stepIndex<this.steps.length;stepIndex++){
+      var step=this.steps[stepIndex];
+      if(step.started) continue;
+      allStarted=false;
+      if(this.sequenceTime<step.delay) continue;
+      var impulse=this.impulses[step.actor];
+      if(impulse.active) continue;
+      var seed=this.sequenceIndex*31+stepIndex*7+(step.actor==='gold'?1:step.actor==='red'?2:3);
+      impulse.begin(buildNeuralRoute(seed,step.actor,step.hops),step.duration);
+      step.started=true;
     }
-    var envelope=Math.sin(progress*Math.PI);
-    this.position.copy(this.from).lerp(this.to,Math.min(1,this.edgeProgress));
-    this.core.position.copy(this.position);
-    this.halo.position.copy(this.core.position);
-    var coreScale=this.baseSize*(.7+envelope*1.35);
-    var haloScale=coreScale*(3.1+envelope*1.9);
-    this.core.scale.set(coreScale,coreScale,1);
-    this.halo.scale.set(haloScale,haloScale,1);
-    this.coreMat.opacity=.22*envelope;
-    this.haloMat.opacity=.035*envelope;
-    var directionX=this.to.x-this.from.x, directionY=this.to.y-this.from.y, directionZ=this.to.z-this.from.z;
-    var directionLength=Math.sqrt(directionX*directionX+directionY*directionY+directionZ*directionZ)||1;
-    directionX/=directionLength; directionY/=directionLength; directionZ/=directionLength;
-    for(var arcIndex=0;arcIndex<6;arcIndex++){
-      var arcStep=arcIndex/5;
-      var trailDistance=arcStep*.15;
-      var flickerAmount=arcIndex===0?0:.011*(1-arcStep)*envelope;
-      var flickerPhase=this.elapsed*58+arcIndex*4.37;
-      this.arcArr[arcIndex*3]=this.position.x-directionX*trailDistance+Math.sin(flickerPhase)*flickerAmount;
-      this.arcArr[arcIndex*3+1]=this.position.y-directionY*trailDistance+Math.cos(flickerPhase*1.23)*flickerAmount;
-      this.arcArr[arcIndex*3+2]=this.position.z-directionZ*trailDistance+Math.sin(flickerPhase*.81+1.5)*flickerAmount;
-    }
-    this.arc.geometry.attributes.position.needsUpdate=true;
-    this.arcMat.opacity=(.06+.12*Math.abs(Math.sin(this.elapsed*37)))*envelope;
+    if(allStarted&&!this.impulses.gold.active&&!this.impulses.red.active&&!this.impulses.blue.active) this.cooldown=3.2+(this.sequenceIndex%4)*.68;
   };
-  var blueOrbs=[], BON=isMobile?5:12;
-  for(i=0;i<BON;i++) blueOrbs.push(new BlueOrb(brain));
-  var satelliteBlueOrbs=[];
-  satelliteBrains.forEach(function(satellite){
-    for(var satelliteOrbIndex=0;satelliteOrbIndex<(isMobile?1:2);satelliteOrbIndex++) satelliteBlueOrbs.push(new BlueOrb(satellite));
-  });
+  var neuralActivityController=new NeuralActivityController();
 
   // --- Tuning-Panel: Regler für die Nervenstrang-Parameter. ?tune=1
   // öffnet es direkt; ansonsten über den sichtbaren Button. ---
@@ -2344,11 +2112,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     document.body.appendChild(tuneLauncher);
   }
 
-  var goldenPulses=[], strandPulses=[];
-  var GPN=isMobile?2:4, SPULN=isMobile?2:3;
-  for(i=0;i<GPN;i++) goldenPulses.push(new GlidePulse('golden'));
-  if(STRAND_ON&&sFibers.length) for(i=0;i<SPULN;i++) strandPulses.push(new GlidePulse('strand'));
-
     var mouseX = 0, mouseY = 0, smoothMouseX = 0, smoothMouseY = 0;
     const onMouse = (e) => { mouseX = (e.clientX / innerWidth - 0.5) * 2; mouseY = (e.clientY / innerHeight - 0.5) * 2; };
     function setGoldDragPointer(event){
@@ -2499,7 +2262,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         }
       }
       if (!reduced && SCENE_MOTION) {
-        for (var si = 0; si < sparks.length; si++) sparks[si].update(dt);
         if (vc > 0 && now - lastWobbleUpdate > 32) {
           lastWobbleUpdate = now;
           var linePosArr = linesObj.geometry.attributes.position.array;
@@ -2528,8 +2290,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           }
           wptsObj.geometry.attributes.position.needsUpdate = true;
         }
-        for (var gi = 0; gi < goldenPulses.length; gi++) goldenPulses[gi].update(dt);
-        for (var pi = 0; pi < strandPulses.length; pi++) strandPulses[pi].update(dt);
       }
       if(STRAND_ON&&vc>0){
         var goldUpdateInterval=goldDragActive?16:40;
@@ -2538,34 +2298,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           updateGoldStrandGeometry(t);
         }
       }
-      if (NEURAL_ACTIVITY) {
-        for (var neuralIndex = 0; neuralIndex < nerveBolts.length; neuralIndex++) {
-          nerveBolts[neuralIndex].update(dt);
-        }
-        for (var satelliteNeuralIndex = 0; satelliteNeuralIndex < satelliteNerveBolts.length; satelliteNeuralIndex++) {
-          satelliteNerveBolts[satelliteNeuralIndex].update(dt);
-        }
-        for (var orbIndex = 0; orbIndex < blueOrbs.length; orbIndex++) {
-          blueOrbs[orbIndex].update(dt);
-        }
-        for (var satelliteOrbUpdateIndex = 0; satelliteOrbUpdateIndex < satelliteBlueOrbs.length; satelliteOrbUpdateIndex++) {
-          satelliteBlueOrbs[satelliteOrbUpdateIndex].update(dt);
-        }
-        for (var networkPulseIndex = 0; networkPulseIndex < networkPulses.length; networkPulseIndex++) {
-          networkPulses[networkPulseIndex].update(dt);
-        }
-        if (networkBaseColors && now - lastNetworkPulseUpdate > 48) {
-          lastNetworkPulseUpdate = now;
-          var networkColorArr = networkPointsObj.geometry.attributes.color.array;
-          for (var networkNodeIndex = 0; networkNodeIndex < networkNodes.length; networkNodeIndex++) {
-            var pulseBrightness = .82 + .18 * Math.sin(t * .6 + networkPhases[networkNodeIndex]);
-            networkColorArr[networkNodeIndex * 3] = networkBaseColors[networkNodeIndex * 3] * pulseBrightness;
-            networkColorArr[networkNodeIndex * 3 + 1] = networkBaseColors[networkNodeIndex * 3 + 1] * pulseBrightness;
-            networkColorArr[networkNodeIndex * 3 + 2] = networkBaseColors[networkNodeIndex * 3 + 2] * pulseBrightness;
-          }
-          networkPointsObj.geometry.attributes.color.needsUpdate = true;
-        }
-      }
+      if (NEURAL_INFORMATION_ACTIVE && !reduced) neuralActivityController.update(dt);
       nodesP.material.opacity = .44;
       var railSlowdown=cameraRailSlowdown(cameraProgress);
       var cameraAcceleration=((targetScrollP-cameraProgress)*CAMERA_SPRING*railSlowdown-cameraVelocity*CAMERA_DAMPING)/CAMERA_MASS;
