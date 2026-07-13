@@ -1145,9 +1145,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     return {
       fiberAmount:isMobile?.42:.58,
       intensity:1,
-      lineOpacity:.62,
-      pointOpacity:.76,
-      pointSize:.1,
+      lineOpacity:GOLD_RENDER.lineOpacity,
+      pointOpacity:GOLD_RENDER.pointOpacity,
+      pointSize:SP.ptSize,
+      topThickness:1,
+      bottomThickness:1,
       topFunnel:1,
       connectorShare:.18,
       joinRadius:.08,
@@ -1163,6 +1165,17 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       pulseSpeed:3.4,
       pulseStrength:.32,
       baseBrightness:.3,
+      topBrightness:1,
+      bottomBrightness:1,
+      escapeAmount:.54,
+      escapeAmplitude:1,
+      escapeFrequency:1,
+      escapeWavelength:1,
+      escapeSpeed:1,
+      colorHue:0,
+      colorSaturation:1,
+      colorLightness:1,
+      colorIntensity:1,
       posX:0,
       posY:0,
       posZ:0
@@ -1193,9 +1206,26 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
 
   function applySecondaryRendering(strand){
     var params=strand.params;
-    strand.lineMesh.material.opacity=Math.min(1,GOLD_RENDER.lineOpacity*params.intensity);
-    strand.pointMesh.material.opacity=Math.min(1,GOLD_RENDER.pointOpacity*params.intensity);
-    strand.pointMesh.material.size=SP.ptSize;
+    strand.lineMesh.material.opacity=Math.min(1,params.lineOpacity*params.intensity);
+    strand.pointMesh.material.opacity=Math.min(1,params.pointOpacity*params.intensity);
+    strand.pointMesh.material.size=params.pointSize;
+  }
+
+  var secondaryColorHsl={h:0,s:0,l:0};
+  function tuneSecondaryMetal(source,target,params){
+    target.copy(source);
+    target.getHSL(secondaryColorHsl);
+    target.setHSL(
+      ((secondaryColorHsl.h+params.colorHue)%1+1)%1,
+      THREE.MathUtils.clamp(secondaryColorHsl.s*params.colorSaturation,0,1),
+      THREE.MathUtils.clamp(secondaryColorHsl.l*params.colorLightness,0,1)
+    );
+  }
+
+  function updateSecondaryMetal(strand){
+    tuneSecondaryMetal(strand.palette.deep,strand.tunedDeep,strand.params);
+    tuneSecondaryMetal(strand.palette.primary,strand.tunedPrimary,strand.params);
+    tuneSecondaryMetal(strand.palette.light,strand.tunedLight,strand.params);
   }
 
   function rebuildSecondaryStrandGeometry(strand){
@@ -1223,7 +1253,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         // Nur einige Randfasern lösen sich sichtbar aus dem Kern. Diese
         // gezielten Ausreisser geben dem Bündel die organische, lebendige
         // Silhouette, ohne die tragende Gesamtform zu verlieren.
-        escapeWeight:Math.random()<.17 ? .72+Math.random()*.28 : 0
+        // Mehrere voneinander unabhängige Randfasern lösen sich aus dem
+        // Bündel. Ihre Frequenzen und Geschwindigkeiten bleiben individuell,
+        // damit die Bewegung wie ein lebendes Nervenfaserfeld wirkt.
+        escapeWeight:Math.random()<params.escapeAmount ? .48+Math.random()*.52 : 0,
+        escapeFrequency:7+Math.random()*9,
+        escapeSpeed:.46+Math.random()*.52
       });
       pointValueCount+=fiberSegments*3;
       lineValueCount+=Math.max(0,fiberSegments-1)*6;
@@ -1273,6 +1308,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       satellite:satellite,
       phase:phase,
       palette:palette,
+      tunedDeep:new THREE.Color(),
+      tunedPrimary:new THREE.Color(),
+      tunedLight:new THREE.Color(),
       flowDirection:flowDirection,
       sideSign:sideSign,
       params:params,
@@ -1303,6 +1341,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var mergeX=secondaryMergeTargetWorld.x;
     var mergeY=secondaryMergeTargetWorld.y;
     var mergeZ=secondaryMergeTargetWorld.z;
+    updateSecondaryMetal(strand);
     // Der goldene Trichter arbeitet mit einem breiten Faserursprung, drei
     // weichen Sammelstufen (.34/.38/.28) und einer relativ langen
     // Wurzelzone. Die roten/blauen Trichter nutzen exakt diese Logik, nur
@@ -1350,7 +1389,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var startX=anchorWorld.x, startY=anchorWorld.y, startZ=anchorWorld.z;
       var funnelAngle=fiber.sourceAngle+fiberShape.phaseOffset*.42;
       var funnelCos=Math.cos(funnelAngle), funnelSin=Math.sin(funnelAngle);
-      var funnelScale=sourceScale*fiberShape.funnelVariation;
+      var funnelScale=sourceScale*fiberShape.funnelVariation*params.topThickness;
       var funnelLength=params.funnelLength*sourceScale;
       var funnelMicroX=secondarySatelliteWorld.x+funnelCos*params.funnelTopRadius*funnelScale;
       var funnelMicroY=secondarySatelliteWorld.y-funnelLength*.36-fiber.sourceDrop*sourceScale;
@@ -1401,7 +1440,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         var pathProgress=smooth((progress-funnelEnd)/(1-funnelEnd));
         var sagEnvelope=Math.sin(pathProgress*Math.PI);
         var hangingSag=(firstSag*(1-pathProgress)+secondSag*pathProgress)*sagEnvelope;
-        var looseSpread=(.005+fiber.sourceRadius*.15+params.funnelSpread*.008)*sagEnvelope*(1-helixBlend*.82);
+        var thicknessScale=params.topThickness+(params.bottomThickness-params.topThickness)*pathProgress;
+        var looseSpread=(.005+fiber.sourceRadius*.15+params.funnelSpread*.008)*sagEnvelope*(1-helixBlend*.82)*thicknessScale;
         var windEnvelope=sagEnvelope*(1-helixBlend*.88);
         var windSide=Math.sin(flowTime*.64+pathProgress*5.4+fiberShape.windPhase)*params.sway*.045*windEnvelope;
         var windDepth=Math.cos(flowTime*.49+pathProgress*4.1+fiberShape.windPhase*1.37)*params.sway*.022*windEnvelope;
@@ -1410,11 +1450,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         // dekorative Parallelwelle entsteht.
         var edgeWaveEnvelope=sagEnvelope*(.28+.72*(1-helixBlend));
         var escapeEnvelope=smooth((pathProgress-.06)/.2)*smooth((.94-pathProgress)/.2)*(1-helixBlend*.72);
-        var edgeWave=(.01+edgeWeight*.09+fiber.escapeWeight*.18)*edgeWaveEnvelope;
+        var edgeWave=(.014+edgeWeight*.11+fiber.escapeWeight*.235)*edgeWaveEnvelope*thicknessScale*params.escapeAmplitude;
         var edgeWaveSide=Math.sin(pathProgress*(7.4+edgeWeight*5.1)+fiber.branchPhase+flowTime*.31)*edgeWave;
         var edgeWaveDepth=Math.cos(pathProgress*(6.2+edgeWeight*4.3)+fiber.branchPhase*1.43+flowTime*.24)*edgeWave*.72;
-        var escapeSide=Math.sin(pathProgress*(11.5+edgeWeight*3.6)+fiber.branchPhase*2.1+flowTime*.42)*fiber.escapeWeight*.16*escapeEnvelope;
-        var escapeDepth=Math.cos(pathProgress*(9.4+edgeWeight*4.8)+fiber.branchPhase*.71+flowTime*.34)*fiber.escapeWeight*.115*escapeEnvelope;
+        var travellingWave=pathProgress*fiber.escapeFrequency*params.escapeFrequency/params.escapeWavelength-flowTime*fiber.escapeSpeed*params.escapeSpeed;
+        var escapeSide=(Math.sin(travellingWave+fiber.branchPhase*2.1)+Math.sin(travellingWave*1.73+fiber.branchPhase*.47)*.38)*fiber.escapeWeight*.245*escapeEnvelope*thicknessScale*params.escapeAmplitude;
+        var escapeDepth=(Math.cos(travellingWave*.89+fiber.branchPhase*.71)+Math.sin(travellingWave*1.41+fiber.branchPhase*1.8)*.32)*fiber.escapeWeight*.175*escapeEnvelope*thicknessScale*params.escapeAmplitude;
         var manualEnvelope=sagEnvelope*(1-helixBlend*.88);
         var endSpread=(.008+Math.abs(fiberShape.radiusOffset)*.022)*(1-helixBlend*.84);
         var endOffsetX=Math.cos(fiberAngle)*endSpread;
@@ -1436,19 +1477,20 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           +depthZ*(Math.sin(fiberAngle)*looseSpread+windDepth+edgeWaveDepth+escapeDepth+params.posZ*manualEnvelope+endOffsetZ);
         if(helixBlend>0){
           var helixAngle=strand.phase+helixBlend*Math.PI*2*helixTurns+fiberShape.phaseOffset*.48;
-          var helixRadius=(.09+Math.abs(fiberShape.radiusOffset)*.25)*(1-helixBlend*.18);
+          var helixRadius=(.09+Math.abs(fiberShape.radiusOffset)*.25)*(1-helixBlend*.18)*thicknessScale;
           var helixX=mergeX+Math.cos(helixAngle)*helixRadius;
           var helixZ=mergeZ+Math.sin(helixAngle)*helixRadius;
           x+=(helixX-x)*helixBlend;
           z+=(helixZ-z)*helixBlend;
         }
         var pulse=Math.max(0,Math.sin(flowTime*params.pulseSpeed*strand.flowDirection-progress*20*strand.flowDirection+fiberShape.phaseOffset));
-        var brightness=(params.baseBrightness+pulse*params.pulseStrength)*params.intensity;
+        var verticalBrightness=params.topBrightness+(params.bottomBrightness-params.topBrightness)*pathProgress;
+        var brightness=(params.baseBrightness+pulse*params.pulseStrength)*params.intensity*params.colorIntensity*verticalBrightness;
         // Jede Faser bleibt innerhalb ihrer eigenen Metallic-Palette. Der
         // Verlauf verschiebt sich sanft, ohne Rot und Blau zu vermischen.
         var metallic=.5+.5*Math.sin(fiber.metallicPhase+progress*7.2+flowTime*.28);
-        var metallicFrom=metallic<.5?strand.palette.deep:strand.palette.primary;
-        var metallicTo=metallic<.5?strand.palette.primary:strand.palette.light;
+        var metallicFrom=metallic<.5?strand.tunedDeep:strand.tunedPrimary;
+        var metallicTo=metallic<.5?strand.tunedPrimary:strand.tunedLight;
         var metallicBlend=metallic<.5?metallic*2:(metallic-.5)*2;
         var colorR=(metallicFrom.r+(metallicTo.r-metallicFrom.r)*metallicBlend)*brightness;
         var colorG=(metallicFrom.g+(metallicTo.g-metallicFrom.g)*metallicBlend)*brightness;
@@ -1894,7 +1936,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       ['ptSize','Faser-Dicke',0.004,0.12,0.001]
     ];
     var SECONDARY_GEOMETRY_SLIDERS=[
-      ['fiberAmount','Faseranteil',0.08,1,0.01],
+      ['fiberAmount','Faseranzahl',0.08,1.6,0.01],
       ['topFunnel','Trichter oben',0.2,3,0.01],
       ['connectorShare','Einwärtsneigung ab',0.05,0.65,0.01],
       ['joinRadius','Endbündel-Radius',0.01,0.22,0.005],
@@ -1905,11 +1947,30 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       ['endPull','End-Anziehung',0,1.5,0.01],
       ['sway','Seitenschwingung',0,2.5,0.01]
     ];
+    var SECONDARY_THICKNESS_SLIDERS=[
+      ['topThickness','Gesamtdicke oben',0.25,3,0.01],
+      ['bottomThickness','Gesamtdicke unten',0.25,3,0.01],
+      ['pointSize','Einzelfaser-Dicke',0.01,0.2,0.001]
+    ];
+    var SECONDARY_ESCAPE_SLIDERS=[
+      ['escapeAmount','Ausreisser-Menge',0,1,0.01],
+      ['escapeAmplitude','Ausreisser-Ausschlag',0,3,0.01],
+      ['escapeFrequency','Wellen-Häufigkeit',0.1,3,0.01],
+      ['escapeWavelength','Wellenlänge',0.2,4,0.01],
+      ['escapeSpeed','Wellen-Fluss',0,3,0.01]
+    ];
+    var SECONDARY_COLOR_SLIDERS=[
+      ['colorHue','Metall-Farbton',-0.14,0.14,0.001],
+      ['colorSaturation','Metall-Sättigung',0,1.6,0.01],
+      ['colorLightness','Metall-Helligkeit',0.2,1.6,0.01],
+      ['colorIntensity','Farbintensität',0,3,0.01]
+    ];
     var SECONDARY_LIGHT_SLIDERS=[
-      ['intensity','Lichtintensität',0.05,3,0.01],
+      ['intensity','Gesamt-Belichtung',0.05,3,0.01],
+      ['topBrightness','Belichtung oben',0,3,0.01],
+      ['bottomBrightness','Belichtung unten',0,3,0.01],
       ['lineOpacity','Linien-Deckkraft',0.02,1,0.01],
       ['pointOpacity','Faser-Deckkraft',0.02,1,0.01],
-      ['pointSize','Faser-Dicke',0.01,0.2,0.001],
       ['baseBrightness','Grundhelligkeit',0.02,1,0.01],
       ['pulseStrength','Pulsstärke',0,1.2,0.01],
       ['pulseSpeed','Puls-Tempo',0,8,0.05]
@@ -1982,11 +2043,23 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       SECONDARY_POSITION_SLIDERS.forEach(function(def){
         addSlider(def,strand.params,function(){ refreshSecondaryStrand(strand,false); });
       });
-      sectionLabel(name+' • Faserbündel',color);
-      SECONDARY_GEOMETRY_SLIDERS.forEach(function(def){
-        addSlider(def,strand.params,function(){ refreshSecondaryStrand(strand,def[0]==='fiberAmount'||def[0]==='topFunnel'); });
+      sectionLabel(name+' • Gesamtdicke',color);
+      SECONDARY_THICKNESS_SLIDERS.forEach(function(def){
+        addSlider(def,strand.params,function(){ refreshSecondaryStrand(strand,false); });
       });
-      sectionLabel(name+' • Licht & Energie',color);
+      sectionLabel(name+' • Faserbündel & Trichter',color);
+      SECONDARY_GEOMETRY_SLIDERS.forEach(function(def){
+        addSlider(def,strand.params,function(){ refreshSecondaryStrand(strand,def[0]==='fiberAmount'); });
+      });
+      sectionLabel(name+' • Ausreisser-Fasern',color);
+      SECONDARY_ESCAPE_SLIDERS.forEach(function(def){
+        addSlider(def,strand.params,function(){ refreshSecondaryStrand(strand,def[0]==='escapeAmount'); });
+      });
+      sectionLabel(name+' • Metallfarbe',color);
+      SECONDARY_COLOR_SLIDERS.forEach(function(def){
+        addSlider(def,strand.params,function(){ refreshSecondaryStrand(strand,false); });
+      });
+      sectionLabel(name+' • Lichtverlauf & Energie',color);
       SECONDARY_LIGHT_SLIDERS.forEach(function(def){
         addSlider(def,strand.params,function(){ refreshSecondaryStrand(strand,false); });
       });
