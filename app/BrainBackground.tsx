@@ -61,10 +61,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   // HELIX_STEP/TEXT_START_Y kommen jetzt aus der gemeinsamen Geometrie-Datei
   // (app/lib/helixGeometry.ts) statt hier lokal dupliziert zu sein — dieselbe
   // Quelle wird auch von der Kartengruppe in page.tsx verwendet.
-  var placeholderCards=[1,2,3,4].map(function(number){
-    return {code:'P'+number,title:'Platzhalter'+number,body:'Weitere Inhalte folgen.',accent:'#c89a3d'};
-  });
-  var totalWorldStops=introTexts.length+serviceCards.length+placeholderCards.length;
+  var totalWorldStops=introTexts.length+serviceCards.length;
   var cameraTargetStart=CAMERA_TARGET_START;
   var cameraTravel=computeCameraTravel(totalWorldStops);
   var cameraTargetEnd=cameraTargetStart-cameraTravel;
@@ -235,14 +232,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     cardMesh.userData={baseX:cardMesh.position.x,baseY:cardMesh.position.y,baseZ:cardMesh.position.z,baseRotY:cardAngle,phase:worldIndex*1.37+.52};
     introTextGroup.add(cardMesh);
     floatingObjects.push(cardMesh);
-  }
-
-  if(!isMobile){
-    // Alle 4 Leistungskarten werden durch die DOM-Kartenstationen (Neural
-    // Glass Panels) ersetzt und hier bewusst ausgelassen — die Helix-
-    // Positionen/Kamera-Slots (inkl. Platzhalterkarten danach) bleiben
-    // exakt unverändert, nur diese eine Mesh-Erzeugung wird übersprungen.
-    placeholderCards.forEach(function(card,index){ buildServiceCard(card,index,introTexts.length+serviceCards.length+index); });
   }
 
   var BASE_Y=Math.PI/2+0.15, BASE_X=0.22, MAIN_BRAIN_BASE_X=.29;
