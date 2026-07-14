@@ -107,13 +107,23 @@ function NeuralFiberField() {
 }
 
 // Split-Flap-Buchstaben-Zerhacker für die "DEINE IDEE."-Textstation: jeder
-// Buchstabe klappt unabhängig von seinen Nachbarn (eigene Fliprate, eigene
-// Anzahl Zwischenschritte, eigene Startverzögerung) durch zufällige
-// Zeichen, bis er auf dem Zielbuchstaben stehen bleibt — kein Split-Flap-
-// Kästchen im Hintergrund, nur der weisse Buchstabe selbst rotiert.
+// Buchstabe klappt unabhängig von seinen Nachbarn (eigenes Tempo, eigene
+// Pausen) endlos durch zufällige Zeichen — kein Split-Flap-Kästchen im
+// Hintergrund, nur der weisse Buchstabe selbst rotiert. Die Dauerschleife
+// läuft permanent; nur wenn die Station kameramittig UND der Scroll
+// stillsteht, bekommen alle Buchstaben den Befehl, beim nächsten eigenen
+// Taktschritt auf ihrem Zielbuchstaben anzuhalten ("settle"). Sobald die
+// Station die Mitte verlässt oder wieder gescrollt wird, läuft die
+// Dauerschleife an denselben (dann gestoppten) Buchstaben weiter ("spin").
 const FLAP_SCRAMBLE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-type FlapLetter = { wrap: HTMLSpanElement; glyph: HTMLSpanElement; target: string };
+type FlapLetter = {
+  wrap: HTMLSpanElement;
+  glyph: HTMLSpanElement;
+  target: string;
+  mode: 'spin' | 'settle';
+  running: boolean;
+};
 
 function buildFlapWord(container: HTMLElement, text: string): FlapLetter[] {
   container.innerHTML = '';
@@ -127,43 +137,56 @@ function buildFlapWord(container: HTMLElement, text: string): FlapLetter[] {
     glyph.textContent = ch;
     wrap.appendChild(glyph);
     container.appendChild(wrap);
-    letters.push({ wrap, glyph, target: ch });
+    letters.push({ wrap, glyph, target: ch, mode: 'spin', running: false });
   }
   return letters;
 }
 
-function animateFlapLetter(letter: FlapLetter, reduced: boolean) {
+function startFlapLetter(letter: FlapLetter, reduced: boolean) {
   if (FLAP_SCRAMBLE_CHARS.indexOf(letter.target) === -1) return;
   if (reduced) {
     letter.glyph.textContent = letter.target;
     return;
   }
-  let stepsLeft = 4 + Math.floor(Math.random() * 5); // 4–8 unabhängige Flips
-  let flipMs = 35 + Math.random() * 25; // schneller Start
-  const slowdown = 1.12 + Math.random() * 0.14; // pro Schritt etwas langsamer
-  const startDelay = Math.random() * 180;
+  if (letter.running) return;
+  letter.running = true;
 
-  function step() {
-    const isLast = stepsLeft <= 1;
-    const nextChar = isLast ? letter.target : FLAP_SCRAMBLE_CHARS[Math.floor(Math.random() * FLAP_SCRAMBLE_CHARS.length)];
+  const flipMs = 55 + Math.random() * 45; // eigenes Grundtempo pro Buchstabe
+  const gapMs = () => 70 + Math.random() * 150; // eigene, leicht unregelmässige Pause
 
+  function tick() {
+    if (letter.mode === 'settle') {
+      letter.glyph.style.transition = `transform ${flipMs.toFixed(0)}ms cubic-bezier(.5,0,.85,.35)`;
+      letter.glyph.style.transform = 'rotateX(90deg)';
+      window.setTimeout(() => {
+        letter.glyph.textContent = letter.target;
+        letter.glyph.style.transition = `transform ${flipMs.toFixed(0)}ms cubic-bezier(.2,.7,.4,1)`;
+        letter.glyph.style.transform = 'rotateX(0deg)';
+        letter.running = false; // steht still, bis setFlapWordMode('spin', ...) sie neu startet
+      }, flipMs);
+      return;
+    }
+    const nextChar = FLAP_SCRAMBLE_CHARS[Math.floor(Math.random() * FLAP_SCRAMBLE_CHARS.length)];
     letter.glyph.style.transition = `transform ${flipMs.toFixed(0)}ms cubic-bezier(.5,0,.85,.35)`;
     letter.glyph.style.transform = 'rotateX(90deg)';
-
     window.setTimeout(() => {
       letter.glyph.textContent = nextChar;
       letter.glyph.style.transition = `transform ${flipMs.toFixed(0)}ms cubic-bezier(.2,.7,.4,1)`;
       letter.glyph.style.transform = 'rotateX(0deg)';
-
-      stepsLeft--;
-      if (stepsLeft > 0) {
-        flipMs *= slowdown;
-        window.setTimeout(step, flipMs * 0.55);
-      }
+      window.setTimeout(tick, gapMs());
     }, flipMs);
   }
 
-  window.setTimeout(step, startDelay);
+  tick();
+}
+
+function setFlapWordMode(letters: FlapLetter[], mode: 'spin' | 'settle', reduced: boolean) {
+  letters.forEach((letter) => {
+    letter.mode = mode;
+    if (mode === 'spin' && !letter.running) {
+      startFlapLetter(letter, reduced);
+    }
+  });
 }
 
 function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
@@ -343,9 +366,27 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       bigEl.style.marginLeft = `${offset}px`;
     }
 
-    let materialized = false;
+    // Split-Flap ersetzt die bisherige Opacity-Ein-/Ausblendung: die Station
+    // ist entweder ganz im Fenster (Buchstaben drehen endlos oder stehen
+    // fest) oder ganz ausserhalb (unsichtbar) — kein sanftes Überblenden.
+    // "Zentriert" (Kamera-Front, Mitte der Seite) heisst hier: sehr nah an
+    // der eigentlichen Stationsposition (deutlich enger als das ganze
+    // Sichtbarkeitsfenster). "Scroll gestoppt" wird über die letzte
+    // scroll-Aktivität erkannt.
+    const CENTER_VISIBILITY = 0.92;
+    const SCROLL_IDLE_MS = 180;
+    let lastScrollAt = performance.now() - SCROLL_IDLE_MS - 1; // vor jedem Scrollen: als "idle" gestartet
+    const onScrollActivity = () => { lastScrollAt = performance.now(); };
+    window.addEventListener('scroll', onScrollActivity, { passive: true });
+
     let referenceViewZ: number | null = null;
+    let settled = false;
     let rafId = 0;
+
+    // Läuft von Anfang an dauerhaft, unabhängig von der Sichtbarkeit —
+    // "die Rotation der Buchstaben läuft in der Dauerschleife".
+    setFlapWordMode(smallLetters, 'spin', reduced);
+    setFlapWordMode(bigLetters, 'spin', reduced);
 
     const frame = () => {
       rafId = requestAnimationFrame(frame);
@@ -383,9 +424,17 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
 
       const distance = Math.abs(cam.cameraLookY - stationPos.y);
       const visibility = Math.max(0, Math.min(1, 1 - distance / fadeWindow));
+      const inWindow = viewZ > 0.001 && visibility > 0;
 
-      if (viewZ <= 0.001 || visibility <= 0) {
+      if (!inWindow) {
         world.style.opacity = '0';
+        // Ausserhalb des Sichtfensters immer drehend halten, damit die
+        // Station nie "eingefroren" wieder ins Bild kommt.
+        if (settled) {
+          settled = false;
+          setFlapWordMode(smallLetters, 'spin', reduced);
+          setFlapWordMode(bigLetters, 'spin', reduced);
+        }
         return;
       }
 
@@ -409,16 +458,26 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       const yawDeg = (yawRad * 180) / Math.PI;
 
       world.style.transform = `translate3d(${screenX.toFixed(2)}px, ${screenY.toFixed(2)}px, 0) scale(${scale.toFixed(4)}) rotateY(${yawDeg.toFixed(3)}deg)`;
-      world.style.opacity = String(visibility);
+      // Split-Flap statt Opacity-Fade: innerhalb des Fensters immer voll
+      // sichtbar (kein Überblenden) — die An-/Abwesenheit wird jetzt durch
+      // Spin (unleserlich) vs. Settle (lesbar) ausgedrückt.
+      world.style.opacity = '1';
 
-      if (!materialized && visibility > 0.05) {
-        materialized = true;
-        alignBigWord();
-        smallLetters.forEach((letter) => animateFlapLetter(letter, reduced));
-        bigLetters.forEach((letter) => animateFlapLetter(letter, reduced));
+      const isCentered = visibility >= CENTER_VISIBILITY;
+      const scrollIdle = performance.now() - lastScrollAt > SCROLL_IDLE_MS;
+
+      if (!settled && isCentered && scrollIdle) {
+        settled = true;
+        setFlapWordMode(smallLetters, 'settle', reduced);
+        setFlapWordMode(bigLetters, 'settle', reduced);
+      } else if (settled && (!isCentered || !scrollIdle)) {
+        settled = false;
+        setFlapWordMode(smallLetters, 'spin', reduced);
+        setFlapWordMode(bigLetters, 'spin', reduced);
       }
     };
 
+    alignBigWord();
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(alignBigWord);
     }
@@ -427,6 +486,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
     return () => {
       cancelAnimationFrame(rafId);
       window.removeEventListener('resize', alignBigWord);
+      window.removeEventListener('scroll', onScrollActivity);
     };
   }, []);
 
