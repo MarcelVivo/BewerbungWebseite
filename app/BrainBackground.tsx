@@ -1303,8 +1303,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   // wird pro Frame daraus abgeleitet, damit Schweben und Rotation korrekt
   // berücksichtigt bleiben.
   var SECONDARY_MERGE_GOLD_PROGRESS=.55;
-  var SECONDARY_MERGE_PROGRESS_START=.55;
-  var SECONDARY_MERGE_PROGRESS_END=.68;
+  var SECONDARY_MERGE_PROGRESS_START=.46;
+  var SECONDARY_MERGE_PROGRESS_END=.86;
   var secondaryMergeTargetWorld=new THREE.Vector3();
   var secondarySatelliteWorld=new THREE.Vector3();
   var secondaryRenderPoint=new THREE.Vector3();
@@ -1312,6 +1312,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var secondaryMergedTargetLocal=new THREE.Vector3();
   var secondaryMergedTargetWorld=new THREE.Vector3();
   var secondarySharedCenterWorld=new THREE.Vector3();
+  var secondaryFrameNormalWorld=new THREE.Vector3();
+  var secondaryFrameBinormalWorld=new THREE.Vector3();
   var secondaryMergeY=0;
 
   function makeSecondaryFiberShape(){
@@ -1578,23 +1580,23 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         var sagEnvelope=Math.sin(pathProgress*Math.PI);
         var hangingSag=(firstSag*(1-pathProgress)+secondSag*pathProgress)*sagEnvelope;
         var thicknessScale=params.topThickness+(params.bottomThickness-params.topThickness)*pathProgress;
-        var looseSpread=(.005+fiber.sourceRadius*.15+params.funnelSpread*.008)*sagEnvelope*(1-integrationBlend*.82)*thicknessScale;
-        var windEnvelope=sagEnvelope*(1-integrationBlend*.88);
+        var looseSpread=(.005+fiber.sourceRadius*.15+params.funnelSpread*.008)*sagEnvelope*thicknessScale;
+        var windEnvelope=sagEnvelope;
         var windSide=Math.sin(flowTime*.64+pathProgress*5.4+fiberShape.windPhase)*params.sway*.045*windEnvelope;
         var windDepth=Math.cos(flowTime*.49+pathProgress*4.1+fiberShape.windPhase*1.37)*params.sway*.022*windEnvelope;
         // Nur die lockeren äusseren Fasern dürfen sichtbar aus dem dichten
         // Kern ausbrechen. Ihre Wellen sind phasenverschoben, damit keine
         // dekorative Parallelwelle entsteht.
-        var edgeWaveEnvelope=sagEnvelope*(.28+.72*(1-integrationBlend));
-        var escapeEnvelope=smooth((pathProgress-.06)/.2)*smooth((.94-pathProgress)/.2)*(1-integrationBlend*.72);
+        var edgeWaveEnvelope=sagEnvelope;
+        var escapeEnvelope=smooth((pathProgress-.06)/.2)*smooth((.94-pathProgress)/.2);
         var edgeWave=(.014+edgeWeight*.11+fiber.escapeWeight*.235)*edgeWaveEnvelope*thicknessScale*params.escapeAmplitude;
         var edgeWaveSide=Math.sin(pathProgress*(7.4+edgeWeight*5.1)+fiber.branchPhase+flowTime*.31)*edgeWave;
         var edgeWaveDepth=Math.cos(pathProgress*(6.2+edgeWeight*4.3)+fiber.branchPhase*1.43+flowTime*.24)*edgeWave*.72;
         var travellingWave=pathProgress*fiber.escapeFrequency*params.escapeFrequency/params.escapeWavelength-flowTime*fiber.escapeSpeed*params.escapeSpeed;
         var escapeSide=(Math.sin(travellingWave+fiber.branchPhase*2.1)+Math.sin(travellingWave*1.73+fiber.branchPhase*.47)*.38)*fiber.escapeWeight*.245*escapeEnvelope*thicknessScale*params.escapeAmplitude;
         var escapeDepth=(Math.cos(travellingWave*.89+fiber.branchPhase*.71)+Math.sin(travellingWave*1.41+fiber.branchPhase*1.8)*.32)*fiber.escapeWeight*.175*escapeEnvelope*thicknessScale*params.escapeAmplitude;
-        var manualEnvelope=sagEnvelope*(1-integrationBlend*.88);
-        var endSpread=(.008+Math.abs(fiberShape.radiusOffset)*.022)*(1-integrationBlend*.84);
+        var manualEnvelope=sagEnvelope;
+        var endSpread=.008+Math.abs(fiberShape.radiusOffset)*.022;
         var endOffsetX=Math.cos(fiberAngle)*endSpread;
         var endOffsetZ=Math.sin(fiberAngle)*endSpread;
         var manualVertical=params.posY*manualEnvelope;
@@ -1621,16 +1623,26 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
             +(1-SECONDARY_MERGE_GOLD_PROGRESS)
               *((progress-SECONDARY_MERGE_PROGRESS_START)/(1-SECONDARY_MERGE_PROGRESS_START));
           sampleGoldStrandFrame(sharedGoldProgress);
-          var mergedRadius=SP.rStr*(.18+.94*fiber.mergeRadius)*thicknessScale;
+          var mergeWavePhase=sharedGoldProgress*8.6+flowTime*.31+fiber.branchPhase;
+          var mergeAngle=fiber.mergeAngle+Math.sin(mergeWavePhase)*.42
+            +Math.sin(mergeWavePhase*1.71+fiberShape.phaseOffset)*.13;
+          var mergedRadius=SP.rStr*(.04+.98*fiber.mergeRadius)
+            *(1+Math.sin(mergeWavePhase*1.23)*.1)*thicknessScale;
           secondaryMergedTargetLocal.copy(goldFrameCenterLocal)
-            .addScaledVector(goldFrameNormalLocal,Math.cos(fiber.mergeAngle)*mergedRadius)
-            .addScaledVector(goldFrameBinormalLocal,Math.sin(fiber.mergeAngle)*mergedRadius);
+            .addScaledVector(goldFrameNormalLocal,Math.cos(mergeAngle)*mergedRadius)
+            .addScaledVector(goldFrameBinormalLocal,Math.sin(mergeAngle)*mergedRadius);
           // Die Helix rotiert um die Weltachse x=0 / z=0. Der gemeinsame
           // Faserquerschnitt wird deshalb hier – und nur hier – auf diese
           // Achse verschoben; die individuelle 3D-Verteilung jeder Faser
           // relativ zum Querschnitt bleibt vollständig erhalten.
           secondarySharedCenterWorld.copy(goldFrameCenterLocal);
           brain.localToWorld(secondarySharedCenterWorld);
+          secondaryFrameNormalWorld.copy(goldFrameNormalLocal).add(goldFrameCenterLocal);
+          brain.localToWorld(secondaryFrameNormalWorld);
+          secondaryFrameNormalWorld.sub(secondarySharedCenterWorld).normalize();
+          secondaryFrameBinormalWorld.copy(goldFrameBinormalLocal).add(goldFrameCenterLocal);
+          brain.localToWorld(secondaryFrameBinormalWorld);
+          secondaryFrameBinormalWorld.sub(secondarySharedCenterWorld).normalize();
           secondaryMergedTargetWorld.copy(secondaryMergedTargetLocal);
           brain.localToWorld(secondaryMergedTargetWorld);
           secondaryMergedTargetWorld.x-=secondarySharedCenterWorld.x;
@@ -1638,6 +1650,15 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           x+=(secondaryMergedTargetWorld.x-x)*mergeBlend;
           y+=(secondaryMergedTargetWorld.y-y)*mergeBlend;
           z+=(secondaryMergedTargetWorld.z-z)*mergeBlend;
+          // Die bereits vorhandenen Wind-, Wellen- und Ausreisserwerte
+          // fliessen auch im gemeinsamen Volumen weiter. Dadurch bleibt der
+          // Strang lebendig, statt nach dem Merge zu geraden Säulen zu
+          // erstarren.
+          var carriedWaveSide=(windSide+edgeWaveSide+escapeSide)*(.46+edgeWeight*.24);
+          var carriedWaveDepth=(windDepth+edgeWaveDepth+escapeDepth)*(.46+edgeWeight*.24);
+          x+=secondaryFrameNormalWorld.x*carriedWaveSide+secondaryFrameBinormalWorld.x*carriedWaveDepth;
+          y+=secondaryFrameNormalWorld.y*carriedWaveSide+secondaryFrameBinormalWorld.y*carriedWaveDepth;
+          z+=secondaryFrameNormalWorld.z*carriedWaveSide+secondaryFrameBinormalWorld.z*carriedWaveDepth;
         }
         var pulse=Math.max(0,Math.sin(flowTime*params.pulseSpeed*strand.flowDirection-progress*20*strand.flowDirection+fiberShape.phaseOffset));
         var verticalBrightness=params.topBrightness+(params.bottomBrightness-params.topBrightness)*pathProgress;
