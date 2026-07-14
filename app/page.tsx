@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import HomeNavBar from './HomeNavBar';
 import BrainBackground from './BrainBackground';
+import { buildFlapWord, setFlapWordMode, type FlapLetter } from './lib/splitFlap';
 import ContactFormClient from './ContactFormClient';
 import { useLanguage } from './LanguageContext';
 import { T } from '../lib/translations';
@@ -119,80 +120,6 @@ function NeuralFiberField() {
 // Buchstaben den Befehl, beim nächsten eigenen Taktschritt auf ihrem
 // Zielbuchstaben anzuhalten ("settle"). Sobald wieder gescrollt wird, läuft
 // die Dauerschleife an denselben (dann gestoppten) Buchstaben weiter ("spin").
-const FLAP_SCRAMBLE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜ';
-
-type FlapLetter = {
-  wrap: HTMLSpanElement;
-  glyph: HTMLSpanElement;
-  target: string;
-  mode: 'spin' | 'settle';
-  running: boolean;
-};
-
-function buildFlapWord(container: HTMLElement, text: string): FlapLetter[] {
-  container.innerHTML = '';
-  const letters: FlapLetter[] = [];
-  for (let i = 0; i < text.length; i++) {
-    const ch = text[i];
-    const wrap = document.createElement('span');
-    wrap.className = 'intro-flap-letter';
-    const glyph = document.createElement('span');
-    glyph.className = 'intro-flap-glyph';
-    glyph.textContent = ch;
-    wrap.appendChild(glyph);
-    container.appendChild(wrap);
-    letters.push({ wrap, glyph, target: ch, mode: 'spin', running: false });
-  }
-  return letters;
-}
-
-function startFlapLetter(letter: FlapLetter, reduced: boolean) {
-  if (FLAP_SCRAMBLE_CHARS.indexOf(letter.target) === -1) return;
-  if (reduced) {
-    letter.glyph.textContent = letter.target;
-    return;
-  }
-  if (letter.running) return;
-  letter.running = true;
-
-  const flipMs = 55 + Math.random() * 45; // eigenes Grundtempo pro Buchstabe
-  const gapMs = () => 70 + Math.random() * 150; // eigene, leicht unregelmässige Pause
-
-  function tick() {
-    if (letter.mode === 'settle') {
-      letter.glyph.style.transition = `transform ${flipMs.toFixed(0)}ms cubic-bezier(.5,0,.85,.35)`;
-      letter.glyph.style.transform = 'scaleY(0.05)';
-      window.setTimeout(() => {
-        letter.glyph.textContent = letter.target;
-        letter.glyph.style.transition = `transform ${flipMs.toFixed(0)}ms cubic-bezier(.2,.7,.4,1)`;
-        letter.glyph.style.transform = 'scaleY(1)';
-        letter.running = false; // steht still, bis setFlapWordMode('spin', ...) sie neu startet
-      }, flipMs);
-      return;
-    }
-    const nextChar = FLAP_SCRAMBLE_CHARS[Math.floor(Math.random() * FLAP_SCRAMBLE_CHARS.length)];
-    letter.glyph.style.transition = `transform ${flipMs.toFixed(0)}ms cubic-bezier(.5,0,.85,.35)`;
-    letter.glyph.style.transform = 'rotateX(90deg)';
-    window.setTimeout(() => {
-      letter.glyph.textContent = nextChar;
-      letter.glyph.style.transition = `transform ${flipMs.toFixed(0)}ms cubic-bezier(.2,.7,.4,1)`;
-      letter.glyph.style.transform = 'scaleY(1)';
-      window.setTimeout(tick, gapMs());
-    }, flipMs);
-  }
-
-  tick();
-}
-
-function setFlapWordMode(letters: FlapLetter[], mode: 'spin' | 'settle', reduced: boolean) {
-  letters.forEach((letter) => {
-    letter.mode = mode;
-    if (mode === 'spin' && !letter.running) {
-      startFlapLetter(letter, reduced);
-    }
-  });
-}
-
 function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
   const [activeServiceSlug, setActiveServiceSlug] = useState<string | null>(null);
   const progressRef = useRef(0);
