@@ -2663,9 +2663,15 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var desiredCameraLookY=lookY-heroPerspective*.1-cameraVelocity*.55;
       var aimEase=1-Math.exp(-dt*5.4);
       cameraAimY+=(desiredCameraLookY-cameraAimY)*aimEase;
-      var cameraRadius=(8.78
+      var baseCameraRadius=(8.78
         +Math.sin(sf*Math.PI*2*3.15+.6)*.46
-        +Math.sin(sf*Math.PI*2*6.4+1.7)*.22)*MOBILE_RADIUS_SCALE;
+        +Math.sin(sf*Math.PI*2*6.4+1.7)*.22);
+      var mobileHeroFraming=1;
+      if(isMobile){
+        var mobileHeroMix=1-THREE.MathUtils.smoothstep(sf,.015,.075);
+        mobileHeroFraming=1+(MOBILE_RADIUS_SCALE-1)*mobileHeroMix;
+      }
+      var cameraRadius=baseCameraRadius*mobileHeroFraming;
       var targetFov=53+Math.sin(sf*Math.PI*2*2.15+.45)*1.65;
       if(Math.abs(targetFov-lastCameraFov)>.015){
         camera.fov=targetFov;
