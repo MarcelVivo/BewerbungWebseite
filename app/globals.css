@@ -1332,10 +1332,6 @@ body {
     position: static;
   }
 
-  .contact-section {
-    padding-top: 4.5rem;
-    padding-bottom: 4.5rem;
-  }
 }
 
 @media (max-width: 700px) {
@@ -1371,10 +1367,6 @@ body {
 
   .spiral-intro-index {
     letter-spacing: 0.2em;
-  }
-
-  .contact-section .grid {
-    gap: 2rem;
   }
 
 }

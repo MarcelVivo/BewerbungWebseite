@@ -52,7 +52,6 @@ export default function HomeNavBar() {
     { href: '#about',     label: t.about },
     { href: '#services',  label: t.services },
     { href: '#portfolio', label: t.portfolio },
-    { href: '#contact',   label: t.contact },
   ];
 
   return (
@@ -82,7 +81,7 @@ export default function HomeNavBar() {
               className={`px-2.5 py-1 text-xs font-semibold transition-colors ${lang === 'en' ? 'bg-[#c9a84c] text-[#0c0a06]' : 'text-[#a89880] hover:text-[#f4edd8]'}`}
             ><NavbarFlapLabel label="EN" /></button>
           </div>
-          <a href="#contact" className="ml-1 px-4 py-1.5 rounded-lg bg-[#c9a84c] hover:bg-[#b8943a] text-[#0c0a06] text-sm font-semibold transition-colors">
+          <a href="mailto:kontakt@marcelspahr.ch?subject=Termin%20buchen" className="ml-1 px-4 py-1.5 rounded-lg bg-[#c9a84c] hover:bg-[#b8943a] text-[#0c0a06] text-sm font-semibold transition-colors">
             <NavbarFlapLabel label={t.book} />
           </a>
         </nav>
@@ -102,7 +101,7 @@ export default function HomeNavBar() {
           {NAV_LINKS.map(l => (
             <a key={l.href} href={l.href} className="block text-sm text-[#d4c4a8] hover:text-[#f4edd8]" onClick={() => setOpen(false)}><NavbarFlapLabel label={l.label} /></a>
           ))}
-          <a href="#contact" className="block text-sm font-semibold text-[#c9a84c]" onClick={() => setOpen(false)}><NavbarFlapLabel label={t.book} /></a>
+          <a href="mailto:kontakt@marcelspahr.ch?subject=Termin%20buchen" className="block text-sm font-semibold text-[#c9a84c]" onClick={() => setOpen(false)}><NavbarFlapLabel label={t.book} /></a>
         </div>
       )}
     </header>

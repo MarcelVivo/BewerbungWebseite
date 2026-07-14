@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import {
   Bot, BarChart3, Workflow, FolderKanban,
-  GraduationCap, Globe, Lightbulb, Mail, MapPin, Phone,
+  GraduationCap, Globe, Lightbulb,
   ChevronRight, ChevronDown, ExternalLink, Star,
   CheckCircle, Zap, Users, Award,
   MessageSquare, Search, Compass, Wrench, Heart, ClipboardList,
@@ -1232,36 +1232,6 @@ export default function HomePage() {
       </section>
 
       <SpiralShowcase t={t} lang={lang} />
-
-      {/* ── Kontakt ── */}
-      <section id="contact" className="contact-section py-24 px-4 sm:px-6">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-16">
-            <span className="text-[#e7c56a] text-sm font-semibold tracking-widest uppercase">{t.contact.label}</span>
-            <h2 className="mt-2 text-3xl sm:text-4xl font-bold text-white">{t.contact.heading}</h2>
-          </div>
-          <div className="grid gap-10">
-            <div className="space-y-5">
-              {[
-                { Icon: MapPin, text: t.contact.location,          href: undefined },
-                { Icon: Phone,  text: '+41 79 511 09 11',          href: undefined },
-                { Icon: Mail,   text: 'kontakt@marcelspahr.ch',    href: 'mailto:kontakt@marcelspahr.ch' },
-              ].map(({ Icon, text, href }, i) => (
-                <div key={i} className="flex items-center gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-[#c89a3d]/10 flex items-center justify-center text-[#e7c56a]">
-                    <Icon size={18} />
-                  </div>
-                  {href ? (
-                    <a href={href} className="text-[#d4c4a8] hover:text-white transition-colors text-sm">{text}</a>
-                  ) : (
-                    <span className="text-[#d4c4a8] text-sm">{text}</span>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* ── Footer ── */}
       <footer className="border-t border-[#2d2820] bg-[#100d09] py-8 px-4">

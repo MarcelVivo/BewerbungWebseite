@@ -4,7 +4,7 @@ export const T = {
   de: {
     nav: {
       about: 'Ansatz', services: 'Lösungen', portfolio: 'Referenzen',
-      process: 'Ablauf', contact: 'Kontakt', book: 'Termin buchen',
+      process: 'Ablauf', book: 'Termin buchen',
     },
     hero: {
       badge: 'Weblösungen · CRM · ERP · KI-Automation · Bern',
@@ -75,7 +75,6 @@ export const T = {
         { num: '05', title: 'Weiterentwickeln', badge: 'Langfristig', tagline: 'Ausbauen, verbessern, betreiben', desc: 'Nach dem Start kann die Lösung wachsen: neue Funktionen, Automationen, Daten, Auswertungen oder Anpassungen.' },
       ],
     },
-    contact: { label: 'Contact', heading: 'Kontakt', location: 'Bern, Schweiz' },
     form: {
       name: 'Name', email: 'E-Mail', message: 'Nachricht',
       send: 'Nachricht senden', sending: 'Wird gesendet…',
@@ -88,7 +87,7 @@ export const T = {
   en: {
     nav: {
       about: 'Approach', services: 'Solutions', portfolio: 'References',
-      process: 'Process', contact: 'Contact', book: 'Book a Call',
+      process: 'Process', book: 'Book a Call',
     },
     hero: {
       badge: 'Web solutions · CRM · ERP · AI automation · Bern',
@@ -159,7 +158,6 @@ export const T = {
         { num: '05', title: 'Evolve further', badge: 'Long term', tagline: 'Extend, improve, operate', desc: 'After launch, the solution can grow: new features, automations, data, reports or adjustments.' },
       ],
     },
-    contact: { label: 'Contact', heading: 'Contact', location: 'Bern, Switzerland' },
     form: {
       name: 'Name', email: 'Email', message: 'Message',
       send: 'Send message', sending: 'Sending…',
