@@ -1364,9 +1364,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     for(var selectedIndex=0;selectedIndex<fiberCount;selectedIndex++){
       var sourceAngle=Math.PI*2*selectedIndex/fiberCount+(Math.random()-.5)*.16;
       var radialDistribution=Math.pow(Math.random(),2.65);
-      // Alle drei Farbgruppen erreichen denselben tiefsten Endpunkt auf der
-      // Gold-Mittelachse. Die natürliche Auflösung entsteht erst dort über
-      // die identische finale Ausfaserung des Goldstrangs.
+      // Alle Sekundärfasern bleiben bis zum Ende des Goldstrangs erhalten.
+      // Ihr Eintritt in dessen Querschnitt sowie ihre finale Ausfaserung
+      // werden aber pro Faser versetzt. Dadurch entsteht keine kompakte
+      // Übergangswolke und keine sichtbare Schnittlinie.
       var fiberEndProgress=1;
       var fiberLength=fiberSegments;
       fibers.push({
@@ -1387,8 +1388,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         // die Goldfasern verteilt, ohne je als Bündel zusammenzuklappen.
         assimilationAngle:(selectedIndex*2+(strand.sideSign>0?1:0))*2.399963229728653,
         assimilationRadius:Math.sqrt(((selectedIndex*2+(strand.sideSign>0?1:0))*0.7548776662466927)%1),
-        assimilationStart:.29+Math.random()*.24,
-        assimilationEnd:.76+Math.random()*.19,
+        assimilationStart:.24+Math.random()*.3,
+        assimilationEnd:.62+Math.random()*.22,
+        goldEntryProgress:.41+Math.random()*.24,
+        goldExitProgress:.965+Math.random()*.035,
         assimilationPhase:Math.random()*Math.PI*2,
         assimilationRadiusDrift:(Math.random()-.5)*.16,
         terminalFrayAngle:Math.random()*Math.PI*2,
@@ -1637,8 +1640,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           // überführt. Die Wellen, Windreaktionen und Ausreisser werden dabei
           // nicht ersetzt, sondern in dessen Normal-/Binormalebene getragen.
           var assimilationTravel=smoother((progress-fiber.assimilationStart)/(1-fiber.assimilationStart));
-          var sharedGoldProgress=ASSIMILATION_GOLD_PROGRESS
-            +(fiber.endProgress-ASSIMILATION_GOLD_PROGRESS)*assimilationTravel;
+          // Jede Faser wird auf einer eigenen Station in den bereits
+          // vorhandenen Goldstrang eingewoben. Die unterschiedliche
+          // Eintrittshöhe und das gestaffelte Auslaufen verhindern, dass
+          // Rot und Blau als synchroner, blockartiger Körper erscheinen.
+          var sharedGoldProgress=fiber.goldEntryProgress
+            +(fiber.goldExitProgress-fiber.goldEntryProgress)*assimilationTravel;
           sampleGoldStrandFrame(sharedGoldProgress);
           var assimilationWave=sharedGoldProgress*8.6+flowTime*.31+fiber.branchPhase+fiber.assimilationPhase;
           var assimilationAngle=fiber.assimilationAngle+Math.sin(assimilationWave)*.35
