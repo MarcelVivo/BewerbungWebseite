@@ -3,12 +3,11 @@
 import Link from 'next/link';
 import {
   Bot, BarChart3, Workflow, Megaphone, Video, FolderKanban,
-  GraduationCap, Globe, Lightbulb, ArrowLeft, ChevronRight, CheckCircle,
+  GraduationCap, Globe, Lightbulb, ArrowLeft, ChevronRight,
 } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { useLanguage } from '@/app/LanguageContext';
 import { getService, getServiceTranslation } from '../data';
-import ContactFormClient from '@/app/ContactFormClient';
 import type { Lang } from '@/app/LanguageContext';
 
 const ICON_MAP: Record<string, React.ElementType> = {
@@ -536,28 +535,6 @@ export default function ServicePageContent({ slug }: { slug: string }) {
                 <span className="text-sm text-[#d4c4a8] font-medium">{d.text}</span>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── CTA / Kontakt ── */}
-      <section id="contact" className="py-20 px-4 sm:px-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="rounded-3xl border border-[#2d2820] bg-[#1c1912] overflow-hidden">
-            <div className="px-8 pt-10 pb-6 text-center" style={{ background: `linear-gradient(135deg, ${service.color}15 0%, transparent 60%)` }}>
-              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4" style={{ background: `${service.color}20` }}>
-                <CheckCircle size={28} style={{ color: service.color }} />
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-white">{pl.ctaHeading}</h2>
-              <p className="mt-3 text-[#a89880] max-w-xl mx-auto">
-                {pl.ctaPrefix}<strong className="text-white">{s.title}</strong>{pl.ctaSuffix}
-              </p>
-            </div>
-            <div className="px-8 pb-10">
-              <div className="max-w-xl mx-auto">
-                <ContactFormClient />
-              </div>
-            </div>
           </div>
         </div>
       </section>

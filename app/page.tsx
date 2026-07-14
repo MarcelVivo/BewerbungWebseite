@@ -11,7 +11,6 @@ import {
 import HomeNavBar from './HomeNavBar';
 import BrainBackground from './BrainBackground';
 import { buildFlapWord, setFlapWordMode, type FlapLetter } from './lib/splitFlap';
-import ContactFormClient from './ContactFormClient';
 import { useLanguage } from './LanguageContext';
 import { T } from '../lib/translations';
 import { HELIX_STEP, computeCameraTravel, helixAngleForWorldIndex, helixPositionForWorldIndex } from './lib/helixGeometry';
@@ -1241,7 +1240,7 @@ export default function HomePage() {
             <span className="text-[#e7c56a] text-sm font-semibold tracking-widest uppercase">{t.contact.label}</span>
             <h2 className="mt-2 text-3xl sm:text-4xl font-bold text-white">{t.contact.heading}</h2>
           </div>
-          <div className="grid md:grid-cols-[1fr_1.4fr] gap-10">
+          <div className="grid gap-10">
             <div className="space-y-5">
               {[
                 { Icon: MapPin, text: t.contact.location,          href: undefined },
@@ -1260,7 +1259,6 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
-            <ContactFormClient />
           </div>
         </div>
       </section>
