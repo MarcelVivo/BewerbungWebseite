@@ -555,6 +555,13 @@ body {
   z-index: 1280;
   pointer-events: none;
   will-change: transform;
+  /* Ohne preserve-3d in dieser Kette (world → composition → word → letter)
+     flacht der Browser die verschachtelten 3D-Transforms (rotateY hier,
+     rotateX pro Buchstabe weiter unten) auf eine Ebene ab, sobald DIESES
+     Element selbst rotiert wird — das erzeugte genau die gemeldete
+     vertikale Stauchung/Verzerrung der Buchstaben bei den Stationen mit
+     spürbarem Kamerawinkel. */
+  transform-style: preserve-3d;
 }
 
 .intro-flap-composition {
@@ -563,6 +570,7 @@ body {
   flex-direction: column;
   align-items: flex-start;
   transform: translate3d(-50%, -50%, 0);
+  transform-style: preserve-3d;
 }
 
 .intro-flap-word {
@@ -571,6 +579,7 @@ body {
   color: #ffffff;
   font-weight: 700;
   line-height: 1;
+  transform-style: preserve-3d;
 }
 
 .intro-flap-word--small {
