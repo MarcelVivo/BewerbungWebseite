@@ -1380,6 +1380,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         // verteilt; diese Werte bleiben über alle Frames unverändert.
         mergeAngle:(selectedIndex*2+(strand.sideSign>0?1:0))*2.399963229728653,
         mergeRadius:Math.sqrt(((selectedIndex*2+(strand.sideSign>0?1:0))*0.7548776662466927)%1),
+        // Jede Faser taucht zu einem leicht anderen Zeitpunkt und mit einer
+        // eigenen räumlichen Phase in den gemeinsamen Kern ein. So entsteht
+        // kein horizontaler Schnitt zwischen drei getrennten Bündeln.
+        mergeStart:.34+Math.random()*.19,
+        mergeEnd:.78+Math.random()*.17,
+        mergePhase:Math.random()*Math.PI*2,
         // Nur einige Randfasern lösen sich sichtbar aus dem Kern. Diese
         // gezielten Ausreisser geben dem Bündel die organische, lebendige
         // Silhouette, ohne die tragende Gesamtform zu verlieren.
@@ -1557,7 +1563,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         // Wind, Wellen und Ausreisser unverändert. Nur die Ziel-Mittelbahn
         // wird weiter unten durch den gemeinsamen Querschnitt ersetzt.
         var integrationBlend=smooth((progress-integrationStart)/(integrationEnd-integrationStart));
-        var mergeBlend=smooth((progress-SECONDARY_MERGE_PROGRESS_START)/(SECONDARY_MERGE_PROGRESS_END-SECONDARY_MERGE_PROGRESS_START));
+        var mergeBlend=smooth((progress-fiber.mergeStart)/(fiber.mergeEnd-fiber.mergeStart));
         var funnelProgress=Math.min(1,progress/funnelEnd);
         var funnelX, funnelY, funnelZ, funnelStage;
         if(funnelProgress<.34){
@@ -1619,15 +1625,21 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           // Rot-/Blaufaser der Gold-Mittelbahn bis zum Ende. Ihr bereits
           // vorbereiteter, stabiler Offset liegt dabei im vollständigen
           // lokalen 3D-Querschnitt des Goldstrangs statt auf einer Seite.
+          var mergeTravel=smooth((progress-fiber.mergeStart)/(1-fiber.mergeStart));
           var sharedGoldProgress=SECONDARY_MERGE_GOLD_PROGRESS
             +(1-SECONDARY_MERGE_GOLD_PROGRESS)
-              *((progress-SECONDARY_MERGE_PROGRESS_START)/(1-SECONDARY_MERGE_PROGRESS_START));
+              *mergeTravel;
           sampleGoldStrandFrame(sharedGoldProgress);
-          var mergeWavePhase=sharedGoldProgress*8.6+flowTime*.31+fiber.branchPhase;
+          var mergeWavePhase=sharedGoldProgress*8.6+flowTime*.31+fiber.branchPhase+fiber.mergePhase;
           var mergeAngle=fiber.mergeAngle+Math.sin(mergeWavePhase)*.42
             +Math.sin(mergeWavePhase*1.71+fiberShape.phaseOffset)*.13;
           var mergedRadius=SP.rStr*(.04+.98*fiber.mergeRadius)
             *(1+Math.sin(mergeWavePhase*1.23)*.1)*thicknessScale;
+          // Vor dem vollständigen Eintauchen bleibt der Querschnitt breiter
+          // und pulsiert individuell. Erst am Ende organisiert sich jede
+          // Faser in ihrer stabilen Position im goldenen Volumen.
+          mergedRadius+=SP.rStr*(1-mergeBlend)*(.12+fiber.edgeWeight*.18)
+            *Math.sin(mergeWavePhase*1.37+fiber.mergePhase);
           secondaryMergedTargetLocal.copy(goldFrameCenterLocal)
             .addScaledVector(goldFrameNormalLocal,Math.cos(mergeAngle)*mergedRadius)
             .addScaledVector(goldFrameBinormalLocal,Math.sin(mergeAngle)*mergedRadius);
