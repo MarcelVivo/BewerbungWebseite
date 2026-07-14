@@ -106,16 +106,15 @@ function NeuralFiberField() {
   );
 }
 
-// Split-Flap-Buchstaben-Zerhacker für die "DEINE IDEE."-Textstation: jeder
-// Buchstabe klappt unabhängig von seinen Nachbarn (eigenes Tempo, eigene
-// Pausen) endlos durch zufällige Zeichen — kein Split-Flap-Kästchen im
-// Hintergrund, nur der weisse Buchstabe selbst rotiert. Die Dauerschleife
-// läuft permanent; nur wenn die Station kameramittig UND der Scroll
-// stillsteht, bekommen alle Buchstaben den Befehl, beim nächsten eigenen
-// Taktschritt auf ihrem Zielbuchstaben anzuhalten ("settle"). Sobald die
-// Station die Mitte verlässt oder wieder gescrollt wird, läuft die
-// Dauerschleife an denselben (dann gestoppten) Buchstaben weiter ("spin").
-const FLAP_SCRAMBLE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+// Split-Flap-Buchstaben-Zerhacker für alle 5 "Deine …"-Intro-Textstationen:
+// jeder Buchstabe klappt unabhängig von seinen Nachbarn (eigenes Tempo,
+// eigene Pausen) endlos durch zufällige Zeichen — kein Split-Flap-Kästchen
+// im Hintergrund, nur der weisse Buchstabe selbst rotiert. Die Dauerschleife
+// läuft permanent während gescrollt wird; steht der Scroll still, bekommen
+// alle Buchstaben den Befehl, beim nächsten eigenen Taktschritt auf ihrem
+// Zielbuchstaben anzuhalten ("settle"). Sobald wieder gescrollt wird, läuft
+// die Dauerschleife an denselben (dann gestoppten) Buchstaben weiter ("spin").
+const FLAP_SCRAMBLE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜ';
 
 type FlapLetter = {
   wrap: HTMLSpanElement;
@@ -202,9 +201,12 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
   const cardsWorldRef = useRef<HTMLDivElement | null>(null);
   const detailScrollDistanceRef = useRef(0);
   const detailScrollStepsRef = useRef(0);
-  const introFlapWorldRef = useRef<HTMLDivElement | null>(null);
-  const introFlapSmallRef = useRef<HTMLDivElement | null>(null);
-  const introFlapBigRef = useRef<HTMLDivElement | null>(null);
+  // Je 1 Ref-Slot pro Intro-Station (worldIndex 0..4, "Deine …") — Arrays
+  // statt einzelner Refs, da alle 5 Stationen dieselbe Split-Flap-Logik in
+  // derselben Schleife (IntroFlapWorld-Effekt) durchlaufen.
+  const introFlapWorldRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const introFlapSmallRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const introFlapBigRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   // Neural Glass Panels: die vier Karten bilden EIN zusammenstehendes
   // 2×2-Element (CardsHelixGroup), fixiert an EINER festen Helix-Position
@@ -329,68 +331,96 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
     return () => cancelAnimationFrame(rafId);
   }, []);
 
-  // IntroFlapWorld: ersetzt ausschliesslich die WebGL-Textebene der ersten
-  // Intro-Station ("Deine Idee.", worldIndex 0 — in BrainBackground.tsx wird
-  // deren Mesh-Erzeugung übersprungen) durch dieselbe Textstation als
-  // DOM-Overlay in Chakra Petch mit unabhängigem Split-Flap-Effekt pro
-  // Buchstabe. Position, Kamerafahrt, Helix, Sichtbarkeitsfenster und
-  // Perspektiv-Projektion sind exakt dieselbe Technik wie bei
-  // CardsHelixWorld oben — nur Schriftart/Darstellungseffekt sind neu.
+  // IntroFlapWorld: ersetzt die WebGL-Textebenen ALLER 5 Intro-Stationen
+  // ("Deine Idee.", "Deine Herausforderung.", "Deine Vision.", "Deine
+  // Lösung.", "Deine Erfolgsgeschichte." — worldIndex 0..4, in
+  // BrainBackground.tsx wird deren Mesh-Erzeugung übersprungen) durch
+  // dieselben Textstationen als DOM-Overlay in Chakra Petch mit
+  // unabhängigem Split-Flap-Effekt pro Buchstabe. Position, Kamerafahrt,
+  // Helix, Sichtbarkeitsfenster und Perspektiv-Projektion sind exakt
+  // dieselbe Technik wie bei CardsHelixWorld oben — nur Schriftart/
+  // Darstellungseffekt sind neu. Eine gemeinsame requestAnimationFrame-
+  // Schleife bedient alle 5 Stationen; der Scroll-Idle-Zustand ist global
+  // (ein Scroll-Stopp lässt alle sichtbaren Stationen gleichzeitig stehen).
   useEffect(() => {
-    const world = introFlapWorldRef.current;
-    const smallEl = introFlapSmallRef.current;
-    const bigEl = introFlapBigRef.current;
-    if (!world || !smallEl || !bigEl) return;
-
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const worldIndex = 0;
     const totalWorldStops = 5 + 4 + 4;
     const cameraTravel = computeCameraTravel(totalWorldStops);
-    const stationAngle = helixAngleForWorldIndex(worldIndex, cameraTravel);
-    const stationPos = helixPositionForWorldIndex(worldIndex, cameraTravel, INTRO_TEXT_RADIUS);
-    const stationNormal = { x: Math.sin(stationAngle), y: 0, z: Math.cos(stationAngle) };
     const fadeWindow = HELIX_STEP * 1.35;
 
-    const smallLetters = buildFlapWord(smallEl, 'DEINE');
-    const bigLetters = buildFlapWord(bigEl, 'IDEE.');
+    type IntroFlapStation = {
+      world: HTMLDivElement;
+      stationPos: { x: number; y: number; z: number };
+      stationNormal: { x: number; y: number; z: number };
+      smallLetters: FlapLetter[];
+      bigLetters: FlapLetter[];
+      alignBigWord: () => void;
+      referenceViewZ: number | null;
+      settled: boolean;
+    };
 
-    function alignBigWord() {
-      // "I" von IDEE. exakt unter "I" von DEINE ausrichten (3. Buchstabe von
-      // DEINE, 1. Buchstabe von IDEE.). offsetLeft statt getBoundingClientRect,
-      // weil offsetLeft reines Layout ist und vom per-Frame gesetzten
-      // transform (scale/translate) der Kamera-Projektion unberührt bleibt —
-      // getBoundingClientRect würde den aktuellen Skalierungsfaktor mit
-      // einrechnen und die Ausrichtung dadurch verfälschen.
-      bigEl.style.marginLeft = '0px';
-      const offset = smallLetters[2].wrap.offsetLeft - bigLetters[0].wrap.offsetLeft;
-      bigEl.style.marginLeft = `${offset}px`;
-    }
+    const stations: IntroFlapStation[] = INTRO_SEQUENCE.map((text, worldIndex) => {
+      const world = introFlapWorldRefs.current[worldIndex];
+      const smallEl = introFlapSmallRefs.current[worldIndex];
+      const bigEl = introFlapBigRefs.current[worldIndex];
+      if (!world || !smallEl || !bigEl) return null;
 
-    // Split-Flap ersetzt die bisherige Opacity-Ein-/Ausblendung: die Station
-    // ist entweder ganz im Fenster (Buchstaben drehen endlos oder stehen
-    // fest) oder ganz ausserhalb (unsichtbar) — kein sanftes Überblenden.
-    // Der Effekt hängt ausschliesslich vom Scroll-Zustand ab: wird
-    // gescrollt (Kamera in Bewegung), drehen die Buchstaben; steht der
-    // Scroll still, bleiben "DEINE IDEE." fest stehen — unabhängig davon,
-    // wo genau die Station gerade im Bild steht.
+      const stationAngle = helixAngleForWorldIndex(worldIndex, cameraTravel);
+      const stationPos = helixPositionForWorldIndex(worldIndex, cameraTravel, INTRO_TEXT_RADIUS);
+      const stationNormal = { x: Math.sin(stationAngle), y: 0, z: Math.cos(stationAngle) };
+
+      // "Deine X." → "DEINE" (klein, oben) / "X." (3x, unten, am 3.
+      // Buchstaben von DEINE ausgerichtet) — dieselbe Konvention wie bei
+      // der ersten Station "Deine Idee.".
+      const [firstWord, ...rest] = text.toUpperCase().split(' ');
+      const smallLetters = buildFlapWord(smallEl, firstWord);
+      const bigLetters = buildFlapWord(bigEl, rest.join(' '));
+
+      function alignBigWord() {
+        // offsetLeft statt getBoundingClientRect, weil offsetLeft reines
+        // Layout ist und vom per-Frame gesetzten transform (scale/
+        // translate) der Kamera-Projektion unberührt bleibt —
+        // getBoundingClientRect würde den aktuellen Skalierungsfaktor mit
+        // einrechnen und die Ausrichtung dadurch verfälschen.
+        bigEl!.style.marginLeft = '0px';
+        const offset = smallLetters[2].wrap.offsetLeft - bigLetters[0].wrap.offsetLeft;
+        bigEl!.style.marginLeft = `${offset}px`;
+      }
+
+      setFlapWordMode(smallLetters, 'spin', reduced);
+      setFlapWordMode(bigLetters, 'spin', reduced);
+
+      return { world, stationPos, stationNormal, smallLetters, bigLetters, alignBigWord, referenceViewZ: null, settled: false };
+    }).filter((s): s is IntroFlapStation => s !== null);
+
+    if (!stations.length) return;
+
+    // Split-Flap ersetzt die bisherige Opacity-Ein-/Ausblendung: jede
+    // Station ist entweder ganz im Fenster (Buchstaben drehen endlos oder
+    // stehen fest) oder ganz ausserhalb (unsichtbar) — kein sanftes
+    // Überblenden. Der Effekt hängt ausschliesslich vom (globalen)
+    // Scroll-Zustand ab: wird gescrollt, drehen die Buchstaben; steht der
+    // Scroll still, bleibt der Text jeder gerade sichtbaren Station fest
+    // stehen — unabhängig davon, wo genau sie im Bild steht.
     const SCROLL_IDLE_MS = 180;
     let lastScrollAt = performance.now() - SCROLL_IDLE_MS - 1; // vor jedem Scrollen: als "idle" gestartet
     const onScrollActivity = () => { lastScrollAt = performance.now(); };
     window.addEventListener('scroll', onScrollActivity, { passive: true });
 
-    let referenceViewZ: number | null = null;
-    let settled = false;
+    const alignAll = () => stations.forEach((s) => s.alignBigWord());
+    alignAll();
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(alignAll);
+    }
+    window.addEventListener('resize', alignAll);
+
     let rafId = 0;
-
-    // Läuft von Anfang an dauerhaft, unabhängig von der Sichtbarkeit —
-    // "die Rotation der Buchstaben läuft in der Dauerschleife".
-    setFlapWordMode(smallLetters, 'spin', reduced);
-    setFlapWordMode(bigLetters, 'spin', reduced);
-
     const frame = () => {
       rafId = requestAnimationFrame(frame);
       const cam = (window as any).__cardsCameraState;
       if (!cam) return;
+
+      const scrollIdle = performance.now() - lastScrollAt > SCROLL_IDLE_MS;
 
       const camPos = {
         x: Math.sin(cam.orbit) * cam.cameraRadius,
@@ -413,72 +443,66 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       const uy = rz * fx - rx * fz;
       const uz = rx * fy - ry * fx;
 
-      const relX = stationPos.x - camPos.x;
-      const relY = stationPos.y - camPos.y;
-      const relZ = stationPos.z - camPos.z;
-
-      const viewX = relX * rx + relY * ry + relZ * rz;
-      const viewY = relX * ux + relY * uy + relZ * uz;
-      const viewZ = relX * fx + relY * fy + relZ * fz;
-
-      const distance = Math.abs(cam.cameraLookY - stationPos.y);
-      const visibility = Math.max(0, Math.min(1, 1 - distance / fadeWindow));
-      const inWindow = viewZ > 0.001 && visibility > 0;
-
-      // Scroll-Zustand steuert Spin/Settle unabhängig von der Sichtbarkeit,
-      // damit der Zustand stimmt, sobald die Station wieder ins Bild kommt.
-      const scrollIdle = performance.now() - lastScrollAt > SCROLL_IDLE_MS;
-      if (!settled && scrollIdle) {
-        settled = true;
-        setFlapWordMode(smallLetters, 'settle', reduced);
-        setFlapWordMode(bigLetters, 'settle', reduced);
-      } else if (settled && !scrollIdle) {
-        settled = false;
-        setFlapWordMode(smallLetters, 'spin', reduced);
-        setFlapWordMode(bigLetters, 'spin', reduced);
-      }
-
-      if (!inWindow) {
-        world.style.opacity = '0';
-        return;
-      }
-
-      if (referenceViewZ === null) {
-        referenceViewZ = Math.hypot(cam.cameraRadius - INTRO_TEXT_RADIUS, 0.24);
-      }
-
       const tanHalfFovY = Math.tan((cam.fov * Math.PI) / 360);
-      const ndcX = viewX / (viewZ * tanHalfFovY * cam.aspect);
-      const ndcY = viewY / (viewZ * tanHalfFovY);
-
       const vw = window.innerWidth;
       const vh = window.innerHeight;
-      const screenX = (ndcX * 0.5 + 0.5) * vw;
-      const screenY = (1 - (ndcY * 0.5 + 0.5)) * vh;
-      const scale = Math.max(0.4, Math.min(1.6, referenceViewZ / viewZ));
 
-      const dotNormalRight = stationNormal.x * rx + stationNormal.z * rz;
-      const dotNormalForward = stationNormal.x * fx + stationNormal.z * fz;
-      const yawRad = Math.atan2(dotNormalRight, -dotNormalForward);
-      const yawDeg = (yawRad * 180) / Math.PI;
+      stations.forEach((s) => {
+        if (!s.settled && scrollIdle) {
+          s.settled = true;
+          setFlapWordMode(s.smallLetters, 'settle', reduced);
+          setFlapWordMode(s.bigLetters, 'settle', reduced);
+        } else if (s.settled && !scrollIdle) {
+          s.settled = false;
+          setFlapWordMode(s.smallLetters, 'spin', reduced);
+          setFlapWordMode(s.bigLetters, 'spin', reduced);
+        }
 
-      world.style.transform = `translate3d(${screenX.toFixed(2)}px, ${screenY.toFixed(2)}px, 0) scale(${scale.toFixed(4)}) rotateY(${yawDeg.toFixed(3)}deg)`;
-      // Split-Flap statt Opacity-Fade: innerhalb des Fensters immer voll
-      // sichtbar (kein Überblenden) — die An-/Abwesenheit wird durch Spin
-      // (unleserlich, beim Scrollen) vs. Settle (lesbar, im Stillstand)
-      // ausgedrückt (siehe scrollIdle-Block oben).
-      world.style.opacity = '1';
+        const relX = s.stationPos.x - camPos.x;
+        const relY = s.stationPos.y - camPos.y;
+        const relZ = s.stationPos.z - camPos.z;
+
+        const viewX = relX * rx + relY * ry + relZ * rz;
+        const viewY = relX * ux + relY * uy + relZ * uz;
+        const viewZ = relX * fx + relY * fy + relZ * fz;
+
+        const distance = Math.abs(cam.cameraLookY - s.stationPos.y);
+        const visibility = Math.max(0, Math.min(1, 1 - distance / fadeWindow));
+        const inWindow = viewZ > 0.001 && visibility > 0;
+
+        if (!inWindow) {
+          s.world.style.opacity = '0';
+          return;
+        }
+
+        if (s.referenceViewZ === null) {
+          s.referenceViewZ = Math.hypot(cam.cameraRadius - INTRO_TEXT_RADIUS, 0.24);
+        }
+
+        const ndcX = viewX / (viewZ * tanHalfFovY * cam.aspect);
+        const ndcY = viewY / (viewZ * tanHalfFovY);
+        const screenX = (ndcX * 0.5 + 0.5) * vw;
+        const screenY = (1 - (ndcY * 0.5 + 0.5)) * vh;
+        const scale = Math.max(0.4, Math.min(1.6, s.referenceViewZ / viewZ));
+
+        const dotNormalRight = s.stationNormal.x * rx + s.stationNormal.z * rz;
+        const dotNormalForward = s.stationNormal.x * fx + s.stationNormal.z * fz;
+        const yawRad = Math.atan2(dotNormalRight, -dotNormalForward);
+        const yawDeg = (yawRad * 180) / Math.PI;
+
+        s.world.style.transform = `translate3d(${screenX.toFixed(2)}px, ${screenY.toFixed(2)}px, 0) scale(${scale.toFixed(4)}) rotateY(${yawDeg.toFixed(3)}deg)`;
+        // Split-Flap statt Opacity-Fade: innerhalb des Fensters immer voll
+        // sichtbar (kein Überblenden) — die An-/Abwesenheit wird durch Spin
+        // (unleserlich, beim Scrollen) vs. Settle (lesbar, im Stillstand)
+        // ausgedrückt (siehe scrollIdle oben).
+        s.world.style.opacity = '1';
+      });
     };
 
-    alignBigWord();
-    if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(alignBigWord);
-    }
-    window.addEventListener('resize', alignBigWord);
     rafId = requestAnimationFrame(frame);
     return () => {
       cancelAnimationFrame(rafId);
-      window.removeEventListener('resize', alignBigWord);
+      window.removeEventListener('resize', alignAll);
       window.removeEventListener('scroll', onScrollActivity);
     };
   }, []);
@@ -825,12 +849,24 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
 
       <div className="spiral-sticky">
         <div className="spiral-stage">
-          <div ref={introFlapWorldRef} className="intro-flap-world">
-            <div className="intro-flap-composition">
-              <div ref={introFlapSmallRef} className={`intro-flap-word intro-flap-word--small ${chakraPetch.className}`} />
-              <div ref={introFlapBigRef} className={`intro-flap-word intro-flap-word--big ${chakraPetch.className}`} />
+          {INTRO_SEQUENCE.map((text, worldIndex) => (
+            <div
+              key={`intro-flap-${worldIndex}`}
+              ref={(el) => { introFlapWorldRefs.current[worldIndex] = el; }}
+              className="intro-flap-world"
+            >
+              <div className="intro-flap-composition">
+                <div
+                  ref={(el) => { introFlapSmallRefs.current[worldIndex] = el; }}
+                  className={`intro-flap-word intro-flap-word--small ${chakraPetch.className}`}
+                />
+                <div
+                  ref={(el) => { introFlapBigRefs.current[worldIndex] = el; }}
+                  className={`intro-flap-word intro-flap-word--big ${chakraPetch.className}`}
+                />
+              </div>
             </div>
-          </div>
+          ))}
           {introCards.map((card, i) => {
             const angle = i * spiralAngleStep - progress * rotationTravel;
             const rad = (angle * Math.PI) / 180;

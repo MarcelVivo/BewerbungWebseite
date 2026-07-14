@@ -574,12 +574,18 @@ body {
 }
 
 .intro-flap-word--small {
-  font-size: 1.35rem;
+  font-size: clamp(0.85rem, 2.4vw, 1.35rem);
 }
 
 .intro-flap-word--big {
   margin-top: 0.18em;
-  font-size: 4.05rem;
+  /* clamp() statt fixem rem-Wert: die längeren Wörter ("Herausforderung.",
+     "Erfolgsgeschichte.") liefen auf schmalen Bildschirmen aus dem Bild —
+     ab ~900px Breite bleibt es beim ursprünglichen 4.05rem (Desktop
+     unverändert), darunter schrumpft es proportional zur Viewportbreite,
+     damit auch das längste Wort ("Erfolgsgeschichte.") auf einem
+     schmalen Smartphone-Bildschirm lesbar bleibt. */
+  font-size: clamp(1.3rem, 6.2vw, 4.05rem);
 }
 
 .intro-flap-letter {
