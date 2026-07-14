@@ -1311,6 +1311,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var secondaryMergeCenterWorld=new THREE.Vector3();
   var secondaryMergedTargetLocal=new THREE.Vector3();
   var secondaryMergedTargetWorld=new THREE.Vector3();
+  var secondarySharedCenterWorld=new THREE.Vector3();
   var secondaryMergeY=0;
 
   function makeSecondaryFiberShape(){
@@ -1624,8 +1625,16 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           secondaryMergedTargetLocal.copy(goldFrameCenterLocal)
             .addScaledVector(goldFrameNormalLocal,Math.cos(fiber.mergeAngle)*mergedRadius)
             .addScaledVector(goldFrameBinormalLocal,Math.sin(fiber.mergeAngle)*mergedRadius);
+          // Die Helix rotiert um die Weltachse x=0 / z=0. Der gemeinsame
+          // Faserquerschnitt wird deshalb hier – und nur hier – auf diese
+          // Achse verschoben; die individuelle 3D-Verteilung jeder Faser
+          // relativ zum Querschnitt bleibt vollständig erhalten.
+          secondarySharedCenterWorld.copy(goldFrameCenterLocal);
+          brain.localToWorld(secondarySharedCenterWorld);
           secondaryMergedTargetWorld.copy(secondaryMergedTargetLocal);
           brain.localToWorld(secondaryMergedTargetWorld);
+          secondaryMergedTargetWorld.x-=secondarySharedCenterWorld.x;
+          secondaryMergedTargetWorld.z-=secondarySharedCenterWorld.z;
           x+=(secondaryMergedTargetWorld.x-x)*mergeBlend;
           y+=(secondaryMergedTargetWorld.y-y)*mergeBlend;
           z+=(secondaryMergedTargetWorld.z-z)*mergeBlend;
