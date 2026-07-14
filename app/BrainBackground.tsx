@@ -1367,7 +1367,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       // Gleich wie beim Goldstrang enden nicht alle Fasern gleichzeitig.
       // Die Staffelung erzeugt den weichen, natürlichen Faser-Auslauf statt
       // einer sichtbaren flachen Abschlusskante.
-      var fiberEndProgress=(selectedIndex%4)?(.9+Math.random()*.1):(.6+Math.random()*.3);
+      var fiberEndProgress=(selectedIndex%8)?(.94+Math.random()*.06):(.84+Math.random()*.1);
       var fiberLength=Math.max(24,Math.round(fiberSegments*fiberEndProgress));
       fibers.push({
         sourceAngle:sourceAngle,
@@ -1585,19 +1585,25 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         var thicknessScale=params.topThickness+(params.bottomThickness-params.topThickness)*pathProgress;
         var looseSpread=(.005+fiber.sourceRadius*.15+params.funnelSpread*.008)*sagEnvelope*thicknessScale;
         var windEnvelope=sagEnvelope;
-        var windSide=Math.sin(flowTime*.64+pathProgress*5.4+fiberShape.windPhase)*params.sway*.045*windEnvelope;
-        var windDepth=Math.cos(flowTime*.49+pathProgress*4.1+fiberShape.windPhase*1.37)*params.sway*.022*windEnvelope;
+        var rawWindSide=Math.sin(flowTime*.64+pathProgress*5.4+fiberShape.windPhase)*params.sway*.045;
+        var rawWindDepth=Math.cos(flowTime*.49+pathProgress*4.1+fiberShape.windPhase*1.37)*params.sway*.022;
+        var windSide=rawWindSide*windEnvelope;
+        var windDepth=rawWindDepth*windEnvelope;
         // Nur die lockeren äusseren Fasern dürfen sichtbar aus dem dichten
         // Kern ausbrechen. Ihre Wellen sind phasenverschoben, damit keine
         // dekorative Parallelwelle entsteht.
         var edgeWaveEnvelope=sagEnvelope;
         var escapeEnvelope=smooth((pathProgress-.06)/.2)*smooth((.94-pathProgress)/.2);
-        var edgeWave=(.014+edgeWeight*.11+fiber.escapeWeight*.235)*edgeWaveEnvelope*thicknessScale*params.escapeAmplitude;
-        var edgeWaveSide=Math.sin(pathProgress*(7.4+edgeWeight*5.1)+fiber.branchPhase+flowTime*.31)*edgeWave;
-        var edgeWaveDepth=Math.cos(pathProgress*(6.2+edgeWeight*4.3)+fiber.branchPhase*1.43+flowTime*.24)*edgeWave*.72;
+        var rawEdgeWave=(.014+edgeWeight*.11+fiber.escapeWeight*.235)*thicknessScale*params.escapeAmplitude;
+        var rawEdgeWaveSide=Math.sin(pathProgress*(7.4+edgeWeight*5.1)+fiber.branchPhase+flowTime*.31)*rawEdgeWave;
+        var rawEdgeWaveDepth=Math.cos(pathProgress*(6.2+edgeWeight*4.3)+fiber.branchPhase*1.43+flowTime*.24)*rawEdgeWave*.72;
+        var edgeWaveSide=rawEdgeWaveSide*edgeWaveEnvelope;
+        var edgeWaveDepth=rawEdgeWaveDepth*edgeWaveEnvelope;
         var travellingWave=pathProgress*fiber.escapeFrequency*params.escapeFrequency/params.escapeWavelength-flowTime*fiber.escapeSpeed*params.escapeSpeed;
-        var escapeSide=(Math.sin(travellingWave+fiber.branchPhase*2.1)+Math.sin(travellingWave*1.73+fiber.branchPhase*.47)*.38)*fiber.escapeWeight*.245*escapeEnvelope*thicknessScale*params.escapeAmplitude;
-        var escapeDepth=(Math.cos(travellingWave*.89+fiber.branchPhase*.71)+Math.sin(travellingWave*1.41+fiber.branchPhase*1.8)*.32)*fiber.escapeWeight*.175*escapeEnvelope*thicknessScale*params.escapeAmplitude;
+        var rawEscapeSide=(Math.sin(travellingWave+fiber.branchPhase*2.1)+Math.sin(travellingWave*1.73+fiber.branchPhase*.47)*.38)*fiber.escapeWeight*.245*thicknessScale*params.escapeAmplitude;
+        var rawEscapeDepth=(Math.cos(travellingWave*.89+fiber.branchPhase*.71)+Math.sin(travellingWave*1.41+fiber.branchPhase*1.8)*.32)*fiber.escapeWeight*.175*thicknessScale*params.escapeAmplitude;
+        var escapeSide=rawEscapeSide*escapeEnvelope;
+        var escapeDepth=rawEscapeDepth*escapeEnvelope;
         var manualEnvelope=sagEnvelope;
         var endSpread=.008+Math.abs(fiberShape.radiusOffset)*.022;
         var endOffsetX=Math.cos(fiberAngle)*endSpread;
@@ -1615,8 +1621,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         z=pathZ+(funnelZ-pathZ)*funnelRelease;
         var staticSide=Math.cos(fiberAngle)*looseSpread+params.posX*manualEnvelope+endOffsetX;
         var staticDepth=Math.sin(fiberAngle)*looseSpread+params.posZ*manualEnvelope+endOffsetZ;
-        var liveSide=windSide+edgeWaveSide+escapeSide;
-        var liveDepth=windDepth+edgeWaveDepth+escapeDepth;
+        // Im gemeinsamen Hauptstrang laufen die bestehenden Bewegungsphasen
+        // weiter, statt am Ende der seitlichen Catenary-Bahn auszuklingen.
+        var lowerFlowCarry=smoother((pathProgress-.58)/.24);
+        var liveSide=windSide+edgeWaveSide+escapeSide
+          +lowerFlowCarry*((rawWindSide-windSide)+(rawEdgeWaveSide-edgeWaveSide)+(rawEscapeSide-escapeSide));
+        var liveDepth=windDepth+edgeWaveDepth+escapeDepth
+          +lowerFlowCarry*((rawWindDepth-windDepth)+(rawEdgeWaveDepth-edgeWaveDepth)+(rawEscapeDepth-escapeDepth));
         x+=sideX*(staticSide+liveSide)+depthX*(staticDepth+liveDepth);
         z+=sideZ*(staticSide+liveSide)+depthZ*(staticDepth+liveDepth);
         if(assimilationBlend>0){
