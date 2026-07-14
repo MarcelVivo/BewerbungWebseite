@@ -23,6 +23,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     // Viewports erweitert sich nur der Bildausschnitt, damit alle drei Gehirne
     // im gleichen Größenverhältnis wie auf dem Desktop sichtbar bleiben.
     var MOBILE_RADIUS_SCALE = isMobile ? 1.9 : 1;
+    var MOBILE_BRAIN_Y_OFFSET = isMobile ? 1.65 : 0;
     var renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'high-performance' });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -53,7 +54,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var sprite=softSprite();
 
   var world=new THREE.Group(); scene.add(world);
-  var BRAIN_BASE_Y=-.5;
+  var BRAIN_BASE_Y=-.5+MOBILE_BRAIN_Y_OFFSET;
   var brain=new THREE.Group(); brain.position.y=BRAIN_BASE_Y; brain.scale.setScalar(3.2775); world.add(brain);
   var introTextGroup=new THREE.Group(); world.add(introTextGroup);
   var introSprites=[];
@@ -1128,8 +1129,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     // Bildschirmrand statt zentral über dem Text zu verschmelzen, mit
     // Rand zur Bildschirmkante damit nichts angeschnitten wird.
     var satelliteX=visibleHalfWidthAtSat*.76;
-    addSatelliteBrain(-satelliteX,.32,satelliteZ,.35,SATELLITE_METALS.red);
-    addSatelliteBrain(satelliteX,.46,satelliteZ-.2,2.7,SATELLITE_METALS.blue);
+    addSatelliteBrain(-satelliteX,.32+MOBILE_BRAIN_Y_OFFSET,satelliteZ,.35,SATELLITE_METALS.red);
+    addSatelliteBrain(satelliteX,.46+MOBILE_BRAIN_Y_OFFSET,satelliteZ-.2,2.7,SATELLITE_METALS.blue);
   } else {
     addSatelliteBrain(-5.7,-.62,-.7,.35,SATELLITE_METALS.red);
     addSatelliteBrain(5.7,-.44,-.9,2.7,SATELLITE_METALS.blue);

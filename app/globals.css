@@ -1334,6 +1334,33 @@ body {
 
 }
 
+@media (max-width: 699px) {
+  .hero-top-copy .hero-title-flap {
+    font-size: 4rem;
+  }
+
+  .hero-bottom-copy {
+    top: 76rem;
+    bottom: auto;
+    padding-bottom: 0;
+  }
+
+  .hero-bottom-copy .hero-bottom-flap {
+    max-width: 68rem;
+    font-size: 2.5rem;
+    line-height: 1.35;
+  }
+
+  .hero-bottom-copy .hero-scroll-label {
+    font-size: 2rem;
+  }
+
+  .hero-bottom-copy .hero-scroll-chevron {
+    width: 3rem;
+    height: 3rem;
+  }
+}
+
 @media (max-width: 480px) {
   .spiral-mobile {
     padding-left: 1rem;

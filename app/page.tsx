@@ -1222,8 +1222,8 @@ export default function HomePage() {
                   className={`group flex flex-col items-center gap-1 text-[#e7c56a] transition-colors hover:text-[#f6e3a1] ${chakraPetch.className}`}
                   aria-label={lang === 'de' ? 'Nach unten scrollen' : 'Scroll down'}
                 >
-                  <span className="text-xs font-bold tracking-[0.22em]">{lang === 'de' ? 'SCROLLEN' : 'SCROLL'}</span>
-                  <ChevronDown size={28} strokeWidth={1.8} className="transition-transform duration-300 group-hover:translate-y-1" aria-hidden="true" />
+                  <span className="hero-scroll-label text-xs font-bold tracking-[0.22em]">{lang === 'de' ? 'SCROLLEN' : 'SCROLL'}</span>
+                  <ChevronDown size={28} strokeWidth={1.8} className="hero-scroll-chevron transition-transform duration-300 group-hover:translate-y-1" aria-hidden="true" />
                 </a>
               </div>
             </div>
