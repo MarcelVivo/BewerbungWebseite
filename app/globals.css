@@ -575,6 +575,10 @@ body {
 
 .intro-flap-word {
   display: flex;
+  /* align-items:stretch ist der Flex-Standard und hätte jeden Buchstaben
+     vertikal auf die Zeilenhöhe gedehnt/gestaucht — explizit auf baseline
+     gesetzt, damit jeder Buchstabe seine eigene, unangetastete Höhe behält. */
+  align-items: baseline;
   white-space: pre;
   color: #ffffff;
   font-weight: 700;
@@ -599,13 +603,14 @@ body {
 
 .intro-flap-letter {
   display: inline-block;
-  perspective: 240px;
 }
 
 .intro-flap-glyph {
   display: inline-block;
-  transform-style: preserve-3d;
-  backface-visibility: hidden;
+  /* scaleY statt einer 3D-rotateX-Perspektiv-Rotation: eine reine 2D-
+     Transformation kann geometrisch nicht "verziehen"/stauchen, egal wie
+     gross die Schrift oder wie schräg der Kamerawinkel des äusseren
+     .intro-flap-world-Wrappers gerade ist. */
   will-change: transform;
 }
 

@@ -109,9 +109,14 @@ function NeuralFiberField() {
 // Split-Flap-Buchstaben-Zerhacker für alle 5 "Deine …"-Intro-Textstationen:
 // jeder Buchstabe klappt unabhängig von seinen Nachbarn (eigenes Tempo,
 // eigene Pausen) endlos durch zufällige Zeichen — kein Split-Flap-Kästchen
-// im Hintergrund, nur der weisse Buchstabe selbst rotiert. Die Dauerschleife
-// läuft permanent während gescrollt wird; steht der Scroll still, bekommen
-// alle Buchstaben den Befehl, beim nächsten eigenen Taktschritt auf ihrem
+// im Hintergrund, nur der weisse Buchstabe selbst kollabiert vertikal
+// (scaleY) und entfaltet sich mit dem nächsten Zeichen wieder. Bewusst
+// scaleY statt einer echten 3D-rotateX-Perspektiv-Rotation: Letztere
+// verzieht/staucht die Glyphen sichtbar während des Flips (abhängig von
+// Schriftgrösse und Kamerawinkel), scaleY ist eine reine 2D-Transformation
+// ohne jede perspektivische Verzerrungsmöglichkeit. Die Dauerschleife läuft
+// permanent während gescrollt wird; steht der Scroll still, bekommen alle
+// Buchstaben den Befehl, beim nächsten eigenen Taktschritt auf ihrem
 // Zielbuchstaben anzuhalten ("settle"). Sobald wieder gescrollt wird, läuft
 // die Dauerschleife an denselben (dann gestoppten) Buchstaben weiter ("spin").
 const FLAP_SCRAMBLE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜ';
@@ -156,11 +161,11 @@ function startFlapLetter(letter: FlapLetter, reduced: boolean) {
   function tick() {
     if (letter.mode === 'settle') {
       letter.glyph.style.transition = `transform ${flipMs.toFixed(0)}ms cubic-bezier(.5,0,.85,.35)`;
-      letter.glyph.style.transform = 'rotateX(90deg)';
+      letter.glyph.style.transform = 'scaleY(0.05)';
       window.setTimeout(() => {
         letter.glyph.textContent = letter.target;
         letter.glyph.style.transition = `transform ${flipMs.toFixed(0)}ms cubic-bezier(.2,.7,.4,1)`;
-        letter.glyph.style.transform = 'rotateX(0deg)';
+        letter.glyph.style.transform = 'scaleY(1)';
         letter.running = false; // steht still, bis setFlapWordMode('spin', ...) sie neu startet
       }, flipMs);
       return;
@@ -171,7 +176,7 @@ function startFlapLetter(letter: FlapLetter, reduced: boolean) {
     window.setTimeout(() => {
       letter.glyph.textContent = nextChar;
       letter.glyph.style.transition = `transform ${flipMs.toFixed(0)}ms cubic-bezier(.2,.7,.4,1)`;
-      letter.glyph.style.transform = 'rotateX(0deg)';
+      letter.glyph.style.transform = 'scaleY(1)';
       window.setTimeout(tick, gapMs());
     }, flipMs);
   }
