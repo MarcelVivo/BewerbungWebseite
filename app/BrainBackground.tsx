@@ -431,7 +431,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   // Gehirn und Nervenstrang sind dadurch buchstäblich ein einziges
   // THREE.LineSegments- und ein einziges THREE.Points-Objekt, keine zwei
   // getrennten 3D-Objekte mehr. ---
-  var SBASE_X=BR.stumpCenter[0], SBASE_Y=BR.stumpCenter[1], SBASE_Z=BR.stumpCenter[2];
+  var SBASE_X=-0.3467, SBASE_Y=-0.8764, SBASE_Z=0.052;
   var stumpCenterLocal=new THREE.Vector3(SBASE_X,SBASE_Y,SBASE_Z);
   var stumpCenterOffset=new THREE.Vector3();
   var strandInverseRotation=new THREE.Quaternion();
@@ -447,7 +447,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   // Trichter: Jede Faser startet an einem echten goldenen Vertex im Stumpf-
   // Bereich, läuft über einen organischen Fächer zu einem individuellen Punkt
   // auf dem unteren Auslassring und ordnet sich erst danach weich im Bündel.
-  var FN={ count:isMobile?96:220, anchorRadius:0.59, funnelHeight:0.19, funnelSegs:3, convergePull:0.65,
+  var FN={ count:220, anchorRadius:0.59, funnelHeight:0.19, funnelSegs:3, convergePull:0.65,
            outletRadius:0.16, outletHeightSpread:0.22, randomness:1 };
   var MP={ moveLeft:0, moveRight:0, moveForward:0, moveBack:0, moveVertical:0.01 };
   var WIND={ sway:0.04, speed:0.37, wave:0.036, waveFrequency:9 };
@@ -455,10 +455,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var GOLD_STRAND_TUNING={
     topThickness:1,
     bottomThickness:1,
-    escapeAmount:0,
-    escapeAmplitude:1,
-    escapeFrequency:1,
-    escapeWavelength:1,
+    escapeAmount:1,
+    escapeAmplitude:.47,
+    escapeFrequency:1.92,
+    escapeWavelength:.56,
     escapeSpeed:1,
     colorHue:0,
     colorSaturation:1,
@@ -495,12 +495,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var goldDragHovered=false;
   var goldDragHandle=null;
   var goldDragHandleMaterial=null;
-  try {
-    var savedGoldEnd=JSON.parse(window.localStorage.getItem(GOLD_STRAND_END_KEY)||'null');
-    if(savedGoldEnd&&Number.isFinite(savedGoldEnd.x)&&Number.isFinite(savedGoldEnd.y)&&Number.isFinite(savedGoldEnd.z)) {
-      strandEndTargetWorld=new THREE.Vector3(savedGoldEnd.x,savedGoldEnd.y,savedGoldEnd.z);
-    }
-  } catch(_) {}
+  try { window.localStorage.removeItem(GOLD_STRAND_END_KEY); } catch(_) {}
   // gemeinsame Durchhang-Richtung (Schwerkraft): leicht nach vorne/unten,
   // nicht rein vertikal, wirkt organischer als ein reiner Y-Fall
   var DROOP_DX=0, DROOP_DZ=0;
@@ -1199,7 +1194,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var satelliteStrands=[];
   function createSecondaryStrandParams(){
     return {
-      fiberAmount:isMobile?.42:.58,
+      fiberAmount:.58,
       intensity:1,
       lineOpacity:GOLD_RENDER.lineOpacity,
       pointOpacity:GOLD_RENDER.pointOpacity,
@@ -1223,10 +1218,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       baseBrightness:.3,
       topBrightness:1,
       bottomBrightness:1,
-      escapeAmount:.54,
-      escapeAmplitude:1,
-      escapeFrequency:1,
-      escapeWavelength:1,
+      escapeAmount:1,
+      escapeAmplitude:1.39,
+      escapeFrequency:3,
+      escapeWavelength:.72,
       escapeSpeed:1,
       colorHue:0,
       colorSaturation:1,
@@ -1243,6 +1238,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   RED_STRAND.pulseStrength=.14;
   BLUE_STRAND.baseBrightness=.95;
   BLUE_STRAND.pulseStrength=.14;
+  BLUE_STRAND.escapeAmplitude=1.35;
+  BLUE_STRAND.escapeWavelength=1;
   var secondaryMergeTargetWorld=new THREE.Vector3();
   var secondarySatelliteWorld=new THREE.Vector3();
   var secondaryRenderPoint=new THREE.Vector3();
