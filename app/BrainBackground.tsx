@@ -19,10 +19,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var isMobile = innerWidth < 700;
-    // Die Kameraschiene bleibt auf allen Viewports identisch. Mobile
-    // Performance-Reduktionen dürfen die Anzahl einzelner Partikel/Fasern
-    // betreffen, aber niemals Radius, Timing oder Verlauf der Kamerafahrt.
-    var MOBILE_RADIUS_SCALE = 1;
+    // Timing und Verlauf der Kameraschiene bleiben identisch. Auf schmalen
+    // Viewports erweitert sich nur der Bildausschnitt, damit alle drei Gehirne
+    // im gleichen Größenverhältnis wie auf dem Desktop sichtbar bleiben.
+    var MOBILE_RADIUS_SCALE = isMobile ? 1.34 : 1;
     var renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'high-performance' });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -1103,7 +1103,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   function addSatelliteBrain(x,y,z,phase,palette){
     var satellite=brain.clone(true);
     tintSatelliteBrain(satellite,palette);
-    satellite.scale.setScalar(isMobile?0.8:1.76);
+    satellite.scale.setScalar(1.76);
     satellite.position.set(x,y,z);
     satellite.rotation.set(BASE_X,BASE_Y,0);
     satellite.userData={baseX:x,baseY:y,baseZ:z,baseRotY:BASE_Y,phase:phase};
@@ -1124,10 +1124,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var halfVFovRad=THREE.MathUtils.degToRad(camera.fov/2);
     var halfHFovRad=Math.atan(Math.tan(halfVFovRad)*camera.aspect);
     var visibleHalfWidthAtSat=(heroCameraDistance-satelliteZ)*Math.tan(halfHFovRad);
-    // 78% der sichtbaren Halbbreite nutzen: Satelliten schweben nah am
+    // 68% der sichtbaren Halbbreite nutzen: Satelliten schweben nah am
     // Bildschirmrand statt zentral über dem Text zu verschmelzen, mit
     // Rand zur Bildschirmkante damit nichts angeschnitten wird.
-    var satelliteX=visibleHalfWidthAtSat*.78;
+    var satelliteX=visibleHalfWidthAtSat*.68;
     addSatelliteBrain(-satelliteX,.32,satelliteZ,.35,SATELLITE_METALS.red);
     addSatelliteBrain(satelliteX,.46,satelliteZ-.2,2.7,SATELLITE_METALS.blue);
   } else {
