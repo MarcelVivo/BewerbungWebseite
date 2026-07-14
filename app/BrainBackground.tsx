@@ -1973,11 +1973,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   };
   var neuralActivityController=new NeuralActivityController();
 
-  // --- Tuning-Panel: Regler für die Nervenstrang-Parameter. ?tune=1
-  // öffnet es direkt; ansonsten über den sichtbaren Button. ---
+  // Das Strang-Tuning bleibt als interne Konfiguration erhalten, die
+  // Bedienoberfläche ist auf der Website bewusst deaktiviert.
+  var SHOW_STRAND_TUNING=false;
   var tunePanel=null, tuneLauncher=null;
-  var tuneStartsOpen=typeof window!=='undefined' && new URLSearchParams(window.location.search).get('tune')==='1';
-  if (typeof window!=='undefined') {
+  var tuneStartsOpen=false;
+  if (SHOW_STRAND_TUNING&&typeof window!=='undefined') {
     function sectionLabel(text,color){
       var s=document.createElement('div');
       s.textContent=text;
