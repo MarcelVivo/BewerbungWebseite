@@ -1288,8 +1288,8 @@ export default function HomePage() {
   useEffect(() => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const lines = lang === 'de'
-      ? ['Digitale Lösungen.', 'Für Unternehmen mit Zukunft.']
-      : ['Digital solutions built', 'as one system.'];
+      ? ['DIGITALE LÖSUNGEN.', 'FÜR UNTERNEHMEN MIT ZUKUNFT.']
+      : ['DIGITAL SOLUTIONS BUILT', 'AS ONE SYSTEM.'];
     const letters = lines.flatMap((line, index) => {
       const container = heroFlapLineRefs.current[index];
       return container ? buildFlapWord(container, line) : [];
@@ -1354,13 +1354,13 @@ export default function HomePage() {
               <div className="hero-copy hero-copy-centered ms-anim">
                 <h1
                   className={`hero-title-flap max-w-6xl mx-auto text-5xl font-bold text-white leading-[0.96] tracking-[-0.055em] ${chakraPetch.className}`}
-                  aria-label={lang === 'de' ? 'Digitale Lösungen. Für Unternehmen mit Zukunft.' : 'Digital solutions built as one system.'}
+                  aria-label={lang === 'de' ? 'DIGITALE LÖSUNGEN. FÜR UNTERNEHMEN MIT ZUKUNFT.' : 'DIGITAL SOLUTIONS BUILT AS ONE SYSTEM.'}
                 >
                   <span ref={(el) => { heroFlapLineRefs.current[0] = el; }} className="hero-flap-line">
-                    {lang === 'de' ? 'Digitale Lösungen.' : 'Digital solutions built'}
+                    {lang === 'de' ? 'DIGITALE LÖSUNGEN.' : 'DIGITAL SOLUTIONS BUILT'}
                   </span>
                   <span ref={(el) => { heroFlapLineRefs.current[1] = el; }} className="hero-flap-line">
-                    {lang === 'de' ? 'Für Unternehmen mit Zukunft.' : 'as one system.'}
+                    {lang === 'de' ? 'FÜR UNTERNEHMEN MIT ZUKUNFT.' : 'AS ONE SYSTEM.'}
                   </span>
                 </h1>
               </div>
