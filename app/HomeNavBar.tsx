@@ -56,7 +56,7 @@ export default function HomeNavBar() {
 
   return (
     <header className="home-navbar fixed top-0 inset-x-0 z-50 pointer-events-none">
-      <div className="home-navbar-shell max-w-7xl mx-auto px-4 sm:px-6 h-16 lg:h-20 flex items-center justify-between pointer-events-auto">
+      <div className="home-navbar-shell mx-auto px-4 sm:px-6 h-16 lg:h-20 flex items-center justify-between pointer-events-auto">
         {/* ── Logo ── */}
         <a href="/" aria-label="Marcel Spahr – Startseite" className="flex items-center select-none">
           <img

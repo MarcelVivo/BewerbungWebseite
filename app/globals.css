@@ -256,6 +256,8 @@ body {
 
 .home-navbar-shell {
   position: relative;
+  width: 100%;
+  max-width: 80rem;
   border: 1px solid rgba(246, 227, 161, .18);
   border-radius: 999px;
   background:
@@ -267,6 +269,13 @@ body {
     0 0 28px rgba(200, 154, 61, .06);
   -webkit-backdrop-filter: blur(20px) saturate(125%);
   backdrop-filter: blur(20px) saturate(125%);
+}
+
+@media (min-width: 1280px) {
+  .home-navbar-shell {
+    width: 66.6667%;
+    max-width: 53.333rem;
+  }
 }
 
 .home-navbar-shell::after {
