@@ -65,7 +65,7 @@ export default function HomeNavBar() {
           <img
             src="/MSLogo/MSLogoGehirn.png"
             alt="Marcel Spahr"
-            className="h-24 sm:h-28 w-auto object-contain"
+            className="h-14 w-auto object-contain"
           />
         </a>
         <nav className={`hidden md:flex items-center gap-6 ${chakraPetch.className}`}>
