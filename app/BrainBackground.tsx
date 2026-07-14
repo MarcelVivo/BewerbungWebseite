@@ -19,10 +19,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var isMobile = innerWidth < 700;
-    // Schmales Mobile-Sichtfeld (kleines aspect) macht das horizontale FOV
-    // viel enger als auf Desktop — Kamera etwas weiter zurücksetzen, damit
-    // neben dem Haupt-Gehirn auch Platz für die 3 Satelliten-Gehirne bleibt.
-    var MOBILE_RADIUS_SCALE = isMobile ? 1.34 : 1;
+    // Die Kameraschiene bleibt auf allen Viewports identisch. Mobile
+    // Performance-Reduktionen dürfen die Anzahl einzelner Partikel/Fasern
+    // betreffen, aber niemals Radius, Timing oder Verlauf der Kamerafahrt.
+    var MOBILE_RADIUS_SCALE = 1;
     var renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'high-performance' });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.outputColorSpace = THREE.SRGBColorSpace;

@@ -1334,18 +1334,6 @@ body {
 
 }
 
-@media (max-width: 700px) {
-  /* Unter 700px (derselbe Schwellenwert wie isMobile in BrainBackground.tsx)
-     ist die 2×2-Kartengruppe zu schmal für zwei Spalten nebeneinander —
-     eine Spalte bleibt lesbar, ohne das Layout/die Animationen der
-     einzelnen Karten (ngp-*) zu verändern. */
-  .spiral-service-stations {
-    grid-template-columns: 1fr;
-    width: min(24rem, 84vw);
-    gap: 0.85rem;
-  }
-}
-
 @media (max-width: 480px) {
   .spiral-mobile {
     padding-left: 1rem;

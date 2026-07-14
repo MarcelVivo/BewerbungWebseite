@@ -66,7 +66,7 @@ export default function HomeNavBar() {
             className="h-14 w-auto object-contain"
           />
         </a>
-        <nav className={`hidden md:flex items-center gap-6 ${chakraPetch.className}`}>
+        <nav className={`hidden lg:flex items-center gap-6 ${chakraPetch.className}`}>
           {NAV_LINKS.map(l => (
             <a key={l.href} href={l.href} className="text-sm text-[#a89880] hover:text-[#f4edd8] transition-colors"><NavbarFlapLabel label={l.label} /></a>
           ))}
@@ -85,7 +85,7 @@ export default function HomeNavBar() {
             <NavbarFlapLabel label={t.book} />
           </a>
         </nav>
-        <div className={`flex items-center gap-3 md:hidden ${chakraPetch.className}`}>
+        <div className={`flex items-center gap-3 lg:hidden ${chakraPetch.className}`}>
           {/* Mobile language toggle */}
           <div className="flex items-center gap-0.5 rounded-lg border border-[#2d2820] overflow-hidden">
             <button onClick={() => setLang('de')} className={`px-2 py-1 text-xs font-semibold transition-colors ${lang === 'de' ? 'bg-[#c9a84c] text-[#0c0a06]' : 'text-[#a89880]'}`}><NavbarFlapLabel label="DE" /></button>
@@ -97,7 +97,7 @@ export default function HomeNavBar() {
         </div>
       </div>
       {open && (
-        <div className={`md:hidden bg-[#1c1912] border-t border-[#2d2820] px-4 py-4 space-y-3 ms-anim ${chakraPetch.className}`}>
+        <div className={`lg:hidden bg-[#1c1912] border-t border-[#2d2820] px-4 py-4 space-y-3 ms-anim ${chakraPetch.className}`}>
           {NAV_LINKS.map(l => (
             <a key={l.href} href={l.href} className="block text-sm text-[#d4c4a8] hover:text-[#f4edd8]" onClick={() => setOpen(false)}><NavbarFlapLabel label={l.label} /></a>
           ))}
