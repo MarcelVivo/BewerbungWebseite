@@ -22,7 +22,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     // Timing und Verlauf der Kameraschiene bleiben identisch. Auf schmalen
     // Viewports erweitert sich nur der Bildausschnitt, damit alle drei Gehirne
     // im gleichen Größenverhältnis wie auf dem Desktop sichtbar bleiben.
-    var MOBILE_RADIUS_SCALE = isMobile ? 1.34 : 1;
+    var MOBILE_RADIUS_SCALE = isMobile ? 1.9 : 1;
     var renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'high-performance' });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -1124,10 +1124,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var halfVFovRad=THREE.MathUtils.degToRad(camera.fov/2);
     var halfHFovRad=Math.atan(Math.tan(halfVFovRad)*camera.aspect);
     var visibleHalfWidthAtSat=(heroCameraDistance-satelliteZ)*Math.tan(halfHFovRad);
-    // 68% der sichtbaren Halbbreite nutzen: Satelliten schweben nah am
+    // 76% der sichtbaren Halbbreite nutzen: Satelliten schweben nah am
     // Bildschirmrand statt zentral über dem Text zu verschmelzen, mit
     // Rand zur Bildschirmkante damit nichts angeschnitten wird.
-    var satelliteX=visibleHalfWidthAtSat*.68;
+    var satelliteX=visibleHalfWidthAtSat*.76;
     addSatelliteBrain(-satelliteX,.32,satelliteZ,.35,SATELLITE_METALS.red);
     addSatelliteBrain(satelliteX,.46,satelliteZ-.2,2.7,SATELLITE_METALS.blue);
   } else {
