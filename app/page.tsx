@@ -1263,41 +1263,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── FAQ ── */}
-      <section id="faq" className="faq-section py-24 px-4 sm:px-6">
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'FAQPage',
-            mainEntity: T.de.faq.items.map(item => ({
-              '@type': 'Question',
-              name: item.q,
-              acceptedAnswer: { '@type': 'Answer', text: item.a },
-            })),
-          })}}
-        />
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-12">
-            <span className="text-[#e7c56a] text-sm font-semibold tracking-widest uppercase">{t.faq.label}</span>
-            <h2 className="mt-2 text-3xl sm:text-4xl font-bold text-white">{t.faq.heading}</h2>
-          </div>
-          <div className="space-y-3">
-            {t.faq.items.map((item, i) => (
-              <details key={`${lang}-${i}`} className="group rounded-xl border border-[#2d2820] bg-[#1c1912] overflow-hidden">
-                <summary className="flex items-center justify-between gap-4 px-6 py-4 cursor-pointer list-none hover:bg-[#231e15] transition-colors">
-                  <span className="font-medium text-white text-sm sm:text-base">{item.q}</span>
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full border border-[#2d2820] flex items-center justify-center text-[#e7c56a] text-lg leading-none group-open:rotate-45 transition-transform duration-200">+</span>
-                </summary>
-                <div className="px-6 pb-5 pt-1">
-                  <p className="text-sm text-[#a89880] leading-relaxed">{item.a}</p>
-                </div>
-              </details>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ── Footer ── */}
       <footer className="border-t border-[#2d2820] bg-[#100d09] py-8 px-4">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">

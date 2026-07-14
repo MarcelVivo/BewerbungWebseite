@@ -1332,8 +1332,7 @@ body {
     position: static;
   }
 
-  .contact-section,
-  .faq-section {
+  .contact-section {
     padding-top: 4.5rem;
     padding-bottom: 4.5rem;
   }
@@ -1378,15 +1377,6 @@ body {
     gap: 2rem;
   }
 
-  .faq-section summary {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-
-  .faq-section details div {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

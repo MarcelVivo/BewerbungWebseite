@@ -82,17 +82,6 @@ export const T = {
       success: 'Vielen Dank! Ich melde mich bald.',
       error: 'Fehler beim Senden. Bitte versuche es erneut.',
     },
-    faq: {
-      label: 'FAQ', heading: 'Häufige Fragen',
-      items: [
-        { q: 'Was kann ich bei dir beauftragen?', a: 'Komplette Weblösungen: Corporate Design, moderne Websites, 3D-Elemente, CRM, ERP, Datenbanken, Schnittstellen, KI-Automation und digitale Prozesse. Je nach Bedarf als einzelne Lösung oder als komplettes System.' },
-        { q: 'Hilfst du auch bei KI für KMU?', a: 'Ja. Ich prüfe, wo KI wirklich hilft, welche Tools sinnvoll sind und wie sie sicher in bestehende Abläufe integriert werden. Ziel ist konkrete Entlastung, nicht KI-Theater.' },
-        { q: 'Für wen ist das gedacht?', a: 'Für KMU, Selbständige, Agenturen und Unternehmen, die nicht nur eine schöne Website wollen, sondern eine digitale Lösung, die ihren Alltag vereinfacht und professionell funktioniert.' },
-        { q: 'Was kostet ein Projekt?', a: 'Das hängt vom Umfang ab. Kleine Weblösungen sind deutlich schneller umgesetzt als ein komplettes CRM-/ERP-System. Nach dem Erstgespräch erhältst du eine klare Einschätzung mit sinnvollen Etappen.' },
-        { q: 'Wie schnell kann eine Lösung umgesetzt werden?', a: 'Eine fokussierte Website oder ein erster digitaler Prozess kann oft in wenigen Wochen entstehen. Grössere Systeme werden in Etappen gebaut, damit schnell Nutzen entsteht und trotzdem langfristig sauber gearbeitet wird.' },
-        { q: 'Arbeitest du remote oder vor Ort?', a: 'Beides. Viele Schritte laufen effizient remote. Für Strategie, Workshops oder wichtige Abstimmungen ist ein persönlicher Termin in Bern oder bei dir vor Ort möglich.' },
-      ],
-    },
     footer: { copy: '© 2026 Marcel Spahr', imprint: 'Impressum', privacy: 'Datenschutz' },
   },
 
@@ -176,17 +165,6 @@ export const T = {
       send: 'Send message', sending: 'Sending…',
       success: "Thank you! I'll be in touch soon.",
       error: 'Failed to send. Please try again.',
-    },
-    faq: {
-      label: 'FAQ', heading: 'Frequently Asked Questions',
-      items: [
-        { q: 'What can I commission?', a: 'Complete web solutions: corporate design, modern websites, 3D elements, CRM, ERP, databases, integrations, AI automation and digital processes. As a focused solution or as a complete system.' },
-        { q: 'Do you help SMEs with AI?', a: 'Yes. I check where AI actually helps, which tools make sense and how they can be safely integrated into existing workflows. The goal is concrete relief, not AI theatre.' },
-        { q: 'Who is this for?', a: 'For SMEs, self-employed people, agencies and companies that want more than a nice website: a digital solution that simplifies daily work and performs professionally.' },
-        { q: 'What does a project cost?', a: 'That depends on scope. A focused website is faster than a complete CRM/ERP system. After the initial call you get a clear assessment with sensible stages.' },
-        { q: 'How fast can a solution be built?', a: 'A focused website or first digital process can often be built within a few weeks. Larger systems are delivered in stages so value appears quickly while the foundation stays clean.' },
-        { q: 'Do you work remotely or on site?', a: 'Both. Many steps work efficiently remotely. For strategy, workshops or key alignments, an in-person meeting in Bern or at your location is possible.' },
-      ],
     },
     footer: { copy: '© 2026 Marcel Spahr', imprint: 'Imprint', privacy: 'Privacy' },
   },
