@@ -939,7 +939,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
                   <p className="spiral-service-body">{card.body}</p>
                   <span className="spiral-intro-rule" />
                 </span>
-                <span className="spiral-service-more">
+                <span className={`spiral-service-more ${chakraPetch.className}`}>
                   {lang === 'de' ? 'Mehr erfahren' : 'Learn more'}
                 </span>
               </button>
