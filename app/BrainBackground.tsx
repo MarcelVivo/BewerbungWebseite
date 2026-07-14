@@ -61,7 +61,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   // HELIX_STEP/TEXT_START_Y kommen jetzt aus der gemeinsamen Geometrie-Datei
   // (app/lib/helixGeometry.ts) statt hier lokal dupliziert zu sein — dieselbe
   // Quelle wird auch von der Kartengruppe in page.tsx verwendet.
-  var totalWorldStops=introTexts.length+serviceCards.length;
+  var totalWorldStops=introTexts.length+serviceCards.length+4;
   var cameraTargetStart=CAMERA_TARGET_START;
   var cameraTravel=computeCameraTravel(totalWorldStops);
   var cameraTargetEnd=cameraTargetStart-cameraTravel;
