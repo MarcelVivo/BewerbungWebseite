@@ -30,15 +30,20 @@ export default function CustomCursor() {
     const pointer = { x: innerWidth / 2, y: innerHeight / 2 };
     const core = { x: pointer.x, y: pointer.y };
     let visible = false;
+    let pressedUntil = 0;
 
     function onMove(e: PointerEvent) {
       pointer.x = e.clientX;
       pointer.y = e.clientY;
       visible = true;
     }
+    function onDown(e: PointerEvent) {
+      onMove(e);
+      pressedUntil = performance.now() + 280;
+    }
     function onLeave() { visible = false; }
     window.addEventListener('pointermove', onMove);
-    window.addEventListener('pointerdown', onMove);
+    window.addEventListener('pointerdown', onDown);
     window.addEventListener('mouseleave', onLeave);
     window.addEventListener('mouseenter', () => { visible = true; });
 
@@ -56,15 +61,7 @@ export default function CustomCursor() {
       ctx!.clearRect(0, 0, innerWidth, innerHeight);
 
       if (visible) {
-        const glowR = 20;
-        const grad = ctx!.createRadialGradient(core.x, core.y, 0, core.x, core.y, glowR);
-        grad.addColorStop(0, 'rgba(246,227,161,0.95)');
-        grad.addColorStop(0.35, 'rgba(231,197,106,0.55)');
-        grad.addColorStop(1, 'rgba(200,154,61,0)');
-        ctx!.fillStyle = grad;
-        ctx!.beginPath();
-        ctx!.arc(core.x, core.y, glowR, 0, Math.PI * 2);
-        ctx!.fill();
+        const clicked = now < pressedUntil;
 
         ctx!.save();
         ctx!.translate(core.x, core.y);
@@ -74,12 +71,12 @@ export default function CustomCursor() {
         ctx!.lineTo(-8, 13);
         ctx!.moveTo(0, 0);
         ctx!.lineTo(8, 13);
-        ctx!.strokeStyle = '#f6e3a1';
+        ctx!.strokeStyle = clicked ? '#f6e3a1' : '#ffffff';
         ctx!.lineWidth = 2.2;
         ctx!.lineCap = 'round';
         ctx!.lineJoin = 'round';
-        ctx!.shadowColor = 'rgba(231,197,106,0.95)';
-        ctx!.shadowBlur = 8;
+        ctx!.shadowColor = clicked ? 'rgba(231,197,106,0.95)' : 'transparent';
+        ctx!.shadowBlur = clicked ? 8 : 0;
         ctx!.stroke();
         ctx!.restore();
 
@@ -92,7 +89,7 @@ export default function CustomCursor() {
       cancelAnimationFrame(rafId);
       window.removeEventListener('resize', resize);
       window.removeEventListener('pointermove', onMove);
-      window.removeEventListener('pointerdown', onMove);
+      window.removeEventListener('pointerdown', onDown);
       window.removeEventListener('mouseleave', onLeave);
       document.documentElement.classList.remove('custom-cursor-active');
     };
