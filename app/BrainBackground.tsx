@@ -1689,6 +1689,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       this.nodeGlows.push({node:node,material:material,life:0});
     }
     this.palette=palette;
+    this.intensity=palette.intensity||NEURAL_IMPULSE_INTENSITY;
+    this.sizeScale=palette.sizeScale||1;
     this.samplePoint=new THREE.Vector3();
     this.active=false;
   }
@@ -1714,8 +1716,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       if(glow.life<=0) continue;
       glow.life-=dt;
       var glowFade=Math.max(0,glow.life/.36);
-      glow.material.opacity=.07*NEURAL_IMPULSE_INTENSITY*glowFade*glowFade;
-      var glowSize=(.07+(.11*(1-glowFade)))*Math.sqrt(NEURAL_IMPULSE_INTENSITY/5);
+      glow.material.opacity=.07*this.intensity*glowFade*glowFade;
+      var glowSize=(.07+(.11*(1-glowFade)))*this.sizeScale*Math.sqrt(this.intensity/5);
       glow.node.scale.set(glowSize,glowSize,1);
     }
     if(!this.active) return;
@@ -1731,11 +1733,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     }
     this.core.position.copy(head.point);
     this.glow.position.copy(head.point);
-    var coreSize=(.042+envelope*.022)*Math.sqrt(NEURAL_IMPULSE_INTENSITY/5);
+    var coreSize=(.042+envelope*.022)*this.sizeScale*Math.sqrt(this.intensity/5);
     this.core.scale.set(coreSize,coreSize,1);
     this.glow.scale.set(coreSize*2.5,coreSize*2.5,1);
-    this.coreMaterial.opacity=.32*NEURAL_IMPULSE_INTENSITY*envelope;
-    this.glowMaterial.opacity=.045*NEURAL_IMPULSE_INTENSITY*envelope;
+    this.coreMaterial.opacity=.32*this.intensity*envelope;
+    this.glowMaterial.opacity=.045*this.intensity*envelope;
     for(var trailIndex=0;trailIndex<this.maxTrail;trailIndex++){
       var trailProgress=Math.max(0,progress-(this.maxTrail-1-trailIndex)*.026);
       var trailSample=this.sample(trailProgress,this.samplePoint);
@@ -1749,7 +1751,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     }
     this.trail.geometry.attributes.position.needsUpdate=true;
     this.trail.geometry.attributes.color.needsUpdate=true;
-    this.trailMaterial.opacity=.23*NEURAL_IMPULSE_INTENSITY*envelope;
+    this.trailMaterial.opacity=.23*this.intensity*envelope;
     if(progress>=1){
       this.active=false;
       this.trailMaterial.opacity=0;
@@ -1761,11 +1763,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     }
   };
   function NeuralConvergenceNode(parentGroup){
-    this.maxCharge=7;
+    this.maxCharge=12;
     this.charge=0;
     this.pendingDischarge=0;
     this.dischargeCycle=0;
-    this.nextChargeTarget=4;
+    this.nextChargeTarget=8;
     this.anchor=neuralConvergenceAnchor.clone();
     this.coreMaterial=new THREE.SpriteMaterial({map:sprite,color:GOLD.highlight,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
     this.core=new THREE.Sprite(this.coreMaterial);
@@ -1792,7 +1794,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         this.discharge.trigger();
         this.charge=0;
         this.dischargeCycle++;
-        this.nextChargeTarget=4+Math.floor(neuralHash(this.dischargeCycle*5.91)*4);
+        this.nextChargeTarget=8+Math.floor(neuralHash(this.dischargeCycle*5.91)*5);
       }
     }
     var chargeLevel=this.charge/this.maxCharge;
@@ -1900,12 +1902,18 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     }
   };
   function NeuralActivityController(){
+    var goldImpulsePalette={primary:GOLD.primary,light:GOLD.light,highlight:GOLD.highlight,intensity:5,sizeScale:.70710678};
+    this.goldImpulses=[
+      new NeuralImpulse(brain,goldImpulsePalette),
+      new NeuralImpulse(brain,goldImpulsePalette),
+      new NeuralImpulse(brain,goldImpulsePalette),
+      new NeuralImpulse(brain,goldImpulsePalette)
+    ];
     this.impulses={
-      gold:new NeuralImpulse(brain,{primary:GOLD.primary,light:GOLD.light,highlight:GOLD.highlight}),
+      gold:this.goldImpulses[0],
       red:new NeuralImpulse(satelliteBrains[0],{primary:SATELLITE_METALS.red.primary,light:SATELLITE_METALS.red.light,highlight:new THREE.Color(0xf3b0b9)}),
       blue:new NeuralImpulse(satelliteBrains[1],{primary:SATELLITE_METALS.blue.primary,light:SATELLITE_METALS.blue.light,highlight:new THREE.Color(0xc4e3ff)})
     };
-    this.goldEcho=new NeuralImpulse(brain,{primary:GOLD.primary,light:GOLD.light,highlight:GOLD.highlight});
     this.sequenceIndex=0;
     this.sequenceTime=0;
     this.cooldown=.85;
@@ -1925,8 +1933,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     this.sequenceIndex++;
   };
   NeuralActivityController.prototype.update=function(dt){
-    this.impulses.gold.update(dt);
-    this.goldEcho.update(dt);
+    for(var goldUpdateIndex=0;goldUpdateIndex<this.goldImpulses.length;goldUpdateIndex++) this.goldImpulses[goldUpdateIndex].update(dt);
     this.impulses.red.update(dt);
     this.impulses.blue.update(dt);
     this.goldConvergence.update(dt);
@@ -1943,18 +1950,24 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       allStarted=false;
       if(this.sequenceTime<step.delay) continue;
       var impulse=this.impulses[step.actor];
-      if(step.actor==='gold'?(impulse.active||this.goldEcho.active):impulse.active) continue;
+      var goldBusy=false;
+      if(step.actor==='gold') for(var goldBusyIndex=0;goldBusyIndex<this.goldImpulses.length;goldBusyIndex++) goldBusy=goldBusy||this.goldImpulses[goldBusyIndex].active;
+      if(step.actor==='gold'?goldBusy:impulse.active) continue;
       var seed=this.sequenceIndex*31+stepIndex*7+(step.actor==='gold'?1:step.actor==='red'?2:3);
       var controller=this;
       if(step.actor==='gold'){
-        impulse.begin(buildNeuralRoute(seed,'gold',step.hops),step.duration,function(){ controller.goldConvergence.addCharge(); });
-        this.goldEcho.begin(buildNeuralRoute(seed+17,'gold',step.hops+2),step.duration*.84,function(){ controller.goldConvergence.addCharge(); });
+        for(var goldImpulseIndex=0;goldImpulseIndex<this.goldImpulses.length;goldImpulseIndex++){
+          var goldImpulse=this.goldImpulses[goldImpulseIndex];
+          goldImpulse.begin(buildNeuralRoute(seed+goldImpulseIndex*17,'gold',step.hops+(goldImpulseIndex%3)),step.duration*(.78+goldImpulseIndex*.07),function(){ controller.goldConvergence.addCharge(); });
+        }
       } else {
         impulse.begin(buildNeuralRoute(seed,step.actor,step.hops),step.duration,null);
       }
       step.started=true;
     }
-    if(allStarted&&!this.impulses.gold.active&&!this.goldEcho.active&&!this.impulses.red.active&&!this.impulses.blue.active) this.cooldown=1.1+(this.sequenceIndex%4)*.24;
+    var anyGoldActive=false;
+    for(var goldActiveIndex=0;goldActiveIndex<this.goldImpulses.length;goldActiveIndex++) anyGoldActive=anyGoldActive||this.goldImpulses[goldActiveIndex].active;
+    if(allStarted&&!anyGoldActive&&!this.impulses.red.active&&!this.impulses.blue.active) this.cooldown=1.1+(this.sequenceIndex%4)*.24;
   };
   var neuralActivityController=new NeuralActivityController();
 
