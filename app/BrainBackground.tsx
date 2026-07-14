@@ -1364,11 +1364,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     for(var selectedIndex=0;selectedIndex<fiberCount;selectedIndex++){
       var sourceAngle=Math.PI*2*selectedIndex/fiberCount+(Math.random()-.5)*.16;
       var radialDistribution=Math.pow(Math.random(),2.65);
-      // Gleich wie beim Goldstrang enden nicht alle Fasern gleichzeitig.
-      // Die Staffelung erzeugt den weichen, natürlichen Faser-Auslauf statt
-      // einer sichtbaren flachen Abschlusskante.
-      var fiberEndProgress=(selectedIndex%8)?(.94+Math.random()*.06):(.84+Math.random()*.1);
-      var fiberLength=Math.max(24,Math.round(fiberSegments*fiberEndProgress));
+      // Alle drei Farbgruppen erreichen denselben tiefsten Endpunkt auf der
+      // Gold-Mittelachse. Die natürliche Auflösung entsteht erst dort über
+      // die identische finale Ausfaserung des Goldstrangs.
+      var fiberEndProgress=1;
+      var fiberLength=fiberSegments;
       fibers.push({
         sourceAngle:sourceAngle,
         sourceRadius:.035+radialDistribution*.345,
@@ -1391,6 +1391,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         assimilationEnd:.76+Math.random()*.19,
         assimilationPhase:Math.random()*Math.PI*2,
         assimilationRadiusDrift:(Math.random()-.5)*.16,
+        terminalFrayAngle:Math.random()*Math.PI*2,
+        terminalFrayJitter:.4+Math.random()*.6,
         // Nur einige Randfasern lösen sich sichtbar aus dem Kern. Diese
         // gezielten Ausreisser geben dem Bündel die organische, lebendige
         // Silhouette, ohne die tragende Gesamtform zu verlieren.
@@ -1647,9 +1649,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           );
           var organicRadius=SP.rStr*(.08+.92*assimilationRadius)
             *(1+Math.sin(assimilationWave*1.37+fiber.assimilationPhase)*.09)*thicknessScale;
+          var terminalFrayEnvelope=smoother((sharedGoldProgress-SP.frayStart)/Math.max(.001,1-SP.frayStart));
+          var terminalFray=terminalFrayEnvelope*SP.fraySpread*fiber.terminalFrayJitter*thicknessScale;
           secondaryMergedTargetLocal.copy(goldFrameCenterLocal)
-            .addScaledVector(goldFrameNormalLocal,Math.cos(assimilationAngle)*organicRadius)
-            .addScaledVector(goldFrameBinormalLocal,Math.sin(assimilationAngle)*organicRadius);
+            .addScaledVector(goldFrameNormalLocal,Math.cos(assimilationAngle)*organicRadius+Math.cos(fiber.terminalFrayAngle)*terminalFray)
+            .addScaledVector(goldFrameBinormalLocal,Math.sin(assimilationAngle)*organicRadius+Math.sin(fiber.terminalFrayAngle)*terminalFray)
+            .addScaledVector(goldFrameTangentLocal,terminalFray*(.12+fiber.edgeWeight*.28));
           secondarySharedCenterWorld.copy(goldFrameCenterLocal);
           brain.localToWorld(secondarySharedCenterWorld);
           secondaryFrameNormalWorld.copy(goldFrameNormalLocal).add(goldFrameCenterLocal);
