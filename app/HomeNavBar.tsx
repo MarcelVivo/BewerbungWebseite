@@ -52,7 +52,6 @@ export default function HomeNavBar() {
     { href: '#about',     label: t.about },
     { href: '#services',  label: t.services },
     { href: '#portfolio', label: t.portfolio },
-    { href: '#prozess',   label: t.process },
     { href: '#contact',   label: t.contact },
   ];
 
