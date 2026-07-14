@@ -369,11 +369,10 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
     // Split-Flap ersetzt die bisherige Opacity-Ein-/Ausblendung: die Station
     // ist entweder ganz im Fenster (Buchstaben drehen endlos oder stehen
     // fest) oder ganz ausserhalb (unsichtbar) — kein sanftes Überblenden.
-    // "Zentriert" (Kamera-Front, Mitte der Seite) heisst hier: sehr nah an
-    // der eigentlichen Stationsposition (deutlich enger als das ganze
-    // Sichtbarkeitsfenster). "Scroll gestoppt" wird über die letzte
-    // scroll-Aktivität erkannt.
-    const CENTER_VISIBILITY = 0.92;
+    // Der Effekt hängt ausschliesslich vom Scroll-Zustand ab: wird
+    // gescrollt (Kamera in Bewegung), drehen die Buchstaben; steht der
+    // Scroll still, bleiben "DEINE IDEE." fest stehen — unabhängig davon,
+    // wo genau die Station gerade im Bild steht.
     const SCROLL_IDLE_MS = 180;
     let lastScrollAt = performance.now() - SCROLL_IDLE_MS - 1; // vor jedem Scrollen: als "idle" gestartet
     const onScrollActivity = () => { lastScrollAt = performance.now(); };
@@ -426,15 +425,21 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       const visibility = Math.max(0, Math.min(1, 1 - distance / fadeWindow));
       const inWindow = viewZ > 0.001 && visibility > 0;
 
+      // Scroll-Zustand steuert Spin/Settle unabhängig von der Sichtbarkeit,
+      // damit der Zustand stimmt, sobald die Station wieder ins Bild kommt.
+      const scrollIdle = performance.now() - lastScrollAt > SCROLL_IDLE_MS;
+      if (!settled && scrollIdle) {
+        settled = true;
+        setFlapWordMode(smallLetters, 'settle', reduced);
+        setFlapWordMode(bigLetters, 'settle', reduced);
+      } else if (settled && !scrollIdle) {
+        settled = false;
+        setFlapWordMode(smallLetters, 'spin', reduced);
+        setFlapWordMode(bigLetters, 'spin', reduced);
+      }
+
       if (!inWindow) {
         world.style.opacity = '0';
-        // Ausserhalb des Sichtfensters immer drehend halten, damit die
-        // Station nie "eingefroren" wieder ins Bild kommt.
-        if (settled) {
-          settled = false;
-          setFlapWordMode(smallLetters, 'spin', reduced);
-          setFlapWordMode(bigLetters, 'spin', reduced);
-        }
         return;
       }
 
@@ -459,22 +464,10 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
 
       world.style.transform = `translate3d(${screenX.toFixed(2)}px, ${screenY.toFixed(2)}px, 0) scale(${scale.toFixed(4)}) rotateY(${yawDeg.toFixed(3)}deg)`;
       // Split-Flap statt Opacity-Fade: innerhalb des Fensters immer voll
-      // sichtbar (kein Überblenden) — die An-/Abwesenheit wird jetzt durch
-      // Spin (unleserlich) vs. Settle (lesbar) ausgedrückt.
+      // sichtbar (kein Überblenden) — die An-/Abwesenheit wird durch Spin
+      // (unleserlich, beim Scrollen) vs. Settle (lesbar, im Stillstand)
+      // ausgedrückt (siehe scrollIdle-Block oben).
       world.style.opacity = '1';
-
-      const isCentered = visibility >= CENTER_VISIBILITY;
-      const scrollIdle = performance.now() - lastScrollAt > SCROLL_IDLE_MS;
-
-      if (!settled && isCentered && scrollIdle) {
-        settled = true;
-        setFlapWordMode(smallLetters, 'settle', reduced);
-        setFlapWordMode(bigLetters, 'settle', reduced);
-      } else if (settled && (!isCentered || !scrollIdle)) {
-        settled = false;
-        setFlapWordMode(smallLetters, 'spin', reduced);
-        setFlapWordMode(bigLetters, 'spin', reduced);
-      }
     };
 
     alignBigWord();
