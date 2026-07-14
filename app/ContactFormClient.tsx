@@ -40,13 +40,6 @@ export default function ContactFormClient() {
       {status === 'error' && (
         <p className="text-sm text-[#a6425c] bg-[#a6425c]/10 rounded-lg px-4 py-3">{t.error}</p>
       )}
-      <button
-        type="submit"
-        disabled={status === 'sending'}
-        className="w-full py-3 rounded-xl bg-[#c9a84c] hover:bg-[#b8943a] disabled:opacity-60 text-[#0c0a06] font-bold transition-all shadow-lg shadow-[#c9a84c]/20"
-      >
-        {status === 'sending' ? t.sending : t.send}
-      </button>
     </form>
   );
 }
