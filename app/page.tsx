@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import {
   Bot, BarChart3, Workflow, FolderKanban,
   GraduationCap, Globe, Lightbulb, Mail, MapPin, Phone,
-  ChevronRight, ExternalLink, Star,
+  ChevronRight, ChevronDown, ExternalLink, Star,
   CheckCircle, Zap, Users, Award,
   MessageSquare, Search, Compass, Wrench, Heart, ClipboardList,
 } from 'lucide-react';
@@ -1424,13 +1424,14 @@ export default function HomePage() {
                   </span>
                 </p>
               </div>
-              <div style={{ animationDelay: '0.18s' }} className="ms-anim mt-7 flex flex-row items-start justify-center gap-4">
-                <a href="#contact" className="group brand-gold-fill flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-[#0c0a06] font-bold transition-all">
-                  {t.hero.cta}
-                  <ChevronRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
-                </a>
-                <a href="#about" className="px-6 py-3 rounded-xl border border-[#f4edd8]/25 hover:border-[#f4edd8]/60 text-[#f4edd8] font-medium text-center transition-all backdrop-blur-sm">
-                  {t.hero.more}
+              <div style={{ animationDelay: '0.18s' }} className="ms-anim mt-7 flex justify-center">
+                <a
+                  href="#solution-spiral"
+                  className={`group flex flex-col items-center gap-1 text-[#e7c56a] transition-colors hover:text-[#f6e3a1] ${chakraPetch.className}`}
+                  aria-label={lang === 'de' ? 'Nach unten scrollen' : 'Scroll down'}
+                >
+                  <span className="text-xs font-bold tracking-[0.22em]">{lang === 'de' ? 'SCROLLEN' : 'SCROLL'}</span>
+                  <ChevronDown size={28} strokeWidth={1.8} className="transition-transform duration-300 group-hover:translate-y-1" aria-hidden="true" />
                 </a>
               </div>
             </div>
