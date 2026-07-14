@@ -544,6 +544,63 @@ body {
   will-change: transform;
 }
 
+/* IntroFlapWorld: ersetzt die WebGL-Textebene der ersten Intro-Station
+   ("Deine Idee.", worldIndex 0) durch ein DOM-Overlay mit Chakra-Petch-
+   Split-Flap-Effekt. Position/Skalierung/Rotation werden pro Frame in
+   page.tsx aus denselben Kamera-Live-Daten wie CardsHelixWorld berechnet. */
+.intro-flap-world {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1280;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.intro-flap-composition {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  transform: translate3d(-50%, -50%, 0);
+}
+
+.intro-flap-word {
+  display: flex;
+  white-space: pre;
+  color: #ffffff;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.intro-flap-word--small {
+  font-size: 1.35rem;
+}
+
+.intro-flap-word--big {
+  margin-top: 0.18em;
+  font-size: 4.05rem;
+}
+
+.intro-flap-letter {
+  display: inline-block;
+  perspective: 240px;
+}
+
+.intro-flap-glyph {
+  display: inline-block;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-flap-glyph {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
 /* CardsHelixGroup: die vier Karten bilden EIN zusammenstehendes
    2×2-Element, mit einer festen, nie animierten Grundneigung. Die
    räumliche Montage auf der Helix übernimmt ausschliesslich der äussere

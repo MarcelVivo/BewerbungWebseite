@@ -184,7 +184,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   // Dieselbe 3D-Scroll-Spirale wie am Desktop läuft jetzt auch auf Mobile
   // (.spiral-mobile-Fallback ist deaktiviert), daher werden die schwebenden
   // WebGL-Textkarten auf allen Geräten gebaut.
-  introTexts.forEach(buildIntroSprite);
+  // worldIndex 0 ("Deine Idee.") wird hier bewusst übersprungen: diese eine
+  // Station wird stattdessen als DOM-Overlay mit Chakra-Petch-Split-Flap-
+  // Effekt gerendert (IntroFlapWorld in page.tsx) — exakt dieselbe
+  // Helix-Position/Kamerafahrt, nur andere Darstellung. Alle anderen
+  // Stationen/Indizes bleiben unverändert im WebGL-System.
+  introTexts.forEach(function(label,index){ if(index===0) return; buildIntroSprite(label,index); });
 
   function buildServiceCard(card,index,worldIndex){
     var cardCanvas=document.createElement('canvas');

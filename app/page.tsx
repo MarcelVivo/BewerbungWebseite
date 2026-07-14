@@ -15,11 +15,19 @@ import { useLanguage } from './LanguageContext';
 import { T } from '../lib/translations';
 import { HELIX_STEP, computeCameraTravel, helixAngleForWorldIndex, helixPositionForWorldIndex } from './lib/helixGeometry';
 import { getEffectiveViewport, REF_WIDTH, REF_HEIGHT } from './lib/viewport';
+import { Chakra_Petch } from 'next/font/google';
+
+const chakraPetch = Chakra_Petch({ subsets: ['latin'], weight: '700', display: 'swap' });
 
 // Radius, den die reale 3D-Leistungskarte ("Karte 01") in BrainBackground.tsx
 // hatte, bevor sie durch dieses DOM-Kartenpanel ersetzt wurde — dieselbe
 // Weltkoordinate, kein neuer/geschätzter Wert.
 const CARD_GROUP_RADIUS = 1.68;
+
+// Radius der WebGL-Intro-Textebene für worldIndex 0 in BrainBackground.tsx
+// (buildIntroSprite: textRadius=2.65) — dieselbe Weltkoordinate, damit die
+// DOM-Ersatzdarstellung exakt an derselben Helix-Position sitzt.
+const INTRO_TEXT_RADIUS = 2.65;
 
 export const dynamic = 'force-static';
 
@@ -98,6 +106,66 @@ function NeuralFiberField() {
   );
 }
 
+// Split-Flap-Buchstaben-Zerhacker für die "DEINE IDEE."-Textstation: jeder
+// Buchstabe klappt unabhängig von seinen Nachbarn (eigene Fliprate, eigene
+// Anzahl Zwischenschritte, eigene Startverzögerung) durch zufällige
+// Zeichen, bis er auf dem Zielbuchstaben stehen bleibt — kein Split-Flap-
+// Kästchen im Hintergrund, nur der weisse Buchstabe selbst rotiert.
+const FLAP_SCRAMBLE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+type FlapLetter = { wrap: HTMLSpanElement; glyph: HTMLSpanElement; target: string };
+
+function buildFlapWord(container: HTMLElement, text: string): FlapLetter[] {
+  container.innerHTML = '';
+  const letters: FlapLetter[] = [];
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    const wrap = document.createElement('span');
+    wrap.className = 'intro-flap-letter';
+    const glyph = document.createElement('span');
+    glyph.className = 'intro-flap-glyph';
+    glyph.textContent = ch;
+    wrap.appendChild(glyph);
+    container.appendChild(wrap);
+    letters.push({ wrap, glyph, target: ch });
+  }
+  return letters;
+}
+
+function animateFlapLetter(letter: FlapLetter, reduced: boolean) {
+  if (FLAP_SCRAMBLE_CHARS.indexOf(letter.target) === -1) return;
+  if (reduced) {
+    letter.glyph.textContent = letter.target;
+    return;
+  }
+  let stepsLeft = 4 + Math.floor(Math.random() * 5); // 4–8 unabhängige Flips
+  let flipMs = 35 + Math.random() * 25; // schneller Start
+  const slowdown = 1.12 + Math.random() * 0.14; // pro Schritt etwas langsamer
+  const startDelay = Math.random() * 180;
+
+  function step() {
+    const isLast = stepsLeft <= 1;
+    const nextChar = isLast ? letter.target : FLAP_SCRAMBLE_CHARS[Math.floor(Math.random() * FLAP_SCRAMBLE_CHARS.length)];
+
+    letter.glyph.style.transition = `transform ${flipMs.toFixed(0)}ms cubic-bezier(.5,0,.85,.35)`;
+    letter.glyph.style.transform = 'rotateX(90deg)';
+
+    window.setTimeout(() => {
+      letter.glyph.textContent = nextChar;
+      letter.glyph.style.transition = `transform ${flipMs.toFixed(0)}ms cubic-bezier(.2,.7,.4,1)`;
+      letter.glyph.style.transform = 'rotateX(0deg)';
+
+      stepsLeft--;
+      if (stepsLeft > 0) {
+        flipMs *= slowdown;
+        window.setTimeout(step, flipMs * 0.55);
+      }
+    }, flipMs);
+  }
+
+  window.setTimeout(step, startDelay);
+}
+
 function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
   const [activeServiceSlug, setActiveServiceSlug] = useState<string | null>(null);
   const progressRef = useRef(0);
@@ -111,6 +179,9 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
   const cardsWorldRef = useRef<HTMLDivElement | null>(null);
   const detailScrollDistanceRef = useRef(0);
   const detailScrollStepsRef = useRef(0);
+  const introFlapWorldRef = useRef<HTMLDivElement | null>(null);
+  const introFlapSmallRef = useRef<HTMLDivElement | null>(null);
+  const introFlapBigRef = useRef<HTMLDivElement | null>(null);
 
   // Neural Glass Panels: die vier Karten bilden EIN zusammenstehendes
   // 2×2-Element (CardsHelixGroup), fixiert an EINER festen Helix-Position
@@ -233,6 +304,130 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
 
     rafId = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(rafId);
+  }, []);
+
+  // IntroFlapWorld: ersetzt ausschliesslich die WebGL-Textebene der ersten
+  // Intro-Station ("Deine Idee.", worldIndex 0 — in BrainBackground.tsx wird
+  // deren Mesh-Erzeugung übersprungen) durch dieselbe Textstation als
+  // DOM-Overlay in Chakra Petch mit unabhängigem Split-Flap-Effekt pro
+  // Buchstabe. Position, Kamerafahrt, Helix, Sichtbarkeitsfenster und
+  // Perspektiv-Projektion sind exakt dieselbe Technik wie bei
+  // CardsHelixWorld oben — nur Schriftart/Darstellungseffekt sind neu.
+  useEffect(() => {
+    const world = introFlapWorldRef.current;
+    const smallEl = introFlapSmallRef.current;
+    const bigEl = introFlapBigRef.current;
+    if (!world || !smallEl || !bigEl) return;
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const worldIndex = 0;
+    const totalWorldStops = 5 + 4 + 4;
+    const cameraTravel = computeCameraTravel(totalWorldStops);
+    const stationAngle = helixAngleForWorldIndex(worldIndex, cameraTravel);
+    const stationPos = helixPositionForWorldIndex(worldIndex, cameraTravel, INTRO_TEXT_RADIUS);
+    const stationNormal = { x: Math.sin(stationAngle), y: 0, z: Math.cos(stationAngle) };
+    const fadeWindow = HELIX_STEP * 1.35;
+
+    const smallLetters = buildFlapWord(smallEl, 'DEINE');
+    const bigLetters = buildFlapWord(bigEl, 'IDEE.');
+
+    function alignBigWord() {
+      // "I" von IDEE. exakt unter "I" von DEINE ausrichten (3. Buchstabe von
+      // DEINE, 1. Buchstabe von IDEE.). offsetLeft statt getBoundingClientRect,
+      // weil offsetLeft reines Layout ist und vom per-Frame gesetzten
+      // transform (scale/translate) der Kamera-Projektion unberührt bleibt —
+      // getBoundingClientRect würde den aktuellen Skalierungsfaktor mit
+      // einrechnen und die Ausrichtung dadurch verfälschen.
+      bigEl.style.marginLeft = '0px';
+      const offset = smallLetters[2].wrap.offsetLeft - bigLetters[0].wrap.offsetLeft;
+      bigEl.style.marginLeft = `${offset}px`;
+    }
+
+    let materialized = false;
+    let referenceViewZ: number | null = null;
+    let rafId = 0;
+
+    const frame = () => {
+      rafId = requestAnimationFrame(frame);
+      const cam = (window as any).__cardsCameraState;
+      if (!cam) return;
+
+      const camPos = {
+        x: Math.sin(cam.orbit) * cam.cameraRadius,
+        y: cam.cameraY,
+        z: Math.cos(cam.orbit) * cam.cameraRadius,
+      };
+
+      let fx = 0 - camPos.x;
+      let fy = cam.cameraLookY - camPos.y;
+      let fz = 0 - camPos.z;
+      const fLen = Math.hypot(fx, fy, fz) || 1;
+      fx /= fLen; fy /= fLen; fz /= fLen;
+
+      let rx = fy * 0 - fz * 1;
+      let ry = fz * 0 - fx * 0;
+      let rz = fx * 1 - fy * 0;
+      const rLen = Math.hypot(rx, ry, rz) || 1;
+      rx /= rLen; ry /= rLen; rz /= rLen;
+      const ux = ry * fz - rz * fy;
+      const uy = rz * fx - rx * fz;
+      const uz = rx * fy - ry * fx;
+
+      const relX = stationPos.x - camPos.x;
+      const relY = stationPos.y - camPos.y;
+      const relZ = stationPos.z - camPos.z;
+
+      const viewX = relX * rx + relY * ry + relZ * rz;
+      const viewY = relX * ux + relY * uy + relZ * uz;
+      const viewZ = relX * fx + relY * fy + relZ * fz;
+
+      const distance = Math.abs(cam.cameraLookY - stationPos.y);
+      const visibility = Math.max(0, Math.min(1, 1 - distance / fadeWindow));
+
+      if (viewZ <= 0.001 || visibility <= 0) {
+        world.style.opacity = '0';
+        return;
+      }
+
+      if (referenceViewZ === null) {
+        referenceViewZ = Math.hypot(cam.cameraRadius - INTRO_TEXT_RADIUS, 0.24);
+      }
+
+      const tanHalfFovY = Math.tan((cam.fov * Math.PI) / 360);
+      const ndcX = viewX / (viewZ * tanHalfFovY * cam.aspect);
+      const ndcY = viewY / (viewZ * tanHalfFovY);
+
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const screenX = (ndcX * 0.5 + 0.5) * vw;
+      const screenY = (1 - (ndcY * 0.5 + 0.5)) * vh;
+      const scale = Math.max(0.4, Math.min(1.6, referenceViewZ / viewZ));
+
+      const dotNormalRight = stationNormal.x * rx + stationNormal.z * rz;
+      const dotNormalForward = stationNormal.x * fx + stationNormal.z * fz;
+      const yawRad = Math.atan2(dotNormalRight, -dotNormalForward);
+      const yawDeg = (yawRad * 180) / Math.PI;
+
+      world.style.transform = `translate3d(${screenX.toFixed(2)}px, ${screenY.toFixed(2)}px, 0) scale(${scale.toFixed(4)}) rotateY(${yawDeg.toFixed(3)}deg)`;
+      world.style.opacity = String(visibility);
+
+      if (!materialized && visibility > 0.05) {
+        materialized = true;
+        alignBigWord();
+        smallLetters.forEach((letter) => animateFlapLetter(letter, reduced));
+        bigLetters.forEach((letter) => animateFlapLetter(letter, reduced));
+      }
+    };
+
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(alignBigWord);
+    }
+    window.addEventListener('resize', alignBigWord);
+    rafId = requestAnimationFrame(frame);
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener('resize', alignBigWord);
+    };
   }, []);
 
   useEffect(() => {
@@ -577,6 +772,12 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
 
       <div className="spiral-sticky">
         <div className="spiral-stage">
+          <div ref={introFlapWorldRef} className="intro-flap-world">
+            <div className="intro-flap-composition">
+              <div ref={introFlapSmallRef} className={`intro-flap-word intro-flap-word--small ${chakraPetch.className}`} />
+              <div ref={introFlapBigRef} className={`intro-flap-word intro-flap-word--big ${chakraPetch.className}`} />
+            </div>
+          </div>
           {introCards.map((card, i) => {
             const angle = i * spiralAngleStep - progress * rotationTravel;
             const rad = (angle * Math.PI) / 180;
