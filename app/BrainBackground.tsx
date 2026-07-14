@@ -1364,11 +1364,18 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     for(var selectedIndex=0;selectedIndex<fiberCount;selectedIndex++){
       var sourceAngle=Math.PI*2*selectedIndex/fiberCount+(Math.random()-.5)*.16;
       var radialDistribution=Math.pow(Math.random(),2.65);
+      // Gleich wie beim Goldstrang enden nicht alle Fasern gleichzeitig.
+      // Die Staffelung erzeugt den weichen, natürlichen Faser-Auslauf statt
+      // einer sichtbaren flachen Abschlusskante.
+      var fiberEndProgress=(selectedIndex%4)?(.9+Math.random()*.1):(.6+Math.random()*.3);
+      var fiberLength=Math.max(24,Math.round(fiberSegments*fiberEndProgress));
       fibers.push({
         sourceAngle:sourceAngle,
         sourceRadius:.035+radialDistribution*.345,
         sourceDrop:.04+Math.random()*.16,
-        len:fiberSegments,
+        len:fiberLength,
+        endProgress:fiberEndProgress,
+        endFadeStart:.84+Math.random()*.04,
         pointOffset:pointValueCount,
         lineOffset:lineValueCount,
         shape:makeSecondaryFiberShape(),
@@ -1394,8 +1401,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         escapeFrequency:7+Math.random()*9,
         escapeSpeed:.46+Math.random()*.52
       });
-      pointValueCount+=fiberSegments*3;
-      lineValueCount+=Math.max(0,fiberSegments-1)*6;
+      pointValueCount+=fiberLength*3;
+      lineValueCount+=Math.max(0,fiberLength-1)*6;
     }
     strand.fibers=fibers;
     strand.linePositions=new Float32Array(lineValueCount);
@@ -1618,7 +1625,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           // nicht ersetzt, sondern in dessen Normal-/Binormalebene getragen.
           var assimilationTravel=smoother((progress-fiber.assimilationStart)/(1-fiber.assimilationStart));
           var sharedGoldProgress=ASSIMILATION_GOLD_PROGRESS
-            +(1-ASSIMILATION_GOLD_PROGRESS)*assimilationTravel;
+            +(fiber.endProgress-ASSIMILATION_GOLD_PROGRESS)*assimilationTravel;
           sampleGoldStrandFrame(sharedGoldProgress);
           var assimilationWave=sharedGoldProgress*8.6+flowTime*.31+fiber.branchPhase+fiber.assimilationPhase;
           var assimilationAngle=fiber.assimilationAngle+Math.sin(assimilationWave)*.35
@@ -1656,7 +1663,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         }
         var pulse=Math.max(0,Math.sin(flowTime*params.pulseSpeed*strand.flowDirection-progress*20*strand.flowDirection+fiberShape.phaseOffset));
         var verticalBrightness=params.topBrightness+(params.bottomBrightness-params.topBrightness)*pathProgress;
-        var brightness=(params.baseBrightness+pulse*params.pulseStrength)*params.intensity*params.colorIntensity*verticalBrightness;
+        var fiberEndFade=1-smooth((progress-fiber.endFadeStart)/(1-fiber.endFadeStart));
+        var brightness=(params.baseBrightness+pulse*params.pulseStrength)*params.intensity*params.colorIntensity*verticalBrightness*(.72+.28*fiberEndFade);
         // Jede Faser bleibt innerhalb ihrer eigenen Metallic-Palette. Der
         // Verlauf verschiebt sich sanft, ohne Rot und Blau zu vermischen.
         var metallic=.5+.5*Math.sin(fiber.metallicPhase+progress*7.2+flowTime*.28);
