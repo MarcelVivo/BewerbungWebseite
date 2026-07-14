@@ -181,15 +181,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     introSprites.push(textSprite);
   }
 
-  // Dieselbe 3D-Scroll-Spirale wie am Desktop läuft jetzt auch auf Mobile
-  // (.spiral-mobile-Fallback ist deaktiviert), daher werden die schwebenden
-  // WebGL-Textkarten auf allen Geräten gebaut.
-  // worldIndex 0 ("Deine Idee.") wird hier bewusst übersprungen: diese eine
-  // Station wird stattdessen als DOM-Overlay mit Chakra-Petch-Split-Flap-
-  // Effekt gerendert (IntroFlapWorld in page.tsx) — exakt dieselbe
-  // Helix-Position/Kamerafahrt, nur andere Darstellung. Alle anderen
-  // Stationen/Indizes bleiben unverändert im WebGL-System.
-  introTexts.forEach(function(label,index){ if(index===0) return; buildIntroSprite(label,index); });
+  // Alle 5 Intro-Stationen ("Deine Idee.", "Deine Herausforderung.", "Deine
+  // Vision.", "Deine Lösung.", "Deine Erfolgsgeschichte.") werden hier
+  // bewusst übersprungen: sie werden stattdessen als DOM-Overlay mit
+  // Chakra-Petch-Split-Flap-Effekt gerendert (IntroFlapWorld in page.tsx) —
+  // exakt dieselbe Helix-Position/Kamerafahrt, nur andere Darstellung.
+  // Kein buildIntroSprite()-Aufruf mehr nötig.
 
   function buildServiceCard(card,index,worldIndex){
     var cardCanvas=document.createElement('canvas');
@@ -1427,12 +1424,14 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       strand.lowerAnchors=anchors;
     }
     var funnelEnd=.27;
-    // Nach der langen, frei hängenden Diagonale organisieren sich beide
-    // Faserbündel um den mittigen Goldkern. Die Phasen liegen über
-    // strand.phase exakt 180° auseinander (Rot = π, Blau = 0), daher bleiben
-    // sie permanent auf gegenüberliegenden Seiten der Achse.
-    var helixStart=.58;
-    var helixTurns=3.15;
+    // Im unteren Drittel öffnen sich beide Bündel nicht zu einer einzelnen
+    // Spitze, sondern zu einem breiten Fasertrichter rund um den Goldkern.
+    // Jede rote und blaue Einzelfaser erhält dort einen eigenen Platz auf dem
+    // Umfang: Die Farben verweben sich mit den vorhandenen Goldfasern, statt
+    // als zwei getrennte Kabel am Ende anzukommen.
+    var integrationStart=.55;
+    var integrationEnd=.91;
+    var integrationTurns=1.35;
     for(var fiberIndex=0;fiberIndex<strand.fibers.length;fiberIndex++){
       var fiber=strand.fibers[fiberIndex], fiberShape=fiber.shape;
       var sourceScale=strand.satellite.scale.x*params.topFunnel;
@@ -1471,7 +1470,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var previousR=0, previousG=0, previousB=0, lineOffset=fiber.lineOffset;
       for(var step=0;step<fiber.len;step++){
         var progress=fiber.len>1?step/(fiber.len-1):0;
-        var helixBlend=smooth((progress-helixStart)/(1-helixStart));
+        var integrationBlend=smooth((progress-integrationStart)/(integrationEnd-integrationStart));
         var funnelProgress=Math.min(1,progress/funnelEnd);
         var funnelX, funnelY, funnelZ, funnelStage;
         if(funnelProgress<.34){
@@ -1494,23 +1493,23 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         var sagEnvelope=Math.sin(pathProgress*Math.PI);
         var hangingSag=(firstSag*(1-pathProgress)+secondSag*pathProgress)*sagEnvelope;
         var thicknessScale=params.topThickness+(params.bottomThickness-params.topThickness)*pathProgress;
-        var looseSpread=(.005+fiber.sourceRadius*.15+params.funnelSpread*.008)*sagEnvelope*(1-helixBlend*.82)*thicknessScale;
-        var windEnvelope=sagEnvelope*(1-helixBlend*.88);
+        var looseSpread=(.005+fiber.sourceRadius*.15+params.funnelSpread*.008)*sagEnvelope*(1-integrationBlend*.82)*thicknessScale;
+        var windEnvelope=sagEnvelope*(1-integrationBlend*.88);
         var windSide=Math.sin(flowTime*.64+pathProgress*5.4+fiberShape.windPhase)*params.sway*.045*windEnvelope;
         var windDepth=Math.cos(flowTime*.49+pathProgress*4.1+fiberShape.windPhase*1.37)*params.sway*.022*windEnvelope;
         // Nur die lockeren äusseren Fasern dürfen sichtbar aus dem dichten
         // Kern ausbrechen. Ihre Wellen sind phasenverschoben, damit keine
         // dekorative Parallelwelle entsteht.
-        var edgeWaveEnvelope=sagEnvelope*(.28+.72*(1-helixBlend));
-        var escapeEnvelope=smooth((pathProgress-.06)/.2)*smooth((.94-pathProgress)/.2)*(1-helixBlend*.72);
+        var edgeWaveEnvelope=sagEnvelope*(.28+.72*(1-integrationBlend));
+        var escapeEnvelope=smooth((pathProgress-.06)/.2)*smooth((.94-pathProgress)/.2)*(1-integrationBlend*.72);
         var edgeWave=(.014+edgeWeight*.11+fiber.escapeWeight*.235)*edgeWaveEnvelope*thicknessScale*params.escapeAmplitude;
         var edgeWaveSide=Math.sin(pathProgress*(7.4+edgeWeight*5.1)+fiber.branchPhase+flowTime*.31)*edgeWave;
         var edgeWaveDepth=Math.cos(pathProgress*(6.2+edgeWeight*4.3)+fiber.branchPhase*1.43+flowTime*.24)*edgeWave*.72;
         var travellingWave=pathProgress*fiber.escapeFrequency*params.escapeFrequency/params.escapeWavelength-flowTime*fiber.escapeSpeed*params.escapeSpeed;
         var escapeSide=(Math.sin(travellingWave+fiber.branchPhase*2.1)+Math.sin(travellingWave*1.73+fiber.branchPhase*.47)*.38)*fiber.escapeWeight*.245*escapeEnvelope*thicknessScale*params.escapeAmplitude;
         var escapeDepth=(Math.cos(travellingWave*.89+fiber.branchPhase*.71)+Math.sin(travellingWave*1.41+fiber.branchPhase*1.8)*.32)*fiber.escapeWeight*.175*escapeEnvelope*thicknessScale*params.escapeAmplitude;
-        var manualEnvelope=sagEnvelope*(1-helixBlend*.88);
-        var endSpread=(.008+Math.abs(fiberShape.radiusOffset)*.022)*(1-helixBlend*.84);
+        var manualEnvelope=sagEnvelope*(1-integrationBlend*.88);
+        var endSpread=(.008+Math.abs(fiberShape.radiusOffset)*.022)*(1-integrationBlend*.84);
         var endOffsetX=Math.cos(fiberAngle)*endSpread;
         var endOffsetZ=Math.sin(fiberAngle)*endSpread;
         var manualVertical=params.posY*manualEnvelope;
@@ -1518,8 +1517,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         var pathY=funnelOutletY+(mergeY-funnelOutletY)*pathProgress-hangingSag-manualVertical;
         var pathZ=funnelOutletZ+(mergeZ-funnelOutletZ)*pathProgress;
         // Im Trichter nur die drei Referenzstufen. Danach folgt zuerst die
-        // hängende Diagonale, anschliessend eine sauber geführte Doppelhelix
-        // um die Goldachse: keine freie Wellenlinie, kein Kreuzen der Fasern.
+        // frei hängende Diagonale und anschliessend die breite, organische
+        // Einordnung auf dem Umfang des goldenen Hauptfaserbündels.
         var funnelRelease=1-smooth(progress/funnelEnd);
         x=pathX+(funnelX-pathX)*funnelRelease;
         y=pathY+(funnelY-pathY)*funnelRelease;
@@ -1528,13 +1527,18 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           +depthX*(Math.sin(fiberAngle)*looseSpread+windDepth+edgeWaveDepth+escapeDepth+params.posZ*manualEnvelope+endOffsetZ);
         z+=sideZ*(Math.cos(fiberAngle)*looseSpread+windSide+edgeWaveSide+escapeSide+params.posX*manualEnvelope+endOffsetX)
           +depthZ*(Math.sin(fiberAngle)*looseSpread+windDepth+edgeWaveDepth+escapeDepth+params.posZ*manualEnvelope+endOffsetZ);
-        if(helixBlend>0){
-          var helixAngle=strand.phase+helixBlend*Math.PI*2*helixTurns+fiberShape.phaseOffset*.48;
-          var helixRadius=(.09+Math.abs(fiberShape.radiusOffset)*.25)*(1-helixBlend*.18)*thicknessScale;
-          var helixX=mergeX+Math.cos(helixAngle)*helixRadius;
-          var helixZ=mergeZ+Math.sin(helixAngle)*helixRadius;
-          x+=(helixX-x)*helixBlend;
-          z+=(helixZ-z)*helixBlend;
+        if(integrationBlend>0){
+          var ringAngle=fiber.sourceAngle+strand.phase
+            +strand.flowDirection*Math.PI*2*integrationTurns*pathProgress
+            +fiberShape.phaseOffset*.84;
+          var ringRadius=SP.rStr*(1.18+fiber.sourceRadius*1.65+edgeWeight*.28)*thicknessScale;
+          var ringWave=Math.sin(flowTime*.54+pathProgress*15.6+fiber.branchPhase)*(.004+edgeWeight*.012);
+          var ringX=mergeX+Math.cos(ringAngle)*ringRadius+Math.cos(ringAngle*1.7+fiber.branchPhase)*ringWave;
+          var ringY=mergeY+Math.sin(flowTime*.46+pathProgress*11.2+fiber.branchPhase)*(.004+edgeWeight*.011);
+          var ringZ=mergeZ+Math.sin(ringAngle)*ringRadius+Math.sin(ringAngle*1.43+fiber.branchPhase)*ringWave;
+          x+=(ringX-x)*integrationBlend;
+          y+=(ringY-y)*integrationBlend;
+          z+=(ringZ-z)*integrationBlend;
         }
         var pulse=Math.max(0,Math.sin(flowTime*params.pulseSpeed*strand.flowDirection-progress*20*strand.flowDirection+fiberShape.phaseOffset));
         var verticalBrightness=params.topBrightness+(params.bottomBrightness-params.topBrightness)*pathProgress;
