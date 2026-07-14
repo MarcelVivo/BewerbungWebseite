@@ -485,10 +485,15 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
         const screenY = (1 - (ndcY * 0.5 + 0.5)) * vh;
         const scale = Math.max(0.4, Math.min(1.6, s.referenceViewZ / viewZ));
 
+        // Im "settled"-Zustand (Scroll steht still) immer frontal (0°)
+        // anzeigen: der Foreshortening-Yaw hängt vom exakten Kamerawinkel
+        // beim Stoppen ab — das kann ein beliebiger, teils starker Winkel
+        // sein und liess die Buchstaben dann sichtbar schräg/verzerrt
+        // "einfrieren". Beim Scrollen (spin) bleibt der echte, dynamische
+        // Kamerawinkel unverändert bestehen.
         const dotNormalRight = s.stationNormal.x * rx + s.stationNormal.z * rz;
         const dotNormalForward = s.stationNormal.x * fx + s.stationNormal.z * fz;
-        const yawRad = Math.atan2(dotNormalRight, -dotNormalForward);
-        const yawDeg = (yawRad * 180) / Math.PI;
+        const yawDeg = s.settled ? 0 : (Math.atan2(dotNormalRight, -dotNormalForward) * 180) / Math.PI;
 
         s.world.style.transform = `translate3d(${screenX.toFixed(2)}px, ${screenY.toFixed(2)}px, 0) scale(${scale.toFixed(4)}) rotateY(${yawDeg.toFixed(3)}deg)`;
         // Split-Flap statt Opacity-Fade: innerhalb des Fensters immer voll
