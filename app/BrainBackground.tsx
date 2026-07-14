@@ -666,6 +666,65 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     goldEscapeSpeeds=new Float32Array(goldEscapeSpeeds);
   }
 
+  // Die zentrale Goldbahn wird einmal aus den bereits vorhandenen Goldfasern
+  // gemittelt. Rot und Blau verwenden diese Bahn später nur als räumlichen
+  // Bezug ab dem Merge-Punkt – es werden keinerlei neue Fasern erzeugt.
+  var GOLD_CENTERLINE_SAMPLES=96;
+  var goldCenterlineLocal=new Float32Array(GOLD_CENTERLINE_SAMPLES*3);
+  var goldFrameCenterLocal=new THREE.Vector3();
+  var goldFrameTangentLocal=new THREE.Vector3();
+  var goldFrameNormalLocal=new THREE.Vector3();
+  var goldFrameBinormalLocal=new THREE.Vector3();
+  var goldFrameSampleBefore=new THREE.Vector3();
+  var goldFrameSampleAfter=new THREE.Vector3();
+
+  function rebuildGoldCenterline(){
+    if(!sFibers.length) return;
+    for(var centerSampleIndex=0;centerSampleIndex<GOLD_CENTERLINE_SAMPLES;centerSampleIndex++){
+      var centerProgress=centerSampleIndex/Math.max(1,GOLD_CENTERLINE_SAMPLES-1);
+      var centerX=0, centerY=0, centerZ=0;
+      for(var centerFiberIndex=0;centerFiberIndex<sFibers.length;centerFiberIndex++){
+        var centerFiber=sFibers[centerFiberIndex];
+        var centerVertex=centerFiber.start+Math.round((centerFiber.len-1)*centerProgress);
+        var centerOffset=centerVertex*3;
+        centerX+=sBase[centerOffset];
+        centerY+=sBase[centerOffset+1];
+        centerZ+=sBase[centerOffset+2];
+      }
+      var targetOffset=centerSampleIndex*3;
+      goldCenterlineLocal[targetOffset]=centerX/sFibers.length;
+      goldCenterlineLocal[targetOffset+1]=centerY/sFibers.length;
+      goldCenterlineLocal[targetOffset+2]=centerZ/sFibers.length;
+    }
+  }
+
+  function sampleGoldCenterline(progress,target){
+    var clampedProgress=THREE.MathUtils.clamp(progress,0,1);
+    var samplePosition=clampedProgress*(GOLD_CENTERLINE_SAMPLES-1);
+    var lowerSample=Math.floor(samplePosition);
+    var upperSample=Math.min(GOLD_CENTERLINE_SAMPLES-1,lowerSample+1);
+    var sampleBlend=samplePosition-lowerSample;
+    var lowerOffset=lowerSample*3, upperOffset=upperSample*3;
+    target.set(
+      goldCenterlineLocal[lowerOffset]+(goldCenterlineLocal[upperOffset]-goldCenterlineLocal[lowerOffset])*sampleBlend,
+      goldCenterlineLocal[lowerOffset+1]+(goldCenterlineLocal[upperOffset+1]-goldCenterlineLocal[lowerOffset+1])*sampleBlend,
+      goldCenterlineLocal[lowerOffset+2]+(goldCenterlineLocal[upperOffset+2]-goldCenterlineLocal[lowerOffset+2])*sampleBlend
+    );
+    return target;
+  }
+
+  function sampleGoldStrandFrame(progress){
+    var frameStep=1/(GOLD_CENTERLINE_SAMPLES-1);
+    sampleGoldCenterline(progress,goldFrameCenterLocal);
+    sampleGoldCenterline(Math.max(0,progress-frameStep),goldFrameSampleBefore);
+    sampleGoldCenterline(Math.min(1,progress+frameStep),goldFrameSampleAfter);
+    goldFrameTangentLocal.copy(goldFrameSampleAfter).sub(goldFrameSampleBefore).normalize();
+    goldFrameNormalLocal.copy(worldVerticalInStrandLocal).cross(goldFrameTangentLocal);
+    if(goldFrameNormalLocal.lengthSq()<.00001) goldFrameNormalLocal.set(1,0,0);
+    else goldFrameNormalLocal.normalize();
+    goldFrameBinormalLocal.copy(goldFrameTangentLocal).cross(goldFrameNormalLocal).normalize();
+  }
+
   var originalWalkLineLength=lpos.length, originalWalkPointLength=wpos.length;
   var baseLinePos, baseLineCol, baseWPos, baseWCol;
   if(STRAND_ON) genStrandInto(lpos,lcol,wpos,wcol);
@@ -689,6 +748,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   baseWPos=wpos.slice(0,originalWalkPointLength);
   baseWCol=wcol.slice(0,originalWalkPointLength);
   resetWobbleBuffers();
+  rebuildGoldCenterline();
 
   var lgeo=new THREE.BufferGeometry();
   lgeo.setAttribute('position',new THREE.Float32BufferAttribute(lpos,3));
@@ -901,6 +961,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var newWPos=baseWPos.slice(), newWCol=baseWCol.slice();
     if(STRAND_ON) genStrandInto(newLPos,newLCol,newWPos,newWCol);
     resetWobbleBuffers();
+    rebuildGoldCenterline();
     var ng=new THREE.BufferGeometry();
     ng.setAttribute('position',new THREE.Float32BufferAttribute(newLPos,3));
     ng.setAttribute('color',new THREE.Float32BufferAttribute(newLCol,3));
@@ -1237,9 +1298,20 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   BLUE_STRAND.pulseStrength=.14;
   BLUE_STRAND.escapeAmplitude=1.35;
   BLUE_STRAND.escapeWavelength=1;
+  // Der Merge-Anker ist nicht geschätzt: Er liegt auf der bereits erzeugten
+  // Gold-Mittelbahn bei deren bisherigen Einfädel-Fortschritt. Die Welt-Y
+  // wird pro Frame daraus abgeleitet, damit Schweben und Rotation korrekt
+  // berücksichtigt bleiben.
+  var SECONDARY_MERGE_GOLD_PROGRESS=.55;
+  var SECONDARY_MERGE_PROGRESS_START=.55;
+  var SECONDARY_MERGE_PROGRESS_END=.68;
   var secondaryMergeTargetWorld=new THREE.Vector3();
   var secondarySatelliteWorld=new THREE.Vector3();
   var secondaryRenderPoint=new THREE.Vector3();
+  var secondaryMergeCenterWorld=new THREE.Vector3();
+  var secondaryMergedTargetLocal=new THREE.Vector3();
+  var secondaryMergedTargetWorld=new THREE.Vector3();
+  var secondaryMergeY=0;
 
   function makeSecondaryFiberShape(){
     return {
@@ -1300,6 +1372,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         metallicPhase:Math.random()*Math.PI*2,
         edgeWeight:smooth((radialDistribution-.52)/.48),
         branchPhase:Math.random()*Math.PI*2,
+        // Stabile Position im gemeinsamen Gold-Querschnitt. Die zwei
+        // Farbgruppen werden über verschachtelte Indizes im gesamten Volumen
+        // verteilt; diese Werte bleiben über alle Frames unverändert.
+        mergeAngle:(selectedIndex*2+(strand.sideSign>0?1:0))*2.399963229728653,
+        mergeRadius:Math.sqrt(((selectedIndex*2+(strand.sideSign>0?1:0))*0.7548776662466927)%1),
         // Nur einige Randfasern lösen sich sichtbar aus dem Kern. Diese
         // gezielten Ausreisser geben dem Bündel die organische, lebendige
         // Silhouette, ohne die tragende Gesamtform zu verlieren.
@@ -1386,6 +1463,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     strand.satellite.updateWorldMatrix(true,false);
     strand.satellite.getWorldPosition(secondarySatelliteWorld);
     goldStrandTipWorld(secondaryMergeTargetWorld,true);
+    sampleGoldStrandFrame(SECONDARY_MERGE_GOLD_PROGRESS);
+    secondaryMergeCenterWorld.copy(goldFrameCenterLocal);
+    brain.localToWorld(secondaryMergeCenterWorld);
+    secondaryMergeY=secondaryMergeCenterWorld.y;
     strand.lineColors.fill(0);
     strand.pointColors.fill(0);
     var mergeX=secondaryMergeTargetWorld.x;
@@ -1431,7 +1512,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     // als zwei getrennte Kabel am Ende anzukommen.
     var integrationStart=.55;
     var integrationEnd=.91;
-    var integrationTurns=1.35;
     for(var fiberIndex=0;fiberIndex<strand.fibers.length;fiberIndex++){
       var fiber=strand.fibers[fiberIndex], fiberShape=fiber.shape;
       var sourceScale=strand.satellite.scale.x*params.topFunnel;
@@ -1470,7 +1550,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var previousR=0, previousG=0, previousB=0, lineOffset=fiber.lineOffset;
       for(var step=0;step<fiber.len;step++){
         var progress=fiber.len>1?step/(fiber.len-1):0;
+        // Diese Gewichtung entspricht der bisherigen Animation und bewahrt
+        // Wind, Wellen und Ausreisser unverändert. Nur die Ziel-Mittelbahn
+        // wird weiter unten durch den gemeinsamen Querschnitt ersetzt.
         var integrationBlend=smooth((progress-integrationStart)/(integrationEnd-integrationStart));
+        var mergeBlend=smooth((progress-SECONDARY_MERGE_PROGRESS_START)/(SECONDARY_MERGE_PROGRESS_END-SECONDARY_MERGE_PROGRESS_START));
         var funnelProgress=Math.min(1,progress/funnelEnd);
         var funnelX, funnelY, funnelZ, funnelStage;
         if(funnelProgress<.34){
@@ -1527,18 +1611,24 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           +depthX*(Math.sin(fiberAngle)*looseSpread+windDepth+edgeWaveDepth+escapeDepth+params.posZ*manualEnvelope+endOffsetZ);
         z+=sideZ*(Math.cos(fiberAngle)*looseSpread+windSide+edgeWaveSide+escapeSide+params.posX*manualEnvelope+endOffsetX)
           +depthZ*(Math.sin(fiberAngle)*looseSpread+windDepth+edgeWaveDepth+escapeDepth+params.posZ*manualEnvelope+endOffsetZ);
-        if(integrationBlend>0){
-          var ringAngle=fiber.sourceAngle+strand.phase
-            +strand.flowDirection*Math.PI*2*integrationTurns*pathProgress
-            +fiberShape.phaseOffset*.84;
-          var ringRadius=SP.rStr*(1.18+fiber.sourceRadius*1.65+edgeWeight*.28)*thicknessScale;
-          var ringWave=Math.sin(flowTime*.54+pathProgress*15.6+fiber.branchPhase)*(.004+edgeWeight*.012);
-          var ringX=mergeX+Math.cos(ringAngle)*ringRadius+Math.cos(ringAngle*1.7+fiber.branchPhase)*ringWave;
-          var ringY=mergeY+Math.sin(flowTime*.46+pathProgress*11.2+fiber.branchPhase)*(.004+edgeWeight*.011);
-          var ringZ=mergeZ+Math.sin(ringAngle)*ringRadius+Math.sin(ringAngle*1.43+fiber.branchPhase)*ringWave;
-          x+=(ringX-x)*integrationBlend;
-          y+=(ringY-y)*integrationBlend;
-          z+=(ringZ-z)*integrationBlend;
+        if(mergeBlend>0){
+          // Nach dem exakt abgeleiteten Merge-Anker folgt jede bestehende
+          // Rot-/Blaufaser der Gold-Mittelbahn bis zum Ende. Ihr bereits
+          // vorbereiteter, stabiler Offset liegt dabei im vollständigen
+          // lokalen 3D-Querschnitt des Goldstrangs statt auf einer Seite.
+          var sharedGoldProgress=SECONDARY_MERGE_GOLD_PROGRESS
+            +(1-SECONDARY_MERGE_GOLD_PROGRESS)
+              *((progress-SECONDARY_MERGE_PROGRESS_START)/(1-SECONDARY_MERGE_PROGRESS_START));
+          sampleGoldStrandFrame(sharedGoldProgress);
+          var mergedRadius=SP.rStr*(.18+.94*fiber.mergeRadius)*thicknessScale;
+          secondaryMergedTargetLocal.copy(goldFrameCenterLocal)
+            .addScaledVector(goldFrameNormalLocal,Math.cos(fiber.mergeAngle)*mergedRadius)
+            .addScaledVector(goldFrameBinormalLocal,Math.sin(fiber.mergeAngle)*mergedRadius);
+          secondaryMergedTargetWorld.copy(secondaryMergedTargetLocal);
+          brain.localToWorld(secondaryMergedTargetWorld);
+          x+=(secondaryMergedTargetWorld.x-x)*mergeBlend;
+          y+=(secondaryMergedTargetWorld.y-y)*mergeBlend;
+          z+=(secondaryMergedTargetWorld.z-z)*mergeBlend;
         }
         var pulse=Math.max(0,Math.sin(flowTime*params.pulseSpeed*strand.flowDirection-progress*20*strand.flowDirection+fiberShape.phaseOffset));
         var verticalBrightness=params.topBrightness+(params.bottomBrightness-params.topBrightness)*pathProgress;
