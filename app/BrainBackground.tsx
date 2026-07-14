@@ -469,6 +469,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   function moveZ(){ return SP.offZ + MP.moveForward - MP.moveBack; }
   function rnd(){return Math.random();}
   function smooth(x){x=x<0?0:x>1?1:x;return x*x*(3-2*x);}
+  function smoother(x){
+    x=x<0?0:x>1?1:x;
+    return x*x*x*(x*(x*6-15)+10);
+  }
   var STRAND_ON = !(typeof window!=='undefined' && new URLSearchParams(window.location.search).get('nostrand')==='1');
   var sBase=[], sMeta=[], sFibers=[], vc=0;
   var wobbleLineRefs=[], wobblePtsRefs=[];
@@ -1298,13 +1302,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   BLUE_STRAND.pulseStrength=.14;
   BLUE_STRAND.escapeAmplitude=1.35;
   BLUE_STRAND.escapeWavelength=1;
-  // Der Merge-Anker ist nicht geschätzt: Er liegt auf der bereits erzeugten
-  // Gold-Mittelbahn bei deren bisherigen Einfädel-Fortschritt. Die Welt-Y
-  // wird pro Frame daraus abgeleitet, damit Schweben und Rotation korrekt
-  // berücksichtigt bleiben.
-  var SECONDARY_MERGE_GOLD_PROGRESS=.55;
-  var SECONDARY_MERGE_PROGRESS_START=.46;
-  var SECONDARY_MERGE_PROGRESS_END=.86;
+  // Die Assimilation beginnt erst auf der vorhandenen Gold-Mittelbahn und
+  // verwendet deren lokalen 3D-Rahmen als organischen Bezug.
+  var ASSIMILATION_GOLD_PROGRESS=.55;
   var secondaryMergeTargetWorld=new THREE.Vector3();
   var secondarySatelliteWorld=new THREE.Vector3();
   var secondaryRenderPoint=new THREE.Vector3();
@@ -1375,17 +1375,15 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         metallicPhase:Math.random()*Math.PI*2,
         edgeWeight:smooth((radialDistribution-.52)/.48),
         branchPhase:Math.random()*Math.PI*2,
-        // Stabile Position im gemeinsamen Gold-Querschnitt. Die zwei
-        // Farbgruppen werden über verschachtelte Indizes im gesamten Volumen
-        // verteilt; diese Werte bleiben über alle Frames unverändert.
-        mergeAngle:(selectedIndex*2+(strand.sideSign>0?1:0))*2.399963229728653,
-        mergeRadius:Math.sqrt(((selectedIndex*2+(strand.sideSign>0?1:0))*0.7548776662466927)%1),
-        // Jede Faser taucht zu einem leicht anderen Zeitpunkt und mit einer
-        // eigenen räumlichen Phase in den gemeinsamen Kern ein. So entsteht
-        // kein horizontaler Schnitt zwischen drei getrennten Bündeln.
-        mergeStart:.34+Math.random()*.19,
-        mergeEnd:.78+Math.random()*.17,
-        mergePhase:Math.random()*Math.PI*2,
+        // Deterministische, pro Faser gespeicherte Assimilationsdaten.
+        // Rot und Blau werden damit über eine lange Zone einzeln zwischen
+        // die Goldfasern verteilt, ohne je als Bündel zusammenzuklappen.
+        assimilationAngle:(selectedIndex*2+(strand.sideSign>0?1:0))*2.399963229728653,
+        assimilationRadius:Math.sqrt(((selectedIndex*2+(strand.sideSign>0?1:0))*0.7548776662466927)%1),
+        assimilationStart:.29+Math.random()*.24,
+        assimilationEnd:.76+Math.random()*.19,
+        assimilationPhase:Math.random()*Math.PI*2,
+        assimilationRadiusDrift:(Math.random()-.5)*.16,
         // Nur einige Randfasern lösen sich sichtbar aus dem Kern. Diese
         // gezielten Ausreisser geben dem Bündel die organische, lebendige
         // Silhouette, ohne die tragende Gesamtform zu verlieren.
@@ -1472,7 +1470,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     strand.satellite.updateWorldMatrix(true,false);
     strand.satellite.getWorldPosition(secondarySatelliteWorld);
     goldStrandTipWorld(secondaryMergeTargetWorld,true);
-    sampleGoldStrandFrame(SECONDARY_MERGE_GOLD_PROGRESS);
+    sampleGoldStrandFrame(ASSIMILATION_GOLD_PROGRESS);
     secondaryMergeCenterWorld.copy(goldFrameCenterLocal);
     brain.localToWorld(secondaryMergeCenterWorld);
     secondaryMergeY=secondaryMergeCenterWorld.y;
@@ -1514,13 +1512,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       strand.lowerAnchors=anchors;
     }
     var funnelEnd=.27;
-    // Im unteren Drittel öffnen sich beide Bündel nicht zu einer einzelnen
-    // Spitze, sondern zu einem breiten Fasertrichter rund um den Goldkern.
-    // Jede rote und blaue Einzelfaser erhält dort einen eigenen Platz auf dem
-    // Umfang: Die Farben verweben sich mit den vorhandenen Goldfasern, statt
-    // als zwei getrennte Kabel am Ende anzukommen.
-    var integrationStart=.55;
-    var integrationEnd=.91;
     for(var fiberIndex=0;fiberIndex<strand.fibers.length;fiberIndex++){
       var fiber=strand.fibers[fiberIndex], fiberShape=fiber.shape;
       var sourceScale=strand.satellite.scale.x*params.topFunnel;
@@ -1559,11 +1550,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var previousR=0, previousG=0, previousB=0, lineOffset=fiber.lineOffset;
       for(var step=0;step<fiber.len;step++){
         var progress=fiber.len>1?step/(fiber.len-1):0;
-        // Diese Gewichtung entspricht der bisherigen Animation und bewahrt
-        // Wind, Wellen und Ausreisser unverändert. Nur die Ziel-Mittelbahn
-        // wird weiter unten durch den gemeinsamen Querschnitt ersetzt.
-        var integrationBlend=smooth((progress-integrationStart)/(integrationEnd-integrationStart));
-        var mergeBlend=smooth((progress-fiber.mergeStart)/(fiber.mergeEnd-fiber.mergeStart));
+        // Jede bestehende Faser besitzt einen eigenen, langen und C2-stetigen
+        // Eintritt in die gemeinsame Struktur. Dadurch gibt es keine
+        // gemeinsame Schnittlinie und keine Bündel-Kompression als Block.
+        var assimilationBlend=smoother((progress-fiber.assimilationStart)/(fiber.assimilationEnd-fiber.assimilationStart));
         var funnelProgress=Math.min(1,progress/funnelEnd);
         var funnelX, funnelY, funnelZ, funnelStage;
         if(funnelProgress<.34){
@@ -1616,37 +1606,32 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         x=pathX+(funnelX-pathX)*funnelRelease;
         y=pathY+(funnelY-pathY)*funnelRelease;
         z=pathZ+(funnelZ-pathZ)*funnelRelease;
-        x+=sideX*(Math.cos(fiberAngle)*looseSpread+windSide+edgeWaveSide+escapeSide+params.posX*manualEnvelope+endOffsetX)
-          +depthX*(Math.sin(fiberAngle)*looseSpread+windDepth+edgeWaveDepth+escapeDepth+params.posZ*manualEnvelope+endOffsetZ);
-        z+=sideZ*(Math.cos(fiberAngle)*looseSpread+windSide+edgeWaveSide+escapeSide+params.posX*manualEnvelope+endOffsetX)
-          +depthZ*(Math.sin(fiberAngle)*looseSpread+windDepth+edgeWaveDepth+escapeDepth+params.posZ*manualEnvelope+endOffsetZ);
-        if(mergeBlend>0){
-          // Nach dem exakt abgeleiteten Merge-Anker folgt jede bestehende
-          // Rot-/Blaufaser der Gold-Mittelbahn bis zum Ende. Ihr bereits
-          // vorbereiteter, stabiler Offset liegt dabei im vollständigen
-          // lokalen 3D-Querschnitt des Goldstrangs statt auf einer Seite.
-          var mergeTravel=smooth((progress-fiber.mergeStart)/(1-fiber.mergeStart));
-          var sharedGoldProgress=SECONDARY_MERGE_GOLD_PROGRESS
-            +(1-SECONDARY_MERGE_GOLD_PROGRESS)
-              *mergeTravel;
+        var staticSide=Math.cos(fiberAngle)*looseSpread+params.posX*manualEnvelope+endOffsetX;
+        var staticDepth=Math.sin(fiberAngle)*looseSpread+params.posZ*manualEnvelope+endOffsetZ;
+        var liveSide=windSide+edgeWaveSide+escapeSide;
+        var liveDepth=windDepth+edgeWaveDepth+escapeDepth;
+        x+=sideX*(staticSide+liveSide)+depthX*(staticDepth+liveDepth);
+        z+=sideZ*(staticSide+liveSide)+depthZ*(staticDepth+liveDepth);
+        if(assimilationBlend>0){
+          // Die Mittelbahn wird schrittweise in den vorhandenen Goldrahmen
+          // überführt. Die Wellen, Windreaktionen und Ausreisser werden dabei
+          // nicht ersetzt, sondern in dessen Normal-/Binormalebene getragen.
+          var assimilationTravel=smoother((progress-fiber.assimilationStart)/(1-fiber.assimilationStart));
+          var sharedGoldProgress=ASSIMILATION_GOLD_PROGRESS
+            +(1-ASSIMILATION_GOLD_PROGRESS)*assimilationTravel;
           sampleGoldStrandFrame(sharedGoldProgress);
-          var mergeWavePhase=sharedGoldProgress*8.6+flowTime*.31+fiber.branchPhase+fiber.mergePhase;
-          var mergeAngle=fiber.mergeAngle+Math.sin(mergeWavePhase)*.42
-            +Math.sin(mergeWavePhase*1.71+fiberShape.phaseOffset)*.13;
-          var mergedRadius=SP.rStr*(.04+.98*fiber.mergeRadius)
-            *(1+Math.sin(mergeWavePhase*1.23)*.1)*thicknessScale;
-          // Vor dem vollständigen Eintauchen bleibt der Querschnitt breiter
-          // und pulsiert individuell. Erst am Ende organisiert sich jede
-          // Faser in ihrer stabilen Position im goldenen Volumen.
-          mergedRadius+=SP.rStr*(1-mergeBlend)*(.12+fiber.edgeWeight*.18)
-            *Math.sin(mergeWavePhase*1.37+fiber.mergePhase);
+          var assimilationWave=sharedGoldProgress*8.6+flowTime*.31+fiber.branchPhase+fiber.assimilationPhase;
+          var assimilationAngle=fiber.assimilationAngle+Math.sin(assimilationWave)*.35
+            +Math.sin(assimilationWave*1.71+fiberShape.phaseOffset)*.12;
+          var assimilationRadius=THREE.MathUtils.clamp(
+            fiber.assimilationRadius+fiber.assimilationRadiusDrift*Math.sin(assimilationWave*1.23),
+            .035,.98
+          );
+          var organicRadius=SP.rStr*(.08+.92*assimilationRadius)
+            *(1+Math.sin(assimilationWave*1.37+fiber.assimilationPhase)*.09)*thicknessScale;
           secondaryMergedTargetLocal.copy(goldFrameCenterLocal)
-            .addScaledVector(goldFrameNormalLocal,Math.cos(mergeAngle)*mergedRadius)
-            .addScaledVector(goldFrameBinormalLocal,Math.sin(mergeAngle)*mergedRadius);
-          // Die Helix rotiert um die Weltachse x=0 / z=0. Der gemeinsame
-          // Faserquerschnitt wird deshalb hier – und nur hier – auf diese
-          // Achse verschoben; die individuelle 3D-Verteilung jeder Faser
-          // relativ zum Querschnitt bleibt vollständig erhalten.
+            .addScaledVector(goldFrameNormalLocal,Math.cos(assimilationAngle)*organicRadius)
+            .addScaledVector(goldFrameBinormalLocal,Math.sin(assimilationAngle)*organicRadius);
           secondarySharedCenterWorld.copy(goldFrameCenterLocal);
           brain.localToWorld(secondarySharedCenterWorld);
           secondaryFrameNormalWorld.copy(goldFrameNormalLocal).add(goldFrameCenterLocal);
@@ -1659,18 +1644,15 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           brain.localToWorld(secondaryMergedTargetWorld);
           secondaryMergedTargetWorld.x-=secondarySharedCenterWorld.x;
           secondaryMergedTargetWorld.z-=secondarySharedCenterWorld.z;
-          x+=(secondaryMergedTargetWorld.x-x)*mergeBlend;
-          y+=(secondaryMergedTargetWorld.y-y)*mergeBlend;
-          z+=(secondaryMergedTargetWorld.z-z)*mergeBlend;
-          // Die bereits vorhandenen Wind-, Wellen- und Ausreisserwerte
-          // fliessen auch im gemeinsamen Volumen weiter. Dadurch bleibt der
-          // Strang lebendig, statt nach dem Merge zu geraden Säulen zu
-          // erstarren.
-          var carriedWaveSide=(windSide+edgeWaveSide+escapeSide)*(.46+edgeWeight*.24);
-          var carriedWaveDepth=(windDepth+edgeWaveDepth+escapeDepth)*(.46+edgeWeight*.24);
-          x+=secondaryFrameNormalWorld.x*carriedWaveSide+secondaryFrameBinormalWorld.x*carriedWaveDepth;
-          y+=secondaryFrameNormalWorld.y*carriedWaveSide+secondaryFrameBinormalWorld.y*carriedWaveDepth;
-          z+=secondaryFrameNormalWorld.z*carriedWaveSide+secondaryFrameBinormalWorld.z*carriedWaveDepth;
+          var assimilatedX=secondaryMergedTargetWorld.x
+            +secondaryFrameNormalWorld.x*liveSide+secondaryFrameBinormalWorld.x*liveDepth;
+          var assimilatedY=secondaryMergedTargetWorld.y
+            +secondaryFrameNormalWorld.y*liveSide+secondaryFrameBinormalWorld.y*liveDepth;
+          var assimilatedZ=secondaryMergedTargetWorld.z
+            +secondaryFrameNormalWorld.z*liveSide+secondaryFrameBinormalWorld.z*liveDepth;
+          x+=(assimilatedX-x)*assimilationBlend;
+          y+=(assimilatedY-y)*assimilationBlend;
+          z+=(assimilatedZ-z)*assimilationBlend;
         }
         var pulse=Math.max(0,Math.sin(flowTime*params.pulseSpeed*strand.flowDirection-progress*20*strand.flowDirection+fiberShape.phaseOffset));
         var verticalBrightness=params.topBrightness+(params.bottomBrightness-params.topBrightness)*pathProgress;
