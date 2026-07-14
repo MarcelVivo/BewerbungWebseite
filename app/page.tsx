@@ -1277,6 +1277,7 @@ export default function HomePage() {
   // am Desktop bleiben dadurch überall erhalten.
   const [heroScale, setHeroScale] = useState(1);
   const heroFlapLineRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const heroBottomFlapLineRefs = useRef<(HTMLSpanElement | null)[]>([]);
   useEffect(() => {
     const updateHeroScale = () => {
       setHeroScale(getEffectiveViewport(window.innerWidth, window.innerHeight).scale);
@@ -1307,6 +1308,42 @@ export default function HomePage() {
 
     replay();
     const replayInterval = window.setInterval(replay, 5000);
+    return () => {
+      window.clearTimeout(settleTimer);
+      window.clearInterval(replayInterval);
+      setFlapWordMode(letters, 'settle', false);
+    };
+  }, [lang]);
+  useEffect(() => {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const lines = lang === 'de'
+      ? [
+          'WEBSITES, SOFTWARE, KI UND AUTOMATISIERUNGEN.',
+          'STRATEGISCH GEPLANT, TECHNISCH SAUBER UMGESETZT',
+          'UND AUF NACHHALTIGES WACHSTUM AUSGERICHTET.',
+        ]
+      : [
+          'WEBSITES, SYSTEMS, DATABASES, AUTOMATION AND AI —',
+          'CLEARLY PLANNED, FAST TO BUILD',
+          'AND MADE TO LAST.',
+        ];
+    const letters = lines.flatMap((line, index) => {
+      const container = heroBottomFlapLineRefs.current[index];
+      return container ? buildFlapWord(container, line) : [];
+    });
+    if (!letters.length || reduced) return;
+
+    let settleTimer = 0;
+    const replay = () => {
+      window.clearTimeout(settleTimer);
+      setFlapWordMode(letters, 'spin', false);
+      settleTimer = window.setTimeout(() => {
+        setFlapWordMode(letters, 'settle', false);
+      }, 860);
+    };
+
+    replay();
+    const replayInterval = window.setInterval(replay, 10000);
     return () => {
       window.clearTimeout(settleTimer);
       window.clearInterval(replayInterval);
@@ -1370,10 +1407,21 @@ export default function HomePage() {
           <div className="hero-bottom-copy absolute inset-x-0 bottom-0 z-10 pb-6">
             <div className="mx-auto max-w-7xl px-6">
               <div className="hero-copy hero-copy-centered ms-anim" style={{ animationDelay: '0.12s' }}>
-                <p className="max-w-lg mx-auto text-lg text-[#d8ccb3] leading-relaxed">
-                  {lang === 'de'
-                    ? 'Websites, Software, KI und Automatisierungen. Strategisch geplant, technisch sauber umgesetzt und auf nachhaltiges Wachstum ausgerichtet.'
-                    : 'Websites, systems, databases, automation and AI — clearly planned, fast to build and made to last.'}
+                <p
+                  className={`hero-bottom-flap max-w-lg mx-auto text-lg text-[#d8ccb3] leading-relaxed ${chakraPetch.className}`}
+                  aria-label={lang === 'de'
+                    ? 'WEBSITES, SOFTWARE, KI UND AUTOMATISIERUNGEN. STRATEGISCH GEPLANT, TECHNISCH SAUBER UMGESETZT UND AUF NACHHALTIGES WACHSTUM AUSGERICHTET.'
+                    : 'WEBSITES, SYSTEMS, DATABASES, AUTOMATION AND AI — CLEARLY PLANNED, FAST TO BUILD AND MADE TO LAST.'}
+                >
+                  <span ref={(el) => { heroBottomFlapLineRefs.current[0] = el; }} className="hero-bottom-flap-line">
+                    {lang === 'de' ? 'WEBSITES, SOFTWARE, KI UND AUTOMATISIERUNGEN.' : 'WEBSITES, SYSTEMS, DATABASES, AUTOMATION AND AI —'}
+                  </span>
+                  <span ref={(el) => { heroBottomFlapLineRefs.current[1] = el; }} className="hero-bottom-flap-line">
+                    {lang === 'de' ? 'STRATEGISCH GEPLANT, TECHNISCH SAUBER UMGESETZT' : 'CLEARLY PLANNED, FAST TO BUILD'}
+                  </span>
+                  <span ref={(el) => { heroBottomFlapLineRefs.current[2] = el; }} className="hero-bottom-flap-line">
+                    {lang === 'de' ? 'UND AUF NACHHALTIGES WACHSTUM AUSGERICHTET.' : 'AND MADE TO LAST.'}
+                  </span>
                 </p>
               </div>
               <div style={{ animationDelay: '0.18s' }} className="ms-anim mt-7 flex flex-row items-start justify-center gap-4">
