@@ -1276,6 +1276,7 @@ export default function HomePage() {
   // und Buttons responsiv umzubrechen — dieselben Grössenverhältnisse wie
   // am Desktop bleiben dadurch überall erhalten.
   const [heroScale, setHeroScale] = useState(1);
+  const heroFlapLineRefs = useRef<(HTMLSpanElement | null)[]>([]);
   useEffect(() => {
     const updateHeroScale = () => {
       setHeroScale(getEffectiveViewport(window.innerWidth, window.innerHeight).scale);
@@ -1284,6 +1285,34 @@ export default function HomePage() {
     window.addEventListener('resize', updateHeroScale);
     return () => window.removeEventListener('resize', updateHeroScale);
   }, []);
+  useEffect(() => {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const lines = lang === 'de'
+      ? ['Digitale Lösungen.', 'Für Unternehmen mit Zukunft.']
+      : ['Digital solutions built', 'as one system.'];
+    const letters = lines.flatMap((line, index) => {
+      const container = heroFlapLineRefs.current[index];
+      return container ? buildFlapWord(container, line) : [];
+    });
+    if (!letters.length || reduced) return;
+
+    let settleTimer = 0;
+    const replay = () => {
+      window.clearTimeout(settleTimer);
+      setFlapWordMode(letters, 'spin', false);
+      settleTimer = window.setTimeout(() => {
+        setFlapWordMode(letters, 'settle', false);
+      }, 720);
+    };
+
+    replay();
+    const replayInterval = window.setInterval(replay, 5000);
+    return () => {
+      window.clearTimeout(settleTimer);
+      window.clearInterval(replayInterval);
+      setFlapWordMode(letters, 'settle', false);
+    };
+  }, [lang]);
   const introWorldTexts = useMemo(() => INTRO_SEQUENCE, []);
   const serviceWorldCards = useMemo(() => lang === 'de'
     ? [
@@ -1323,8 +1352,16 @@ export default function HomePage() {
           <div className="hero-top-copy absolute inset-x-0 top-24 z-10">
             <div className="mx-auto max-w-7xl px-6">
               <div className="hero-copy hero-copy-centered ms-anim">
-                <h1 className="max-w-6xl mx-auto whitespace-pre-line text-5xl font-bold text-white leading-[0.96] tracking-[-0.055em]">
-                  {lang === 'de' ? 'Digitale Lösungen.\nFür Unternehmen mit Zukunft.' : 'Digital solutions built as one system.'}
+                <h1
+                  className={`hero-title-flap max-w-6xl mx-auto text-5xl font-bold text-white leading-[0.96] tracking-[-0.055em] ${chakraPetch.className}`}
+                  aria-label={lang === 'de' ? 'Digitale Lösungen. Für Unternehmen mit Zukunft.' : 'Digital solutions built as one system.'}
+                >
+                  <span ref={(el) => { heroFlapLineRefs.current[0] = el; }} className="hero-flap-line">
+                    {lang === 'de' ? 'Digitale Lösungen.' : 'Digital solutions built'}
+                  </span>
+                  <span ref={(el) => { heroFlapLineRefs.current[1] = el; }} className="hero-flap-line">
+                    {lang === 'de' ? 'Für Unternehmen mit Zukunft.' : 'as one system.'}
+                  </span>
                 </h1>
               </div>
             </div>

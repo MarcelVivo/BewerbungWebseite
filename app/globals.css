@@ -605,6 +605,18 @@ body {
   display: inline-block;
 }
 
+.hero-title-flap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hero-flap-line {
+  display: flex;
+  justify-content: center;
+  white-space: pre;
+}
+
 .intro-flap-glyph {
   display: inline-block;
   /* scaleY statt einer 3D-rotateX-Perspektiv-Rotation: eine reine 2D-
