@@ -1429,9 +1429,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     // Jede rote und blaue Einzelfaser erhält dort einen eigenen Platz auf dem
     // Umfang: Die Farben verweben sich mit den vorhandenen Goldfasern, statt
     // als zwei getrennte Kabel am Ende anzukommen.
-    var integrationStart=.55;
-    var integrationEnd=.91;
-    var integrationTurns=1.35;
+    var integrationStart=.30;
+    var integrationEnd=.62;
+    var integrationTurns=.72;
     for(var fiberIndex=0;fiberIndex<strand.fibers.length;fiberIndex++){
       var fiber=strand.fibers[fiberIndex], fiberShape=fiber.shape;
       var sourceScale=strand.satellite.scale.x*params.topFunnel;
@@ -1531,7 +1531,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           var ringAngle=fiber.sourceAngle+strand.phase
             +strand.flowDirection*Math.PI*2*integrationTurns*pathProgress
             +fiberShape.phaseOffset*.84;
-          var ringRadius=SP.rStr*(1.18+fiber.sourceRadius*1.65+edgeWeight*.28)*thicknessScale;
+          var ringRadius=SP.rStr*(.56+fiber.sourceRadius*.95+edgeWeight*.16)*thicknessScale;
           var ringWave=Math.sin(flowTime*.54+pathProgress*15.6+fiber.branchPhase)*(.004+edgeWeight*.012);
           var ringX=mergeX+Math.cos(ringAngle)*ringRadius+Math.cos(ringAngle*1.7+fiber.branchPhase)*ringWave;
           var ringY=mergeY+Math.sin(flowTime*.46+pathProgress*11.2+fiber.branchPhase)*(.004+edgeWeight*.011);
@@ -1552,6 +1552,21 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         var colorR=(metallicFrom.r+(metallicTo.r-metallicFrom.r)*metallicBlend)*brightness;
         var colorG=(metallicFrom.g+(metallicTo.g-metallicFrom.g)*metallicBlend)*brightness;
         var colorB=(metallicFrom.b+(metallicTo.b-metallicFrom.b)*metallicBlend)*brightness;
+        // Sobald die Seitenfasern den Goldumfang erreichen, nehmen sie
+        // schrittweise dessen metallische Lichtinformation an. Rot und Blau
+        // bleiben als feine Strömung sichtbar, bilden aber keine getrennten
+        // Stränge mehr.
+        var goldMetallic=.5+.5*Math.sin(fiber.metallicPhase+progress*8.1+flowTime*.28);
+        var goldFrom=goldMetallic<.5?GOLD.deep:GOLD.primary;
+        var goldTo=goldMetallic<.5?GOLD.primary:GOLD.light;
+        var goldBlend=goldMetallic<.5?goldMetallic*2:(goldMetallic-.5)*2;
+        var goldR=(goldFrom.r+(goldTo.r-goldFrom.r)*goldBlend)*brightness;
+        var goldG=(goldFrom.g+(goldTo.g-goldFrom.g)*goldBlend)*brightness;
+        var goldB=(goldFrom.b+(goldTo.b-goldFrom.b)*goldBlend)*brightness;
+        var colorUnify=smooth((integrationBlend-.1)/.9)*.78;
+        colorR+=(goldR-colorR)*colorUnify;
+        colorG+=(goldG-colorG)*colorUnify;
+        colorB+=(goldB-colorB)*colorUnify;
         secondaryRenderPoint.set(x,y,z);
         brain.worldToLocal(secondaryRenderPoint);
         x=secondaryRenderPoint.x;
