@@ -55,9 +55,8 @@ export default function HomeNavBar() {
   ];
 
   return (
-    <header className="fixed top-0 inset-x-0 z-50 bg-black">
-      <div className="navbar-gold-divider absolute inset-x-0 bottom-0 h-px pointer-events-none" aria-hidden="true" />
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+    <header className="home-navbar fixed top-0 inset-x-0 z-50 pointer-events-none">
+      <div className="home-navbar-shell max-w-7xl mx-auto px-4 sm:px-6 h-16 lg:h-20 flex items-center justify-between pointer-events-auto">
         {/* ── Logo ── */}
         <a href="/" aria-label="Marcel Spahr – Startseite" className="flex items-center select-none">
           <img
@@ -96,8 +95,9 @@ export default function HomeNavBar() {
           </button>
         </div>
       </div>
+      <div className="navbar-gold-divider home-navbar-horizon h-px pointer-events-none" aria-hidden="true" />
       {open && (
-        <div className={`lg:hidden bg-[#1c1912] border-t border-[#2d2820] px-4 py-4 space-y-3 ms-anim ${chakraPetch.className}`}>
+        <div className={`home-navbar-mobile-menu lg:hidden px-4 py-4 space-y-3 ms-anim pointer-events-auto ${chakraPetch.className}`}>
           {NAV_LINKS.map(l => (
             <a key={l.href} href={l.href} className="block text-sm text-[#d4c4a8] hover:text-[#f4edd8]" onClick={() => setOpen(false)}><NavbarFlapLabel label={l.label} /></a>
           ))}
