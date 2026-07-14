@@ -4,7 +4,7 @@
 //
 // Es gibt keine Kurven-/Spline-Bibliothek im Projekt — die Helix ist eine
 // einfache Kreis-Helix um die Y-Achse: Winkel × Radius, linearer Y-Versatz
-// pro "Stopp" (Intro-Text, Leistungskarte oder Platzhalterkarte). Diese
+// pro "Stopp" (Intro-Text oder Leistungskarte). Diese
 // Datei bündelt exakt die Formeln, die zuvor identisch (und dupliziert) in
 // BrainBackground.tsx standen, damit es nur noch EINE Quelle dafür gibt.
 
@@ -25,7 +25,7 @@ export function computeCameraTravel(totalWorldStops: number): number {
   return CAMERA_TARGET_START - cameraTargetEnd;
 }
 
-/** Y-Position eines Helix-Stopps (Text, Karte, Platzhalter) im Weltraum. */
+/** Y-Position eines Helix-Stopps (Text oder Karte) im Weltraum. */
 export function helixStopY(worldIndex: number): number {
   return TEXT_START_Y - worldIndex * HELIX_STEP;
 }

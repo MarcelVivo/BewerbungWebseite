@@ -143,7 +143,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
   // 2×2-Element (CardsHelixGroup), fixiert an EINER festen Helix-Position
   // (worldIndex 5, exakt derselbe Weltkoordinaten-Stopp wie zuvor die
   // erste echte 3D-Leistungskarte in BrainBackground.tsx: nach dem
-  // 5. Intro-Text, vor der ersten Platzhalterkarte, Radius 1.68 — also
+  // 5. Intro-Text, vor der ersten echten 3D-Leistungskarte, Radius 1.68 — also
   // derselbe Stationsabstand wie zwischen den vorherigen Texten, da
   // HELIX_STEP zwischen allen Stopps konstant ist).
   //
