@@ -420,148 +420,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     };
   }
 
-  function buildNeuralValley(){
-    var valley=new THREE.Group();
-    valley.name='neural-valley-foundation';
-    var random=createSeededRandom(0x4d534e56);
-    var stationAngle=helixAngleForWorldIndex(introTexts.length,cameraTravel);
-    var forward=new THREE.Vector3(Math.sin(stationAngle),0,Math.cos(stationAngle));
-    var right=new THREE.Vector3(Math.cos(stationAngle),0,-Math.sin(stationAngle));
-    var transitionTopY=cardGroupWorldY-cardGroupFocusWindow*.78;
-    var transitionLength=9.6;
-    var valleyStartDistance=7.8;
-    var valleyLength=27;
-    var valleyHalfWidth=10.6;
-
-    function localPoint(lateral,y,distance,target){
-      target.copy(forward).multiplyScalar(distance).addScaledVector(right,lateral);
-      target.y=y;
-      return target;
-    }
-
-    function valleyHeight(lateral,distance,phase){
-      var bank=Math.pow(Math.min(1,Math.abs(lateral)/valleyHalfWidth),1.55)*4.9;
-      var longitudinal=-39.2-distance*.075;
-      return longitudinal+bank+Math.sin(distance*.31+phase)*.32+Math.sin(distance*.13+phase*1.7)*.2;
-    }
-
-    function appendPath(positionArray,colorArray,path,color){
-      for(var pathIndex=1;pathIndex<path.length;pathIndex++){
-        var previous=path[pathIndex-1],current=path[pathIndex];
-        positionArray.push(previous.x,previous.y,previous.z,current.x,current.y,current.z);
-        colorArray.push(color.r,color.g,color.b,color.r,color.g,color.b);
-      }
-    }
-
-    function buildColorSystem(name,palette,laneCenter,seedOffset){
-      var positions=[],colors=[];
-      var fiberCount=isMobile?54:118;
-      var transitionPointCount=24;
-      var valleyPointCount=31;
-      var scratch=new THREE.Vector3();
-      var path=[];
-      var colorChoices=[palette.deep,palette.primary,palette.light];
-
-      // Die Ablösezeit jedes Fadens ist anders. Dadurch sind über die lange
-      // Zone gleichzeitig Rest-Hauptbündel, mittlere Teilbündel und bereits
-      // freie Einzelbahnen sichtbar, ohne lokalisierbare Trennkante.
-      for(var fiberIndex=0;fiberIndex<fiberCount;fiberIndex++){
-        path=[];
-        var fiberRandom=createSeededRandom(0x1847+seedOffset*997+fiberIndex*37);
-        var branchStart=.06+Math.pow(fiberRandom(),1.42)*.61;
-        var branchDelay=.16+fiberRandom()*.23;
-        var routeLane=laneCenter+(fiberRandom()-.5)*3.3;
-        var routeDepth=valleyStartDistance+(fiberRandom()-.5)*2.1;
-        var phase=fiberRandom()*Math.PI*2;
-        var coreRadius=.12+fiberRandom()*.3;
-        var color=colorChoices[Math.floor(fiberRandom()*colorChoices.length)];
-        for(var transitionIndex=0;transitionIndex<transitionPointCount;transitionIndex++){
-          var transitionT=transitionIndex/(transitionPointCount-1);
-          var release=smooth((transitionT-branchStart)/branchDelay);
-          var residualRadius=coreRadius*(1-release*.72);
-          var lateral=(fiberRandom()-.5)*residualRadius+routeLane*release;
-          lateral+=Math.sin(transitionT*8.7+phase)*(.04+release*.42);
-          var distance=transitionT*.7+release*(routeDepth-transitionT*.7);
-          distance+=Math.sin(transitionT*5.2+phase*.7)*release*.35;
-          var transitionY=transitionTopY-transitionT*transitionLength;
-          transitionY+=release*(valleyHeight(lateral,routeDepth,phase)-transitionY);
-          transitionY+=Math.sin(transitionT*11.3+phase)*(.03+release*.18);
-          path.push(localPoint(lateral,transitionY,distance,scratch.clone()));
-        }
-        appendPath(positions,colors,path,color);
-
-        // Jede freigesetzte Bahn läuft als organische Längsfaser in der
-        // breiten Talform weiter. Keine zwei Bahnen teilen exakt Radius,
-        // Abstand, Kurve oder Dichte.
-        path=[];
-        var lateralVelocity=(fiberRandom()-.5)*.2;
-        for(var valleyIndex=0;valleyIndex<valleyPointCount;valleyIndex++){
-          var valleyT=valleyIndex/(valleyPointCount-1);
-          var valleyDistance=routeDepth+valleyT*valleyLength*(.82+fiberRandom()*.22);
-          lateralVelocity+=(fiberRandom()-.5)*.075;
-          lateralVelocity*=.91;
-          var valleyLateral=routeLane+lateralVelocity*valleyIndex;
-          valleyLateral+=Math.sin(valleyT*(5.1+fiberRandom()*2.8)+phase)*(.3+fiberRandom()*.46);
-          valleyLateral=THREE.MathUtils.clamp(valleyLateral,-valleyHalfWidth,valleyHalfWidth);
-          var y=valleyHeight(valleyLateral,valleyDistance,phase)+(fiberRandom()-.5)*.22;
-          path.push(localPoint(valleyLateral,y,valleyDistance,scratch.clone()));
-        }
-        appendPath(positions,colors,path,color);
-      }
-
-      // Unregelmässige Seitenverzweigungen erzeugen die Lesbarkeit einer
-      // gewachsenen Welt. Sie bleiben kurz, gekrümmt und unterschiedlich
-      // geneigt; es entstehen weder Raster noch lange parallele Kabelgruppen.
-      var branchCount=isMobile?34:82;
-      for(var branchIndex=0;branchIndex<branchCount;branchIndex++){
-        path=[];
-        var branchPhase=random()*Math.PI*2;
-        var branchStartDistance=valleyStartDistance+3+random()*(valleyLength-5);
-        var branchStartLateral=laneCenter+(random()-.5)*4.4;
-        var branchDirection=(random()<.5?-1:1);
-        var branchReach=.9+random()*3.8;
-        var branchForward=1.4+random()*5.2;
-        var branchColor=colorChoices[Math.floor(random()*colorChoices.length)];
-        var branchPoints=6+Math.floor(random()*7);
-        for(var branchPointIndex=0;branchPointIndex<branchPoints;branchPointIndex++){
-          var branchT=branchPointIndex/(branchPoints-1);
-          var bend=branchT*branchT*(3-2*branchT);
-          var branchLateral=branchStartLateral+branchDirection*branchReach*bend;
-          branchLateral+=Math.sin(branchT*Math.PI*(1.1+random()*.8)+branchPhase)*.34;
-          branchLateral=THREE.MathUtils.clamp(branchLateral,-valleyHalfWidth,valleyHalfWidth);
-          var branchDistance=branchStartDistance+branchForward*branchT+Math.sin(branchT*Math.PI)*.5;
-          var branchY=valleyHeight(branchLateral,branchDistance,branchPhase)+Math.sin(branchT*Math.PI)*(.2+random()*.5);
-          path.push(localPoint(branchLateral,branchY,branchDistance,scratch.clone()));
-        }
-        appendPath(positions,colors,path,branchColor);
-      }
-
-      var geometry=new THREE.BufferGeometry();
-      geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
-      geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
-      var material=new THREE.LineBasicMaterial({
-        vertexColors:true,
-        transparent:true,
-        opacity:name==='gold'?.42:.48,
-        blending:THREE.NormalBlending,
-        depthWrite:false,
-        depthTest:true
-      });
-      var lineSystem=new THREE.LineSegments(geometry,material);
-      lineSystem.name='neural-valley-'+name;
-      lineSystem.frustumCulled=false;
-      valley.add(lineSystem);
-    }
-
-    buildColorSystem('red',SATELLITE_METALS.red,-4.5,1);
-    buildColorSystem('gold',{deep:GOLD.deep,primary:GOLD.primary,light:GOLD.light},0,2);
-    buildColorSystem('blue',SATELLITE_METALS.blue,4.5,3);
-    world.add(valley);
-    return valley;
-  }
-
-  var neuralValley=buildNeuralValley();
-
   var BR=brainData;
 
   var __hideSet = (typeof window!=='undefined' ? new URLSearchParams(window.location.search).get('hide')||'' : '').split(',');
@@ -654,6 +512,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var STRAND_ON = !(typeof window!=='undefined' && new URLSearchParams(window.location.search).get('nostrand')==='1');
   var sBase=[], sMeta=[], sFibers=[], vc=0;
   var wobbleLineRefs=[], wobblePtsRefs=[];
+  var organismVertices=[], organismMeta=[], organismLineRefs=[], organismPointRefs=[];
+  var organismCurrent=new Float32Array(0);
+  var organismScratch=new THREE.Vector3();
+  var organismStationAngle=helixAngleForWorldIndex(introTexts.length,cameraTravel)-BASE_Y;
+  var organismForwardX=Math.sin(organismStationAngle), organismForwardZ=Math.cos(organismStationAngle);
+  var organismRightX=Math.cos(organismStationAngle), organismRightZ=-Math.sin(organismStationAngle);
   var wobbleX=new Float32Array(0), wobbleZ=new Float32Array(0);
   var goldEscapeWeights=[], goldEscapePhases=[], goldEscapeFrequencies=[], goldEscapeSpeeds=[];
   var GOLD_STRAND_END_KEY='ms-gold-strand-end-v1';
@@ -678,8 +542,137 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   // gemeinsame Durchhang-Richtung (Schwerkraft): leicht nach vorne/unten,
   // nicht rein vertikal, wirkt organischer als ein reiner Y-Fall
   var DROOP_DX=0, DROOP_DZ=0;
+
+  function appendLivingOrganismContinuation(outPos,outCol,outPtsPos,outPtsCol){
+    if(!sFibers.length) return;
+    var continuationRandom=createSeededRandom(0x4d534f52);
+    var branchCopies=isMobile?1:2;
+    var trunkPoints=isMobile?8:11;
+    var transitionPoints=isMobile?13:19;
+    var valleyPoints=isMobile?18:27;
+    var valleyHalfWidth=isMobile?2.65:3.45;
+    var continuationColor=new THREE.Color();
+
+    function fiberColor(fiberIndex,tipVertex){
+      var selector=Math.sin(sMeta[tipVertex*2+1]*2.71+tipVertex*.037);
+      var palette=selector>.33
+        ?[SATELLITE_METALS.red.deep,SATELLITE_METALS.red.primary,SATELLITE_METALS.red.light]
+        :(selector<-.33
+          ?[SATELLITE_METALS.blue.deep,SATELLITE_METALS.blue.primary,SATELLITE_METALS.blue.light]
+          :[GOLD.deep,GOLD.primary,GOLD.light]);
+      return palette[(fiberIndex+Math.floor(continuationRandom()*palette.length))%palette.length];
+    }
+
+    function appendVertex(parentVertex,relativeX,relativeY,relativeZ,waveStrength,phase,travel,color,previousVertex){
+      var organismVertexIndex=organismVertices.length/3;
+      organismVertices.push(relativeX,relativeY,relativeZ);
+      organismMeta.push({
+        parentVertex:parentVertex,
+        waveStrength:waveStrength,
+        phase:phase,
+        travel:travel
+      });
+      var parentOffset=parentVertex*3;
+      var initialX=sBase[parentOffset]+relativeX;
+      var initialY=sBase[parentOffset+1]+relativeY;
+      var initialZ=sBase[parentOffset+2]+relativeZ;
+      var pointOffset=outPtsPos.length;
+      outPtsPos.push(initialX,initialY,initialZ);
+      outPtsCol.push(color.r,color.g,color.b);
+      organismPointRefs.push({off:pointOffset,src:organismVertexIndex});
+      if(previousVertex!==null){
+        var previousOffset=previousVertex*3;
+        var previousMeta=organismMeta[previousVertex];
+        var previousParentOffset=previousMeta.parentVertex*3;
+        var lineOffset=outPos.length;
+        outPos.push(
+          sBase[previousParentOffset]+organismVertices[previousOffset],
+          sBase[previousParentOffset+1]+organismVertices[previousOffset+1],
+          sBase[previousParentOffset+2]+organismVertices[previousOffset+2],
+          initialX,initialY,initialZ
+        );
+        outCol.push(color.r,color.g,color.b,color.r,color.g,color.b);
+        organismLineRefs.push({off:lineOffset,src:previousVertex});
+        organismLineRefs.push({off:lineOffset+3,src:organismVertexIndex});
+      }
+      return organismVertexIndex;
+    }
+
+    for(var continuationFiberIndex=0;continuationFiberIndex<sFibers.length;continuationFiberIndex++){
+      var sourceFiber=sFibers[continuationFiberIndex];
+      var tipVertex=sourceFiber.start+sourceFiber.len-1;
+      var sourceColor=fiberColor(continuationFiberIndex,tipVertex);
+      var normalizedFiber=continuationFiberIndex/Math.max(1,sFibers.length-1);
+      for(var copyIndex=0;copyIndex<branchCopies;copyIndex++){
+        var branchPhase=continuationRandom()*Math.PI*2;
+        var branchBias=(copyIndex-(branchCopies-1)*.5)*.32;
+        var lane=((normalizedFiber*2-1)*valleyHalfWidth)+branchBias+(continuationRandom()-.5)*.48;
+        lane=THREE.MathUtils.clamp(lane,-valleyHalfWidth,valleyHalfWidth);
+        var forwardReach=7.4+continuationRandom()*3.2;
+        var releaseStart=.06+Math.pow(continuationRandom(),1.45)*.42;
+        var releaseDuration=.31+continuationRandom()*.24;
+        var trunkLength=1.15+continuationRandom()*.48;
+        var transitionLength=3.2+continuationRandom()*.75;
+        var valleyDrop=1.55+continuationRandom()*.68;
+        var lateralDrift=(continuationRandom()-.5)*.42;
+        var previousVertex=null;
+        var totalPathPoints=trunkPoints+transitionPoints+valleyPoints;
+
+        for(var pathPointIndex=0;pathPointIndex<totalPathPoints;pathPointIndex++){
+          var relativeX=0,relativeY=0,relativeZ=0;
+          var pathProgress=pathPointIndex/Math.max(1,totalPathPoints-1);
+          if(pathPointIndex<trunkPoints){
+            var trunkT=pathPointIndex/Math.max(1,trunkPoints-1);
+            var trunkRadius=.018+.035*trunkT;
+            relativeY=-trunkLength*trunkT;
+            relativeX=organismRightX*Math.sin(trunkT*5.1+branchPhase)*trunkRadius;
+            relativeZ=organismRightZ*Math.sin(trunkT*5.1+branchPhase)*trunkRadius;
+          } else if(pathPointIndex<trunkPoints+transitionPoints){
+            var transitionIndex=pathPointIndex-trunkPoints;
+            var transitionT=transitionIndex/Math.max(1,transitionPoints-1);
+            var release=smoother((transitionT-releaseStart)/releaseDuration);
+            var transitionLane=lane*release;
+            var transitionForward=(.3+forwardReach*.27*release)*transitionT;
+            var transitionWeave=Math.sin(transitionT*(5.2+continuationRandom()*1.1)+branchPhase)*(.035+release*.17);
+            relativeY=-trunkLength-transitionLength*transitionT;
+            relativeX=organismRightX*(transitionLane+transitionWeave)+organismForwardX*transitionForward;
+            relativeZ=organismRightZ*(transitionLane+transitionWeave)+organismForwardZ*transitionForward;
+          } else {
+            var valleyIndex=pathPointIndex-trunkPoints-transitionPoints;
+            var valleyT=valleyIndex/Math.max(1,valleyPoints-1);
+            lateralDrift+=(continuationRandom()-.5)*.065;
+            lateralDrift*=.94;
+            var valleyLane=lane+lateralDrift*valleyIndex;
+            valleyLane+=Math.sin(valleyT*(4.7+continuationRandom()*1.7)+branchPhase)*(.16+continuationRandom()*.24);
+            valleyLane=THREE.MathUtils.clamp(valleyLane,-valleyHalfWidth,valleyHalfWidth);
+            var valleyForward=forwardReach*.27+valleyT*forwardReach;
+            valleyForward+=Math.sin(valleyT*3.2+branchPhase*.6)*.22;
+            var valleyBank=Math.pow(Math.abs(valleyLane)/valleyHalfWidth,1.5)*(isMobile?1.05:1.42);
+            relativeY=-trunkLength-transitionLength-valleyDrop*valleyT+valleyBank;
+            relativeY+=Math.sin(valleyT*5.6+branchPhase)*.1;
+            relativeX=organismRightX*valleyLane+organismForwardX*valleyForward;
+            relativeZ=organismRightZ*valleyLane+organismForwardZ*valleyForward;
+          }
+          var waveStrength=Math.pow(1-smoother(pathProgress),1.18);
+          previousVertex=appendVertex(
+            tipVertex,
+            relativeX,
+            relativeY,
+            relativeZ,
+            waveStrength,
+            branchPhase,
+            pathProgress,
+            continuationColor.copy(sourceColor).multiplyScalar(.76+continuationRandom()*.24),
+            previousVertex
+          );
+        }
+      }
+    }
+  }
+
   function genStrandInto(outPos,outCol,outPtsPos,outPtsCol){
     sBase=[]; sMeta=[]; sFibers=[]; vc=0; wobbleLineRefs=[]; wobblePtsRefs=[];
+    organismVertices=[]; organismMeta=[]; organismLineRefs=[]; organismPointRefs=[];
     goldEscapeWeights=[]; goldEscapePhases=[]; goldEscapeFrequencies=[]; goldEscapeSpeeds=[];
     var N=Math.max(20,Math.round(SP.length/SP.spacing));
     var mx=moveX(), my=moveY(), mz=moveZ();
@@ -837,11 +830,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         vc++;
       }
     }
+    appendLivingOrganismContinuation(outPos,outCol,outPtsPos,outPtsCol);
   }
 
   function resetWobbleBuffers(){
     wobbleX=new Float32Array(vc);
     wobbleZ=new Float32Array(vc);
+    organismCurrent=new Float32Array(organismVertices.length);
     goldEscapeWeights=new Float32Array(goldEscapeWeights);
     goldEscapePhases=new Float32Array(goldEscapePhases);
     goldEscapeFrequencies=new Float32Array(goldEscapeFrequencies);
@@ -1053,6 +1048,31 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     return out;
   }
 
+  function livingOrganismVertexLocal(vertexIndex,out,time){
+    var organismVertexMeta=organismMeta[vertexIndex];
+    if(!organismVertexMeta) return out.set(0,0,0);
+    goldStrandVertexLocal(organismVertexMeta.parentVertex,out,true);
+    var organismOffset=vertexIndex*3;
+    out.x+=organismVertices[organismOffset];
+    out.y+=organismVertices[organismOffset+1];
+    out.z+=organismVertices[organismOffset+2];
+    var waveStrength=organismVertexMeta.waveStrength;
+    if(waveStrength<=.0001) return out;
+    var waveTravel=organismVertexMeta.travel;
+    var wavePhase=organismVertexMeta.phase;
+    var lateralWave=(
+      Math.sin(time*WIND.speed*2.95+waveTravel*WIND.waveFrequency+wavePhase)*WIND.wave
+      +Math.sin(time*WIND.speed*1.31+wavePhase)*WIND.sway*.08
+    )*waveStrength;
+    var depthWave=(
+      Math.cos(time*WIND.speed*2.43+waveTravel*WIND.waveFrequency*.78+wavePhase)*WIND.wave*.82
+      +Math.cos(time*WIND.speed*1.07+wavePhase)*WIND.sway*.06
+    )*waveStrength;
+    out.x+=organismRightX*lateralWave+organismForwardX*depthWave;
+    out.z+=organismRightZ*lateralWave+organismForwardZ*depthWave;
+    return out;
+  }
+
   function updateGoldStrandGeometry(time){
     if(!STRAND_ON||!vc) return;
     for(var strandVertexIndex=0;strandVertexIndex<vc;strandVertexIndex++){
@@ -1074,6 +1094,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       }
     }
     updateGoldEndOffset();
+    for(var organismVertexIndex=0;organismVertexIndex<organismMeta.length;organismVertexIndex++){
+      livingOrganismVertexLocal(organismVertexIndex,organismScratch,time);
+      var organismCurrentOffset=organismVertexIndex*3;
+      organismCurrent[organismCurrentOffset]=organismScratch.x;
+      organismCurrent[organismCurrentOffset+1]=organismScratch.y;
+      organismCurrent[organismCurrentOffset+2]=organismScratch.z;
+    }
     var linePositionArray=linesObj.geometry.attributes.position.array;
     var lineColorArray=linesObj.geometry.attributes.color.array;
     for(var lineReferenceIndex=0;lineReferenceIndex<wobbleLineRefs.length;lineReferenceIndex++){
@@ -1083,6 +1110,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       linePositionArray[lineReference.off+1]=goldDragScratch.y;
       linePositionArray[lineReference.off+2]=goldDragScratch.z;
       updateGoldFusionColor(lineColorArray,goldLineBaseColors,lineReference.off,lineReference.srcV);
+    }
+    for(var organismLineReferenceIndex=0;organismLineReferenceIndex<organismLineRefs.length;organismLineReferenceIndex++){
+      var organismLineReference=organismLineRefs[organismLineReferenceIndex];
+      var organismLineSourceOffset=organismLineReference.src*3;
+      linePositionArray[organismLineReference.off]=organismCurrent[organismLineSourceOffset];
+      linePositionArray[organismLineReference.off+1]=organismCurrent[organismLineSourceOffset+1];
+      linePositionArray[organismLineReference.off+2]=organismCurrent[organismLineSourceOffset+2];
     }
     linesObj.geometry.attributes.position.needsUpdate=true;
     linesObj.geometry.attributes.color.needsUpdate=true;
@@ -1095,6 +1129,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       pointPositionArray[pointReference.off+1]=goldDragScratch.y;
       pointPositionArray[pointReference.off+2]=goldDragScratch.z;
       updateGoldFusionColor(pointColorArray,goldPointBaseColors,pointReference.off,pointReference.srcV);
+    }
+    for(var organismPointReferenceIndex=0;organismPointReferenceIndex<organismPointRefs.length;organismPointReferenceIndex++){
+      var organismPointReference=organismPointRefs[organismPointReferenceIndex];
+      var organismPointSourceOffset=organismPointReference.src*3;
+      pointPositionArray[organismPointReference.off]=organismCurrent[organismPointSourceOffset];
+      pointPositionArray[organismPointReference.off+1]=organismCurrent[organismPointSourceOffset+1];
+      pointPositionArray[organismPointReference.off+2]=organismCurrent[organismPointSourceOffset+2];
     }
     wptsObj.geometry.attributes.position.needsUpdate=true;
     wptsObj.geometry.attributes.color.needsUpdate=true;
