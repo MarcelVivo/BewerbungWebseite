@@ -66,6 +66,19 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var cameraTargetStart=CAMERA_TARGET_START;
   var cameraTravel=computeCameraTravel(totalWorldStops);
   var cameraTargetEnd=cameraTargetStart-cameraTravel;
+  // Die bestehende Helix bleibt bis hinter das vollständige Sichtfenster der
+  // gemeinsamen 2x2-Kartengruppe mathematisch unangetastet. Erst danach wird
+  // derselbe Rail-Parameter C2-stetig ausgerollt: Geschwindigkeit und
+  // Beschleunigung schliessen ohne Knick an die Helix an und gehen in eine
+  // langsame Rückwärts-Dollyfahrt über.
+  var cardGroupWorldY=TEXT_START_Y-introTexts.length*HELIX_STEP;
+  var cardGroupFocusWindow=HELIX_STEP*1.35;
+  var cameraHelixExitStart=THREE.MathUtils.clamp(
+    (cameraTargetStart-cardGroupWorldY+cardGroupFocusWindow)/cameraTravel,
+    0,
+    .92
+  );
+  var cameraExitPullback=7.4;
   var SCENE_MOTION=false;
   var OBJECT_FLOATING=true;
   var NEURAL_INFORMATION_ACTIVE=true;
@@ -2644,7 +2657,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       }
       if (NEURAL_INFORMATION_ACTIVE && !reduced) neuralActivityController.update(dt);
       nodesP.material.opacity = .44;
-      var railSlowdown=cameraRailSlowdown(cameraProgress);
+      var railSlowdown=cameraProgress<=cameraHelixExitStart?cameraRailSlowdown(cameraProgress):1;
       var cameraAcceleration=((targetScrollP-cameraProgress)*CAMERA_SPRING*railSlowdown-cameraVelocity*CAMERA_DAMPING)/CAMERA_MASS;
       cameraVelocity+=cameraAcceleration*dt;
       cameraProgress+=cameraVelocity*dt;
@@ -2656,23 +2669,41 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       }
       scrollP=cameraProgress;
       var sf = cameraProgress;
-      var orbit=sf*Math.PI*2;
-      var lookY=cameraTargetStart-sf*cameraTravel;
-      var heroPerspective=Math.max(0,1-sf/.11);
+      var railSf=sf;
+      var dollyPullback=0;
+      if(sf>cameraHelixExitStart){
+        var exitRange=Math.max(.0001,1-cameraHelixExitStart);
+        var exitT=THREE.MathUtils.clamp((sf-cameraHelixExitStart)/exitRange,0,1);
+        var exitT2=exitT*exitT;
+        var exitT3=exitT2*exitT;
+        var exitT4=exitT3*exitT;
+        var exitT5=exitT4*exitT;
+        var exitT6=exitT5*exitT;
+        // Integral einer smootherstep-abklingenden Geschwindigkeit. Am Start
+        // gelten exakt dieselbe Position, Tangente und Krümmung wie zuvor in
+        // der Helix; am Ende laufen Drehung und Sinkflug physikalisch aus.
+        var coastProgress=exitT-2.5*exitT4+3*exitT5-exitT6;
+        var exitEase=exitT3*(exitT*(exitT*6-15)+10);
+        railSf=cameraHelixExitStart+exitRange*coastProgress;
+        dollyPullback=cameraExitPullback*exitEase;
+      }
+      var orbit=railSf*Math.PI*2;
+      var lookY=cameraTargetStart-railSf*cameraTravel;
+      var heroPerspective=Math.max(0,1-railSf/.11);
       var cameraY=lookY+.24+heroPerspective*.16;
       var desiredCameraLookY=lookY-heroPerspective*.1-cameraVelocity*.55;
       var aimEase=1-Math.exp(-dt*5.4);
       cameraAimY+=(desiredCameraLookY-cameraAimY)*aimEase;
       var baseCameraRadius=(8.78
-        +Math.sin(sf*Math.PI*2*3.15+.6)*.46
-        +Math.sin(sf*Math.PI*2*6.4+1.7)*.22);
+        +Math.sin(railSf*Math.PI*2*3.15+.6)*.46
+        +Math.sin(railSf*Math.PI*2*6.4+1.7)*.22);
       var mobileHeroFraming=1;
       if(isMobile){
-        var mobileHeroMix=1-THREE.MathUtils.smoothstep(sf,.015,.075);
+        var mobileHeroMix=1-THREE.MathUtils.smoothstep(railSf,.015,.075);
         mobileHeroFraming=1+(MOBILE_RADIUS_SCALE-1)*mobileHeroMix;
       }
-      var cameraRadius=baseCameraRadius*mobileHeroFraming;
-      var targetFov=53+Math.sin(sf*Math.PI*2*2.15+.45)*1.65;
+      var cameraRadius=baseCameraRadius*mobileHeroFraming+dollyPullback;
+      var targetFov=53+Math.sin(railSf*Math.PI*2*2.15+.45)*1.65;
       if(Math.abs(targetFov-lastCameraFov)>.015){
         camera.fov=targetFov;
         camera.updateProjectionMatrix();
