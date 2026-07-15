@@ -300,6 +300,18 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   // stark verdichteten Hirnstamm. In diesem Bereich soll ausschliesslich der
   // prozedurale Goldtrichter sichtbar sein.
   var ORIGINAL_STUMP_CUTOFF=-.62;
+  var ambientStarLayers=[];
+
+  function registerAmbientStarLayer(object,fadeStart,fadeEnd){
+    if(!object||!object.material) return object;
+    ambientStarLayers.push({
+      object:object,
+      baseOpacity:object.material.opacity,
+      fadeStart:fadeStart,
+      fadeEnd:fadeEnd
+    });
+    return object;
+  }
 
   function pointsObj(arr,cols,size,op,blending){
     var g2=new THREE.BufferGeometry();
@@ -323,15 +335,16 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var depthPoints=pointsObj(positions,colors,size,opacity,THREE.AdditiveBlending);
     depthPoints.frustumCulled=false;
     world.add(depthPoints);
+    return depthPoints;
   }
 
   // Fünf feste räumliche Ebenen: Die Partikel bewegen sich nicht selbst,
   // erzeugen durch die vorbeifliegende Kamera aber permanenten Vorder- und Hintergrund-Flow.
-  addDepthLayer(isMobile?24:52,1.4,3.6,.055,.16,0xe7c56a,0xf6e3a1);
-  addDepthLayer(isMobile?34:72,3.7,6.8,.075,.11,0xc89a3d,0xf6e3a1);
-  addDepthLayer(isMobile?42:92,6.9,10.5,.11,.075,0xb8862b,0xe7c56a);
-  addDepthLayer(isMobile?34:76,10.6,16.5,.16,.045,0x7c5a1a,0xc89a3d);
-  addDepthLayer(isMobile?16:36,16.6,23,.42,.02,0x7c5a1a,0xb8862b);
+  registerAmbientStarLayer(addDepthLayer(isMobile?24:52,1.4,3.6,.055,.16,0xe7c56a,0xf6e3a1),.02,.38);
+  registerAmbientStarLayer(addDepthLayer(isMobile?34:72,3.7,6.8,.075,.11,0xc89a3d,0xf6e3a1),.07,.44);
+  registerAmbientStarLayer(addDepthLayer(isMobile?42:92,6.9,10.5,.11,.075,0xb8862b,0xe7c56a),.12,.5);
+  registerAmbientStarLayer(addDepthLayer(isMobile?34:76,10.6,16.5,.16,.045,0x7c5a1a,0xc89a3d),.17,.56);
+  registerAmbientStarLayer(addDepthLayer(isMobile?16:36,16.6,23,.42,.02,0x7c5a1a,0xb8862b),.22,.62);
 
   // --- Staubfeld: tausende feine, leuchtende Partikel, frei über alle drei
   // Achsen im gesamten Raum verteilt (nicht nur in schmalen Radius-Ringen wie
@@ -351,8 +364,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var stardust=pointsObj(positions,colors,size,opacity,THREE.AdditiveBlending);
     stardust.frustumCulled=false;
     world.add(stardust);
+    return stardust;
   }
-  addStardustField(isMobile?1300:4200,.09,.85);
+  registerAmbientStarLayer(addStardustField(isMobile?1300:4200,.09,.85),.08,.58);
 
   // --- Farbige Leuchtorbs: rote & blaue Partikel, dreimal so gross wie das
   // Gold-Staubfeld, in halber Stückzahl, über einen deutlich grösseren Raum
@@ -380,12 +394,173 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var halo=pointsObj(positions,colors,haloSize,haloOpacity,THREE.AdditiveBlending);
     halo.frustumCulled=false;
     world.add(halo);
+    return [core,halo];
   }
   var BLUE_ORB_SHADES=[new THREE.Color(0x4d7fbf),new THREE.Color(0x8ebef2),new THREE.Color(0xc4e3ff),new THREE.Color(0x244d82)];
   var RED_ORB_SHADES=[new THREE.Color(0xa6425c),new THREE.Color(0xd9788a),new THREE.Color(0xf3b0b9),new THREE.Color(0x6a263b)];
   var coloredOrbCount=isMobile?325:1050;
-  addColoredOrbField(coloredOrbCount,.27,1.35,.8,.13,BLUE_ORB_SHADES,2,55,14);
-  addColoredOrbField(coloredOrbCount,.27,1.35,.8,.13,RED_ORB_SHADES,2,55,14);
+  var blueAmbientOrbs=addColoredOrbField(coloredOrbCount,.27,1.35,.8,.13,BLUE_ORB_SHADES,2,55,14);
+  var redAmbientOrbs=addColoredOrbField(coloredOrbCount,.27,1.35,.8,.13,RED_ORB_SHADES,2,55,14);
+  registerAmbientStarLayer(blueAmbientOrbs[0],.18,.64);
+  registerAmbientStarLayer(blueAmbientOrbs[1],.2,.66);
+  registerAmbientStarLayer(redAmbientOrbs[0],.24,.68);
+  registerAmbientStarLayer(redAmbientOrbs[1],.26,.7);
+
+  // Kapitel 2 ist eine bereits existierende, statische Weltgeometrie. Sie
+  // wird nicht aus der Kameraposition berechnet: die feste Ausrichtung folgt
+  // der semantischen Kartenstation der gemeinsamen Helix. Die Kamera entdeckt
+  // diese Landschaft lediglich auf ihrer unveränderten Schiene.
+  function createSeededRandom(seed){
+    var state=seed>>>0;
+    return function(){
+      state=(state+0x6d2b79f5)|0;
+      var value=Math.imul(state^(state>>>15),1|state);
+      value=value+Math.imul(value^(value>>>7),61|value)^value;
+      return ((value^(value>>>14))>>>0)/4294967296;
+    };
+  }
+
+  function buildNeuralValley(){
+    var valley=new THREE.Group();
+    valley.name='neural-valley-foundation';
+    var random=createSeededRandom(0x4d534e56);
+    var stationAngle=helixAngleForWorldIndex(introTexts.length,cameraTravel);
+    var forward=new THREE.Vector3(Math.sin(stationAngle),0,Math.cos(stationAngle));
+    var right=new THREE.Vector3(Math.cos(stationAngle),0,-Math.sin(stationAngle));
+    var transitionTopY=cardGroupWorldY-cardGroupFocusWindow*.78;
+    var transitionLength=9.6;
+    var valleyStartDistance=7.8;
+    var valleyLength=27;
+    var valleyHalfWidth=10.6;
+
+    function localPoint(lateral,y,distance,target){
+      target.copy(forward).multiplyScalar(distance).addScaledVector(right,lateral);
+      target.y=y;
+      return target;
+    }
+
+    function valleyHeight(lateral,distance,phase){
+      var bank=Math.pow(Math.min(1,Math.abs(lateral)/valleyHalfWidth),1.55)*4.9;
+      var longitudinal=-39.2-distance*.075;
+      return longitudinal+bank+Math.sin(distance*.31+phase)*.32+Math.sin(distance*.13+phase*1.7)*.2;
+    }
+
+    function appendPath(positionArray,colorArray,path,color){
+      for(var pathIndex=1;pathIndex<path.length;pathIndex++){
+        var previous=path[pathIndex-1],current=path[pathIndex];
+        positionArray.push(previous.x,previous.y,previous.z,current.x,current.y,current.z);
+        colorArray.push(color.r,color.g,color.b,color.r,color.g,color.b);
+      }
+    }
+
+    function buildColorSystem(name,palette,laneCenter,seedOffset){
+      var positions=[],colors=[];
+      var fiberCount=isMobile?54:118;
+      var transitionPointCount=24;
+      var valleyPointCount=31;
+      var scratch=new THREE.Vector3();
+      var path=[];
+      var colorChoices=[palette.deep,palette.primary,palette.light];
+
+      // Die Ablösezeit jedes Fadens ist anders. Dadurch sind über die lange
+      // Zone gleichzeitig Rest-Hauptbündel, mittlere Teilbündel und bereits
+      // freie Einzelbahnen sichtbar, ohne lokalisierbare Trennkante.
+      for(var fiberIndex=0;fiberIndex<fiberCount;fiberIndex++){
+        path=[];
+        var fiberRandom=createSeededRandom(0x1847+seedOffset*997+fiberIndex*37);
+        var branchStart=.06+Math.pow(fiberRandom(),1.42)*.61;
+        var branchDelay=.16+fiberRandom()*.23;
+        var routeLane=laneCenter+(fiberRandom()-.5)*3.3;
+        var routeDepth=valleyStartDistance+(fiberRandom()-.5)*2.1;
+        var phase=fiberRandom()*Math.PI*2;
+        var coreRadius=.12+fiberRandom()*.3;
+        var color=colorChoices[Math.floor(fiberRandom()*colorChoices.length)];
+        for(var transitionIndex=0;transitionIndex<transitionPointCount;transitionIndex++){
+          var transitionT=transitionIndex/(transitionPointCount-1);
+          var release=smooth((transitionT-branchStart)/branchDelay);
+          var residualRadius=coreRadius*(1-release*.72);
+          var lateral=(fiberRandom()-.5)*residualRadius+routeLane*release;
+          lateral+=Math.sin(transitionT*8.7+phase)*(.04+release*.42);
+          var distance=transitionT*.7+release*(routeDepth-transitionT*.7);
+          distance+=Math.sin(transitionT*5.2+phase*.7)*release*.35;
+          var transitionY=transitionTopY-transitionT*transitionLength;
+          transitionY+=release*(valleyHeight(lateral,routeDepth,phase)-transitionY);
+          transitionY+=Math.sin(transitionT*11.3+phase)*(.03+release*.18);
+          path.push(localPoint(lateral,transitionY,distance,scratch.clone()));
+        }
+        appendPath(positions,colors,path,color);
+
+        // Jede freigesetzte Bahn läuft als organische Längsfaser in der
+        // breiten Talform weiter. Keine zwei Bahnen teilen exakt Radius,
+        // Abstand, Kurve oder Dichte.
+        path=[];
+        var lateralVelocity=(fiberRandom()-.5)*.2;
+        for(var valleyIndex=0;valleyIndex<valleyPointCount;valleyIndex++){
+          var valleyT=valleyIndex/(valleyPointCount-1);
+          var valleyDistance=routeDepth+valleyT*valleyLength*(.82+fiberRandom()*.22);
+          lateralVelocity+=(fiberRandom()-.5)*.075;
+          lateralVelocity*=.91;
+          var valleyLateral=routeLane+lateralVelocity*valleyIndex;
+          valleyLateral+=Math.sin(valleyT*(5.1+fiberRandom()*2.8)+phase)*(.3+fiberRandom()*.46);
+          valleyLateral=THREE.MathUtils.clamp(valleyLateral,-valleyHalfWidth,valleyHalfWidth);
+          var y=valleyHeight(valleyLateral,valleyDistance,phase)+(fiberRandom()-.5)*.22;
+          path.push(localPoint(valleyLateral,y,valleyDistance,scratch.clone()));
+        }
+        appendPath(positions,colors,path,color);
+      }
+
+      // Unregelmässige Seitenverzweigungen erzeugen die Lesbarkeit einer
+      // gewachsenen Welt. Sie bleiben kurz, gekrümmt und unterschiedlich
+      // geneigt; es entstehen weder Raster noch lange parallele Kabelgruppen.
+      var branchCount=isMobile?34:82;
+      for(var branchIndex=0;branchIndex<branchCount;branchIndex++){
+        path=[];
+        var branchPhase=random()*Math.PI*2;
+        var branchStartDistance=valleyStartDistance+3+random()*(valleyLength-5);
+        var branchStartLateral=laneCenter+(random()-.5)*4.4;
+        var branchDirection=(random()<.5?-1:1);
+        var branchReach=.9+random()*3.8;
+        var branchForward=1.4+random()*5.2;
+        var branchColor=colorChoices[Math.floor(random()*colorChoices.length)];
+        var branchPoints=6+Math.floor(random()*7);
+        for(var branchPointIndex=0;branchPointIndex<branchPoints;branchPointIndex++){
+          var branchT=branchPointIndex/(branchPoints-1);
+          var bend=branchT*branchT*(3-2*branchT);
+          var branchLateral=branchStartLateral+branchDirection*branchReach*bend;
+          branchLateral+=Math.sin(branchT*Math.PI*(1.1+random()*.8)+branchPhase)*.34;
+          branchLateral=THREE.MathUtils.clamp(branchLateral,-valleyHalfWidth,valleyHalfWidth);
+          var branchDistance=branchStartDistance+branchForward*branchT+Math.sin(branchT*Math.PI)*.5;
+          var branchY=valleyHeight(branchLateral,branchDistance,branchPhase)+Math.sin(branchT*Math.PI)*(.2+random()*.5);
+          path.push(localPoint(branchLateral,branchY,branchDistance,scratch.clone()));
+        }
+        appendPath(positions,colors,path,branchColor);
+      }
+
+      var geometry=new THREE.BufferGeometry();
+      geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+      geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
+      var material=new THREE.LineBasicMaterial({
+        vertexColors:true,
+        transparent:true,
+        opacity:name==='gold'?.42:.48,
+        blending:THREE.NormalBlending,
+        depthWrite:false,
+        depthTest:true
+      });
+      var lineSystem=new THREE.LineSegments(geometry,material);
+      lineSystem.name='neural-valley-'+name;
+      lineSystem.frustumCulled=false;
+      valley.add(lineSystem);
+    }
+
+    buildColorSystem('red',SATELLITE_METALS.red,-4.5,1);
+    buildColorSystem('gold',{deep:GOLD.deep,primary:GOLD.primary,light:GOLD.light},0,2);
+    buildColorSystem('blue',SATELLITE_METALS.blue,4.5,3);
+    world.add(valley);
+    return valley;
+  }
+
+  var neuralValley=buildNeuralValley();
 
   var BR=brainData;
 
@@ -2669,6 +2844,20 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       }
       scrollP=cameraProgress;
       var sf = cameraProgress;
+      var chapterTransitionProgress=THREE.MathUtils.clamp(
+        (sf-cameraHelixExitStart)/Math.max(.0001,1-cameraHelixExitStart),
+        0,
+        1
+      );
+      for(var ambientLayerIndex=0;ambientLayerIndex<ambientStarLayers.length;ambientLayerIndex++){
+        var ambientLayer=ambientStarLayers[ambientLayerIndex];
+        var ambientFade=smooth(
+          (chapterTransitionProgress-ambientLayer.fadeStart)/
+          Math.max(.0001,ambientLayer.fadeEnd-ambientLayer.fadeStart)
+        );
+        ambientLayer.object.material.opacity=ambientLayer.baseOpacity*(1-ambientFade);
+        ambientLayer.object.visible=ambientFade<.999;
+      }
       var railSf=sf;
       var dollyPullback=0;
       if(sf>cameraHelixExitStart){
