@@ -546,11 +546,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   function appendLivingOrganismContinuation(outPos,outCol,outPtsPos,outPtsCol){
     if(!sFibers.length) return;
     var continuationRandom=createSeededRandom(0x4d534f52);
-    var branchCopies=isMobile?1:2;
-    var trunkPoints=isMobile?8:11;
-    var transitionPoints=isMobile?13:19;
-    var valleyPoints=isMobile?18:27;
-    var valleyHalfWidth=isMobile?2.65:3.45;
+    var trunkPoints=isMobile?11:15;
+    var transitionPoints=isMobile?24:34;
+    var valleyPoints=isMobile?30:44;
+    var valleyHalfWidth=isMobile?2.72:3.58;
+    var valleyBankHeight=isMobile?1.02:1.38;
     var continuationColor=new THREE.Color();
 
     function fiberColor(fiberIndex,tipVertex){
@@ -560,7 +560,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         :(selector<-.33
           ?[SATELLITE_METALS.blue.deep,SATELLITE_METALS.blue.primary,SATELLITE_METALS.blue.light]
           :[GOLD.deep,GOLD.primary,GOLD.light]);
-      return palette[(fiberIndex+Math.floor(continuationRandom()*palette.length))%palette.length];
+      return palette[Math.abs(fiberIndex*13+tipVertex*7)%palette.length];
     }
 
     function appendVertex(parentVertex,relativeX,relativeY,relativeZ,waveStrength,phase,travel,color,previousVertex){
@@ -602,70 +602,100 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var sourceFiber=sFibers[continuationFiberIndex];
       var tipVertex=sourceFiber.start+sourceFiber.len-1;
       var sourceColor=fiberColor(continuationFiberIndex,tipVertex);
-      var normalizedFiber=continuationFiberIndex/Math.max(1,sFibers.length-1);
-      for(var copyIndex=0;copyIndex<branchCopies;copyIndex++){
-        var branchPhase=continuationRandom()*Math.PI*2;
-        var branchBias=(copyIndex-(branchCopies-1)*.5)*.32;
-        var lane=((normalizedFiber*2-1)*valleyHalfWidth)+branchBias+(continuationRandom()-.5)*.48;
-        lane=THREE.MathUtils.clamp(lane,-valleyHalfWidth,valleyHalfWidth);
-        var forwardReach=7.4+continuationRandom()*3.2;
-        var releaseStart=.06+Math.pow(continuationRandom(),1.45)*.42;
-        var releaseDuration=.31+continuationRandom()*.24;
-        var trunkLength=1.15+continuationRandom()*.48;
-        var transitionLength=3.2+continuationRandom()*.75;
-        var valleyDrop=1.55+continuationRandom()*.68;
-        var lateralDrift=(continuationRandom()-.5)*.42;
-        var previousVertex=null;
-        var totalPathPoints=trunkPoints+transitionPoints+valleyPoints;
+      var branchPhase=continuationRandom()*Math.PI*2;
+      var laneSequence=(continuationFiberIndex*.61803398875+continuationRandom()*.19)%1;
+      var lane=(laneSequence*2-1)*valleyHalfWidth;
+      var laneDrift=(continuationRandom()-.5)*(isMobile?.42:.58);
+      var finalLane=THREE.MathUtils.clamp(lane+laneDrift,-valleyHalfWidth,valleyHalfWidth);
+      var releaseStart=.12+continuationRandom()*.36;
+      var trunkLength=1.48+continuationRandom()*.4;
+      var transitionDrop=2.72+continuationRandom()*.56;
+      var transitionForwardReach=3.15+continuationRandom()*.72;
+      var valleyForwardReach=8.8+continuationRandom()*2.6;
+      var valleyDrop=.68+continuationRandom()*.44;
+      var transitionWeaveAmplitude=.035+continuationRandom()*.075;
+      var transitionWeaveFrequency=4.2+continuationRandom()*2.1;
+      var valleyMeanderAmplitude=.1+continuationRandom()*.2;
+      var valleyMeanderFrequency=2.25+continuationRandom()*2.35;
+      var valleyLiftAmplitude=.025+continuationRandom()*.065;
+      var colorIntensity=.78+continuationRandom()*.2;
+      var fiberDisplayColor=continuationColor.copy(sourceColor).multiplyScalar(colorIntensity).clone();
+      var previousVertex=null;
+      var emittedPointIndex=0;
+      var totalPathPoints=trunkPoints+transitionPoints+valleyPoints;
 
-        for(var pathPointIndex=0;pathPointIndex<totalPathPoints;pathPointIndex++){
-          var relativeX=0,relativeY=0,relativeZ=0;
-          var pathProgress=pathPointIndex/Math.max(1,totalPathPoints-1);
-          if(pathPointIndex<trunkPoints){
-            var trunkT=pathPointIndex/Math.max(1,trunkPoints-1);
-            var trunkRadius=.018+.035*trunkT;
-            relativeY=-trunkLength*trunkT;
-            relativeX=organismRightX*Math.sin(trunkT*5.1+branchPhase)*trunkRadius;
-            relativeZ=organismRightZ*Math.sin(trunkT*5.1+branchPhase)*trunkRadius;
-          } else if(pathPointIndex<trunkPoints+transitionPoints){
-            var transitionIndex=pathPointIndex-trunkPoints;
-            var transitionT=transitionIndex/Math.max(1,transitionPoints-1);
-            var release=smoother((transitionT-releaseStart)/releaseDuration);
-            var transitionLane=lane*release;
-            var transitionForward=(.3+forwardReach*.27*release)*transitionT;
-            var transitionWeave=Math.sin(transitionT*(5.2+continuationRandom()*1.1)+branchPhase)*(.035+release*.17);
-            relativeY=-trunkLength-transitionLength*transitionT;
-            relativeX=organismRightX*(transitionLane+transitionWeave)+organismForwardX*transitionForward;
-            relativeZ=organismRightZ*(transitionLane+transitionWeave)+organismForwardZ*transitionForward;
-          } else {
-            var valleyIndex=pathPointIndex-trunkPoints-transitionPoints;
-            var valleyT=valleyIndex/Math.max(1,valleyPoints-1);
-            lateralDrift+=(continuationRandom()-.5)*.065;
-            lateralDrift*=.94;
-            var valleyLane=lane+lateralDrift*valleyIndex;
-            valleyLane+=Math.sin(valleyT*(4.7+continuationRandom()*1.7)+branchPhase)*(.16+continuationRandom()*.24);
-            valleyLane=THREE.MathUtils.clamp(valleyLane,-valleyHalfWidth,valleyHalfWidth);
-            var valleyForward=forwardReach*.27+valleyT*forwardReach;
-            valleyForward+=Math.sin(valleyT*3.2+branchPhase*.6)*.22;
-            var valleyBank=Math.pow(Math.abs(valleyLane)/valleyHalfWidth,1.5)*(isMobile?1.05:1.42);
-            relativeY=-trunkLength-transitionLength-valleyDrop*valleyT+valleyBank;
-            relativeY+=Math.sin(valleyT*5.6+branchPhase)*.1;
-            relativeX=organismRightX*valleyLane+organismForwardX*valleyForward;
-            relativeZ=organismRightZ*valleyLane+organismForwardZ*valleyForward;
-          }
-          var waveStrength=Math.pow(1-smoother(pathProgress),1.18);
-          previousVertex=appendVertex(
-            tipVertex,
-            relativeX,
-            relativeY,
-            relativeZ,
-            waveStrength,
-            branchPhase,
-            pathProgress,
-            continuationColor.copy(sourceColor).multiplyScalar(.76+continuationRandom()*.24),
-            previousVertex
-          );
-        }
+      function appendPathVertex(relativeX,relativeY,relativeZ){
+        var pathProgress=emittedPointIndex/Math.max(1,totalPathPoints-1);
+        var waveStrength=.025+.975*Math.pow(1-smoother(pathProgress),1.16);
+        previousVertex=appendVertex(
+          tipVertex,
+          relativeX,
+          relativeY,
+          relativeZ,
+          waveStrength,
+          branchPhase,
+          pathProgress,
+          fiberDisplayColor,
+          previousVertex
+        );
+        emittedPointIndex++;
+      }
+
+      for(var trunkIndex=0;trunkIndex<trunkPoints;trunkIndex++){
+        var trunkT=trunkIndex/Math.max(1,trunkPoints-1);
+        var trunkEase=smoother(trunkT);
+        var trunkSway=Math.sin(Math.PI*trunkT)*Math.sin(branchPhase+trunkT*2.4)*.028;
+        var trunkForward=.08*trunkEase;
+        appendPathVertex(
+          organismRightX*trunkSway+organismForwardX*trunkForward,
+          -trunkLength*trunkT,
+          organismRightZ*trunkSway+organismForwardZ*trunkForward
+        );
+      }
+
+      var transitionEndSide=0;
+      var transitionEndForward=0;
+      var transitionEndY=0;
+      for(var transitionIndex=1;transitionIndex<=transitionPoints;transitionIndex++){
+        var transitionT=transitionIndex/transitionPoints;
+        var transitionEase=smoother(transitionT);
+        var release=smoother((transitionT-releaseStart)/(1-releaseStart));
+        var transitionWeave=(Math.sin(branchPhase+transitionT*transitionWeaveFrequency)-Math.sin(branchPhase))
+          *transitionWeaveAmplitude*release*(1-release*.28);
+        var transitionSide=lane*release+transitionWeave;
+        var transitionBank=Math.pow(Math.abs(transitionSide)/valleyHalfWidth,1.55)*valleyBankHeight*release;
+        var transitionForwardPosition=.08+transitionForwardReach*transitionEase;
+        var transitionY=-trunkLength-transitionDrop*transitionT*(2-transitionT)+transitionBank;
+        appendPathVertex(
+          organismRightX*transitionSide+organismForwardX*transitionForwardPosition,
+          transitionY,
+          organismRightZ*transitionSide+organismForwardZ*transitionForwardPosition
+        );
+        transitionEndSide=transitionSide;
+        transitionEndForward=transitionForwardPosition;
+        transitionEndY=transitionY;
+      }
+
+      var transitionEndBank=Math.pow(Math.abs(transitionEndSide)/valleyHalfWidth,1.55)*valleyBankHeight;
+      for(var valleyIndex=1;valleyIndex<=valleyPoints;valleyIndex++){
+        var valleyT=valleyIndex/valleyPoints;
+        var valleyEase=smoother(valleyT);
+        var meanderEnvelope=Math.sin(Math.PI*valleyT);
+        var valleyMeander=Math.sin(branchPhase+valleyT*valleyMeanderFrequency)
+          *valleyMeanderAmplitude*meanderEnvelope;
+        var valleySide=transitionEndSide+(finalLane-transitionEndSide)*valleyEase+valleyMeander;
+        valleySide=THREE.MathUtils.clamp(valleySide,-valleyHalfWidth,valleyHalfWidth);
+        var valleyBank=Math.pow(Math.abs(valleySide)/valleyHalfWidth,1.55)*valleyBankHeight;
+        var valleyAdvance=valleyForwardReach*valleyT*valleyT*(2-valleyT);
+        var valleyForward=transitionEndForward+valleyAdvance;
+        var valleyLift=(Math.sin(branchPhase*.7+valleyT*3.4)-Math.sin(branchPhase*.7))
+          *valleyLiftAmplitude*meanderEnvelope;
+        var valleyY=transitionEndY-valleyDrop*valleyEase+(valleyBank-transitionEndBank)+valleyLift;
+        appendPathVertex(
+          organismRightX*valleySide+organismForwardX*valleyForward,
+          valleyY,
+          organismRightZ*valleySide+organismForwardZ*valleyForward
+        );
       }
     }
   }
