@@ -78,7 +78,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     0,
     .92
   );
-  var cameraExitPullback=7.4;
+  var CAMERA_EXIT_COAST_SHARE=.42;
+  var cameraExitRailEnd=cameraHelixExitStart
+    +(1-cameraHelixExitStart)*CAMERA_EXIT_COAST_SHARE*.5;
+  var cameraExitPullback=isMobile?9.6:13.2;
   var SCENE_MOTION=false;
   var OBJECT_FLOATING=true;
   var NEURAL_INFORMATION_ACTIVE=true;
@@ -515,7 +518,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var organismVertices=[], organismMeta=[], organismLineRefs=[], organismPointRefs=[];
   var organismCurrent=new Float32Array(0);
   var organismScratch=new THREE.Vector3();
-  var organismStationAngle=helixAngleForWorldIndex(introTexts.length,cameraTravel)-BASE_Y;
+  var organismStationAngle=cameraExitRailEnd*Math.PI*2-BASE_Y;
   var organismForwardX=Math.sin(organismStationAngle), organismForwardZ=Math.cos(organismStationAngle);
   var organismRightX=Math.cos(organismStationAngle), organismRightZ=-Math.sin(organismStationAngle);
   var wobbleX=new Float32Array(0), wobbleZ=new Float32Array(0);
@@ -546,12 +549,31 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   function appendLivingOrganismContinuation(outPos,outCol,outPtsPos,outPtsCol){
     if(!sFibers.length) return;
     var continuationRandom=createSeededRandom(0x4d534f52);
-    var trunkPoints=isMobile?11:15;
-    var transitionPoints=isMobile?24:34;
-    var valleyPoints=isMobile?30:44;
-    var valleyHalfWidth=isMobile?2.72:3.58;
-    var valleyBankHeight=isMobile?1.02:1.38;
+    var trunkPoints=isMobile?16:22;
+    var transitionPoints=isMobile?38:54;
+    var valleyPoints=isMobile?44:64;
+    var valleyHalfWidth=isMobile?3.15:4.15;
+    var valleyBankHeight=isMobile?1.12:1.55;
+    var branchCount=isMobile?7:9;
+    var branches=[];
     var continuationColor=new THREE.Color();
+
+    for(var branchIndex=0;branchIndex<branchCount;branchIndex++){
+      var branchPosition=branchCount===1?0:branchIndex/(branchCount-1)*2-1;
+      var branchSign=branchPosition<0?-1:1;
+      var branchLane=branchSign*Math.pow(Math.abs(branchPosition),.84)*valleyHalfWidth*.88;
+      branchLane+=(continuationRandom()-.5)*valleyHalfWidth*.13;
+      branches.push({
+        lane:THREE.MathUtils.clamp(branchLane,-valleyHalfWidth*.94,valleyHalfWidth*.94),
+        phase:continuationRandom()*Math.PI*2,
+        releaseStart:.22+continuationRandom()*.16,
+        transitionForward:4.65+continuationRandom()*.95,
+        transitionDrop:2.18+continuationRandom()*.58,
+        valleyForward:13.4+continuationRandom()*3.8,
+        valleyDrop:.56+continuationRandom()*.62,
+        bankBias:(continuationRandom()-.5)*.16
+      });
+    }
 
     function fiberColor(fiberIndex,tipVertex){
       var selector=Math.sin(sMeta[tipVertex*2+1]*2.71+tipVertex*.037);
@@ -602,31 +624,30 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var sourceFiber=sFibers[continuationFiberIndex];
       var tipVertex=sourceFiber.start+sourceFiber.len-1;
       var sourceColor=fiberColor(continuationFiberIndex,tipVertex);
-      var branchPhase=continuationRandom()*Math.PI*2;
-      var laneSequence=(continuationFiberIndex*.61803398875+continuationRandom()*.19)%1;
-      var lane=(laneSequence*2-1)*valleyHalfWidth;
-      var laneDrift=(continuationRandom()-.5)*(isMobile?.42:.58);
-      var finalLane=THREE.MathUtils.clamp(lane+laneDrift,-valleyHalfWidth,valleyHalfWidth);
-      var releaseStart=.12+continuationRandom()*.36;
-      var trunkLength=1.48+continuationRandom()*.4;
-      var transitionDrop=2.72+continuationRandom()*.56;
-      var transitionForwardReach=3.15+continuationRandom()*.72;
-      var valleyForwardReach=8.8+continuationRandom()*2.6;
-      var valleyDrop=.68+continuationRandom()*.44;
-      var transitionWeaveAmplitude=.035+continuationRandom()*.075;
-      var transitionWeaveFrequency=4.2+continuationRandom()*2.1;
-      var valleyMeanderAmplitude=.1+continuationRandom()*.2;
-      var valleyMeanderFrequency=2.25+continuationRandom()*2.35;
-      var valleyLiftAmplitude=.025+continuationRandom()*.065;
+      var branch=branches[continuationFiberIndex%branchCount];
+      var branchPhase=branch.phase+(continuationRandom()-.5)*.72;
+      var laneDrift=(continuationRandom()-.5)*(isMobile?.52:.72);
+      var finalLane=THREE.MathUtils.clamp(branch.lane+laneDrift,-valleyHalfWidth,valleyHalfWidth);
+      var macroReleaseStart=branch.releaseStart+(continuationRandom()-.5)*.08;
+      var microReleaseStart=Math.min(.79,macroReleaseStart+.18+continuationRandom()*.16);
+      var trunkLength=1.98+continuationRandom()*.46;
+      var transitionDrop=branch.transitionDrop+(continuationRandom()-.5)*.24;
+      var transitionForwardReach=branch.transitionForward+(continuationRandom()-.5)*.42;
+      var valleyForwardReach=branch.valleyForward+(continuationRandom()-.5)*1.15;
+      var valleyDrop=branch.valleyDrop+(continuationRandom()-.5)*.24;
+      var transitionWeaveAmplitude=.028+continuationRandom()*.062;
+      var transitionWeaveFrequency=3.55+continuationRandom()*2.3;
+      var valleyMeanderAmplitude=.12+continuationRandom()*.27;
+      var valleyMeanderFrequency=1.75+continuationRandom()*2.05;
+      var valleyLiftAmplitude=.035+continuationRandom()*.085;
       var colorIntensity=.78+continuationRandom()*.2;
       var fiberDisplayColor=continuationColor.copy(sourceColor).multiplyScalar(colorIntensity).clone();
       var previousVertex=null;
       var emittedPointIndex=0;
       var totalPathPoints=trunkPoints+transitionPoints+valleyPoints;
 
-      function appendPathVertex(relativeX,relativeY,relativeZ){
+      function appendPathVertex(relativeX,relativeY,relativeZ,waveStrength){
         var pathProgress=emittedPointIndex/Math.max(1,totalPathPoints-1);
-        var waveStrength=.025+.975*Math.pow(1-smoother(pathProgress),1.16);
         previousVertex=appendVertex(
           tipVertex,
           relativeX,
@@ -644,12 +665,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       for(var trunkIndex=0;trunkIndex<trunkPoints;trunkIndex++){
         var trunkT=trunkIndex/Math.max(1,trunkPoints-1);
         var trunkEase=smoother(trunkT);
-        var trunkSway=Math.sin(Math.PI*trunkT)*Math.sin(branchPhase+trunkT*2.4)*.028;
-        var trunkForward=.08*trunkEase;
+        var trunkSway=Math.sin(Math.PI*trunkT)*Math.sin(branchPhase+trunkT*2.2)*.024;
+        var trunkForward=.12*trunkEase;
         appendPathVertex(
           organismRightX*trunkSway+organismForwardX*trunkForward,
           -trunkLength*trunkT,
-          organismRightZ*trunkSway+organismForwardZ*trunkForward
+          organismRightZ*trunkSway+organismForwardZ*trunkForward,
+          1-.06*trunkEase
         );
       }
 
@@ -659,24 +681,31 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       for(var transitionIndex=1;transitionIndex<=transitionPoints;transitionIndex++){
         var transitionT=transitionIndex/transitionPoints;
         var transitionEase=smoother(transitionT);
-        var release=smoother((transitionT-releaseStart)/(1-releaseStart));
+        var macroRelease=smoother((transitionT-macroReleaseStart)/(1-macroReleaseStart));
+        var microRelease=smoother((transitionT-microReleaseStart)/(1-microReleaseStart));
         var transitionWeave=(Math.sin(branchPhase+transitionT*transitionWeaveFrequency)-Math.sin(branchPhase))
-          *transitionWeaveAmplitude*release*(1-release*.28);
-        var transitionSide=lane*release+transitionWeave;
-        var transitionBank=Math.pow(Math.abs(transitionSide)/valleyHalfWidth,1.55)*valleyBankHeight*release;
-        var transitionForwardPosition=.08+transitionForwardReach*transitionEase;
+          *transitionWeaveAmplitude*macroRelease*(1-macroRelease*.22);
+        var transitionSide=branch.lane*macroRelease
+          +(finalLane-branch.lane)*microRelease
+          +transitionWeave;
+        var transitionBank=(Math.pow(Math.abs(transitionSide)/valleyHalfWidth,1.62)*valleyBankHeight
+          +branch.bankBias*macroRelease)*macroRelease;
+        var transitionForwardPosition=.12+transitionForwardReach*transitionEase;
         var transitionY=-trunkLength-transitionDrop*transitionT*(2-transitionT)+transitionBank;
+        var transitionWaveStrength=.94-.42*transitionEase;
         appendPathVertex(
           organismRightX*transitionSide+organismForwardX*transitionForwardPosition,
           transitionY,
-          organismRightZ*transitionSide+organismForwardZ*transitionForwardPosition
+          organismRightZ*transitionSide+organismForwardZ*transitionForwardPosition,
+          transitionWaveStrength
         );
         transitionEndSide=transitionSide;
         transitionEndForward=transitionForwardPosition;
         transitionEndY=transitionY;
       }
 
-      var transitionEndBank=Math.pow(Math.abs(transitionEndSide)/valleyHalfWidth,1.55)*valleyBankHeight;
+      var transitionEndBank=Math.pow(Math.abs(transitionEndSide)/valleyHalfWidth,1.62)*valleyBankHeight
+        +branch.bankBias;
       for(var valleyIndex=1;valleyIndex<=valleyPoints;valleyIndex++){
         var valleyT=valleyIndex/valleyPoints;
         var valleyEase=smoother(valleyT);
@@ -685,16 +714,19 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           *valleyMeanderAmplitude*meanderEnvelope;
         var valleySide=transitionEndSide+(finalLane-transitionEndSide)*valleyEase+valleyMeander;
         valleySide=THREE.MathUtils.clamp(valleySide,-valleyHalfWidth,valleyHalfWidth);
-        var valleyBank=Math.pow(Math.abs(valleySide)/valleyHalfWidth,1.55)*valleyBankHeight;
+        var valleyBank=Math.pow(Math.abs(valleySide)/valleyHalfWidth,1.62)*valleyBankHeight
+          +branch.bankBias*(1-valleyT*.35);
         var valleyAdvance=valleyForwardReach*valleyT*valleyT*(2-valleyT);
         var valleyForward=transitionEndForward+valleyAdvance;
         var valleyLift=(Math.sin(branchPhase*.7+valleyT*3.4)-Math.sin(branchPhase*.7))
           *valleyLiftAmplitude*meanderEnvelope;
         var valleyY=transitionEndY-valleyDrop*valleyEase+(valleyBank-transitionEndBank)+valleyLift;
+        var valleyWaveStrength=.52-.45*valleyEase;
         appendPathVertex(
           organismRightX*valleySide+organismForwardX*valleyForward,
           valleyY,
-          organismRightZ*valleySide+organismForwardZ*valleyForward
+          organismRightZ*valleySide+organismForwardZ*valleyForward,
+          valleyWaveStrength
         );
       }
     }
@@ -2934,17 +2966,20 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       if(sf>cameraHelixExitStart){
         var exitRange=Math.max(.0001,1-cameraHelixExitStart);
         var exitT=THREE.MathUtils.clamp((sf-cameraHelixExitStart)/exitRange,0,1);
-        var exitT2=exitT*exitT;
-        var exitT3=exitT2*exitT;
-        var exitT4=exitT3*exitT;
-        var exitT5=exitT4*exitT;
-        var exitT6=exitT5*exitT;
+        var coastT=THREE.MathUtils.clamp(exitT/CAMERA_EXIT_COAST_SHARE,0,1);
+        var coastT2=coastT*coastT;
+        var coastT3=coastT2*coastT;
+        var coastT4=coastT3*coastT;
+        var coastT5=coastT4*coastT;
+        var coastT6=coastT5*coastT;
         // Integral einer smootherstep-abklingenden Geschwindigkeit. Am Start
         // gelten exakt dieselbe Position, Tangente und Krümmung wie zuvor in
-        // der Helix; am Ende laufen Drehung und Sinkflug physikalisch aus.
-        var coastProgress=exitT-2.5*exitT4+3*exitT5-exitT6;
-        var exitEase=exitT3*(exitT*(exitT*6-15)+10);
-        railSf=cameraHelixExitStart+exitRange*coastProgress;
+        // der Helix. Die Rotation rollt danach früh aus, damit dieselbe Schiene
+        // ohne Richtungswechsel in die Rückwärtsfahrt über der Talmitte führt.
+        var coastProgress=coastT-2.5*coastT4+3*coastT5-coastT6;
+        var exitEase=smoother(exitT);
+        railSf=cameraHelixExitStart
+          +exitRange*CAMERA_EXIT_COAST_SHARE*coastProgress;
         dollyPullback=cameraExitPullback*exitEase;
       }
       var orbit=railSf*Math.PI*2;
