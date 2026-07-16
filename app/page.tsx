@@ -172,6 +172,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
   const viewportRef = useRef({ width: 0, height: 0 });
   const serviceStationsRef = useRef<HTMLDivElement | null>(null);
   const cardsWorldRef = useRef<HTMLDivElement | null>(null);
+  const neuralOrbWorldRef = useRef<HTMLSpanElement | null>(null);
   const solutionsFlapRef = useRef<HTMLHeadingElement | null>(null);
   const detailScrollDistanceRef = useRef(0);
   const detailScrollStepsRef = useRef(0);
@@ -202,7 +203,8 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
   useEffect(() => {
     const world = cardsWorldRef.current;
     const group = serviceStationsRef.current;
-    if (!world || !group) return;
+    const orbWorld = neuralOrbWorldRef.current;
+    if (!world || !group || !orbWorld) return;
 
     const introStopCount = 5;
     const totalWorldStops = introStopCount + 4 + 4;
@@ -262,6 +264,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       if (viewZ <= 0.001 || visibility <= 0) {
         group.style.opacity = '0';
         group.style.pointerEvents = 'none';
+        orbWorld.style.opacity = '0';
         return;
       }
 
@@ -292,6 +295,28 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       const yawDeg = (yawRad * 180) / Math.PI;
 
       world.style.transform = `translate3d(${screenX.toFixed(2)}px, ${screenY.toFixed(2)}px, 0) scale(${scale.toFixed(4)}) rotateY(${yawDeg.toFixed(3)}deg)`;
+
+      // Eigenständige Projektion des zentralen Helixachsenpunkts (x=0,z=0)
+      // auf derselben Y-Höhe wie das untere Ende des Nervenstrangs. Die Kugel
+      // gehört damit zur Achse, nicht zur radial versetzten Kartengruppe.
+      const axisRelX = -camPos.x;
+      const axisRelY = stationPos.y - camPos.y;
+      const axisRelZ = -camPos.z;
+      const axisViewX = axisRelX * rx + axisRelY * ry + axisRelZ * rz;
+      const axisViewY = axisRelX * ux + axisRelY * uy + axisRelZ * uz;
+      const axisViewZ = axisRelX * fx + axisRelY * fy + axisRelZ * fz;
+      if (axisViewZ > 0.001) {
+        const axisNdcX = axisViewX / (axisViewZ * tanHalfFovY * cam.aspect);
+        const axisNdcY = axisViewY / (axisViewZ * tanHalfFovY);
+        const axisScreenX = (axisNdcX * 0.5 + 0.5) * vw;
+        const axisScreenY = (1 - (axisNdcY * 0.5 + 0.5)) * vh;
+        const cardWidth = group.getBoundingClientRect().width;
+        orbWorld.style.setProperty('--neural-orb-size', `${cardWidth.toFixed(2)}px`);
+        orbWorld.style.transform = `translate3d(${axisScreenX.toFixed(2)}px, ${axisScreenY.toFixed(2)}px, 0)`;
+        orbWorld.style.opacity = String(visibility);
+      } else {
+        orbWorld.style.opacity = '0';
+      }
 
       group.style.opacity = String(visibility);
       group.style.pointerEvents = visibility > 0.55 ? 'auto' : 'none';
@@ -1098,6 +1123,11 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
           </button>
         </div>
         </div>
+        <span ref={neuralOrbWorldRef} className="neural-orb-world" aria-hidden="true">
+          <span className="neural-glass-orb">
+            <span className="neural-glass-orb-core" />
+          </span>
+        </span>
       </div>
 
       <div className="spiral-mobile px-4 sm:px-6">

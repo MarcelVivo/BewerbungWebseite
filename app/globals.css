@@ -856,10 +856,91 @@ body {
 }
 
 .spiral-service-stations .spiral-service-card {
+  position: relative;
+  z-index: 2;
   width: 100%;
   will-change: opacity, transform;
   contain: layout paint style;
   transition: opacity 140ms ease-out, transform 140ms ease-out;
+}
+
+/* Eigener Weltpunkt exakt auf der zentralen Helixachse. */
+.neural-orb-world {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1270;
+  display: block;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+/* Der obere Pol liegt am Achsen-Weltpunkt; der Durchmesser wird im selben
+   Frame von der tatsächlich projizierten Breite der vier Karten übernommen. */
+.neural-glass-orb {
+  position: absolute;
+  left: 0;
+  top: 0.15rem;
+  display: block;
+  width: var(--neural-orb-size, min(64rem, 78vw));
+  aspect-ratio: 1;
+  transform: translateX(-50%);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.58);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 25%, rgba(255,255,255,0.78) 0 1.2%, rgba(255,255,255,0.2) 7%, transparent 23%),
+    radial-gradient(circle at 47% 42%, rgba(255,255,255,0.2), rgba(221,235,246,0.08) 43%, rgba(255,255,255,0.025) 66%, rgba(255,255,255,0.13) 100%);
+  -webkit-backdrop-filter: blur(9px) saturate(1.18);
+  backdrop-filter: blur(9px) saturate(1.18);
+  box-shadow:
+    0 0 22px rgba(255,255,255,0.34),
+    0 0 72px rgba(220,238,255,0.2),
+    0 0 150px rgba(255,255,255,0.1),
+    inset 0 0 34px rgba(255,255,255,0.26),
+    inset -34px -46px 82px rgba(180,211,230,0.1),
+    inset 24px 18px 56px rgba(255,255,255,0.2);
+}
+
+.neural-glass-orb::before {
+  content: "";
+  position: absolute;
+  inset: 2.5%;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: inherit;
+  background:
+    linear-gradient(125deg, rgba(255,255,255,0.2), transparent 24% 70%, rgba(225,242,255,0.1)),
+    radial-gradient(ellipse at 50% 8%, rgba(255,255,255,0.42), transparent 36%);
+  box-shadow: inset 0 0 70px rgba(255,255,255,0.08);
+}
+
+.neural-glass-orb::after {
+  content: "";
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: 7%;
+  height: 10%;
+  border-radius: 50%;
+  background: rgba(235,247,255,0.2);
+  filter: blur(16px);
+}
+
+.neural-glass-orb-core {
+  position: absolute;
+  inset: 14%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.08), transparent 68%);
+  box-shadow: 0 0 80px rgba(255,255,255,0.12);
+  animation: neural-orb-breathe 5.8s ease-in-out infinite alternate;
+}
+
+@keyframes neural-orb-breathe {
+  from { opacity: 0.55; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1.035); }
 }
 
 .spiral-service-stations.is-detail-open .spiral-service-card {
