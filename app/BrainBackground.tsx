@@ -1129,16 +1129,16 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var neuralGlassContactDrop=.9;
   var neuralGlassGeometry=new THREE.SphereGeometry(neuralGlassRadius,96,64);
   var neuralGlassMaterial=new THREE.MeshPhysicalMaterial({
-    color:0x020203,
-    emissive:0x000000,
-    emissiveIntensity:0,
-    transparent:true,
-    opacity:.96,
-    transmission:.035,
+    color:0x111319,
+    emissive:0x080a0f,
+    emissiveIntensity:.42,
+    transparent:false,
+    opacity:1,
+    transmission:0,
     thickness:1.8,
     ior:1.5,
-    roughness:.012,
-    metalness:.42,
+    roughness:.045,
+    metalness:.28,
     clearcoat:1,
     clearcoatRoughness:.006,
     specularIntensity:1,
@@ -1156,7 +1156,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var neuralGlassGlowMaterial=new THREE.MeshBasicMaterial({
     color:0xb9d2e8,
     transparent:true,
-    opacity:.035,
+    opacity:.12,
     blending:THREE.AdditiveBlending,
     depthWrite:false,
     side:THREE.BackSide
@@ -1168,12 +1168,96 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
 
   // Kleine, an der Kugel befestigte Studiolichter erzeugen auf dem nahezu
   // schwarzen Material klar lesbare Hochglanzreflexe und eine feine Kontur.
-  var neuralGlassKeyLight=new THREE.PointLight(0xffffff,22,18,2);
+  var neuralGlassKeyLight=new THREE.PointLight(0xffffff,85,22,1.55);
   neuralGlassKeyLight.position.set(-4.2,4.8,5.6);
   neuralGlassSphere.add(neuralGlassKeyLight);
-  var neuralGlassRimLight=new THREE.PointLight(0xc9e6ff,12,16,2);
+  var neuralGlassRimLight=new THREE.PointLight(0xc9e6ff,54,20,1.65);
   neuralGlassRimLight.position.set(4.8,1.2,-4.6);
   neuralGlassSphere.add(neuralGlassRimLight);
+  var neuralGlassFillLight=new THREE.PointLight(0xffffff,38,18,1.8);
+  neuralGlassFillLight.position.set(1.5,-1.2,5.8);
+  neuralGlassSphere.add(neuralGlassFillLight);
+
+  // Dreidimensional aufliegende Nervenfasern: Alle Bahnen starten am oberen
+  // Pol und folgen mit minimalem Oberflächenabstand der echten Kugelkrümmung.
+  // Rot/Blau greifen die beiden Satellitenstränge auf; helle Fasern verbinden
+  // sie optisch mit der schwarzen Hochglanzoberfläche.
+  var sphereFiberPositions=[];
+  var sphereFiberColors=[];
+  var sphereFiberPointPositions=[];
+  var sphereFiberPointColors=[];
+  var sphereFiberRadius=neuralGlassRadius+.035;
+  var sphereFiberCount=108;
+  var sphereFiberSegments=46;
+  var sphereFiberRed=new THREE.Color(0xd45a78);
+  var sphereFiberBlue=new THREE.Color(0x72b9f4);
+  var sphereFiberWhite=new THREE.Color(0xeaf6ff);
+  var sphereFiberColor=new THREE.Color();
+  for(var sphereFiberIndex=0;sphereFiberIndex<sphereFiberCount;sphereFiberIndex++){
+    var sphereFiberSeed=(Math.sin((sphereFiberIndex+1)*91.731)*43758.5453)%1;
+    sphereFiberSeed=sphereFiberSeed<0?sphereFiberSeed+1:sphereFiberSeed;
+    var sphereFiberPhi=(sphereFiberIndex/sphereFiberCount)*Math.PI*2+(sphereFiberSeed-.5)*.24;
+    var sphereFiberEndTheta=1.05+sphereFiberSeed*1.18;
+    var sphereFiberBaseColor=sphereFiberIndex%7===0
+      ? sphereFiberWhite
+      : (sphereFiberIndex%2?sphereFiberBlue:sphereFiberRed);
+    sphereFiberColor.copy(sphereFiberBaseColor);
+    for(var sphereFiberSegment=0;sphereFiberSegment<sphereFiberSegments;sphereFiberSegment++){
+      var sphereFiberT=sphereFiberSegment/(sphereFiberSegments-1);
+      var sphereFiberTheta=.018+sphereFiberEndTheta*sphereFiberT;
+      var sphereFiberWave=Math.sin(sphereFiberT*15+sphereFiberIndex*1.73)*(.014+.055*sphereFiberT);
+      var sphereFiberTwist=(sphereFiberSeed-.5)*.72*sphereFiberT+sphereFiberWave;
+      var sphereFiberAngle=sphereFiberPhi+sphereFiberTwist;
+      var sphereFiberSin=Math.sin(sphereFiberTheta);
+      var sphereFiberX=sphereFiberRadius*sphereFiberSin*Math.cos(sphereFiberAngle);
+      var sphereFiberY=sphereFiberRadius*Math.cos(sphereFiberTheta);
+      var sphereFiberZ=sphereFiberRadius*sphereFiberSin*Math.sin(sphereFiberAngle);
+      if(sphereFiberSegment>0){
+        var sphereFiberPrevOffset=(sphereFiberPointPositions.length/3-1)*3;
+        sphereFiberPositions.push(
+          sphereFiberPointPositions[sphereFiberPrevOffset],
+          sphereFiberPointPositions[sphereFiberPrevOffset+1],
+          sphereFiberPointPositions[sphereFiberPrevOffset+2],
+          sphereFiberX,sphereFiberY,sphereFiberZ
+        );
+        var sphereFiberBrightness=.38+.62*(1-sphereFiberT*.72);
+        sphereFiberColors.push(
+          sphereFiberColor.r*sphereFiberBrightness,sphereFiberColor.g*sphereFiberBrightness,sphereFiberColor.b*sphereFiberBrightness,
+          sphereFiberColor.r*sphereFiberBrightness,sphereFiberColor.g*sphereFiberBrightness,sphereFiberColor.b*sphereFiberBrightness
+        );
+      }
+      sphereFiberPointPositions.push(sphereFiberX,sphereFiberY,sphereFiberZ);
+      sphereFiberPointColors.push(sphereFiberColor.r,sphereFiberColor.g,sphereFiberColor.b);
+    }
+  }
+  var sphereFiberGeometry=new THREE.BufferGeometry();
+  sphereFiberGeometry.setAttribute('position',new THREE.Float32BufferAttribute(sphereFiberPositions,3));
+  sphereFiberGeometry.setAttribute('color',new THREE.Float32BufferAttribute(sphereFiberColors,3));
+  var sphereFiberMaterial=new THREE.LineBasicMaterial({
+    vertexColors:true,
+    transparent:true,
+    opacity:.58,
+    blending:THREE.AdditiveBlending,
+    depthWrite:false
+  });
+  var sphereFiberLines=new THREE.LineSegments(sphereFiberGeometry,sphereFiberMaterial);
+  sphereFiberLines.renderOrder=21;
+  neuralGlassSphere.add(sphereFiberLines);
+  var sphereFiberPointGeometry=new THREE.BufferGeometry();
+  sphereFiberPointGeometry.setAttribute('position',new THREE.Float32BufferAttribute(sphereFiberPointPositions,3));
+  sphereFiberPointGeometry.setAttribute('color',new THREE.Float32BufferAttribute(sphereFiberPointColors,3));
+  var sphereFiberPointMaterial=new THREE.PointsMaterial({
+    vertexColors:true,
+    size:.025,
+    transparent:true,
+    opacity:.72,
+    blending:THREE.AdditiveBlending,
+    depthWrite:false,
+    sizeAttenuation:true
+  });
+  var sphereFiberPoints=new THREE.Points(sphereFiberPointGeometry,sphereFiberPointMaterial);
+  sphereFiberPoints.renderOrder=22;
+  neuralGlassSphere.add(sphereFiberPoints);
 
   var neuralGlassTipWorld=new THREE.Vector3();
   function updateNeuralGlassSphere(){
@@ -3391,6 +3475,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       neuralGlassMaterial.dispose();
       neuralGlassGlowGeometry.dispose();
       neuralGlassGlowMaterial.dispose();
+      sphereFiberGeometry.dispose();
+      sphereFiberMaterial.dispose();
+      sphereFiberPointGeometry.dispose();
+      sphereFiberPointMaterial.dispose();
       renderer.dispose();
       renderer.forceContextLoss();
       document.body.style.cursor='';
