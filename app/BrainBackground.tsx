@@ -1192,6 +1192,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var sphereFiberPointColors=[];
   var sphereFiberVertexMeta=[];
   var sphereFiberLinePointIndices=[];
+  var sphereFiberBridgeRefs=[];
   var sphereFiberRadius=neuralGlassRadius+.035;
   // Exakt eine Fortsetzung pro realer Faser des oberen Strangs.
   var sphereFiberCount=sFibers.length||FN.count;
@@ -1231,6 +1232,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     // Gleicher Punktabstand wie im oberen Strang, auf die Bogenlänge der
     // jeweiligen Kugelfaser übertragen.
     var sphereFiberSegments=Math.max(24,Math.round(sphereFiberEndTheta*sphereFiberRadius/SP.spacing));
+    var sphereFiberFirstPointIndex=sphereFiberPointPositions.length/3;
     for(var sphereFiberSegment=0;sphereFiberSegment<sphereFiberSegments;sphereFiberSegment++){
       var sphereFiberT=sphereFiberSegment/(sphereFiberSegments-1);
       var sphereFiberTheta=.018+sphereFiberEndTheta*sphereFiberT;
@@ -1272,6 +1274,20 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         blue:sphereFiberColor.b
       });
     }
+    sphereFiberBridgeRefs.push({
+      parentVertex:sphereFiberParentVertex,
+      spherePoint:sphereFiberFirstPointIndex,
+      parentColorOffset:sphereFiberParentColorOffset
+    });
+  }
+  // Pro Elternfaser zwei zusätzliche Linienvertices reservieren. Diese werden
+  // unten in jedem Frame mit dem echten letzten Strangvertex und dem echten
+  // ersten Kugelvertex gefüllt — kein optischer Anschluss, sondern eine
+  // topologisch durchgehende Linie.
+  var sphereBridgeLineArrayOffset=sphereFiberPositions.length;
+  for(var sphereBridgeReserveIndex=0;sphereBridgeReserveIndex<sphereFiberBridgeRefs.length;sphereBridgeReserveIndex++){
+    sphereFiberPositions.push(0,0,0,0,0,0);
+    sphereFiberColors.push(0,0,0,0,0,0);
   }
   // Kein zweites Faserobjekt: Die Fortsetzungen werden direkt hinten an die
   // bestehenden GPU-Puffer von neural-lines und neural-points angehängt.
@@ -1365,6 +1381,30 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       animatedLineColors[sphereLineOffset]=animatedPointColors[sphereSourceOffset];
       animatedLineColors[sphereLineOffset+1]=animatedPointColors[sphereSourceOffset+1];
       animatedLineColors[sphereLineOffset+2]=animatedPointColors[sphereSourceOffset+2];
+    }
+    // Physische Brücke jeder Originalfaser: letzter Vertex des Hauptstrangs
+    // → erster Vertex derselben Fortsetzungsfaser auf der Kugel.
+    for(var sphereBridgeIndex=0;sphereBridgeIndex<sphereFiberBridgeRefs.length;sphereBridgeIndex++){
+      var sphereBridgeRef=sphereFiberBridgeRefs[sphereBridgeIndex];
+      goldStrandVertexLocal(sphereBridgeRef.parentVertex,goldDragScratch,true);
+      var sphereBridgePointOffset=spherePointBufferOffset+sphereBridgeRef.spherePoint*3;
+      var sphereBridgeLineOffset=sphereLineBufferOffset+sphereBridgeLineArrayOffset+sphereBridgeIndex*6;
+      animatedLinePositions[sphereBridgeLineOffset]=goldDragScratch.x;
+      animatedLinePositions[sphereBridgeLineOffset+1]=goldDragScratch.y;
+      animatedLinePositions[sphereBridgeLineOffset+2]=goldDragScratch.z;
+      animatedLinePositions[sphereBridgeLineOffset+3]=animatedPointPositions[sphereBridgePointOffset];
+      animatedLinePositions[sphereBridgeLineOffset+4]=animatedPointPositions[sphereBridgePointOffset+1];
+      animatedLinePositions[sphereBridgeLineOffset+5]=animatedPointPositions[sphereBridgePointOffset+2];
+      var sphereBridgeColorOffset=sphereBridgeRef.parentColorOffset;
+      var sphereBridgeRed=sphereBridgeColorOffset>=0?parentStrandColors[sphereBridgeColorOffset]:1;
+      var sphereBridgeGreen=sphereBridgeColorOffset>=0?parentStrandColors[sphereBridgeColorOffset+1]:1;
+      var sphereBridgeBlue=sphereBridgeColorOffset>=0?parentStrandColors[sphereBridgeColorOffset+2]:1;
+      animatedLineColors[sphereBridgeLineOffset]=sphereBridgeRed;
+      animatedLineColors[sphereBridgeLineOffset+1]=sphereBridgeGreen;
+      animatedLineColors[sphereBridgeLineOffset+2]=sphereBridgeBlue;
+      animatedLineColors[sphereBridgeLineOffset+3]=sphereBridgeRed;
+      animatedLineColors[sphereBridgeLineOffset+4]=sphereBridgeGreen;
+      animatedLineColors[sphereBridgeLineOffset+5]=sphereBridgeBlue;
     }
     wptsObj.geometry.attributes.position.needsUpdate=true;
     wptsObj.geometry.attributes.color.needsUpdate=true;
