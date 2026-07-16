@@ -775,14 +775,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var landscapeDepth=isMobile?3.15:4.8;
     var landscapeColor=new THREE.Color();
     var landscapePaths=[];
-    var landscapeLowestTipY=Infinity;
-    for(var landscapeTipIndex=0;landscapeTipIndex<sFibers.length;landscapeTipIndex++){
-      var landscapeTipFiber=sFibers[landscapeTipIndex];
-      landscapeLowestTipY=Math.min(
-        landscapeLowestTipY,
-        sBase[(landscapeTipFiber.start+landscapeTipFiber.len-1)*3+1]
-      );
-    }
 
     function landscapeFiberColor(fiberFamily,fiberIndex,tipVertex){
       var palette=fiberFamily===0
@@ -845,20 +837,15 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var targetSide=laneSign*Math.pow(Math.abs(laneMix),.72)*landscapeHalfWidth;
       targetSide+=(landscapeRandom()-.5)*landscapeHalfWidth*.12;
       var targetDepth=landscapeDepth*(.8+landscapeRandom()*.24);
-      // Die Talsohle bleibt im unteren Sichtkegel der Endkamera. Der frühere
-      // Gesamtfall von rund fünf Einheiten lag fast vollständig unterhalb des
-      // Viewports und zeigte nur einzelne abgeschnittene Fäden.
-      // Jede Faser läuft zunächst ausschließlich vertikal bis zur tiefsten
-      // gemeinsamen Abschlusskante. Erst darunter darf das Tal öffnen.
-      // Sichtbare Freigabegrenze: Die seitliche Talöffnung beginnt auf Höhe
-      // der UNTERSTEN KANTE aller vier Karten (Unterkante Rot/Grün). Keine
-      // zusätzliche lange Verlängerung unterhalb dieser Referenzlinie.
-      var landscapeCardsBottomClearance=.03;
-      var trunkLength=Math.max(
-        landscapeCardsBottomClearance,
-        sBase[tipVertex*3+1]-landscapeLowestTipY+landscapeCardsBottomClearance
-      );
-      var groundDrop=.68+landscapeRandom()*.16;
+      // Individuelle Kontrollwerte der langen, kontinuierlichen Umlenkung.
+      // Kein gemeinsamer Bodenpunkt und keine gemeinsame Knickhöhe.
+      var transitionDrop=1.18+landscapeRandom()*.34;
+      var transitionForwardEnd=1.55+landscapeRandom()*.28;
+      var transitionSideEnd=targetSide*(.22+landscapeRandom()*.16);
+      var transitionControlOneDrop=transitionDrop*(.23+landscapeRandom()*.13);
+      var transitionControlTwoDrop=transitionDrop*(.88+landscapeRandom()*.08);
+      var transitionControlTwoForward=.24+landscapeRandom()*.28;
+      var transitionControlTwoSide=transitionSideEnd*(.12+landscapeRandom()*.18);
       var meanderAmplitude=.22+landscapeRandom()*.68;
       var meanderFrequency=1.1+landscapeRandom()*2.4;
       var fiberColor=landscapeColor.copy(landscapeFiberColor(
@@ -870,40 +857,40 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var total=landscapeTrunkPoints+landscapeDeltaPoints+landscapeFieldPoints;
 
       function emitLandscape(x,y,z,waveStrength){
+        var pathProgress=emitted/Math.max(1,total-1);
+        // Am Hauptstrang-Ende bei Phase 1 weiterlaufen. Die Ableitung des
+        // Phasenwegs nimmt nach unten stetig ab -> längere Wellen im Tal.
+        var continuedWaveTravel=1+pathProgress-.38*pathProgress*pathProgress;
         previousVertex=appendLandscapeVertex(
-          tipVertex,x,y,z,waveStrength,phase,emitted/Math.max(1,total-1),fiberColor,previousVertex
+          tipVertex,x,y,z,waveStrength,phase,continuedWaveTravel,fiberColor,previousVertex
         );
         pathVertices.push(previousVertex);
         emitted++;
       }
 
-      // 1: gemeinsamer, ununterbrochener Hauptstamm.
-      for(var trunkIndex=0;trunkIndex<landscapeTrunkPoints;trunkIndex++){
-        var trunkT=trunkIndex/Math.max(1,landscapeTrunkPoints-1);
-        var trunkDrop=trunkLength*trunkT;
+      // Ein einziger langer kubischer Übergang. P0->P1 ist exakt vertikal;
+      // P2->P3 ist fast horizontal nach vorne. Damit bleiben Position und
+      // Tangente ohne sichtbare Bodenlinie oder 90°-Knick kontinuierlich.
+      var transitionPoints=landscapeTrunkPoints+landscapeDeltaPoints;
+      for(var transitionIndex=0;transitionIndex<transitionPoints;transitionIndex++){
+        var transitionT=transitionIndex/Math.max(1,transitionPoints-1);
+        var transitionOneMinus=1-transitionT;
+        var transitionB1=3*transitionOneMinus*transitionOneMinus*transitionT;
+        var transitionB2=3*transitionOneMinus*transitionT*transitionT;
+        var transitionB3=transitionT*transitionT*transitionT;
+        var transitionSide=transitionControlTwoSide*transitionB2+transitionSideEnd*transitionB3;
+        var transitionForward=transitionControlTwoForward*transitionB2+transitionForwardEnd*transitionB3;
+        var transitionDown=transitionControlOneDrop*transitionB1
+          +transitionControlTwoDrop*transitionB2
+          +transitionDrop*transitionB3;
+        var transitionOrganicWave=Math.sin(phase+transitionT*7.2)
+          *meanderAmplitude*.055*Math.sin(Math.PI*transitionT);
+        transitionSide+=transitionOrganicWave;
         emitLandscape(
-          organismDownX*trunkDrop,
-          organismDownY*trunkDrop,
-          organismDownZ*trunkDrop,
-          1-.08*trunkT
-        );
-      }
-
-      // 2: kelchförmige Entfaltung – langsam beginnen, dann breit öffnen.
-      for(var deltaIndex=1;deltaIndex<=landscapeDeltaPoints;deltaIndex++){
-        var deltaT=deltaIndex/landscapeDeltaPoints;
-        var deltaOpen=smoother(deltaT);
-        var deltaSide=targetSide*deltaOpen
-          +Math.sin(phase+deltaT*8.4)*meanderAmplitude*.18*Math.sin(Math.PI*deltaT);
-        var deltaForward=.08+1.62*deltaT*deltaT;
-        var deltaBank=Math.pow(Math.abs(deltaSide)/landscapeHalfWidth,1.72)*1.42*deltaOpen;
-        var deltaY=-trunkLength-groundDrop*deltaT*(2-deltaT)+deltaBank;
-        var deltaDrop=Math.max(trunkLength,-deltaY);
-        emitLandscape(
-          organismRightX*deltaSide+organismForwardX*deltaForward+organismDownX*deltaDrop,
-          organismRightY*deltaSide+organismForwardY*deltaForward+organismDownY*deltaDrop,
-          organismRightZ*deltaSide+organismForwardZ*deltaForward+organismDownZ*deltaDrop,
-          .98-.14*deltaOpen
+          organismRightX*transitionSide+organismForwardX*transitionForward+organismDownX*transitionDown,
+          organismRightY*transitionSide+organismForwardY*transitionForward+organismDownY*transitionDown,
+          organismRightZ*transitionSide+organismForwardZ*transitionForward+organismDownZ*transitionDown,
+          1-.12*smoother(transitionT)
         );
       }
 
@@ -914,13 +901,18 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         var fieldEnvelope=Math.sin(Math.PI*fieldT);
         var fieldMeander=Math.sin(phase+fieldT*meanderFrequency*Math.PI*2)
           *meanderAmplitude*fieldEnvelope;
-        var fieldSide=THREE.MathUtils.clamp(targetSide+fieldMeander,-landscapeHalfWidth*1.08,landscapeHalfWidth*1.08);
-        var fieldForward=1.7+targetDepth*fieldT;
+        var fieldSpread=smoother(fieldT);
+        var fieldSide=THREE.MathUtils.clamp(
+          transitionSideEnd+(targetSide-transitionSideEnd)*fieldSpread+fieldMeander,
+          -landscapeHalfWidth*1.08,
+          landscapeHalfWidth*1.08
+        );
+        var fieldForward=transitionForwardEnd+targetDepth*fieldT;
         var fieldBank=Math.pow(Math.abs(fieldSide)/landscapeHalfWidth,1.68)*1.55;
         var terrainWave=(Math.sin(fieldSide*.72+phase)+Math.sin(fieldForward*.34+phase*.61)*.55)
           *.12*(1-fieldT*.55);
-        var fieldY=-trunkLength-groundDrop+fieldBank+terrainWave-.28*fieldT;
-        var fieldDrop=Math.max(trunkLength,-fieldY);
+        var fieldY=-transitionDrop+fieldBank+terrainWave-.28*fieldT;
+        var fieldDrop=Math.max(transitionDrop,-fieldY);
         emitLandscape(
           organismRightX*fieldSide+organismForwardX*fieldForward+organismDownX*fieldDrop,
           organismRightY*fieldSide+organismForwardY*fieldForward+organismDownY*fieldDrop,
