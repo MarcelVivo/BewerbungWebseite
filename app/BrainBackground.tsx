@@ -2493,9 +2493,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   };
   var neuralActivityController=new NeuralActivityController();
 
-  // Das bestehende interne Strang-Tuning ist als verschiebbares Werkzeug
-  // direkt auf der Seite verfügbar.
-  var SHOW_STRAND_TUNING=true;
+  // Das interne Entwicklungswerkzeug bleibt auf der öffentlichen Website
+  // vollständig ausgeblendet.
+  var SHOW_STRAND_TUNING=false;
   var tunePanel=null, tuneLauncher=null;
   var tuneStartsOpen=false;
   if (SHOW_STRAND_TUNING&&typeof window!=='undefined') {
