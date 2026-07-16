@@ -896,10 +896,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         vc++;
       }
     }
-    // Die frühere goldene Fortsetzung unterhalb des roten/blauen Wulsts ist
-    // bewusst deaktiviert. Der bestehende Hauptstrang endet hier zunächst
-    // sauber; eine neue Landschaft wird später aus einem separaten,
-    // kontrollierten Modell aufgebaut.
+    // Jede einzelne bestehende Faser ab ihrem echten Endvertex im selben
+    // Linien-/Punktebuffer fortsetzen: kompakter Stamm -> organisches Delta ->
+    // breite neuronale Landschaft. Kein zweites THREE.Object3D.
+    appendLivingOrganismContinuation(outPos,outCol,outPtsPos,outPtsCol);
   }
 
   function resetWobbleBuffers(){
