@@ -1190,6 +1190,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var sphereFiberColors=[];
   var sphereFiberPointPositions=[];
   var sphereFiberPointColors=[];
+  var sphereFiberVertexMeta=[];
+  var sphereFiberLinePointIndices=[];
   var sphereFiberRadius=neuralGlassRadius+.035;
   var sphereFiberCount=108;
   var sphereFiberSegments=46;
@@ -1206,6 +1208,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       ? sphereFiberWhite
       : (sphereFiberIndex%2?sphereFiberBlue:sphereFiberRed);
     sphereFiberColor.copy(sphereFiberBaseColor);
+    var sphereFiberParent=sFibers.length?sFibers[sphereFiberIndex%sFibers.length]:null;
+    var sphereFiberParentPhase=sphereFiberParent
+      ? sMeta[sphereFiberParent.start*2+1]
+      : sphereFiberIndex*1.73;
     for(var sphereFiberSegment=0;sphereFiberSegment<sphereFiberSegments;sphereFiberSegment++){
       var sphereFiberT=sphereFiberSegment/(sphereFiberSegments-1);
       var sphereFiberTheta=.018+sphereFiberEndTheta*sphereFiberT;
@@ -1216,8 +1222,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var sphereFiberX=sphereFiberRadius*sphereFiberSin*Math.cos(sphereFiberAngle);
       var sphereFiberY=sphereFiberRadius*Math.cos(sphereFiberTheta);
       var sphereFiberZ=sphereFiberRadius*sphereFiberSin*Math.sin(sphereFiberAngle);
+      var sphereFiberPointIndex=sphereFiberPointPositions.length/3;
       if(sphereFiberSegment>0){
         var sphereFiberPrevOffset=(sphereFiberPointPositions.length/3-1)*3;
+        sphereFiberLinePointIndices.push(sphereFiberPointIndex-1,sphereFiberPointIndex);
         sphereFiberPositions.push(
           sphereFiberPointPositions[sphereFiberPrevOffset],
           sphereFiberPointPositions[sphereFiberPrevOffset+1],
@@ -1232,6 +1240,15 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       }
       sphereFiberPointPositions.push(sphereFiberX,sphereFiberY,sphereFiberZ);
       sphereFiberPointColors.push(sphereFiberColor.r,sphereFiberColor.g,sphereFiberColor.b);
+      sphereFiberVertexMeta.push({
+        theta:sphereFiberTheta,
+        phi:sphereFiberPhi+(sphereFiberSeed-.5)*.72*sphereFiberT,
+        phase:sphereFiberParentPhase+sphereFiberIndex*.031,
+        travel:sphereFiberT,
+        red:sphereFiberColor.r,
+        green:sphereFiberColor.g,
+        blue:sphereFiberColor.b
+      });
     }
   }
   var sphereFiberGeometry=new THREE.BufferGeometry();
@@ -1262,6 +1279,64 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var sphereFiberPoints=new THREE.Points(sphereFiberPointGeometry,sphereFiberPointMaterial);
   sphereFiberPoints.renderOrder=22;
   neuralGlassSphere.add(sphereFiberPoints);
+
+  sphereFiberGeometry.attributes.position.setUsage(THREE.DynamicDrawUsage);
+  sphereFiberGeometry.attributes.color.setUsage(THREE.DynamicDrawUsage);
+  sphereFiberPointGeometry.attributes.position.setUsage(THREE.DynamicDrawUsage);
+  sphereFiberPointGeometry.attributes.color.setUsage(THREE.DynamicDrawUsage);
+
+  var lastSphereFiberUpdate=-1;
+  function updateSphereFibers(time){
+    if(lastSphereFiberUpdate>=0&&time-lastSphereFiberUpdate<.028) return;
+    lastSphereFiberUpdate=time;
+    var animatedPointPositions=sphereFiberPointGeometry.attributes.position.array;
+    var animatedPointColors=sphereFiberPointGeometry.attributes.color.array;
+    for(var sphereAnimatedIndex=0;sphereAnimatedIndex<sphereFiberVertexMeta.length;sphereAnimatedIndex++){
+      var sphereAnimatedMeta=sphereFiberVertexMeta[sphereAnimatedIndex];
+      var sphereAnimatedTravel=sphereAnimatedMeta.travel;
+      // Am Pol exakt null, danach dieselbe Wellenfamilie wie der Elternstrang.
+      var sphereAnimatedEnvelope=smoother(sphereAnimatedTravel/.18);
+      var sphereAnimatedWave=(
+        Math.sin(time*WIND.speed*2.95+sphereAnimatedTravel*WIND.waveFrequency+sphereAnimatedMeta.phase)*(.018+.065*sphereAnimatedTravel)
+        +Math.sin(time*WIND.speed*1.31+sphereAnimatedMeta.phase)*WIND.sway*.12
+      )*sphereAnimatedEnvelope;
+      var sphereAnimatedAngle=sphereAnimatedMeta.phi+sphereAnimatedWave;
+      var sphereAnimatedRadius=sphereFiberRadius
+        +Math.sin(time*WIND.speed*2.1+sphereAnimatedMeta.phase+sphereAnimatedTravel*11)*.012*sphereAnimatedEnvelope;
+      var sphereAnimatedSin=Math.sin(sphereAnimatedMeta.theta);
+      var sphereAnimatedOffset=sphereAnimatedIndex*3;
+      animatedPointPositions[sphereAnimatedOffset]=sphereAnimatedRadius*sphereAnimatedSin*Math.cos(sphereAnimatedAngle);
+      animatedPointPositions[sphereAnimatedOffset+1]=sphereAnimatedRadius*Math.cos(sphereAnimatedMeta.theta);
+      animatedPointPositions[sphereAnimatedOffset+2]=sphereAnimatedRadius*sphereAnimatedSin*Math.sin(sphereAnimatedAngle);
+
+      // Wandernder Nervenimpuls setzt die Bewegung des oberen Strangs über
+      // den Kontaktpunkt hinweg entlang der Kugelfaser fort.
+      var spherePulsePhase=((time*.24-sphereAnimatedTravel*.92+sphereAnimatedMeta.phase/(Math.PI*2))%1+1)%1;
+      var spherePulse=Math.exp(-Math.pow((spherePulsePhase-.5)/.055,2))*1.65;
+      var sphereBaseLight=.34+(1-sphereAnimatedTravel)*.38+spherePulse;
+      animatedPointColors[sphereAnimatedOffset]=sphereAnimatedMeta.red*sphereBaseLight;
+      animatedPointColors[sphereAnimatedOffset+1]=sphereAnimatedMeta.green*sphereBaseLight;
+      animatedPointColors[sphereAnimatedOffset+2]=sphereAnimatedMeta.blue*sphereBaseLight;
+    }
+    var animatedLinePositions=sphereFiberGeometry.attributes.position.array;
+    var animatedLineColors=sphereFiberGeometry.attributes.color.array;
+    for(var sphereLineIndex=0;sphereLineIndex<sphereFiberLinePointIndices.length;sphereLineIndex++){
+      var sphereSourcePoint=sphereFiberLinePointIndices[sphereLineIndex];
+      var sphereSourceOffset=sphereSourcePoint*3;
+      var sphereLineOffset=sphereLineIndex*3;
+      animatedLinePositions[sphereLineOffset]=animatedPointPositions[sphereSourceOffset];
+      animatedLinePositions[sphereLineOffset+1]=animatedPointPositions[sphereSourceOffset+1];
+      animatedLinePositions[sphereLineOffset+2]=animatedPointPositions[sphereSourceOffset+2];
+      animatedLineColors[sphereLineOffset]=animatedPointColors[sphereSourceOffset];
+      animatedLineColors[sphereLineOffset+1]=animatedPointColors[sphereSourceOffset+1];
+      animatedLineColors[sphereLineOffset+2]=animatedPointColors[sphereSourceOffset+2];
+    }
+    sphereFiberPointGeometry.attributes.position.needsUpdate=true;
+    sphereFiberPointGeometry.attributes.color.needsUpdate=true;
+    sphereFiberGeometry.attributes.position.needsUpdate=true;
+    sphereFiberGeometry.attributes.color.needsUpdate=true;
+  }
+  updateSphereFibers(0);
 
   var neuralGlassTipWorld=new THREE.Vector3();
   function updateNeuralGlassSphere(){
@@ -3337,6 +3412,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           lastGoldStrandUpdate=now;
           updateGoldStrandGeometry(t);
           updateNeuralGlassSphere();
+          updateSphereFibers(t);
         }
       }
       if (NEURAL_INFORMATION_ACTIVE && !reduced) neuralActivityController.update(dt);
