@@ -1133,30 +1133,32 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
               </div>
             );
           })}
-          {serviceCards.map((card, i) => {
-            return (
-              <div
-                key={`${card.code}-mobile-service-${i}`}
-                className="spiral-service-card ngp-panel ngp-panel-static is-materialized"
-                style={{
-                  '--service-accent': card.accent,
-                  '--service-accent-rgb': card.accentRgb,
-                } as CSSProperties}
-              >
-                <span className="ngp-core">
-                  <span className="spiral-intro-meta">
-                    <span className="spiral-intro-index">{card.code}</span>
-                    <span className="spiral-intro-icon">
-                      <NeuralNodeIcon variant={i} />
+          <div className="spiral-mobile-services">
+            {serviceCards.map((card, i) => {
+              return (
+                <div
+                  key={`${card.code}-mobile-service-${i}`}
+                  className="spiral-service-card ngp-panel ngp-panel-static is-materialized"
+                  style={{
+                    '--service-accent': card.accent,
+                    '--service-accent-rgb': card.accentRgb,
+                  } as CSSProperties}
+                >
+                  <span className="ngp-core">
+                    <span className="spiral-intro-meta">
+                      <span className="spiral-intro-index">{card.code}</span>
+                      <span className="spiral-intro-icon">
+                        <NeuralNodeIcon variant={i} />
+                      </span>
                     </span>
+                    <h3 className="spiral-service-title">{card.title}</h3>
+                    <p className="spiral-service-body">{card.body}</p>
+                    <span className="spiral-intro-rule" />
                   </span>
-                  <h3 className="spiral-service-title">{card.title}</h3>
-                  <p className="spiral-service-body">{card.body}</p>
-                  <span className="spiral-intro-rule" />
-                </span>
-              </div>
-            );
-          })}
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </section>
