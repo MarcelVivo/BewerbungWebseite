@@ -1192,7 +1192,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var sphereFiberPointColors=[];
   var sphereFiberVertexMeta=[];
   var sphereFiberLinePointIndices=[];
-  var sphereFiberBridgeRefs=[];
+  var sphereFiberContinuationRefs=[];
   var sphereFiberRadius=neuralGlassRadius+.035;
   // Exakt eine Fortsetzung pro realer Faser des oberen Strangs.
   var sphereFiberCount=sFibers.length||FN.count;
@@ -1262,6 +1262,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       sphereFiberPointPositions.push(sphereFiberX,sphereFiberY,sphereFiberZ);
       sphereFiberPointColors.push(sphereFiberColor.r,sphereFiberColor.g,sphereFiberColor.b);
       sphereFiberVertexMeta.push({
+        fiberIndex:sphereFiberIndex,
         theta:sphereFiberTheta,
         phi:sphereFiberPhi+(sphereFiberSeed-.5)*.72*sphereFiberT,
         phase:sphereFiberParentPhase,
@@ -1274,20 +1275,14 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         blue:sphereFiberColor.b
       });
     }
-    sphereFiberBridgeRefs.push({
+    sphereFiberContinuationRefs.push({
       parentVertex:sphereFiberParentVertex,
+      previousVertex:sphereFiberParent
+        ? Math.max(sphereFiberParent.start,sphereFiberParentVertex-1)
+        : sphereFiberParentVertex,
       spherePoint:sphereFiberFirstPointIndex,
       parentColorOffset:sphereFiberParentColorOffset
     });
-  }
-  // Pro Elternfaser zwei zusätzliche Linienvertices reservieren. Diese werden
-  // unten in jedem Frame mit dem echten letzten Strangvertex und dem echten
-  // ersten Kugelvertex gefüllt — kein optischer Anschluss, sondern eine
-  // topologisch durchgehende Linie.
-  var sphereBridgeLineArrayOffset=sphereFiberPositions.length;
-  for(var sphereBridgeReserveIndex=0;sphereBridgeReserveIndex<sphereFiberBridgeRefs.length;sphereBridgeReserveIndex++){
-    sphereFiberPositions.push(0,0,0,0,0,0);
-    sphereFiberColors.push(0,0,0,0,0,0);
   }
   // Kein zweites Faserobjekt: Die Fortsetzungen werden direkt hinten an die
   // bestehenden GPU-Puffer von neural-lines und neural-points angehängt.
@@ -1318,18 +1313,43 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
 
   var lastSphereFiberUpdate=-1;
   var sphereToBrainMatrix=new THREE.Matrix4();
+  var brainToSphereMatrix=new THREE.Matrix4();
+  var sphereContinuationEndpoint=new THREE.Vector3();
+  var sphereContinuationPrevious=new THREE.Vector3();
+  var sphereContinuationScratch=new THREE.Vector3();
+  var sphereContinuationData=[];
   function updateSphereFibers(time){
     if(lastSphereFiberUpdate>=0&&time-lastSphereFiberUpdate<.028) return;
     lastSphereFiberUpdate=time;
     world.updateMatrixWorld(true);
     sphereToBrainMatrix.copy(brain.matrixWorld).invert().multiply(neuralGlassSphere.matrixWorld);
+    brainToSphereMatrix.copy(neuralGlassSphere.matrixWorld).invert().multiply(brain.matrixWorld);
     var sphereTransformElements=sphereToBrainMatrix.elements;
     var animatedPointPositions=wptsObj.geometry.attributes.position.array;
     var animatedPointColors=wptsObj.geometry.attributes.color.array;
     var parentStrandColors=wptsObj.geometry.attributes.color.array;
+    // Letzte zwei echte Vertices jeder Elternfaser in den lokalen Kugelraum
+    // überführen. Daraus entstehen nahtloser Startpunkt und Eintrittstangente.
+    sphereContinuationData.length=0;
+    for(var sphereContinuationIndex=0;sphereContinuationIndex<sphereFiberContinuationRefs.length;sphereContinuationIndex++){
+      var sphereContinuationRef=sphereFiberContinuationRefs[sphereContinuationIndex];
+      goldStrandVertexLocal(sphereContinuationRef.parentVertex,goldDragScratch,true);
+      sphereContinuationEndpoint.copy(goldDragScratch).applyMatrix4(brainToSphereMatrix);
+      goldStrandVertexLocal(sphereContinuationRef.previousVertex,goldDragScratch,true);
+      sphereContinuationPrevious.copy(goldDragScratch).applyMatrix4(brainToSphereMatrix);
+      var sphereContinuationTangent=sphereContinuationEndpoint.clone().sub(sphereContinuationPrevious).normalize();
+      var sphereContinuationDirection=sphereContinuationEndpoint.clone().normalize();
+      sphereContinuationData.push({
+        endpoint:sphereContinuationEndpoint.clone(),
+        tangent:sphereContinuationTangent,
+        startTheta:Math.acos(THREE.MathUtils.clamp(sphereContinuationDirection.y,-1,1)),
+        startPhi:Math.atan2(sphereContinuationDirection.z,sphereContinuationDirection.x)
+      });
+    }
     for(var sphereAnimatedIndex=0;sphereAnimatedIndex<sphereFiberVertexMeta.length;sphereAnimatedIndex++){
       var sphereAnimatedMeta=sphereFiberVertexMeta[sphereAnimatedIndex];
       var sphereAnimatedTravel=sphereAnimatedMeta.travel;
+      var sphereContinuation=sphereContinuationData[sphereAnimatedMeta.fiberIndex];
       // Am Pol exakt null, danach dieselbe Wellenfamilie wie der Elternstrang.
       var sphereAnimatedEnvelope=smoother(sphereAnimatedTravel/.18);
       var sphereContinuedTravel=1+sphereAnimatedTravel*sphereAnimatedMeta.arcShare;
@@ -1343,14 +1363,32 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         Math.cos(time*WIND.speed*2.43+sphereContinuedTravel*WIND.waveFrequency*.78+sphereAnimatedMeta.phase)*WIND.wave*.82
         +Math.cos(time*WIND.speed*1.07+sphereAnimatedMeta.phase)*WIND.sway*.06
       )*sphereAnimatedEnvelope;
-      var sphereAnimatedAngle=sphereAnimatedMeta.phi+sphereLateralWave/sphereFiberRadius;
-      var sphereAnimatedTheta=sphereAnimatedMeta.theta+sphereDepthWave/sphereFiberRadius;
+      var spherePhiDelta=THREE.MathUtils.euclideanModulo(
+        sphereAnimatedMeta.phi-sphereContinuation.startPhi+Math.PI,
+        Math.PI*2
+      )-Math.PI;
+      var sphereSpreadEnvelope=smoother(sphereAnimatedTravel/.34);
+      var sphereAnimatedAngle=sphereContinuation.startPhi
+        +spherePhiDelta*sphereSpreadEnvelope
+        +sphereLateralWave/sphereFiberRadius;
+      var sphereAnimatedTheta=sphereContinuation.startTheta
+        +(sphereAnimatedMeta.theta-sphereContinuation.startTheta)*sphereAnimatedTravel
+        +sphereDepthWave/sphereFiberRadius;
       var sphereAnimatedRadius=sphereFiberRadius
         +Math.sin(time*WIND.speed*2.43+sphereAnimatedMeta.phase+sphereContinuedTravel*WIND.waveFrequency*.78)*WIND.wave*.08*sphereAnimatedEnvelope;
       var sphereAnimatedSin=Math.sin(sphereAnimatedTheta);
       var sphereLocalX=sphereAnimatedRadius*sphereAnimatedSin*Math.cos(sphereAnimatedAngle);
       var sphereLocalY=sphereAnimatedRadius*Math.cos(sphereAnimatedTheta);
       var sphereLocalZ=sphereAnimatedRadius*sphereAnimatedSin*Math.sin(sphereAnimatedAngle);
+      // Vertex 0 IST der Originalendpunkt. Die ersten Folgevertices führen
+      // dessen Eintrittstangente weich auf die gekrümmte Oberfläche über.
+      var sphereSurfaceAttach=smoother(sphereAnimatedTravel/.075);
+      var sphereTangentTravel=Math.min(sphereAnimatedTravel/.075,1)*SP.spacing*3.2;
+      sphereContinuationScratch.copy(sphereContinuation.endpoint)
+        .addScaledVector(sphereContinuation.tangent,sphereTangentTravel);
+      sphereLocalX=THREE.MathUtils.lerp(sphereContinuationScratch.x,sphereLocalX,sphereSurfaceAttach);
+      sphereLocalY=THREE.MathUtils.lerp(sphereContinuationScratch.y,sphereLocalY,sphereSurfaceAttach);
+      sphereLocalZ=THREE.MathUtils.lerp(sphereContinuationScratch.z,sphereLocalZ,sphereSurfaceAttach);
       var sphereAnimatedOffset=spherePointBufferOffset+sphereAnimatedIndex*3;
       animatedPointPositions[sphereAnimatedOffset]=sphereTransformElements[0]*sphereLocalX+sphereTransformElements[4]*sphereLocalY+sphereTransformElements[8]*sphereLocalZ+sphereTransformElements[12];
       animatedPointPositions[sphereAnimatedOffset+1]=sphereTransformElements[1]*sphereLocalX+sphereTransformElements[5]*sphereLocalY+sphereTransformElements[9]*sphereLocalZ+sphereTransformElements[13];
@@ -1381,30 +1419,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       animatedLineColors[sphereLineOffset]=animatedPointColors[sphereSourceOffset];
       animatedLineColors[sphereLineOffset+1]=animatedPointColors[sphereSourceOffset+1];
       animatedLineColors[sphereLineOffset+2]=animatedPointColors[sphereSourceOffset+2];
-    }
-    // Physische Brücke jeder Originalfaser: letzter Vertex des Hauptstrangs
-    // → erster Vertex derselben Fortsetzungsfaser auf der Kugel.
-    for(var sphereBridgeIndex=0;sphereBridgeIndex<sphereFiberBridgeRefs.length;sphereBridgeIndex++){
-      var sphereBridgeRef=sphereFiberBridgeRefs[sphereBridgeIndex];
-      goldStrandVertexLocal(sphereBridgeRef.parentVertex,goldDragScratch,true);
-      var sphereBridgePointOffset=spherePointBufferOffset+sphereBridgeRef.spherePoint*3;
-      var sphereBridgeLineOffset=sphereLineBufferOffset+sphereBridgeLineArrayOffset+sphereBridgeIndex*6;
-      animatedLinePositions[sphereBridgeLineOffset]=goldDragScratch.x;
-      animatedLinePositions[sphereBridgeLineOffset+1]=goldDragScratch.y;
-      animatedLinePositions[sphereBridgeLineOffset+2]=goldDragScratch.z;
-      animatedLinePositions[sphereBridgeLineOffset+3]=animatedPointPositions[sphereBridgePointOffset];
-      animatedLinePositions[sphereBridgeLineOffset+4]=animatedPointPositions[sphereBridgePointOffset+1];
-      animatedLinePositions[sphereBridgeLineOffset+5]=animatedPointPositions[sphereBridgePointOffset+2];
-      var sphereBridgeColorOffset=sphereBridgeRef.parentColorOffset;
-      var sphereBridgeRed=sphereBridgeColorOffset>=0?parentStrandColors[sphereBridgeColorOffset]:1;
-      var sphereBridgeGreen=sphereBridgeColorOffset>=0?parentStrandColors[sphereBridgeColorOffset+1]:1;
-      var sphereBridgeBlue=sphereBridgeColorOffset>=0?parentStrandColors[sphereBridgeColorOffset+2]:1;
-      animatedLineColors[sphereBridgeLineOffset]=sphereBridgeRed;
-      animatedLineColors[sphereBridgeLineOffset+1]=sphereBridgeGreen;
-      animatedLineColors[sphereBridgeLineOffset+2]=sphereBridgeBlue;
-      animatedLineColors[sphereBridgeLineOffset+3]=sphereBridgeRed;
-      animatedLineColors[sphereBridgeLineOffset+4]=sphereBridgeGreen;
-      animatedLineColors[sphereBridgeLineOffset+5]=sphereBridgeBlue;
     }
     wptsObj.geometry.attributes.position.needsUpdate=true;
     wptsObj.geometry.attributes.color.needsUpdate=true;
