@@ -850,7 +850,15 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       // Viewports und zeigte nur einzelne abgeschnittene Fäden.
       // Jede Faser läuft zunächst ausschließlich vertikal bis zur tiefsten
       // gemeinsamen Abschlusskante. Erst darunter darf das Tal öffnen.
-      var trunkLength=Math.max(.18,sBase[tipVertex*3+1]-landscapeLowestTipY+.42);
+      // Sichtbare Freigabegrenze: Die seitliche Talöffnung beginnt erst auf
+      // Höhe der UNTERKANTE der unteren Kartenreihe (rote/grüne Karte). Der
+      // zusätzliche vertikale Lauf hält Gold, Rot und Blau bis dorthin als
+      // geschlossenen Hauptstrang zusammen.
+      var landscapeCardBottomClearance=1.55;
+      var trunkLength=Math.max(
+        landscapeCardBottomClearance,
+        sBase[tipVertex*3+1]-landscapeLowestTipY+landscapeCardBottomClearance
+      );
       var groundDrop=.68+landscapeRandom()*.16;
       var meanderAmplitude=.22+landscapeRandom()*.68;
       var meanderFrequency=1.1+landscapeRandom()*2.4;
