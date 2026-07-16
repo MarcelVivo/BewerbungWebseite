@@ -1338,7 +1338,9 @@ body {
 
   .spiral-mobile .spiral-service-card {
     min-height: 0;
-    aspect-ratio: 4 / 3;
+    height: min(62vw, 20rem);
+    aspect-ratio: auto;
+    overflow: hidden;
     padding: 1rem;
     border-radius: 1rem;
   }
