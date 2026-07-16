@@ -736,6 +736,151 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     }
   }
 
+  // Neuaufbau nach der Landschaftsreferenz: kein Talmodell, keine getrennten
+  // Äste, sondern ein einziger Stamm, der sich kelchförmig in ein breites,
+  // perspektivisch tiefes Flussdelta legt. Alle Vertices landen weiterhin in
+  // exakt denselben Linien-/Punktebuffern wie der Hauptstrang.
+  function appendReferenceNeuralLandscape(outPos,outCol,outPtsPos,outPtsCol){
+    if(!sFibers.length) return;
+    var landscapeRandom=createSeededRandom(0x4e455552);
+    var landscapeFiberCount=sFibers.length;
+    var landscapeTrunkPoints=isMobile?18:26;
+    var landscapeDeltaPoints=isMobile?42:64;
+    var landscapeFieldPoints=isMobile?72:118;
+    var landscapeHalfWidth=isMobile?6.4:10.8;
+    var landscapeDepth=isMobile?22:34;
+    var landscapeColor=new THREE.Color();
+
+    function landscapeFiberColor(fiberIndex,tipVertex){
+      // Referenz: Gold trägt die Landschaft, Rot und Blau laufen als klar
+      // sichtbare, miteinander verflochtene Nebenfarben bis zum Horizont.
+      var band=Math.abs(fiberIndex*19+tipVertex*5)%10;
+      var palette=band<2
+        ?[SATELLITE_METALS.red.deep,SATELLITE_METALS.red.primary,SATELLITE_METALS.red.light]
+        :(band<4
+          ?[SATELLITE_METALS.blue.deep,SATELLITE_METALS.blue.primary,SATELLITE_METALS.blue.light]
+          :[GOLD.deep,GOLD.primary,GOLD.light]);
+      return palette[Math.abs(fiberIndex*11+tipVertex*3)%palette.length];
+    }
+
+    function appendLandscapeVertex(parentVertex,x,y,z,waveStrength,phase,travel,color,previousVertex){
+      var vertexIndex=organismVertices.length/3;
+      organismVertices.push(x,y,z);
+      organismMeta.push({
+        parentVertex:parentVertex,
+        waveStrength:waveStrength,
+        phase:phase,
+        travel:travel
+      });
+      var parentOffset=parentVertex*3;
+      var px=sBase[parentOffset]+x;
+      var py=sBase[parentOffset+1]+y;
+      var pz=sBase[parentOffset+2]+z;
+      var pointOffset=outPtsPos.length;
+      outPtsPos.push(px,py,pz);
+      outPtsCol.push(color.r,color.g,color.b);
+      organismPointRefs.push({off:pointOffset,src:vertexIndex});
+      if(previousVertex!==null){
+        var previousOffset=previousVertex*3;
+        var previousMeta=organismMeta[previousVertex];
+        var previousParentOffset=previousMeta.parentVertex*3;
+        var lineOffset=outPos.length;
+        outPos.push(
+          sBase[previousParentOffset]+organismVertices[previousOffset],
+          sBase[previousParentOffset+1]+organismVertices[previousOffset+1],
+          sBase[previousParentOffset+2]+organismVertices[previousOffset+2],
+          px,py,pz
+        );
+        outCol.push(color.r,color.g,color.b,color.r,color.g,color.b);
+        organismLineRefs.push({off:lineOffset,src:previousVertex});
+        organismLineRefs.push({off:lineOffset+3,src:vertexIndex});
+      }
+      return vertexIndex;
+    }
+
+    for(var landscapeFiberIndex=0;landscapeFiberIndex<landscapeFiberCount;landscapeFiberIndex++){
+      var sourceFiber=sFibers[landscapeFiberIndex];
+      var tipVertex=sourceFiber.start+sourceFiber.len-1;
+      var phase=sMeta[sourceFiber.start*2+1]+(landscapeRandom()-.5)*.9;
+      var orderedPosition=landscapeFiberCount===1?0:landscapeFiberIndex/(landscapeFiberCount-1)*2-1;
+      // Deterministisches Durchmischen verhindert einen künstlichen Fächer,
+      // bewahrt aber eine gleichmäßig gefüllte Landschaft.
+      var laneSeed=((landscapeFiberIndex*73)%landscapeFiberCount)/Math.max(1,landscapeFiberCount-1)*2-1;
+      var laneMix=orderedPosition*.18+laneSeed*.82;
+      var laneSign=laneMix<0?-1:1;
+      var targetSide=laneSign*Math.pow(Math.abs(laneMix),.72)*landscapeHalfWidth;
+      targetSide+=(landscapeRandom()-.5)*landscapeHalfWidth*.12;
+      var targetDepth=landscapeDepth*(.8+landscapeRandom()*.24);
+      var trunkLength=2.45+landscapeRandom()*.55;
+      var groundDrop=2.25+landscapeRandom()*.34;
+      var meanderAmplitude=.22+landscapeRandom()*.68;
+      var meanderFrequency=1.1+landscapeRandom()*2.4;
+      var fiberColor=landscapeColor.copy(landscapeFiberColor(landscapeFiberIndex,tipVertex))
+        .multiplyScalar(.76+landscapeRandom()*.25).clone();
+      var previousVertex=null;
+      var emitted=0;
+      var total=landscapeTrunkPoints+landscapeDeltaPoints+landscapeFieldPoints;
+
+      function emitLandscape(x,y,z,waveStrength){
+        previousVertex=appendLandscapeVertex(
+          tipVertex,x,y,z,waveStrength,phase,emitted/Math.max(1,total-1),fiberColor,previousVertex
+        );
+        emitted++;
+      }
+
+      // 1: gemeinsamer, ununterbrochener Hauptstamm.
+      for(var trunkIndex=0;trunkIndex<landscapeTrunkPoints;trunkIndex++){
+        var trunkT=trunkIndex/Math.max(1,landscapeTrunkPoints-1);
+        var trunkEnvelope=Math.sin(Math.PI*trunkT);
+        var trunkDrift=Math.sin(phase+trunkT*3.1)*.035*trunkEnvelope;
+        emitLandscape(
+          organismRightX*trunkDrift+organismForwardX*.12*smoother(trunkT),
+          -trunkLength*trunkT,
+          organismRightZ*trunkDrift+organismForwardZ*.12*smoother(trunkT),
+          1-.08*trunkT
+        );
+      }
+
+      // 2: kelchförmige Entfaltung – langsam beginnen, dann breit öffnen.
+      for(var deltaIndex=1;deltaIndex<=landscapeDeltaPoints;deltaIndex++){
+        var deltaT=deltaIndex/landscapeDeltaPoints;
+        var deltaOpen=smoother(deltaT);
+        var deltaSide=targetSide*deltaOpen
+          +Math.sin(phase+deltaT*8.4)*meanderAmplitude*.18*Math.sin(Math.PI*deltaT);
+        var deltaForward=.12+7.2*deltaT*deltaT;
+        var deltaBank=Math.pow(Math.abs(deltaSide)/landscapeHalfWidth,1.72)*1.42*deltaOpen;
+        var deltaY=-trunkLength-groundDrop*deltaT*(2-deltaT)+deltaBank;
+        emitLandscape(
+          organismRightX*deltaSide+organismForwardX*deltaForward,
+          deltaY,
+          organismRightZ*deltaSide+organismForwardZ*deltaForward,
+          .92-.5*deltaOpen
+        );
+      }
+
+      // 3: flache, breite Landschaft mit ruhiger werdenden Wellen bis tief
+      // zum Horizont; seitlich steigt die Ebene wie in der Referenz sanft an.
+      for(var fieldIndex=1;fieldIndex<=landscapeFieldPoints;fieldIndex++){
+        var fieldT=fieldIndex/landscapeFieldPoints;
+        var fieldEnvelope=Math.sin(Math.PI*fieldT);
+        var fieldMeander=Math.sin(phase+fieldT*meanderFrequency*Math.PI*2)
+          *meanderAmplitude*fieldEnvelope;
+        var fieldSide=THREE.MathUtils.clamp(targetSide+fieldMeander,-landscapeHalfWidth*1.08,landscapeHalfWidth*1.08);
+        var fieldForward=7.32+targetDepth*fieldT;
+        var fieldBank=Math.pow(Math.abs(fieldSide)/landscapeHalfWidth,1.68)*1.55;
+        var terrainWave=(Math.sin(fieldSide*.72+phase)+Math.sin(fieldForward*.34+phase*.61)*.55)
+          *.12*(1-fieldT*.55);
+        var fieldY=-trunkLength-groundDrop+fieldBank+terrainWave-.28*fieldT;
+        emitLandscape(
+          organismRightX*fieldSide+organismForwardX*fieldForward,
+          fieldY,
+          organismRightZ*fieldSide+organismForwardZ*fieldForward,
+          .4-.32*fieldT
+        );
+      }
+    }
+  }
+
   function genStrandInto(outPos,outCol,outPtsPos,outPtsCol){
     sBase=[]; sMeta=[]; sFibers=[]; vc=0; wobbleLineRefs=[]; wobblePtsRefs=[];
     organismVertices=[]; organismMeta=[]; organismLineRefs=[]; organismPointRefs=[];
@@ -899,7 +1044,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     // Jede einzelne bestehende Faser ab ihrem echten Endvertex im selben
     // Linien-/Punktebuffer fortsetzen: kompakter Stamm -> organisches Delta ->
     // breite neuronale Landschaft. Kein zweites THREE.Object3D.
-    appendLivingOrganismContinuation(outPos,outCol,outPtsPos,outPtsCol);
+    appendReferenceNeuralLandscape(outPos,outCol,outPtsPos,outPtsCol);
   }
 
   function resetWobbleBuffers(){
