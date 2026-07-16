@@ -754,8 +754,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var landscapeTrunkPoints=isMobile?18:26;
     var landscapeDeltaPoints=isMobile?42:64;
     var landscapeFieldPoints=isMobile?72:118;
-    var landscapeHalfWidth=isMobile?6.4:10.8;
-    var landscapeDepth=isMobile?22:34;
+    var landscapeHalfWidth=isMobile?5.8:9.2;
+    var landscapeDepth=isMobile?18:27;
     var landscapeColor=new THREE.Color();
     var landscapePaths=[];
 
@@ -820,14 +820,16 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var targetSide=laneSign*Math.pow(Math.abs(laneMix),.72)*landscapeHalfWidth;
       targetSide+=(landscapeRandom()-.5)*landscapeHalfWidth*.12;
       var targetDepth=landscapeDepth*(.8+landscapeRandom()*.24);
-      var trunkLength=2.45+landscapeRandom()*.55;
-      var groundDrop=2.25+landscapeRandom()*.34;
+      // Die Talsohle bleibt im unteren Sichtkegel der Endkamera. Der frühere
+      // Gesamtfall von rund fünf Einheiten lag fast vollständig unterhalb des
+      // Viewports und zeigte nur einzelne abgeschnittene Fäden.
+      var trunkLength=.72+landscapeRandom()*.18;
+      var groundDrop=.68+landscapeRandom()*.16;
       var meanderAmplitude=.22+landscapeRandom()*.68;
       var meanderFrequency=1.1+landscapeRandom()*2.4;
       var fiberColor=landscapeColor.copy(landscapeFiberColor(
         landscapeFiberFamily,landscapeSourceIndex,tipVertex
-      ))
-        .multiplyScalar(.76+landscapeRandom()*.25).clone();
+      )).clone();
       var previousVertex=null;
       var pathVertices=[];
       var emitted=0;
@@ -867,7 +869,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           organismRightX*deltaSide+organismForwardX*deltaForward,
           deltaY,
           organismRightZ*deltaSide+organismForwardZ*deltaForward,
-          .92-.5*deltaOpen
+          .98-.14*deltaOpen
         );
       }
 
@@ -888,7 +890,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           organismRightX*fieldSide+organismForwardX*fieldForward,
           fieldY,
           organismRightZ*fieldSide+organismForwardZ*fieldForward,
-          .4-.32*fieldT
+          .84-.16*fieldT
         );
       }
       landscapePaths.push({side:targetSide,vertices:pathVertices,color:fiberColor});
@@ -921,7 +923,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     }
     var landscapeSurfaceStart=landscapeTrunkPoints+Math.floor(landscapeDeltaPoints*.28);
     var landscapePathLength=landscapeTrunkPoints+landscapeDeltaPoints+landscapeFieldPoints;
-    for(var landscapeRow=landscapeSurfaceStart;landscapeRow<landscapePathLength;landscapeRow+=3){
+    // Deaktiviert: Die Originalstränge besitzen keine künstlichen Querstreben.
+    // Die Landschaft besteht ausschließlich aus den weiterlaufenden Fasern.
+    for(var landscapeRow=landscapePathLength;landscapeRow<landscapePathLength;landscapeRow+=3){
       for(var landscapePathIndex=0;landscapePathIndex<landscapePaths.length-1;landscapePathIndex++){
         var currentPath=landscapePaths[landscapePathIndex];
         var nextPath=landscapePaths[landscapePathIndex+1];
