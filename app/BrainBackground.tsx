@@ -523,11 +523,20 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var organismCurrent=new Float32Array(0);
   var organismScratch=new THREE.Vector3();
   var organismStationAngle=cameraHelixExitStart*Math.PI*2;
-  // Die Endkamera steht auf der positiven Radialachse und blickt zum Ursprung.
-  // Die Landschaft muss deshalb vom Betrachter weg auf der Gegenachse in die
-  // Bildtiefe laufen; der frühere BASE_Y-Winkel drehte sie seitlich aus dem Bild.
-  var organismForwardX=-Math.sin(organismStationAngle), organismForwardZ=-Math.cos(organismStationAngle);
-  var organismRightX=Math.cos(organismStationAngle), organismRightZ=-Math.sin(organismStationAngle);
+  // Weltblickrichtung der Endkamera in den GEDREHTEN lokalen Brain-Raum
+  // transformieren. Ohne diese inverse Transformation wird die Talachse durch
+  // brain.rotation.y/x erneut gedreht und erscheint aus der Seitenansicht.
+  var organismBrainQuaternion=new THREE.Quaternion().setFromEuler(
+    new THREE.Euler(MAIN_BRAIN_BASE_X,BASE_Y,0)
+  ).invert();
+  var organismForwardVector=new THREE.Vector3(
+    -Math.sin(organismStationAngle),0,-Math.cos(organismStationAngle)
+  ).applyQuaternion(organismBrainQuaternion).normalize();
+  var organismRightVector=new THREE.Vector3(
+    Math.cos(organismStationAngle),0,-Math.sin(organismStationAngle)
+  ).applyQuaternion(organismBrainQuaternion).normalize();
+  var organismForwardX=organismForwardVector.x, organismForwardY=organismForwardVector.y, organismForwardZ=organismForwardVector.z;
+  var organismRightX=organismRightVector.x, organismRightY=organismRightVector.y, organismRightZ=organismRightVector.z;
   var wobbleX=new Float32Array(0), wobbleZ=new Float32Array(0);
   var goldEscapeWeights=[], goldEscapePhases=[], goldEscapeFrequencies=[], goldEscapeSpeeds=[];
   var GOLD_STRAND_END_KEY='ms-gold-strand-end-v1';
@@ -850,7 +859,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         var trunkDrift=Math.sin(phase+trunkT*3.1)*.035*trunkEnvelope;
         emitLandscape(
           organismRightX*trunkDrift+organismForwardX*.12*smoother(trunkT),
-          -trunkLength*trunkT,
+          -trunkLength*trunkT+organismRightY*trunkDrift+organismForwardY*.12*smoother(trunkT),
           organismRightZ*trunkDrift+organismForwardZ*.12*smoother(trunkT),
           1-.08*trunkT
         );
@@ -867,7 +876,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         var deltaY=-trunkLength-groundDrop*deltaT*(2-deltaT)+deltaBank;
         emitLandscape(
           organismRightX*deltaSide+organismForwardX*deltaForward,
-          deltaY,
+          deltaY+organismRightY*deltaSide+organismForwardY*deltaForward,
           organismRightZ*deltaSide+organismForwardZ*deltaForward,
           .98-.14*deltaOpen
         );
@@ -888,7 +897,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         var fieldY=-trunkLength-groundDrop+fieldBank+terrainWave-.28*fieldT;
         emitLandscape(
           organismRightX*fieldSide+organismForwardX*fieldForward,
-          fieldY,
+          fieldY+organismRightY*fieldSide+organismForwardY*fieldForward,
           organismRightZ*fieldSide+organismForwardZ*fieldForward,
           .84-.16*fieldT
         );
