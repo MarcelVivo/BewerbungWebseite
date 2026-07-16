@@ -28,69 +28,68 @@ export default function CustomCursor() {
     window.addEventListener('resize', resize);
 
     const pointer = { x: innerWidth / 2, y: innerHeight / 2 };
-    const core = { x: pointer.x, y: pointer.y };
     let visible = false;
-    let pressedUntil = 0;
+    let pressed = false;
+    let pressedTimer = 0;
+    let lastDrawn = { x: pointer.x, y: pointer.y };
+
+    function draw() {
+      // Nur den kleinen vorherigen Cursorbereich löschen. Ein Clear des
+      // kompletten hochauflösenden Viewport-Canvas bei jeder Mausbewegung
+      // konkurrierte beim wiederholten Kartenöffnen mit WebGL und SVG.
+      ctx!.clearRect(lastDrawn.x - 28, lastDrawn.y - 28, 56, 56);
+      if (!visible) return;
+
+      ctx!.save();
+      ctx!.translate(pointer.x, pointer.y);
+      ctx!.rotate(-Math.PI / 4);
+      ctx!.beginPath();
+      ctx!.moveTo(0, 0);
+      ctx!.lineTo(-8, 13);
+      ctx!.moveTo(0, 0);
+      ctx!.lineTo(8, 13);
+      ctx!.strokeStyle = pressed ? '#f6e3a1' : '#ffffff';
+      ctx!.lineWidth = 2.2;
+      ctx!.lineCap = 'round';
+      ctx!.lineJoin = 'round';
+      ctx!.shadowColor = pressed ? 'rgba(231,197,106,0.95)' : 'transparent';
+      ctx!.shadowBlur = pressed ? 8 : 0;
+      ctx!.stroke();
+      ctx!.restore();
+      ctx!.shadowBlur = 0;
+      lastDrawn = { x: pointer.x, y: pointer.y };
+    }
 
     function onMove(e: PointerEvent) {
       pointer.x = e.clientX;
       pointer.y = e.clientY;
       visible = true;
+      draw();
     }
     function onDown(e: PointerEvent) {
       onMove(e);
-      pressedUntil = performance.now() + 280;
+      pressed = true;
+      draw();
+      window.clearTimeout(pressedTimer);
+      pressedTimer = window.setTimeout(() => {
+        pressed = false;
+        draw();
+      }, 160);
     }
-    function onLeave() { visible = false; }
+    function onLeave() { visible = false; draw(); }
+    function onEnter() { visible = true; draw(); }
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerdown', onDown);
     window.addEventListener('mouseleave', onLeave);
-    window.addEventListener('mouseenter', () => { visible = true; });
-
-    let rafId = 0;
-    let last = performance.now();
-    function tick(now: number) {
-      rafId = requestAnimationFrame(tick);
-      const dt = Math.min((now - last) / 1000, 0.05);
-      last = now;
-
-      const ease = 1 - Math.pow(0.001, dt);
-      core.x += (pointer.x - core.x) * ease;
-      core.y += (pointer.y - core.y) * ease;
-
-      ctx!.clearRect(0, 0, innerWidth, innerHeight);
-
-      if (visible) {
-        const clicked = now < pressedUntil;
-
-        ctx!.save();
-        ctx!.translate(core.x, core.y);
-        ctx!.rotate(-Math.PI / 4);
-        ctx!.beginPath();
-        ctx!.moveTo(0, 0);
-        ctx!.lineTo(-8, 13);
-        ctx!.moveTo(0, 0);
-        ctx!.lineTo(8, 13);
-        ctx!.strokeStyle = clicked ? '#f6e3a1' : '#ffffff';
-        ctx!.lineWidth = 2.2;
-        ctx!.lineCap = 'round';
-        ctx!.lineJoin = 'round';
-        ctx!.shadowColor = clicked ? 'rgba(231,197,106,0.95)' : 'transparent';
-        ctx!.shadowBlur = clicked ? 8 : 0;
-        ctx!.stroke();
-        ctx!.restore();
-
-        ctx!.shadowBlur = 0;
-      }
-    }
-    rafId = requestAnimationFrame(tick);
+    window.addEventListener('mouseenter', onEnter);
 
     return () => {
-      cancelAnimationFrame(rafId);
+      window.clearTimeout(pressedTimer);
       window.removeEventListener('resize', resize);
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerdown', onDown);
       window.removeEventListener('mouseleave', onLeave);
+      window.removeEventListener('mouseenter', onEnter);
       document.documentElement.classList.remove('custom-cursor-active');
     };
   }, []);

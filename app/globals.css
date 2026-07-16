@@ -730,16 +730,34 @@ body {
   pointer-events: none;
 }
 
+.spiral-solutions-flap {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  z-index: 6;
+  justify-content: center;
+  font-size: clamp(1.07rem, 2.36vw, 2.17rem);
+  letter-spacing: 0.035em;
+  text-align: center;
+  pointer-events: none;
+  transform: translate3d(-50%, calc(-100% - clamp(1rem, 2.2vw, 1.75rem)), 30px);
+  text-shadow: 0 0 24px rgba(255,255,255,0.12);
+}
+
 .spiral-service-stations .spiral-service-card {
   width: 100%;
   will-change: opacity, transform;
   contain: layout paint style;
-  transition: opacity 380ms ease, transform 380ms ease;
+  transition: opacity 140ms ease-out, transform 140ms ease-out;
 }
 
 .spiral-service-stations.is-detail-open .spiral-service-card {
   opacity: 0 !important;
   pointer-events: none;
+}
+
+.spiral-service-stations:not(.is-detail-open) .spiral-service-card {
+  pointer-events: auto;
 }
 
 .spiral-detail-panel {
@@ -752,7 +770,7 @@ body {
   height: 100%;
   min-height: 0;
   padding: clamp(1.35rem, 2.4vw, 2.4rem);
-  overflow: hidden;
+  overflow: visible;
   appearance: none;
   text-align: left;
   font: inherit;
@@ -768,20 +786,20 @@ body {
     0 0 44px rgba(var(--service-accent-rgb),0.14),
     inset 0 1px 0 rgba(246,227,161,0.1);
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
-  transform: translate3d(0, 0, 24px) scale(0.975);
-  transition:
-    opacity 260ms ease,
-    transform 360ms cubic-bezier(.2,.9,.18,1);
+  transform: translate3d(0, 0, 24px);
+  transform-origin: left center;
+  transform-style: preserve-3d;
+  transition: opacity 260ms ease;
 }
 
 .spiral-detail-panel.is-open {
   opacity: 1;
+  visibility: visible;
   pointer-events: auto;
-  transform: translate3d(0, 0, 24px) scale(1);
-  transition:
-    opacity 360ms ease 300ms,
-    transform 620ms cubic-bezier(.2,.9,.18,1) 300ms;
+  transform: translate3d(0, 0, 24px);
+  transition: opacity 140ms ease-out;
 }
 
 .spiral-detail-panel::before {
@@ -806,6 +824,92 @@ body {
   box-shadow: 0 0 16px rgba(var(--service-accent-rgb),0.22);
 }
 
+.spiral-detail-fiber-spine {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 5;
+  display: block;
+  width: clamp(4.75rem, 7.2vw, 7.75rem);
+  overflow: visible;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  /* Die SVG-Mittelachse liegt bei 50 % ihrer Breite. Auf derselben
+     Z-Ebene wie das Detailpanel bleibt sie auch unter Perspektive exakt
+     auf dessen linker Kartenkante. */
+  transform: translate3d(-50%,0,24px);
+  transform-origin: center center;
+  transition: none !important;
+  filter: drop-shadow(4px 0 10px rgba(var(--service-accent-rgb),0.32));
+  mask-image: linear-gradient(to bottom, transparent, #000 7%, #000 93%, transparent);
+}
+
+.spiral-service-stations.is-detail-open > .spiral-detail-fiber-spine {
+  opacity: 0.96;
+  visibility: visible;
+}
+
+.spiral-detail-fiber-spine svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.spiral-detail-fiber {
+  fill: none;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+
+.spiral-detail-fiber--hair {
+  filter: blur(0.14px);
+}
+
+.spiral-detail-fiber-flow {
+  fill: none;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+  opacity: 0.26;
+}
+
+@keyframes detail-fiber-breathe-core {
+  0%, 100% { opacity: 0.16; }
+  34% { opacity: 0.62; }
+  69% { opacity: 0.28; }
+}
+
+@keyframes detail-fiber-breathe-hair {
+  0%, 100% { opacity: 0.04; }
+  39% { opacity: 0.24; }
+  74% { opacity: 0.09; }
+}
+
+.spiral-service-stations.is-detail-open > .spiral-detail-fiber-spine .spiral-detail-fiber--core {
+  animation-name: detail-fiber-breathe-core;
+}
+
+.spiral-service-stations.is-detail-open > .spiral-detail-fiber-spine .spiral-detail-fiber--hair {
+  animation-name: detail-fiber-breathe-hair;
+}
+
+.spiral-detail-close,
+.spiral-detail-panel > .spiral-intro-meta,
+.spiral-detail-title,
+.spiral-detail-text,
+.spiral-detail-list {
+  position: relative;
+  z-index: 3;
+}
+
 .spiral-detail-close {
   position: absolute;
   top: 1.1rem;
@@ -813,16 +917,15 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.42rem 0.7rem;
+  width: 2.4rem;
+  height: 2.4rem;
+  padding: 0;
   border: 1px solid rgba(var(--service-accent-rgb),0.34);
   border-radius: 999px;
   color: rgba(246,227,161,0.9);
   background: rgba(0,0,0,0.2);
-  font-size: 0.66rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
   line-height: 1;
+  box-shadow: 0 0 18px rgba(var(--service-accent-rgb),0.12);
 }
 
 .spiral-detail-title {
@@ -951,8 +1054,11 @@ body {
 }
 
 .spiral-service-card:not(.ngp-panel-static) {
-  -webkit-backdrop-filter: blur(7px) saturate(1.08);
-  backdrop-filter: blur(7px) saturate(1.08);
+  /* Live-Backdrop-Blur über dem bewegten WebGL-Canvas verursacht beim
+     Einfliegen der vier Karten eine grosse GPU-Lastspitze. Die vorhandenen
+     halbtransparenten Flächenverläufe liefern denselben Glaseindruck. */
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 .spiral-service-card::selection {
@@ -978,8 +1084,8 @@ body {
 }
 
 .spiral-service-card:hover:not(.ngp-panel-static) {
-  -webkit-backdrop-filter: blur(10px) saturate(1.12);
-  backdrop-filter: blur(10px) saturate(1.12);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 .spiral-service-card::after {
@@ -998,13 +1104,18 @@ body {
   top: 1rem;
   right: 1.12rem;
   z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.15rem;
+  height: 2.15rem;
+  border: 1px solid rgba(var(--service-accent-rgb),0.42);
+  border-radius: 999px;
+  background: rgba(0,0,0,0.2);
   color: rgba(var(--service-accent-rgb),0.94);
-  font-size: 0.62rem;
-  font-weight: 800;
-  letter-spacing: 0.115em;
   line-height: 1;
-  text-transform: uppercase;
   text-shadow: 0 0 12px rgba(var(--service-accent-rgb),0.32);
+  box-shadow: 0 0 18px rgba(var(--service-accent-rgb),0.12);
 }
 
 .spiral-service-card .spiral-intro-index,
@@ -1036,174 +1147,11 @@ body {
   width: 100%;
 }
 
-/* ── Floating Glass Layer + Neural Fiber Layer: gemeinsamer, auf die
-   Kartenrundung geclippter Layer, damit Fasern nie über die Ecken hinaus
-   laufen. ── */
-.ngp-surface {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  border-radius: inherit;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.ngp-fibers {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0.3;
-  transition: opacity 640ms ease;
-}
-
-.ngp-fibers path {
-  fill: none;
-  stroke: var(--service-accent);
-  stroke-width: 1;
-  stroke-linecap: round;
-}
-
-.ngp-fibers circle {
-  fill: var(--service-accent);
-  opacity: 0.75;
-}
-
-.spiral-service-card:hover .ngp-fibers,
-.spiral-service-card.is-selected .ngp-fibers {
-  opacity: 0.5;
-}
-
-@keyframes ngp-fiber-pulse {
-  0%, 100% { opacity: 0.24; }
-  50%      { opacity: 0.4; }
-}
-
-.spiral-service-stations.is-materialized .ngp-fibers {
-  animation: ngp-fiber-pulse 7s ease-in-out infinite;
-}
-
-/* ── Living Light Layer: schmaler, seltener Lichtsweep, zeitversetzt ── */
-.ngp-sheen {
-  position: absolute;
-  top: -20%;
-  left: -30%;
-  width: 34%;
-  height: 140%;
-  background: linear-gradient(120deg, transparent, rgba(246,227,161,0.16), transparent);
-  transform: translateX(-120%) skewX(-16deg);
-  opacity: 0;
-  pointer-events: none;
-}
-
-.spiral-service-stations.is-materialized .ngp-sheen {
-  animation: ngp-sheen-sweep 9.5s ease-in-out infinite;
-  animation-delay: 1.2s;
-}
-
-@keyframes ngp-sheen-sweep {
-  0%, 90%, 100% { opacity: 0; transform: translateX(-120%) skewX(-16deg); }
-  4%            { opacity: 1; }
-  24%           { opacity: 0; transform: translateX(260%) skewX(-16deg); }
-}
-
-/* ── Neural Connector: feiner Lichtfaden Richtung Hauptstrang ── */
-.ngp-connector {
-  position: absolute;
-  left: 50%;
-  bottom: -1.5rem;
-  width: 1px;
-  height: 1.55rem;
-  transform: translateX(-50%);
-  background: linear-gradient(to bottom, rgba(var(--service-accent-rgb),0.75), transparent);
-  opacity: 0.5;
-  pointer-events: none;
-  z-index: -1;
-}
-
-.ngp-connector::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: -1px;
-  width: 4px;
-  height: 4px;
-  border-radius: 999px;
-  transform: translateX(-50%);
-  background: var(--service-accent);
-  box-shadow: 0 0 8px rgba(var(--service-accent-rgb),0.7);
-}
-
-.spiral-service-stations.is-materialized .ngp-connector {
-  animation: ngp-connector-pulse 6.5s ease-in-out infinite;
-}
-
-@keyframes ngp-connector-pulse {
-  0%, 100% { opacity: 0.32; }
-  50%      { opacity: 0.7; }
-}
-
-.spiral-service-card:hover .ngp-connector,
-.spiral-service-card.is-selected .ngp-connector {
-  opacity: 0.85;
-}
-
-/* ── Ambient Particle Layer: wenige, sehr subtile schwebende Punkte ── */
-.ngp-particles {
-  position: absolute;
-  inset: -1.2rem;
-  pointer-events: none;
-  z-index: 3;
-}
-
-.ngp-particle {
-  position: absolute;
-  width: 3px;
-  height: 3px;
-  border-radius: 999px;
-  background: var(--service-accent);
-  box-shadow: 0 0 6px rgba(var(--service-accent-rgb),0.65);
-  opacity: 0;
-}
-
-.ngp-particle:nth-child(1) { top: 6%;  left: 10%; }
-.ngp-particle:nth-child(2) { top: 82%; left: 88%; }
-.ngp-particle:nth-child(3) { top: 20%; left: 92%; }
-.ngp-particle:nth-child(4) { top: 90%; left: 14%; }
-
-.spiral-service-stations.is-materialized .ngp-particle {
-  animation: ngp-particle-drift 11s ease-in-out infinite;
-}
-
-.ngp-particle:nth-child(1) { animation-delay: calc(var(--ngp-delay, 0ms) + 0.2s); }
-.ngp-particle:nth-child(2) { animation-delay: calc(var(--ngp-delay, 0ms) + 2.6s); }
-.ngp-particle:nth-child(3) { animation-delay: calc(var(--ngp-delay, 0ms) + 5.1s); }
-.ngp-particle:nth-child(4) { animation-delay: calc(var(--ngp-delay, 0ms) + 7.4s); }
-
-@keyframes ngp-particle-drift {
-  0%, 100% { opacity: 0; transform: translate3d(0,0,0); }
-  10%      { opacity: 0.7; }
-  50%      { opacity: 0.32; transform: translate3d(4px,-6px,0); }
-  90%      { opacity: 0; }
-}
-
-/* ── Sichtbarkeit: die Karte selbst besitzt keine eigene Bewegung/Skalierung
-   mehr — Opacity, Rotation und Skalierung werden ausschliesslich von
-   .spiral-service-station per Inline-Style aus der Kameradistanz gesetzt
-   (siehe SpiralShowcase-Scroll-Effekt in page.tsx). Die inneren Ebenen sind
-   immer voll sichtbar und folgen der Station rein über CSS-Opacity-
-   Vererbung, ohne eigene Transition/Transform. .is-materialized schaltet
-   nur die dezenten, ortsfesten Innenanimationen (Fasern-Pulsieren,
-   Lichtsweep, Partikel-Twinkle, Connector-Puls) frei, sobald die Station
-   zum ersten Mal sichtbar wird. ── */
+/* Die Kartenflächen bleiben auf Desktop und Mobile statisch; Bewegung und
+   Sichtbarkeit kommen ausschliesslich vom jeweiligen Scroll-Layout. */
 .ngp-panel,
-.ngp-core,
-.ngp-surface {
+.ngp-core {
   opacity: 1;
-}
-
-.ngp-panel-static .ngp-fibers {
-  opacity: 0.22;
 }
 
 .spiral-intro-meta {
@@ -1480,17 +1428,6 @@ body {
 
   .spiral-mobile {
     display: block;
-  }
-
-  .ngp-fibers,
-  .ngp-sheen,
-  .ngp-connector,
-  .ngp-particles {
-    animation: none !important;
-  }
-
-  .ngp-particle {
-    display: none;
   }
 
   .spiral-service-stations {

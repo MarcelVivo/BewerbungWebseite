@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from 'react';
 import {
   Bot, BarChart3, Workflow, FolderKanban,
   GraduationCap, Globe, Lightbulb,
-  ChevronRight, ChevronDown, ExternalLink, Star,
+  ChevronRight, ChevronDown, ExternalLink, Maximize2, Star, X,
   CheckCircle, Zap, Users, Award,
   MessageSquare, Search, Compass, Wrench, Heart, ClipboardList,
 } from 'lucide-react';
@@ -89,19 +89,62 @@ function NeuralNodeIcon({ variant = 0 }: { variant?: number }) {
   );
 }
 
-// Feine, organisch-technische Nervenfasern hinter dem Kartentext — eine
-// gemeinsame Pfadstruktur, pro Kartenseite gespiegelt statt vier separate
-// Handzeichnungen zu pflegen.
-function NeuralFiberField() {
+const DETAIL_EDGE_FIBERS = [
+  { kind: 'core', base: 'M54,-20 C42,50 67,112 48,180 C29,256 79,344 45,438 C11,536 88,652 40,770 C8,850 70,940 43,1020', alt: 'M54,-20 C48,47 59,116 52,182 C41,252 70,351 42,442 C20,540 78,648 46,774 C23,852 62,943 43,1020' },
+  { kind: 'core', base: 'M41,40 C58,100 33,171 53,238 C76,318 28,405 58,500 C91,606 22,724 64,836 C79,878 71,925 59,960', alt: 'M41,40 C51,103 39,168 49,242 C62,321 36,409 54,503 C76,608 33,721 60,839 C69,882 65,922 59,960' },
+  { kind: 'core', base: 'M69,118 C48,183 78,246 55,318 C25,402 86,495 49,596 C15,692 82,806 45,914 C34,949 37,988 52,1020', alt: 'M69,118 C57,180 70,250 59,320 C42,399 76,501 46,600 C27,696 72,801 50,917 C45,952 43,987 52,1020' },
+  { kind: 'core', base: 'M32,-10 C49,47 28,112 45,170 C66,239 24,321 52,410 C83,510 20,625 60,735 C87,801 68,858 43,890', alt: 'M32,-10 C43,50 34,108 41,174 C54,244 31,325 48,414 C69,514 32,621 56,739 C72,803 61,857 43,890' },
+  { kind: 'core', base: 'M57,205 C78,275 31,356 61,446 C94,548 23,667 67,786 C91,854 78,929 51,1000', alt: 'M57,205 C69,278 40,352 57,450 C78,553 35,663 63,790 C79,858 70,925 51,1000' },
+  { kind: 'core', base: 'M47,72 C31,128 65,187 43,249 C16,320 76,399 46,482 C21,553 69,635 54,762', alt: 'M47,72 C39,130 57,184 47,252 C32,322 67,395 43,486 C34,557 61,632 54,762' },
+  { kind: 'hair', base: 'M24,34 C35,87 18,144 31,205 C47,276 21,348 39,426', alt: 'M24,34 C30,90 23,141 28,208 C38,278 28,345 39,426' },
+  { kind: 'hair', base: 'M76,286 C54,350 83,421 59,498 C30,586 91,680 55,784 C33,850 42,918 67,982', alt: 'M76,286 C63,353 74,418 62,502 C45,588 81,676 52,788 C43,852 48,916 67,982' },
+  { kind: 'hair', base: 'M61,0 C73,59 48,119 65,184 C84,256 44,333 70,418 C82,465 73,510 51,552', alt: 'M61,0 C68,62 55,116 61,187 C73,259 52,329 66,422 C72,467 67,507 51,552' },
+  { kind: 'hair', base: 'M35,170 C19,231 54,293 32,365 C6,447 65,534 34,628 C22,668 27,710 46,744', alt: 'M35,170 C27,234 46,289 36,369 C21,449 56,530 31,632 C28,671 31,708 46,744' },
+  { kind: 'hair', base: 'M82,438 C61,503 88,577 62,657 C32,748 92,851 54,955 C47,978 48,1000 58,1020', alt: 'M82,438 C70,507 79,573 65,661 C48,750 82,847 51,959 C50,980 52,999 58,1020' },
+  { kind: 'hair', base: 'M50,96 C64,153 37,218 57,287 C80,366 34,454 63,547 C91,638 34,744 68,858', alt: 'M50,96 C58,156 44,215 53,291 C68,369 43,451 59,551 C76,641 45,741 68,858' },
+  { kind: 'hair', base: 'M28,518 C44,571 21,634 40,702 C62,779 25,866 52,950', alt: 'M28,518 C38,574 28,631 36,706 C51,781 34,863 52,950' },
+];
+
+function DetailFiberSpine() {
+  const gradientId = `detail-fiber-gradient-${useId().replace(/:/g, '')}`;
   return (
-    <svg className="ngp-fibers" viewBox="0 0 400 260" preserveAspectRatio="none" aria-hidden="true">
-      <path d="M-10,214 C58,182 92,142 68,92 C54,56 92,32 152,42" />
-      <path d="M410,26 C338,8 300,52 322,102 C336,142 300,172 238,150" />
-      <path d="M22,18 C70,58 58,112 112,132" />
-      <circle cx="68" cy="92" r="2.4" />
-      <circle cx="152" cy="42" r="1.6" />
-      <circle cx="322" cy="102" r="2.2" />
-      <circle cx="112" cy="132" r="1.6" />
+    <svg viewBox="-5 0 110 1000" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="var(--service-accent)" stopOpacity="0" />
+          <stop offset="10%" stopColor="var(--service-accent)" stopOpacity="0.62" />
+          <stop offset="52%" stopColor="var(--service-accent)" stopOpacity="1" />
+          <stop offset="91%" stopColor="var(--service-accent)" stopOpacity="0.5" />
+          <stop offset="100%" stopColor="var(--service-accent)" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      {DETAIL_EDGE_FIBERS.map((fiber, index) => {
+        const fadeDuration = 10.8 + (index % 5) * 1.43;
+        const strokeWidth = fiber.kind === 'core' ? 0.82 + (index % 3) * 0.11 : 0.38 + (index % 2) * 0.09;
+        return (
+          <g key={fiber.base}>
+            <path
+              className={`spiral-detail-fiber spiral-detail-fiber--${fiber.kind}`}
+              d={fiber.base}
+              stroke={`url(#${gradientId})`}
+              style={{
+                animationDuration: `${fadeDuration.toFixed(2)}s`,
+                animationDelay: `${(-index * 1.67).toFixed(2)}s`,
+                animationDirection: index % 2 ? 'reverse' : 'normal',
+                strokeWidth,
+              }}
+            />
+            <path
+              className="spiral-detail-fiber-flow"
+              d={fiber.base}
+              stroke={`url(#${gradientId})`}
+              pathLength={1}
+              strokeDasharray="0.14 0.86"
+              style={{ strokeWidth: strokeWidth * 1.65 }}
+            />
+          </g>
+        );
+      })}
     </svg>
   );
 }
@@ -123,13 +166,13 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
   const [activeServiceSlug, setActiveServiceSlug] = useState<string | null>(null);
   const progressRef = useRef(0);
   const targetProgressRef = useRef(0);
-  const activeLayoutProgressRef = useRef(0);
   const frameRef = useRef(0);
   const lastFrameTimeRef = useRef(0);
   const lastStrandProgressRef = useRef(-1);
   const viewportRef = useRef({ width: 0, height: 0 });
   const serviceStationsRef = useRef<HTMLDivElement | null>(null);
   const cardsWorldRef = useRef<HTMLDivElement | null>(null);
+  const solutionsFlapRef = useRef<HTMLHeadingElement | null>(null);
   const detailScrollDistanceRef = useRef(0);
   const detailScrollStepsRef = useRef(0);
   // Je 1 Ref-Slot pro Intro-Station (worldIndex 0..4, "Deine …") — Arrays
@@ -261,6 +304,38 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
     rafId = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(rafId);
   }, []);
+
+  // Die Kartenüberschrift ist Teil desselben projizierten DOM-Weltobjekts
+  // wie die vier Karten. Sie besitzt deshalb keine eigene Scroll- oder
+  // Kameralogik, sondern folgt deren Position, Skalierung und Drehung exakt.
+  // Lediglich der Split-Flap-Lauf wird in einem festen 5-Sekunden-Takt kurz
+  // aktiviert und anschliessend wieder auf den Zieltext gesetzt.
+  useEffect(() => {
+    const title = solutionsFlapRef.current;
+    if (!title) return;
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const label = lang === 'de' ? 'LÖSUNGEN' : 'SOLUTIONS';
+    const letters = buildFlapWord(title, label);
+    setFlapWordMode(letters, 'settle', true);
+
+    let settleTimer = 0;
+    const triggerFlap = () => {
+      if (reduced) return;
+      window.clearTimeout(settleTimer);
+      setFlapWordMode(letters, 'spin', false);
+      settleTimer = window.setTimeout(() => {
+        setFlapWordMode(letters, 'settle', false);
+      }, 720);
+    };
+
+    const flapInterval = window.setInterval(triggerFlap, 5000);
+    return () => {
+      window.clearInterval(flapInterval);
+      window.clearTimeout(settleTimer);
+      setFlapWordMode(letters, 'settle', true);
+    };
+  }, [lang]);
 
   // IntroFlapWorld: ersetzt die WebGL-Textebenen ALLER 5 Intro-Stationen
   // ("Deine Idee.", "Deine Herausforderung.", "Deine Vision.", "Deine
@@ -454,6 +529,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       ? Array.from(continuousStrand.querySelectorAll<SVGPathElement>('[data-strand-path]'))
       : [];
     const serviceItems = Array.from(section.querySelectorAll<HTMLElement>('[data-service-card]'));
+    let lastRenderedProgress = Number.NaN;
 
     const update = () => {
       const start = section.offsetTop;
@@ -481,7 +557,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       };
     };
 
-    const renderProgress = (currentProgress: number, activeLayoutProgress: number) => {
+    const renderProgress = (currentProgress: number) => {
       const rotationTravel = (spiralAngleStep * totalTravel) / verticalStep;
       items.forEach((item, i) => {
         const angle = i * spiralAngleStep - currentProgress * rotationTravel;
@@ -582,7 +658,10 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
         const y = (1 - eased) * 150;
 
         item.style.transform = `translate3d(0, ${y}px, 0)`;
-        item.style.opacity = String(eased * (1 - activeLayoutProgress));
+        // Der Detailzustand wird ausschliesslich über .is-detail-open
+        // ausgeblendet. Eine zweite, gedämpfte JS-Opacity konnte nach
+        // mehreren Öffnungen auf 0 stehen bleiben und spätere Karten sperren.
+        item.style.opacity = String(eased);
         item.style.zIndex = '1260';
       });
     };
@@ -596,11 +675,16 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
         ? targetProgressRef.current
         : next;
 
-      const activeTarget = section.dataset.activeService ? 1 : 0;
-      const activeNext = activeLayoutProgressRef.current + (activeTarget - activeLayoutProgressRef.current) * easing;
-      activeLayoutProgressRef.current = Math.abs(activeTarget - activeNext) < 0.0008 ? activeTarget : activeNext;
-
-      renderProgress(progressRef.current, activeLayoutProgressRef.current);
+      // Keine Layout-/Style-Schreibvorgänge in ruhenden Frames. Die vorherige
+      // Dauerschleife schrieb auch bei unverändertem Scrollstand sämtliche
+      // Kartenstile neu und verursachte zusammen mit WebGL unnötige Ruckler.
+      if (
+        !Number.isFinite(lastRenderedProgress)
+        || Math.abs(progressRef.current - lastRenderedProgress) > 0.00005
+      ) {
+        renderProgress(progressRef.current);
+        lastRenderedProgress = progressRef.current;
+      }
 
       frameRef.current = requestAnimationFrame(animate);
     };
@@ -612,7 +696,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
 
     updateViewport();
     update();
-    renderProgress(progressRef.current, activeLayoutProgressRef.current);
+    renderProgress(progressRef.current);
     frameRef.current = requestAnimationFrame(animate);
     window.addEventListener('scroll', update, { passive: true });
     window.addEventListener('resize', handleResize);
@@ -903,6 +987,11 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
           className={`spiral-service-stations ${activeService ? 'is-detail-open' : ''}`}
           aria-label={lang === 'de' ? 'Service Leistungen' : 'Services'}
         >
+          <h2
+            ref={solutionsFlapRef}
+            className={`spiral-solutions-flap intro-flap-word ${chakraPetch.className}`}
+            aria-label={lang === 'de' ? 'Lösungen' : 'Solutions'}
+          />
           {serviceCards.map((card, i) => {
             return (
               <button
@@ -911,23 +1000,20 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
                 data-service-card
                 data-service-slug={card.slug}
                 className="spiral-service-card ngp-panel"
+                aria-label={`${card.title}: ${lang === 'de' ? 'Details öffnen' : 'Open details'}`}
                 style={{
                   '--service-accent': card.accent,
                   '--service-accent-rgb': card.accentRgb,
                 } as CSSProperties}
-                onClick={() => setActiveServiceSlug(card.slug || null)}
+                onPointerUp={(event) => {
+                  if (event.pointerType !== 'mouse' || event.button === 0) {
+                    setActiveServiceSlug(card.slug || null);
+                  }
+                }}
+                onClick={(event) => {
+                  if (event.detail === 0) setActiveServiceSlug(card.slug || null);
+                }}
               >
-                <span className="ngp-connector" aria-hidden="true" />
-                <span className="ngp-particles" aria-hidden="true">
-                  <i className="ngp-particle" />
-                  <i className="ngp-particle" />
-                  <i className="ngp-particle" />
-                  <i className="ngp-particle" />
-                </span>
-                <span className="ngp-surface" aria-hidden="true">
-                  <NeuralFiberField />
-                  <span className="ngp-sheen" />
-                </span>
                 <span className="ngp-core">
                   <span className="spiral-intro-meta">
                     <span className="spiral-intro-index">{card.code}</span>
@@ -939,27 +1025,51 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
                   <p className="spiral-service-body">{card.body}</p>
                   <span className="spiral-intro-rule" />
                 </span>
-                <span className={`spiral-service-more ${chakraPetch.className}`}>
-                  {lang === 'de' ? 'Mehr erfahren' : 'Learn more'}
+                <span
+                  className="spiral-service-more"
+                  title={lang === 'de' ? 'Details öffnen' : 'Open details'}
+                  aria-hidden="true"
+                >
+                  <Maximize2 size={16} strokeWidth={2.1} />
                 </span>
               </button>
             );
           })}
+          <span
+            className="spiral-detail-fiber-spine"
+            aria-hidden="true"
+            style={{
+              '--service-accent': detailService.accent,
+              '--service-accent-rgb': detailService.accentRgb,
+            } as CSSProperties}
+          >
+            <DetailFiberSpine />
+          </span>
           <button
             type="button"
             className={`spiral-detail-panel ${activeService ? 'is-open' : ''}`}
             aria-hidden={!activeService}
+            aria-label={lang === 'de' ? 'Detailansicht schliessen' : 'Close detail view'}
             tabIndex={activeService ? 0 : -1}
-            onClick={() => {
-              if (activeService) setActiveServiceSlug(null);
+            onPointerUp={(event) => {
+              if (activeService && (event.pointerType !== 'mouse' || event.button === 0)) {
+                setActiveServiceSlug(null);
+              }
+            }}
+            onClick={(event) => {
+              if (activeService && event.detail === 0) setActiveServiceSlug(null);
             }}
             style={{
               '--service-accent': detailService.accent,
               '--service-accent-rgb': detailService.accentRgb,
             } as CSSProperties}
           >
-            <span className="spiral-detail-close">
-              {lang === 'de' ? 'Schliessen' : 'Close'}
+            <span
+              className="spiral-detail-close"
+              title={lang === 'de' ? 'Schliessen' : 'Close'}
+              aria-hidden="true"
+            >
+              <X size={19} strokeWidth={2.2} />
             </span>
             <span className="spiral-intro-meta">
               <span className="spiral-intro-index">{detailService.code}</span>
@@ -1033,9 +1143,6 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
                   '--service-accent-rgb': card.accentRgb,
                 } as CSSProperties}
               >
-                <span className="ngp-surface" aria-hidden="true">
-                  <NeuralFiberField />
-                </span>
                 <span className="ngp-core">
                   <span className="spiral-intro-meta">
                     <span className="spiral-intro-index">{card.code}</span>
