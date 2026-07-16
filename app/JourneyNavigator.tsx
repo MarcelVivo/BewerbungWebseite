@@ -7,7 +7,7 @@ const chakraPetch = Chakra_Petch({ subsets: ['latin'], weight: '700', display: '
 
 const STATIONS = [
   { label: 'Start', target: 'journey-start' },
-  { label: 'Lösungen', target: 'services', mobileTarget: 'mobile-solutions' },
+  { label: 'Lösungen', target: 'journey-solutions', mobileTarget: 'mobile-solutions' },
   { label: 'Dein Mehrwert', target: 'journey-value' },
   { label: 'Meine Referenzen', target: 'journey-references' },
   { label: 'Kontakt', target: 'journey-contact' },
@@ -42,6 +42,19 @@ export default function JourneyNavigator() {
 
   function goToStation(index: number) {
     const station = STATIONS[index];
+    if (station.target === 'journey-solutions' && window.innerWidth > 699) {
+      const journey = document.getElementById('solution-spiral');
+      if (journey) {
+        // Exakter Weltstopp der gemeinsamen Vier-Karten-Gruppe:
+        // (0 - (-5 - 5 × 4.2)) / 55.5 = 0.468468…
+        const cardStationProgress = 26 / 55.5;
+        window.scrollTo({
+          top: journey.offsetTop - window.innerHeight + journey.offsetHeight * cardStationProgress,
+          behavior: 'smooth',
+        });
+        return;
+      }
+    }
     const targetId = window.innerWidth <= 699 && station.mobileTarget
       ? station.mobileTarget
       : station.target;
