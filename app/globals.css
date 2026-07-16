@@ -1376,6 +1376,19 @@ body {
 }
 
 @media (max-width: 699px) {
+  .spiral-section {
+    min-height: auto;
+    padding: 4rem 0;
+  }
+
+  .spiral-sticky {
+    display: none;
+  }
+
+  .spiral-mobile {
+    display: block;
+  }
+
   .spiral-service-stations {
     grid-template-columns: minmax(0, 1fr);
     gap: 0.7rem;
