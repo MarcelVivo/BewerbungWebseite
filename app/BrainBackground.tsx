@@ -54,7 +54,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var sprite=softSprite();
 
   var world=new THREE.Group(); scene.add(world);
-  var BRAIN_BASE_Y=-.5+MOBILE_BRAIN_Y_OFFSET;
+  var DESKTOP_HERO_BRAIN_LIFT=isMobile?0:.72;
+  var BRAIN_BASE_Y=-.5+MOBILE_BRAIN_Y_OFFSET+DESKTOP_HERO_BRAIN_LIFT;
   var brain=new THREE.Group(); brain.position.y=BRAIN_BASE_Y; brain.scale.setScalar(3.2775); world.add(brain);
   var introTextGroup=new THREE.Group(); world.add(introTextGroup);
   var introSprites=[];
@@ -1444,8 +1445,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     addSatelliteBrain(-satelliteX,.32+MOBILE_BRAIN_Y_OFFSET,satelliteZ,.35,SATELLITE_METALS.red);
     addSatelliteBrain(satelliteX,.46+MOBILE_BRAIN_Y_OFFSET,satelliteZ-.2,2.7,SATELLITE_METALS.blue);
   } else {
-    addSatelliteBrain(-5.7,-.62,-.7,.35,SATELLITE_METALS.red);
-    addSatelliteBrain(5.7,-.44,-.9,2.7,SATELLITE_METALS.blue);
+    addSatelliteBrain(-5.7,-.62+DESKTOP_HERO_BRAIN_LIFT,-.7,.35,SATELLITE_METALS.red);
+    addSatelliteBrain(5.7,-.44+DESKTOP_HERO_BRAIN_LIFT,-.9,2.7,SATELLITE_METALS.blue);
   }
 
   // --- Verbindliche Maske für beide Gehirnhälften: dieselbe Scatter-Punktwolke

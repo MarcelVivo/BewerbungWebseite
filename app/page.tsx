@@ -1322,7 +1322,7 @@ export default function HomePage() {
             transformOrigin: 'top left',
           } : undefined}
         >
-          <div className="hero-top-copy absolute inset-x-0 top-40 z-10">
+          <div className="hero-top-copy absolute inset-x-0 top-20 z-10">
             <div className="mx-auto max-w-7xl px-6">
               <div className="hero-copy hero-copy-centered ms-anim">
                 <h1
