@@ -1129,9 +1129,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var neuralGlassContactDrop=.9;
   var neuralGlassGeometry=new THREE.SphereGeometry(neuralGlassRadius,96,64);
   var neuralGlassMaterial=new THREE.MeshPhysicalMaterial({
-    color:0x111319,
-    emissive:0x080a0f,
-    emissiveIntensity:.42,
+    color:0x010204,
+    emissive:0x000000,
+    emissiveIntensity:0,
     transparent:false,
     opacity:1,
     transmission:0,
@@ -1141,7 +1141,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     metalness:0,
     clearcoat:0,
     clearcoatRoughness:1,
-    specularIntensity:.06,
+    specularIntensity:0,
     specularColor:0xffffff,
     depthWrite:false,
     side:THREE.DoubleSide
@@ -1160,7 +1160,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var neuralGlassGlowMaterial=new THREE.MeshBasicMaterial({
     color:0xb9d2e8,
     transparent:true,
-    opacity:.025,
+    opacity:0,
     blending:THREE.AdditiveBlending,
     depthWrite:false,
     side:THREE.BackSide
@@ -1172,13 +1172,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
 
   // Kleine, an der Kugel befestigte Studiolichter erzeugen auf dem nahezu
   // schwarzen Material klar lesbare Hochglanzreflexe und eine feine Kontur.
-  var neuralGlassKeyLight=new THREE.PointLight(0xffffff,4,22,1.55);
+  var neuralGlassKeyLight=new THREE.PointLight(0xffffff,0,22,1.55);
   neuralGlassKeyLight.position.set(-4.2,4.8,5.6);
   neuralGlassSphere.add(neuralGlassKeyLight);
-  var neuralGlassRimLight=new THREE.PointLight(0xc9e6ff,2,20,1.65);
+  var neuralGlassRimLight=new THREE.PointLight(0xc9e6ff,0,20,1.65);
   neuralGlassRimLight.position.set(4.8,1.2,-4.6);
   neuralGlassSphere.add(neuralGlassRimLight);
-  var neuralGlassFillLight=new THREE.PointLight(0xffffff,1,18,1.8);
+  var neuralGlassFillLight=new THREE.PointLight(0xffffff,0,18,1.8);
   neuralGlassFillLight.position.set(1.5,-1.2,5.8);
   neuralGlassSphere.add(neuralGlassFillLight);
 
@@ -1198,6 +1198,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var sphereFiberOriginalCount=sFibers.length||FN.count;
   var sphereFiberAdditionalBlueCount=Math.floor(sphereFiberOriginalCount*.5);
   var sphereFiberCount=sphereFiberOriginalCount+sphereFiberAdditionalBlueCount;
+  // Wahrgenommene Mischfarbe am unteren Ende des Strangs: Rot und Blau sind
+  // dort bereits zu einem blau dominierten, gedämpften Violett verschmolzen.
+  var sphereFusionBlue=new THREE.Color(0x6687b2);
+  var sphereFusionViolet=new THREE.Color(0x756d9d);
+  var sphereFusionRed=new THREE.Color(0x8a607b);
+  var sphereFusionMixed=new THREE.Color();
   var sphereFiberMaxParentLength=1;
   for(var sphereFiberLengthIndex=0;sphereFiberLengthIndex<sFibers.length;sphereFiberLengthIndex++){
     sphereFiberMaxParentLength=Math.max(sphereFiberMaxParentLength,sFibers[sphereFiberLengthIndex].len);
@@ -1472,9 +1478,22 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var sphereLiveRed=sphereParentColorOffset>=0?parentStrandColors[sphereParentColorOffset]:sphereAnimatedMeta.red;
       var sphereLiveGreen=sphereParentColorOffset>=0?parentStrandColors[sphereParentColorOffset+1]:sphereAnimatedMeta.green;
       var sphereLiveBlue=sphereParentColorOffset>=0?parentStrandColors[sphereParentColorOffset+2]:sphereAnimatedMeta.blue;
-      animatedPointColors[sphereAnimatedOffset]=sphereLiveRed;
-      animatedPointColors[sphereAnimatedOffset+1]=sphereLiveGreen;
-      animatedPointColors[sphereAnimatedOffset+2]=sphereLiveBlue;
+      // Die Originalhelligkeit steuert weiterhin jede einzelne Faser; der
+      // Farbton wird jedoch auf dieselbe gemeinsame Rot/Blau-Mischung wie im
+      // sichtbaren Strang normiert. Blau bleibt dabei klar dominant.
+      var sphereLiveLuminance=THREE.MathUtils.clamp(
+        sphereLiveRed*.2126+sphereLiveGreen*.7152+sphereLiveBlue*.0722,
+        .16,
+        .72
+      );
+      var sphereFusionSelector=Math.sin(sphereAnimatedMeta.phase*2.71+sphereAnimatedMeta.fiberIndex*.037);
+      sphereFusionMixed.copy(sphereFusionViolet);
+      if(sphereFusionSelector>.42) sphereFusionMixed.lerp(sphereFusionRed,.32);
+      else if(sphereFusionSelector<-.12) sphereFusionMixed.lerp(sphereFusionBlue,.72);
+      var sphereFusionBrightness=sphereLiveLuminance*.52;
+      animatedPointColors[sphereAnimatedOffset]=sphereFusionMixed.r*sphereFusionBrightness;
+      animatedPointColors[sphereAnimatedOffset+1]=sphereFusionMixed.g*sphereFusionBrightness;
+      animatedPointColors[sphereAnimatedOffset+2]=sphereFusionMixed.b*sphereFusionBrightness;
     }
     var animatedLinePositions=linesObj.geometry.attributes.position.array;
     var animatedLineColors=linesObj.geometry.attributes.color.array;
