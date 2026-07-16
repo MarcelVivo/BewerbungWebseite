@@ -1148,6 +1148,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   });
   var neuralGlassSphere=new THREE.Mesh(neuralGlassGeometry,neuralGlassMaterial);
   neuralGlassSphere.name='helix-axis-glass-sphere';
+  // Lokale Polachse leicht vom Betrachter weg kippen. Die Kugel bleibt als
+  // rotationssymmetrische Form zentriert; sichtbar verschieben sich vor allem
+  // der gebündelte Faseransatz und die Hochglanzreflexe nach hinten.
+  neuralGlassSphere.rotation.x=THREE.MathUtils.degToRad(-7);
   neuralGlassSphere.renderOrder=18;
   neuralGlassSphere.frustumCulled=false;
   world.add(neuralGlassSphere);
