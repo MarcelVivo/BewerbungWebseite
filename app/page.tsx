@@ -9,6 +9,7 @@ import {
   MessageSquare, Search, Compass, Wrench, Heart, ClipboardList,
 } from 'lucide-react';
 import HomeNavBar from './HomeNavBar';
+import JourneyNavigator from './JourneyNavigator';
 import BrainBackground from './BrainBackground';
 import { buildFlapWord, setFlapWordMode, type FlapLetter } from './lib/splitFlap';
 import { useLanguage } from './LanguageContext';
@@ -872,6 +873,10 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       <div id="references" className="spiral-anchor top-[52%]" />
       <div id="portfolio" className="spiral-anchor top-[68%]" />
       <div id="prozess-spiral" className="spiral-anchor top-[82%]" />
+      <div id="journey-value" className="spiral-anchor top-[42%]" />
+      <div id="journey-references" className="spiral-anchor top-[62%]" />
+      <div id="journey-contact" className="spiral-anchor top-[82%]" />
+      <div id="journey-about" className="spiral-anchor top-[94%]" />
 
       <div className="spiral-sticky">
         <div className="spiral-stage">
@@ -1139,7 +1144,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
               </div>
             );
           })}
-          <div className="spiral-mobile-services">
+          <div id="mobile-solutions" className="spiral-mobile-services scroll-mt-24">
             {serviceCards.map((card, i) => {
               const isOpen = activeServiceSlug === card.slug;
               return (
@@ -1304,10 +1309,11 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-[#0c0a06] text-[#f4edd8]">
       <HomeNavBar />
+      <JourneyNavigator />
       <BrainBackground introTexts={introWorldTexts} serviceCards={serviceWorldCards} />
 
       {/* ── Hero ── */}
-      <section className="home-hero relative z-10 min-h-screen overflow-hidden pt-16">
+      <section id="journey-start" className="home-hero relative z-10 min-h-screen overflow-hidden pt-16">
         <div
           className={heroScale !== 1 ? 'absolute left-0' : undefined}
           style={heroScale !== 1 ? {
