@@ -1490,7 +1490,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       sphereFusionMixed.copy(sphereFusionViolet);
       if(sphereFusionSelector>.42) sphereFusionMixed.lerp(sphereFusionRed,.32);
       else if(sphereFusionSelector<-.12) sphereFusionMixed.lerp(sphereFusionBlue,.72);
-      var sphereFusionBrightness=sphereLiveLuminance*.52;
+      // Gut lesbar auf Schwarz, ohne zur früheren weißlichen Überstrahlung
+      // zurückzukehren. Auch dunkle Einzelfasern behalten eine Grundemission.
+      var sphereFusionBrightness=THREE.MathUtils.clamp(
+        .28+sphereLiveLuminance*1.15,
+        .42,
+        1.05
+      );
       animatedPointColors[sphereAnimatedOffset]=sphereFusionMixed.r*sphereFusionBrightness;
       animatedPointColors[sphereAnimatedOffset+1]=sphereFusionMixed.g*sphereFusionBrightness;
       animatedPointColors[sphereAnimatedOffset+2]=sphereFusionMixed.b*sphereFusionBrightness;
