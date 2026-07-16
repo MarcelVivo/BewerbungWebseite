@@ -488,7 +488,13 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
         const ndcX = viewX / (viewZ * tanHalfFovY * cam.aspect);
         const ndcY = viewY / (viewZ * tanHalfFovY);
         const screenX = (ndcX * 0.5 + 0.5) * vw;
-        const screenY = (1 - (ndcY * 0.5 + 0.5)) * vh;
+        const projectedY = 1 - (ndcY * 0.5 + 0.5);
+        // iPhone: in den tatsächlich sichtbaren Bereich unter Navigation
+        // und Safe Area projizieren, damit grosse Flap-Texte oben nicht am
+        // overflow:hidden der Sticky-Bühne abgeschnitten werden.
+        const mobileTopInset = vw <= 699 ? Math.max(104, vh * 0.14) : 0;
+        const mobileBottomInset = vw <= 699 ? Math.max(24, vh * 0.04) : 0;
+        const screenY = mobileTopInset + projectedY * (vh - mobileTopInset - mobileBottomInset);
         const scale = Math.max(0.4, Math.min(1.6, s.referenceViewZ / viewZ));
 
         // Im "settled"-Zustand (Scroll steht still) immer frontal (0°)

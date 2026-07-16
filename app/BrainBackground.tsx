@@ -2947,7 +2947,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var journey=document.getElementById('solution-spiral');
       if(!journey) return;
       var start=journey.offsetTop-innerHeight;
-      var distance=Math.max(1,journey.offsetHeight);
+      // Auf Mobile braucht die identische 13-Stopps-Kameraschiene genügend
+      // Fingerweg. Die normale mobile Kartenliste verkürzt den Container,
+      // darf aber nicht die Kamera-Timeline zusammendrücken.
+      var distance=isMobile
+        ? Math.max(1,innerHeight*6.5)
+        : Math.max(1,journey.offsetHeight);
       targetScrollP=Math.max(0,Math.min(1,(scrollY-start)/distance));
     };
     const onVisibilityChange = () => { documentVisible = document.visibilityState === 'visible'; };
