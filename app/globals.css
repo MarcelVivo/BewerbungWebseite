@@ -1387,7 +1387,9 @@ body {
 
   .spiral-mobile {
     display: block;
-    padding-top: 100vh;
+    /* Erst nach dem vollständigen Sichtbarkeitsfenster der fünften
+       Split-Flap-Station in den normalen Kartenfluss wechseln. */
+    padding-top: 150vh;
   }
 
   .spiral-cards-world {
