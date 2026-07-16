@@ -1198,11 +1198,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var sphereFiberOriginalCount=sFibers.length||FN.count;
   var sphereFiberAdditionalBlueCount=Math.floor(sphereFiberOriginalCount*.5);
   var sphereFiberCount=sphereFiberOriginalCount+sphereFiberAdditionalBlueCount;
-  // Wahrgenommene Mischfarbe am unteren Ende des Strangs: Rot und Blau sind
-  // dort bereits zu einem blau dominierten, gedämpften Violett verschmolzen.
-  var sphereFusionBlue=new THREE.Color(0x7892a9);
-  var sphereFusionViolet=new THREE.Color(0x817d91);
-  var sphereFusionRed=new THREE.Color(0x98717d);
+  // Keine separate Kugelpalette: exakt dieselben Rot-/Blau-Instanzen, die
+  // updateGoldFusionColor() am unteren Hauptstrang verwendet.
   var sphereFusionMixed=new THREE.Color();
   var sphereFiberMaxParentLength=1;
   for(var sphereFiberLengthIndex=0;sphereFiberLengthIndex<sFibers.length;sphereFiberLengthIndex++){
@@ -1488,19 +1485,15 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         .72
       );
       var sphereFusionSelector=Math.sin(sphereAnimatedMeta.phase*2.71+sphereAnimatedMeta.fiberIndex*.037);
-      // Wie im Strang bleiben Rot und Blau als einzelne Fasern erkennbar;
-      // erst ihre dichte Überlagerung ergibt den violett-blauen Gesamteindruck.
-      if(sphereFusionSelector>.58) sphereFusionMixed.copy(sphereFusionRed);
-      else if(sphereFusionSelector<.28) sphereFusionMixed.copy(sphereFusionBlue);
-      else sphereFusionMixed.copy(sphereFusionViolet);
-      // Gut lesbar auf Schwarz, ohne zur früheren weißlichen Überstrahlung
-      // zurückzukehren. Auch dunkle Einzelfasern behalten eine Grundemission.
+      // Blau dominiert wie im sichtbaren Zielbereich; Violett entsteht nicht
+      // als Ersatzfarbe, sondern physisch durch die Überlagerung beider Farben.
+      sphereFusionMixed.copy(sphereFusionSelector>.22?fusionRedColor:fusionBlueColor);
       var sphereFusionBrightness=THREE.MathUtils.clamp(
-        .18+sphereLiveLuminance*.82,
-        .28,
-        .72
+        .42+sphereLiveLuminance*.42,
+        .48,
+        .74
       );
-      if(sphereAnimatedMeta.additionalFiber) sphereFusionBrightness*=.48;
+      if(sphereAnimatedMeta.additionalFiber) sphereFusionBrightness*=.24;
       animatedPointColors[sphereAnimatedOffset]=sphereFusionMixed.r*sphereFusionBrightness;
       animatedPointColors[sphereAnimatedOffset+1]=sphereFusionMixed.g*sphereFusionBrightness;
       animatedPointColors[sphereAnimatedOffset+2]=sphereFusionMixed.b*sphereFusionBrightness;
