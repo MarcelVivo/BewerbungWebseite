@@ -1123,6 +1123,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   // oberster Pol wird in jedem Frame exakt an die Y-Position des bewegten
   // Nervenstrang-Endpunkts gesetzt; x/z bleiben unverrückbar auf der Achse.
   var neuralGlassRadius=2.82;
+  // Perspektivischer Kontakt-Ausgleich: Der geometrische Y-Pol erschien aus
+  // dem schrägen Kamerawinkel oberhalb des sichtbaren Faserabschlusses. Diese
+  // Absenkung entspricht der im Renderbild gemessenen Überlappung.
+  var neuralGlassContactDrop=.9;
   var neuralGlassGeometry=new THREE.SphereGeometry(neuralGlassRadius,96,64);
   var neuralGlassMaterial=new THREE.MeshPhysicalMaterial({
     color:0xffffff,
@@ -1163,7 +1167,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var neuralGlassTipWorld=new THREE.Vector3();
   function updateNeuralGlassSphere(){
     goldStrandTipWorld(neuralGlassTipWorld,true);
-    neuralGlassSphere.position.set(0,neuralGlassTipWorld.y-neuralGlassRadius,0);
+    neuralGlassSphere.position.set(
+      0,
+      neuralGlassTipWorld.y-neuralGlassRadius-neuralGlassContactDrop,
+      0
+    );
   }
   updateNeuralGlassSphere();
 
