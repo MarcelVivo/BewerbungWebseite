@@ -1195,7 +1195,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var sphereFiberContinuationRefs=[];
   var sphereFiberRadius=neuralGlassRadius+.035;
   // Exakt eine Fortsetzung pro realer Faser des oberen Strangs.
-  var sphereFiberCount=sFibers.length||FN.count;
+  var sphereFiberOriginalCount=sFibers.length||FN.count;
+  var sphereFiberAdditionalBlueCount=Math.floor(sphereFiberOriginalCount*.5);
+  var sphereFiberCount=sphereFiberOriginalCount+sphereFiberAdditionalBlueCount;
+  var sphereFineBlueColor=new THREE.Color(0x4b9ee8);
   var sphereFiberMaxParentLength=1;
   for(var sphereFiberLengthIndex=0;sphereFiberLengthIndex<sFibers.length;sphereFiberLengthIndex++){
     sphereFiberMaxParentLength=Math.max(sphereFiberMaxParentLength,sFibers[sphereFiberLengthIndex].len);
@@ -1209,9 +1212,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     }
   }
   for(var sphereFiberIndex=0;sphereFiberIndex<sphereFiberCount;sphereFiberIndex++){
+    var sphereFiberIsFineBlue=sphereFiberIndex>=sphereFiberOriginalCount;
+    var sphereFiberSourceIndex=sphereFiberIsFineBlue
+      ? (sphereFiberIndex-sphereFiberOriginalCount)*2%sphereFiberOriginalCount
+      : sphereFiberIndex;
     // Keine neue Zufallsstruktur auf der Kugel. Länge, Phase, Farbe und
     // Laufrichtung stammen ausschließlich von der jeweiligen Originalfaser.
-    var sphereFiberParent=sFibers.length?sFibers[sphereFiberIndex%sFibers.length]:null;
+    var sphereFiberParent=sFibers.length?sFibers[sphereFiberSourceIndex%sFibers.length]:null;
     // Wie oben enden die Fasern unterschiedlich lang. Dadurch gibt es keinen
     // künstlichen Sammelpunkt am unteren Kugelpol.
     var sphereFiberLengthShare=sphereFiberParent?sphereFiberParent.len/sphereFiberMaxParentLength:1;
@@ -1222,11 +1229,16 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var sphereFiberParentPhase=sphereFiberParent
       ? sMeta[sphereFiberParent.start*2+1]
       : sphereFiberIndex*1.73;
+    var sphereFiberContinuationPhase=sphereFiberParentPhase+(sphereFiberIsFineBlue
+      ?.47+(sphereFiberIndex-sphereFiberOriginalCount)*.019
+      :0);
     var sphereFiberParentColorOffset=strandPointColorOffsetByVertex.has(sphereFiberParentVertex)
       ? strandPointColorOffsetByVertex.get(sphereFiberParentVertex)
       : -1;
     var liveStrandColors=wptsObj.geometry.attributes.color.array;
-    if(sphereFiberParentColorOffset>=0){
+    if(sphereFiberIsFineBlue){
+      sphereFiberColor.copy(sphereFineBlueColor).multiplyScalar(.62);
+    } else if(sphereFiberParentColorOffset>=0){
       sphereFiberColor.setRGB(
         liveStrandColors[sphereFiberParentColorOffset],
         liveStrandColors[sphereFiberParentColorOffset+1],
@@ -1268,8 +1280,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       sphereFiberPointColors.push(sphereFiberColor.r,sphereFiberColor.g,sphereFiberColor.b);
       sphereFiberVertexMeta.push({
         fiberIndex:sphereFiberIndex,
+        fineBlue:sphereFiberIsFineBlue,
         theta:sphereFiberTheta,
-        phase:sphereFiberParentPhase,
+        phase:sphereFiberContinuationPhase,
         travel:sphereFiberT,
         arc:sphereFiberTheta*sphereFiberRadius,
         parentVertex:sphereFiberParentVertex,
@@ -1460,9 +1473,15 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       animatedPointPositions[sphereAnimatedOffset+2]=sphereTransformElements[2]*sphereLocalX+sphereTransformElements[6]*sphereLocalY+sphereTransformElements[10]*sphereLocalZ+sphereTransformElements[14];
 
       var sphereParentColorOffset=sphereAnimatedMeta.parentColorOffset;
-      var sphereLiveRed=sphereParentColorOffset>=0?parentStrandColors[sphereParentColorOffset]:sphereAnimatedMeta.red;
-      var sphereLiveGreen=sphereParentColorOffset>=0?parentStrandColors[sphereParentColorOffset+1]:sphereAnimatedMeta.green;
-      var sphereLiveBlue=sphereParentColorOffset>=0?parentStrandColors[sphereParentColorOffset+2]:sphereAnimatedMeta.blue;
+      var sphereLiveRed=sphereAnimatedMeta.fineBlue
+        ? sphereAnimatedMeta.red
+        :(sphereParentColorOffset>=0?parentStrandColors[sphereParentColorOffset]:sphereAnimatedMeta.red);
+      var sphereLiveGreen=sphereAnimatedMeta.fineBlue
+        ? sphereAnimatedMeta.green
+        :(sphereParentColorOffset>=0?parentStrandColors[sphereParentColorOffset+1]:sphereAnimatedMeta.green);
+      var sphereLiveBlue=sphereAnimatedMeta.fineBlue
+        ? sphereAnimatedMeta.blue
+        :(sphereParentColorOffset>=0?parentStrandColors[sphereParentColorOffset+2]:sphereAnimatedMeta.blue);
       animatedPointColors[sphereAnimatedOffset]=sphereLiveRed;
       animatedPointColors[sphereAnimatedOffset+1]=sphereLiveGreen;
       animatedPointColors[sphereAnimatedOffset+2]=sphereLiveBlue;
