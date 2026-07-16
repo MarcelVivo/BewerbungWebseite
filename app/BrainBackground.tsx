@@ -529,20 +529,15 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var organismBrainQuaternion=new THREE.Quaternion().setFromEuler(
     new THREE.Euler(MAIN_BRAIN_BASE_X,BASE_Y,0)
   ).invert();
-  var organismForwardVector=new THREE.Vector3(
-    -Math.sin(organismStationAngle),0,-Math.cos(organismStationAngle)
+  // Exakte Endkamera-Basis statt empirischer Winkelkorrekturen: Der Strang
+  // steht am Horizont, die Landschaft fließt horizontal auf die Kamera zu.
+  // Die Tangente der Kamerabahn ist ihre echte Bildschirm-Breitenachse.
+  var organismCorrectedForward=new THREE.Vector3(
+    Math.sin(organismStationAngle),0,Math.cos(organismStationAngle)
   ).applyQuaternion(organismBrainQuaternion).normalize();
-  var organismRightVector=new THREE.Vector3(
+  var organismCorrectedRight=new THREE.Vector3(
     Math.cos(organismStationAngle),0,-Math.sin(organismStationAngle)
   ).applyQuaternion(organismBrainQuaternion).normalize();
-  // Die reale Tiefenprojektion liegt exakt zwischen den beiden getesteten
-  // Achsen: Radialachse lief nach links, Tangente nach rechts. Ihr normierter
-  // 45°-Bisektor hebt beide seitlichen Bildanteile auf und läuft mittig in die
-  // Kamera-/Horizonttiefe. Die Differenz bildet die sichtbare Talbreite.
-  // Der Hauptstrang steht am Horizont; die Landschaft fließt von dort nach
-  // VORNE zur Kamera. Negativer Bisektor = Vorderseite statt Rückseite.
-  var organismCorrectedForward=organismForwardVector.clone().add(organismRightVector).normalize().multiplyScalar(-1);
-  var organismCorrectedRight=organismRightVector.clone().sub(organismForwardVector).normalize();
   var organismForwardX=organismCorrectedForward.x, organismForwardY=organismCorrectedForward.y, organismForwardZ=organismCorrectedForward.z;
   var organismRightX=organismCorrectedRight.x, organismRightY=organismCorrectedRight.y, organismRightZ=organismCorrectedRight.z;
   var wobbleX=new Float32Array(0), wobbleZ=new Float32Array(0);
@@ -771,8 +766,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var landscapeTrunkPoints=isMobile?18:26;
     var landscapeDeltaPoints=isMobile?42:64;
     var landscapeFieldPoints=isMobile?72:118;
-    var landscapeHalfWidth=isMobile?5.8:9.2;
-    var landscapeDepth=isMobile?18:27;
+    // brain.scale=3.2775: Diese lokalen Maße bleiben bewusst innerhalb der
+    // Distanz zur Endkamera. Größere alte Werte liefen durch die Kamera durch
+    // und erzeugten den spiegelverkehrten radialen Fächer.
+    var landscapeHalfWidth=isMobile?3.2:5.2;
+    var landscapeDepth=isMobile?3.15:4.8;
     var landscapeColor=new THREE.Color();
     var landscapePaths=[];
 
@@ -879,7 +877,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         var deltaOpen=smoother(deltaT);
         var deltaSide=targetSide*deltaOpen
           +Math.sin(phase+deltaT*8.4)*meanderAmplitude*.18*Math.sin(Math.PI*deltaT);
-        var deltaForward=.12+7.2*deltaT*deltaT;
+        var deltaForward=.08+1.62*deltaT*deltaT;
         var deltaBank=Math.pow(Math.abs(deltaSide)/landscapeHalfWidth,1.72)*1.42*deltaOpen;
         var deltaY=-trunkLength-groundDrop*deltaT*(2-deltaT)+deltaBank;
         emitLandscape(
@@ -898,7 +896,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         var fieldMeander=Math.sin(phase+fieldT*meanderFrequency*Math.PI*2)
           *meanderAmplitude*fieldEnvelope;
         var fieldSide=THREE.MathUtils.clamp(targetSide+fieldMeander,-landscapeHalfWidth*1.08,landscapeHalfWidth*1.08);
-        var fieldForward=7.32+targetDepth*fieldT;
+        var fieldForward=1.7+targetDepth*fieldT;
         var fieldBank=Math.pow(Math.abs(fieldSide)/landscapeHalfWidth,1.68)*1.55;
         var terrainWave=(Math.sin(fieldSide*.72+phase)+Math.sin(fieldForward*.34+phase*.61)*.55)
           *.12*(1-fieldT*.55);
