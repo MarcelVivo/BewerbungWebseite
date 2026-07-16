@@ -522,8 +522,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var organismVertices=[], organismMeta=[], organismLineRefs=[], organismPointRefs=[];
   var organismCurrent=new Float32Array(0);
   var organismScratch=new THREE.Vector3();
-  var organismStationAngle=cameraHelixExitStart*Math.PI*2-BASE_Y;
-  var organismForwardX=Math.sin(organismStationAngle), organismForwardZ=Math.cos(organismStationAngle);
+  var organismStationAngle=cameraHelixExitStart*Math.PI*2;
+  // Die Endkamera steht auf der positiven Radialachse und blickt zum Ursprung.
+  // Die Landschaft muss deshalb vom Betrachter weg auf der Gegenachse in die
+  // Bildtiefe laufen; der frühere BASE_Y-Winkel drehte sie seitlich aus dem Bild.
+  var organismForwardX=-Math.sin(organismStationAngle), organismForwardZ=-Math.cos(organismStationAngle);
   var organismRightX=Math.cos(organismStationAngle), organismRightZ=-Math.sin(organismStationAngle);
   var wobbleX=new Float32Array(0), wobbleZ=new Float32Array(0);
   var goldEscapeWeights=[], goldEscapePhases=[], goldEscapeFrequencies=[], goldEscapeSpeeds=[];
@@ -750,6 +753,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var landscapeHalfWidth=isMobile?6.4:10.8;
     var landscapeDepth=isMobile?22:34;
     var landscapeColor=new THREE.Color();
+    var landscapePaths=[];
 
     function landscapeFiberColor(fiberIndex,tipVertex){
       // Referenz: Gold trägt die Landschaft, Rot und Blau laufen als klar
@@ -818,6 +822,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var fiberColor=landscapeColor.copy(landscapeFiberColor(landscapeFiberIndex,tipVertex))
         .multiplyScalar(.76+landscapeRandom()*.25).clone();
       var previousVertex=null;
+      var pathVertices=[];
       var emitted=0;
       var total=landscapeTrunkPoints+landscapeDeltaPoints+landscapeFieldPoints;
 
@@ -825,6 +830,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         previousVertex=appendLandscapeVertex(
           tipVertex,x,y,z,waveStrength,phase,emitted/Math.max(1,total-1),fiberColor,previousVertex
         );
+        pathVertices.push(previousVertex);
         emitted++;
       }
 
@@ -877,6 +883,55 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           organismRightZ*fieldSide+organismForwardZ*fieldForward,
           .4-.32*fieldT
         );
+      }
+      landscapePaths.push({side:targetSide,vertices:pathVertices,color:fiberColor});
+    }
+
+    // Die Referenz ist keine Ansammlung isolierter Fäden, sondern eine dichte
+    // neuronale Oberfläche. Benachbarte Originalfasern werden deshalb in
+    // regelmäßigen Tiefenabständen sowie diagonal miteinander verflochten.
+    // Auch diese Segmente werden demselben linesObj-Buffer hinzugefügt.
+    landscapePaths.sort(function(a,b){ return a.side-b.side; });
+    function appendLandscapeLink(sourceVertex,targetVertex,sourceColor,targetColor){
+      var sourceMeta=organismMeta[sourceVertex], targetMeta=organismMeta[targetVertex];
+      var sourceOffset=sourceVertex*3, targetOffset=targetVertex*3;
+      var sourceParentOffset=sourceMeta.parentVertex*3, targetParentOffset=targetMeta.parentVertex*3;
+      var lineOffset=outPos.length;
+      outPos.push(
+        sBase[sourceParentOffset]+organismVertices[sourceOffset],
+        sBase[sourceParentOffset+1]+organismVertices[sourceOffset+1],
+        sBase[sourceParentOffset+2]+organismVertices[sourceOffset+2],
+        sBase[targetParentOffset]+organismVertices[targetOffset],
+        sBase[targetParentOffset+1]+organismVertices[targetOffset+1],
+        sBase[targetParentOffset+2]+organismVertices[targetOffset+2]
+      );
+      outCol.push(
+        sourceColor.r*.72,sourceColor.g*.72,sourceColor.b*.72,
+        targetColor.r*.72,targetColor.g*.72,targetColor.b*.72
+      );
+      organismLineRefs.push({off:lineOffset,src:sourceVertex});
+      organismLineRefs.push({off:lineOffset+3,src:targetVertex});
+    }
+    var landscapeSurfaceStart=landscapeTrunkPoints+Math.floor(landscapeDeltaPoints*.28);
+    var landscapePathLength=landscapeTrunkPoints+landscapeDeltaPoints+landscapeFieldPoints;
+    for(var landscapeRow=landscapeSurfaceStart;landscapeRow<landscapePathLength;landscapeRow+=3){
+      for(var landscapePathIndex=0;landscapePathIndex<landscapePaths.length-1;landscapePathIndex++){
+        var currentPath=landscapePaths[landscapePathIndex];
+        var nextPath=landscapePaths[landscapePathIndex+1];
+        appendLandscapeLink(
+          currentPath.vertices[landscapeRow],
+          nextPath.vertices[landscapeRow],
+          currentPath.color,
+          nextPath.color
+        );
+        if(landscapeRow+2<landscapePathLength&&landscapePathIndex%2===0){
+          appendLandscapeLink(
+            currentPath.vertices[landscapeRow],
+            nextPath.vertices[landscapeRow+2],
+            currentPath.color,
+            nextPath.color
+          );
+        }
       }
     }
   }
