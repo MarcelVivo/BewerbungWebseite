@@ -538,8 +538,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var organismCorrectedRight=new THREE.Vector3(
     Math.cos(organismStationAngle),0,-Math.sin(organismStationAngle)
   ).applyQuaternion(organismBrainQuaternion).normalize();
+  var organismDownVector=new THREE.Vector3(0,-1,0).applyQuaternion(organismBrainQuaternion).normalize();
   var organismForwardX=organismCorrectedForward.x, organismForwardY=organismCorrectedForward.y, organismForwardZ=organismCorrectedForward.z;
   var organismRightX=organismCorrectedRight.x, organismRightY=organismCorrectedRight.y, organismRightZ=organismCorrectedRight.z;
+  var organismDownX=organismDownVector.x, organismDownY=organismDownVector.y, organismDownZ=organismDownVector.z;
   var wobbleX=new Float32Array(0), wobbleZ=new Float32Array(0);
   var goldEscapeWeights=[], goldEscapePhases=[], goldEscapeFrequencies=[], goldEscapeSpeeds=[];
   var GOLD_STRAND_END_KEY='ms-gold-strand-end-v1';
@@ -773,6 +775,14 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var landscapeDepth=isMobile?3.15:4.8;
     var landscapeColor=new THREE.Color();
     var landscapePaths=[];
+    var landscapeLowestTipY=Infinity;
+    for(var landscapeTipIndex=0;landscapeTipIndex<sFibers.length;landscapeTipIndex++){
+      var landscapeTipFiber=sFibers[landscapeTipIndex];
+      landscapeLowestTipY=Math.min(
+        landscapeLowestTipY,
+        sBase[(landscapeTipFiber.start+landscapeTipFiber.len-1)*3+1]
+      );
+    }
 
     function landscapeFiberColor(fiberFamily,fiberIndex,tipVertex){
       var palette=fiberFamily===0
@@ -838,7 +848,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       // Die Talsohle bleibt im unteren Sichtkegel der Endkamera. Der frühere
       // Gesamtfall von rund fünf Einheiten lag fast vollständig unterhalb des
       // Viewports und zeigte nur einzelne abgeschnittene Fäden.
-      var trunkLength=.72+landscapeRandom()*.18;
+      // Jede Faser läuft zunächst ausschließlich vertikal bis zur tiefsten
+      // gemeinsamen Abschlusskante. Erst darunter darf das Tal öffnen.
+      var trunkLength=Math.max(.18,sBase[tipVertex*3+1]-landscapeLowestTipY+.42);
       var groundDrop=.68+landscapeRandom()*.16;
       var meanderAmplitude=.22+landscapeRandom()*.68;
       var meanderFrequency=1.1+landscapeRandom()*2.4;
@@ -861,12 +873,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       // 1: gemeinsamer, ununterbrochener Hauptstamm.
       for(var trunkIndex=0;trunkIndex<landscapeTrunkPoints;trunkIndex++){
         var trunkT=trunkIndex/Math.max(1,landscapeTrunkPoints-1);
-        var trunkEnvelope=Math.sin(Math.PI*trunkT);
-        var trunkDrift=Math.sin(phase+trunkT*3.1)*.035*trunkEnvelope;
+        var trunkDrop=trunkLength*trunkT;
         emitLandscape(
-          organismRightX*trunkDrift+organismForwardX*.12*smoother(trunkT),
-          -trunkLength*trunkT+organismRightY*trunkDrift+organismForwardY*.12*smoother(trunkT),
-          organismRightZ*trunkDrift+organismForwardZ*.12*smoother(trunkT),
+          organismDownX*trunkDrop,
+          organismDownY*trunkDrop,
+          organismDownZ*trunkDrop,
           1-.08*trunkT
         );
       }
@@ -880,10 +891,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         var deltaForward=.08+1.62*deltaT*deltaT;
         var deltaBank=Math.pow(Math.abs(deltaSide)/landscapeHalfWidth,1.72)*1.42*deltaOpen;
         var deltaY=-trunkLength-groundDrop*deltaT*(2-deltaT)+deltaBank;
+        var deltaDrop=Math.max(trunkLength,-deltaY);
         emitLandscape(
-          organismRightX*deltaSide+organismForwardX*deltaForward,
-          deltaY+organismRightY*deltaSide+organismForwardY*deltaForward,
-          organismRightZ*deltaSide+organismForwardZ*deltaForward,
+          organismRightX*deltaSide+organismForwardX*deltaForward+organismDownX*deltaDrop,
+          organismRightY*deltaSide+organismForwardY*deltaForward+organismDownY*deltaDrop,
+          organismRightZ*deltaSide+organismForwardZ*deltaForward+organismDownZ*deltaDrop,
           .98-.14*deltaOpen
         );
       }
@@ -901,10 +913,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         var terrainWave=(Math.sin(fieldSide*.72+phase)+Math.sin(fieldForward*.34+phase*.61)*.55)
           *.12*(1-fieldT*.55);
         var fieldY=-trunkLength-groundDrop+fieldBank+terrainWave-.28*fieldT;
+        var fieldDrop=Math.max(trunkLength,-fieldY);
         emitLandscape(
-          organismRightX*fieldSide+organismForwardX*fieldForward,
-          fieldY+organismRightY*fieldSide+organismForwardY*fieldForward,
-          organismRightZ*fieldSide+organismForwardZ*fieldForward,
+          organismRightX*fieldSide+organismForwardX*fieldForward+organismDownX*fieldDrop,
+          organismRightY*fieldSide+organismForwardY*fieldForward+organismDownY*fieldDrop,
+          organismRightZ*fieldSide+organismForwardZ*fieldForward+organismDownZ*fieldDrop,
           .84-.16*fieldT
         );
       }
