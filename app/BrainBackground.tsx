@@ -1200,9 +1200,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var sphereFiberCount=sphereFiberOriginalCount+sphereFiberAdditionalBlueCount;
   // Wahrgenommene Mischfarbe am unteren Ende des Strangs: Rot und Blau sind
   // dort bereits zu einem blau dominierten, gedämpften Violett verschmolzen.
-  var sphereFusionBlue=new THREE.Color(0x397db8);
-  var sphereFusionViolet=new THREE.Color(0x5d5797);
-  var sphereFusionRed=new THREE.Color(0xa34f72);
+  var sphereFusionBlue=new THREE.Color(0x7892a9);
+  var sphereFusionViolet=new THREE.Color(0x817d91);
+  var sphereFusionRed=new THREE.Color(0x98717d);
   var sphereFusionMixed=new THREE.Color();
   var sphereFiberMaxParentLength=1;
   for(var sphereFiberLengthIndex=0;sphereFiberLengthIndex<sFibers.length;sphereFiberLengthIndex++){
@@ -1283,6 +1283,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       sphereFiberPointColors.push(sphereFiberColor.r,sphereFiberColor.g,sphereFiberColor.b);
       sphereFiberVertexMeta.push({
         fiberIndex:sphereFiberIndex,
+        additionalFiber:sphereFiberIsFineBlue,
         theta:sphereFiberTheta,
         phase:sphereFiberContinuationPhase,
         travel:sphereFiberT,
@@ -1495,10 +1496,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       // Gut lesbar auf Schwarz, ohne zur früheren weißlichen Überstrahlung
       // zurückzukehren. Auch dunkle Einzelfasern behalten eine Grundemission.
       var sphereFusionBrightness=THREE.MathUtils.clamp(
-        .28+sphereLiveLuminance*1.15,
-        .42,
-        1.05
+        .18+sphereLiveLuminance*.82,
+        .28,
+        .72
       );
+      if(sphereAnimatedMeta.additionalFiber) sphereFusionBrightness*=.48;
       animatedPointColors[sphereAnimatedOffset]=sphereFusionMixed.r*sphereFusionBrightness;
       animatedPointColors[sphereAnimatedOffset+1]=sphereFusionMixed.g*sphereFusionBrightness;
       animatedPointColors[sphereAnimatedOffset+2]=sphereFusionMixed.b*sphereFusionBrightness;
