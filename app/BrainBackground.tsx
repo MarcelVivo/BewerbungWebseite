@@ -746,7 +746,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   function appendReferenceNeuralLandscape(outPos,outCol,outPtsPos,outPtsCol){
     if(!sFibers.length) return;
     var landscapeRandom=createSeededRandom(0x4e455552);
-    var landscapeFiberCount=sFibers.length;
+    var landscapeSourceFiberCount=sFibers.length;
+    // Hauptstrang = drei vollständige, am gemeinsamen Endquerschnitt bereits
+    // assimilierte Faserfamilien. Keine nachträgliche Zufalls-Einfärbung.
+    var landscapeFiberFamilyCount=3;
+    var landscapeFiberCount=landscapeSourceFiberCount*landscapeFiberFamilyCount;
     var landscapeTrunkPoints=isMobile?18:26;
     var landscapeDeltaPoints=isMobile?42:64;
     var landscapeFieldPoints=isMobile?72:118;
@@ -755,15 +759,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var landscapeColor=new THREE.Color();
     var landscapePaths=[];
 
-    function landscapeFiberColor(fiberIndex,tipVertex){
-      // Referenz: Gold trägt die Landschaft, Rot und Blau laufen als klar
-      // sichtbare, miteinander verflochtene Nebenfarben bis zum Horizont.
-      var band=Math.abs(fiberIndex*19+tipVertex*5)%10;
-      var palette=band<2
-        ?[SATELLITE_METALS.red.deep,SATELLITE_METALS.red.primary,SATELLITE_METALS.red.light]
-        :(band<4
-          ?[SATELLITE_METALS.blue.deep,SATELLITE_METALS.blue.primary,SATELLITE_METALS.blue.light]
-          :[GOLD.deep,GOLD.primary,GOLD.light]);
+    function landscapeFiberColor(fiberFamily,fiberIndex,tipVertex){
+      var palette=fiberFamily===0
+        ?[GOLD.deep,GOLD.primary,GOLD.light]
+        :(fiberFamily===1
+          ?[SATELLITE_METALS.red.deep,SATELLITE_METALS.red.primary,SATELLITE_METALS.red.light]
+          :[SATELLITE_METALS.blue.deep,SATELLITE_METALS.blue.primary,SATELLITE_METALS.blue.light]);
       return palette[Math.abs(fiberIndex*11+tipVertex*3)%palette.length];
     }
 
@@ -803,9 +804,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     }
 
     for(var landscapeFiberIndex=0;landscapeFiberIndex<landscapeFiberCount;landscapeFiberIndex++){
-      var sourceFiber=sFibers[landscapeFiberIndex];
+      var landscapeFiberFamily=Math.floor(landscapeFiberIndex/landscapeSourceFiberCount);
+      var landscapeSourceIndex=landscapeFiberIndex%landscapeSourceFiberCount;
+      var sourceFiber=sFibers[landscapeSourceIndex];
       var tipVertex=sourceFiber.start+sourceFiber.len-1;
-      var phase=sMeta[sourceFiber.start*2+1]+(landscapeRandom()-.5)*.9;
+      var phase=sMeta[sourceFiber.start*2+1]
+        +landscapeFiberFamily*2.0943951023931953
+        +(landscapeRandom()-.5)*.9;
       var orderedPosition=landscapeFiberCount===1?0:landscapeFiberIndex/(landscapeFiberCount-1)*2-1;
       // Deterministisches Durchmischen verhindert einen künstlichen Fächer,
       // bewahrt aber eine gleichmäßig gefüllte Landschaft.
@@ -819,7 +824,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var groundDrop=2.25+landscapeRandom()*.34;
       var meanderAmplitude=.22+landscapeRandom()*.68;
       var meanderFrequency=1.1+landscapeRandom()*2.4;
-      var fiberColor=landscapeColor.copy(landscapeFiberColor(landscapeFiberIndex,tipVertex))
+      var fiberColor=landscapeColor.copy(landscapeFiberColor(
+        landscapeFiberFamily,landscapeSourceIndex,tipVertex
+      ))
         .multiplyScalar(.76+landscapeRandom()*.25).clone();
       var previousVertex=null;
       var pathVertices=[];
