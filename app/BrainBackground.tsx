@@ -1273,46 +1273,43 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       });
     }
   }
-  var sphereFiberGeometry=new THREE.BufferGeometry();
-  sphereFiberGeometry.setAttribute('position',new THREE.Float32BufferAttribute(sphereFiberPositions,3));
-  sphereFiberGeometry.setAttribute('color',new THREE.Float32BufferAttribute(sphereFiberColors,3));
-  var sphereFiberMaterial=new THREE.LineBasicMaterial({
-    vertexColors:true,
-    transparent:true,
-    opacity:GOLD_RENDER.lineOpacity,
-    blending:THREE.NormalBlending,
-    depthWrite:false
-  });
-  var sphereFiberLines=new THREE.LineSegments(sphereFiberGeometry,sphereFiberMaterial);
-  sphereFiberLines.renderOrder=21;
-  neuralGlassSphere.add(sphereFiberLines);
-  var sphereFiberPointGeometry=new THREE.BufferGeometry();
-  sphereFiberPointGeometry.setAttribute('position',new THREE.Float32BufferAttribute(sphereFiberPointPositions,3));
-  sphereFiberPointGeometry.setAttribute('color',new THREE.Float32BufferAttribute(sphereFiberPointColors,3));
-  var sphereFiberPointMaterial=new THREE.PointsMaterial({
-    vertexColors:true,
-    size:SP.ptSize,
-    transparent:true,
-    opacity:GOLD_RENDER.pointOpacity,
-    blending:THREE.NormalBlending,
-    depthWrite:false,
-    sizeAttenuation:true
-  });
-  var sphereFiberPoints=new THREE.Points(sphereFiberPointGeometry,sphereFiberPointMaterial);
-  sphereFiberPoints.renderOrder=22;
-  neuralGlassSphere.add(sphereFiberPoints);
+  // Kein zweites Faserobjekt: Die Fortsetzungen werden direkt hinten an die
+  // bestehenden GPU-Puffer von neural-lines und neural-points angehängt.
+  // Gehirn → Strang → Kugel ist damit pro Darstellungsart EIN Draw-Objekt.
+  var originalLinePositions=linesObj.geometry.attributes.position.array;
+  var originalLineColors=linesObj.geometry.attributes.color.array;
+  var sphereLineBufferOffset=originalLinePositions.length;
+  var mergedLinePositions=new Float32Array(sphereLineBufferOffset+sphereFiberPositions.length);
+  var mergedLineColors=new Float32Array(sphereLineBufferOffset+sphereFiberColors.length);
+  mergedLinePositions.set(originalLinePositions,0);
+  mergedLineColors.set(originalLineColors,0);
+  mergedLinePositions.set(sphereFiberPositions,sphereLineBufferOffset);
+  mergedLineColors.set(sphereFiberColors,sphereLineBufferOffset);
+  linesObj.geometry.setAttribute('position',new THREE.BufferAttribute(mergedLinePositions,3).setUsage(THREE.DynamicDrawUsage));
+  linesObj.geometry.setAttribute('color',new THREE.BufferAttribute(mergedLineColors,3).setUsage(THREE.DynamicDrawUsage));
 
-  sphereFiberGeometry.attributes.position.setUsage(THREE.DynamicDrawUsage);
-  sphereFiberGeometry.attributes.color.setUsage(THREE.DynamicDrawUsage);
-  sphereFiberPointGeometry.attributes.position.setUsage(THREE.DynamicDrawUsage);
-  sphereFiberPointGeometry.attributes.color.setUsage(THREE.DynamicDrawUsage);
+  var originalPointPositions=wptsObj.geometry.attributes.position.array;
+  var originalPointColors=wptsObj.geometry.attributes.color.array;
+  var spherePointBufferOffset=originalPointPositions.length;
+  var mergedPointPositions=new Float32Array(spherePointBufferOffset+sphereFiberPointPositions.length);
+  var mergedPointColors=new Float32Array(spherePointBufferOffset+sphereFiberPointColors.length);
+  mergedPointPositions.set(originalPointPositions,0);
+  mergedPointColors.set(originalPointColors,0);
+  mergedPointPositions.set(sphereFiberPointPositions,spherePointBufferOffset);
+  mergedPointColors.set(sphereFiberPointColors,spherePointBufferOffset);
+  wptsObj.geometry.setAttribute('position',new THREE.BufferAttribute(mergedPointPositions,3).setUsage(THREE.DynamicDrawUsage));
+  wptsObj.geometry.setAttribute('color',new THREE.BufferAttribute(mergedPointColors,3).setUsage(THREE.DynamicDrawUsage));
 
   var lastSphereFiberUpdate=-1;
+  var sphereToBrainMatrix=new THREE.Matrix4();
   function updateSphereFibers(time){
     if(lastSphereFiberUpdate>=0&&time-lastSphereFiberUpdate<.028) return;
     lastSphereFiberUpdate=time;
-    var animatedPointPositions=sphereFiberPointGeometry.attributes.position.array;
-    var animatedPointColors=sphereFiberPointGeometry.attributes.color.array;
+    world.updateMatrixWorld(true);
+    sphereToBrainMatrix.copy(brain.matrixWorld).invert().multiply(neuralGlassSphere.matrixWorld);
+    var sphereTransformElements=sphereToBrainMatrix.elements;
+    var animatedPointPositions=wptsObj.geometry.attributes.position.array;
+    var animatedPointColors=wptsObj.geometry.attributes.color.array;
     var parentStrandColors=wptsObj.geometry.attributes.color.array;
     for(var sphereAnimatedIndex=0;sphereAnimatedIndex<sphereFiberVertexMeta.length;sphereAnimatedIndex++){
       var sphereAnimatedMeta=sphereFiberVertexMeta[sphereAnimatedIndex];
@@ -1335,10 +1332,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var sphereAnimatedRadius=sphereFiberRadius
         +Math.sin(time*WIND.speed*2.43+sphereAnimatedMeta.phase+sphereContinuedTravel*WIND.waveFrequency*.78)*WIND.wave*.08*sphereAnimatedEnvelope;
       var sphereAnimatedSin=Math.sin(sphereAnimatedTheta);
-      var sphereAnimatedOffset=sphereAnimatedIndex*3;
-      animatedPointPositions[sphereAnimatedOffset]=sphereAnimatedRadius*sphereAnimatedSin*Math.cos(sphereAnimatedAngle);
-      animatedPointPositions[sphereAnimatedOffset+1]=sphereAnimatedRadius*Math.cos(sphereAnimatedTheta);
-      animatedPointPositions[sphereAnimatedOffset+2]=sphereAnimatedRadius*sphereAnimatedSin*Math.sin(sphereAnimatedAngle);
+      var sphereLocalX=sphereAnimatedRadius*sphereAnimatedSin*Math.cos(sphereAnimatedAngle);
+      var sphereLocalY=sphereAnimatedRadius*Math.cos(sphereAnimatedTheta);
+      var sphereLocalZ=sphereAnimatedRadius*sphereAnimatedSin*Math.sin(sphereAnimatedAngle);
+      var sphereAnimatedOffset=spherePointBufferOffset+sphereAnimatedIndex*3;
+      animatedPointPositions[sphereAnimatedOffset]=sphereTransformElements[0]*sphereLocalX+sphereTransformElements[4]*sphereLocalY+sphereTransformElements[8]*sphereLocalZ+sphereTransformElements[12];
+      animatedPointPositions[sphereAnimatedOffset+1]=sphereTransformElements[1]*sphereLocalX+sphereTransformElements[5]*sphereLocalY+sphereTransformElements[9]*sphereLocalZ+sphereTransformElements[13];
+      animatedPointPositions[sphereAnimatedOffset+2]=sphereTransformElements[2]*sphereLocalX+sphereTransformElements[6]*sphereLocalY+sphereTransformElements[10]*sphereLocalZ+sphereTransformElements[14];
 
       // Wandernder Nervenimpuls setzt die Bewegung des oberen Strangs über
       // den Kontaktpunkt hinweg entlang der Kugelfaser fort.
@@ -1353,12 +1353,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       animatedPointColors[sphereAnimatedOffset+1]=sphereLiveGreen*sphereBaseLight;
       animatedPointColors[sphereAnimatedOffset+2]=sphereLiveBlue*sphereBaseLight;
     }
-    var animatedLinePositions=sphereFiberGeometry.attributes.position.array;
-    var animatedLineColors=sphereFiberGeometry.attributes.color.array;
+    var animatedLinePositions=linesObj.geometry.attributes.position.array;
+    var animatedLineColors=linesObj.geometry.attributes.color.array;
     for(var sphereLineIndex=0;sphereLineIndex<sphereFiberLinePointIndices.length;sphereLineIndex++){
       var sphereSourcePoint=sphereFiberLinePointIndices[sphereLineIndex];
-      var sphereSourceOffset=sphereSourcePoint*3;
-      var sphereLineOffset=sphereLineIndex*3;
+      var sphereSourceOffset=spherePointBufferOffset+sphereSourcePoint*3;
+      var sphereLineOffset=sphereLineBufferOffset+sphereLineIndex*3;
       animatedLinePositions[sphereLineOffset]=animatedPointPositions[sphereSourceOffset];
       animatedLinePositions[sphereLineOffset+1]=animatedPointPositions[sphereSourceOffset+1];
       animatedLinePositions[sphereLineOffset+2]=animatedPointPositions[sphereSourceOffset+2];
@@ -1366,12 +1366,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       animatedLineColors[sphereLineOffset+1]=animatedPointColors[sphereSourceOffset+1];
       animatedLineColors[sphereLineOffset+2]=animatedPointColors[sphereSourceOffset+2];
     }
-    sphereFiberPointGeometry.attributes.position.needsUpdate=true;
-    sphereFiberPointGeometry.attributes.color.needsUpdate=true;
-    sphereFiberGeometry.attributes.position.needsUpdate=true;
-    sphereFiberGeometry.attributes.color.needsUpdate=true;
+    wptsObj.geometry.attributes.position.needsUpdate=true;
+    wptsObj.geometry.attributes.color.needsUpdate=true;
+    linesObj.geometry.attributes.position.needsUpdate=true;
+    linesObj.geometry.attributes.color.needsUpdate=true;
   }
-  updateSphereFibers(0);
 
   var neuralGlassTipWorld=new THREE.Vector3();
   function updateNeuralGlassSphere(){
@@ -1383,6 +1382,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     );
   }
   updateNeuralGlassSphere();
+  updateSphereFibers(0);
 
   function livingOrganismVertexLocal(vertexIndex,out,time){
     var organismVertexMeta=organismMeta[vertexIndex];
@@ -3590,10 +3590,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       neuralGlassMaterial.dispose();
       neuralGlassGlowGeometry.dispose();
       neuralGlassGlowMaterial.dispose();
-      sphereFiberGeometry.dispose();
-      sphereFiberMaterial.dispose();
-      sphereFiberPointGeometry.dispose();
-      sphereFiberPointMaterial.dispose();
       renderer.dispose();
       renderer.forceContextLoss();
       document.body.style.cursor='';
