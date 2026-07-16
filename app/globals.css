@@ -733,14 +733,15 @@ body {
 .spiral-solutions-flap {
   position: absolute;
   left: 50%;
-  top: 0;
+  top: auto;
+  bottom: calc(100% + clamp(1rem, 2.2vw, 1.75rem));
   z-index: 6;
   justify-content: center;
   font-size: clamp(1.07rem, 2.36vw, 2.17rem);
   letter-spacing: 0.035em;
   text-align: center;
   pointer-events: none;
-  transform: translate3d(-50%, calc(-100% - clamp(1rem, 2.2vw, 1.75rem)), 30px);
+  transform: translateX(-50%);
   text-shadow: 0 0 24px rgba(255,255,255,0.12);
 }
 
