@@ -1119,6 +1119,54 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     return out;
   }
 
+  // Echte transparente 3D-Glaskugel auf der zentralen Helixachse. Ihr
+  // oberster Pol wird in jedem Frame exakt an die Y-Position des bewegten
+  // Nervenstrang-Endpunkts gesetzt; x/z bleiben unverrückbar auf der Achse.
+  var neuralGlassRadius=2.82;
+  var neuralGlassGeometry=new THREE.SphereGeometry(neuralGlassRadius,96,64);
+  var neuralGlassMaterial=new THREE.MeshPhysicalMaterial({
+    color:0xffffff,
+    emissive:0xffffff,
+    emissiveIntensity:.18,
+    transparent:true,
+    opacity:.2,
+    transmission:.92,
+    thickness:1.35,
+    ior:1.46,
+    roughness:.06,
+    metalness:0,
+    clearcoat:1,
+    clearcoatRoughness:.04,
+    depthWrite:false,
+    side:THREE.DoubleSide
+  });
+  var neuralGlassSphere=new THREE.Mesh(neuralGlassGeometry,neuralGlassMaterial);
+  neuralGlassSphere.name='helix-axis-glass-sphere';
+  neuralGlassSphere.renderOrder=18;
+  neuralGlassSphere.frustumCulled=false;
+  world.add(neuralGlassSphere);
+
+  var neuralGlassGlowGeometry=new THREE.SphereGeometry(neuralGlassRadius*1.018,64,48);
+  var neuralGlassGlowMaterial=new THREE.MeshBasicMaterial({
+    color:0xffffff,
+    transparent:true,
+    opacity:.075,
+    blending:THREE.AdditiveBlending,
+    depthWrite:false,
+    side:THREE.BackSide
+  });
+  var neuralGlassGlow=new THREE.Mesh(neuralGlassGlowGeometry,neuralGlassGlowMaterial);
+  neuralGlassGlow.name='helix-axis-glass-sphere-glow';
+  neuralGlassGlow.renderOrder=17;
+  neuralGlassSphere.add(neuralGlassGlow);
+
+  var neuralGlassTipWorld=new THREE.Vector3();
+  function updateNeuralGlassSphere(){
+    goldStrandTipWorld(neuralGlassTipWorld,true);
+    neuralGlassSphere.position.set(0,neuralGlassTipWorld.y-neuralGlassRadius,0);
+  }
+  updateNeuralGlassSphere();
+
   function livingOrganismVertexLocal(vertexIndex,out,time){
     var organismVertexMeta=organismMeta[vertexIndex];
     if(!organismVertexMeta) return out.set(0,0,0);
@@ -3181,6 +3229,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         if(now-lastGoldStrandUpdate>goldUpdateInterval){
           lastGoldStrandUpdate=now;
           updateGoldStrandGeometry(t);
+          updateNeuralGlassSphere();
         }
       }
       if (NEURAL_INFORMATION_ACTIVE && !reduced) neuralActivityController.update(dt);
@@ -3319,6 +3368,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       window.removeEventListener('resize', resize);
       window.removeEventListener('scroll', onScroll);
       document.removeEventListener('visibilitychange', onVisibilityChange);
+      neuralGlassGeometry.dispose();
+      neuralGlassMaterial.dispose();
+      neuralGlassGlowGeometry.dispose();
+      neuralGlassGlowMaterial.dispose();
       renderer.dispose();
       renderer.forceContextLoss();
       document.body.style.cursor='';
