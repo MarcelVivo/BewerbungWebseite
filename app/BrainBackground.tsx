@@ -535,8 +535,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var organismRightVector=new THREE.Vector3(
     Math.cos(organismStationAngle),0,-Math.sin(organismStationAngle)
   ).applyQuaternion(organismBrainQuaternion).normalize();
-  var organismForwardX=organismForwardVector.x, organismForwardY=organismForwardVector.y, organismForwardZ=organismForwardVector.z;
-  var organismRightX=organismRightVector.x, organismRightY=organismRightVector.y, organismRightZ=organismRightVector.z;
+  // Im vertikal begradigten Strangrahmen tauschen Bildschirmbreite und
+  // Radialtiefe ihre Rollen. Exakte 90°-Korrektur: Tangente wird Tiefe,
+  // negative Radialachse wird sichtbare Querachse.
+  var organismCorrectedForward=organismRightVector.clone();
+  var organismCorrectedRight=organismForwardVector.clone().multiplyScalar(-1);
+  var organismForwardX=organismCorrectedForward.x, organismForwardY=organismCorrectedForward.y, organismForwardZ=organismCorrectedForward.z;
+  var organismRightX=organismCorrectedRight.x, organismRightY=organismCorrectedRight.y, organismRightZ=organismCorrectedRight.z;
   var wobbleX=new Float32Array(0), wobbleZ=new Float32Array(0);
   var goldEscapeWeights=[], goldEscapePhases=[], goldEscapeFrequencies=[], goldEscapeSpeeds=[];
   var GOLD_STRAND_END_KEY='ms-gold-strand-end-v1';
