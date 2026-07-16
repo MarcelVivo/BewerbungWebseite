@@ -1181,6 +1181,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var neuralGlassFillLight=new THREE.PointLight(0xffffff,0,18,1.8);
   neuralGlassFillLight.position.set(1.5,-1.2,5.8);
   neuralGlassSphere.add(neuralGlassFillLight);
+  // Kugel inklusive ihrer gesamten Darstellung dauerhaft aus der Szene
+  // entfernen. Die Ressourcen bleiben bis zum regulären Dispose erhalten,
+  // werden aber weder gerendert noch pro Frame animiert.
+  world.remove(neuralGlassSphere);
 
   // Dreidimensional aufliegende Nervenfasern: Alle Bahnen starten am oberen
   // Pol und folgen mit minimalem Oberflächenabstand der echten Kugelkrümmung.
@@ -1320,6 +1324,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   mergedLineColors.set(sphereFiberColors,sphereLineBufferOffset);
   linesObj.geometry.setAttribute('position',new THREE.BufferAttribute(mergedLinePositions,3).setUsage(THREE.DynamicDrawUsage));
   linesObj.geometry.setAttribute('color',new THREE.BufferAttribute(mergedLineColors,3).setUsage(THREE.DynamicDrawUsage));
+  // Nur die ursprüngliche Stranggeometrie zeichnen; alle früher angehängten
+  // Kugelsegmente liegen außerhalb des Draw-Ranges.
+  linesObj.geometry.setDrawRange(0,sphereLineBufferOffset/3);
 
   var originalPointPositions=wptsObj.geometry.attributes.position.array;
   var originalPointColors=wptsObj.geometry.attributes.color.array;
@@ -1332,6 +1339,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   mergedPointColors.set(sphereFiberPointColors,spherePointBufferOffset);
   wptsObj.geometry.setAttribute('position',new THREE.BufferAttribute(mergedPointPositions,3).setUsage(THREE.DynamicDrawUsage));
   wptsObj.geometry.setAttribute('color',new THREE.BufferAttribute(mergedPointColors,3).setUsage(THREE.DynamicDrawUsage));
+  wptsObj.geometry.setDrawRange(0,spherePointBufferOffset/3);
 
   var lastSphereFiberUpdate=-1;
   var sphereToBrainMatrix=new THREE.Matrix4();
@@ -1343,6 +1351,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var sphereContinuationPreviousDirection=new THREE.Vector3();
   var sphereContinuationData=[];
   function updateSphereFibers(time){
+    return;
+    /* Kugelfasern entfernt. */
     if(lastSphereFiberUpdate>=0&&time-lastSphereFiberUpdate<.028) return;
     lastSphereFiberUpdate=time;
     world.updateMatrixWorld(true);
@@ -1521,6 +1531,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
 
   var neuralGlassTipWorld=new THREE.Vector3();
   function updateNeuralGlassSphere(){
+    return;
+    /* Kugel entfernt. */
     goldStrandTipWorld(neuralGlassTipWorld,true);
     neuralGlassSphere.position.set(
       0,
