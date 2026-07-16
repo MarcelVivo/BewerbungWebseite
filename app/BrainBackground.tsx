@@ -1196,6 +1196,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var sphereFiberRadius=neuralGlassRadius+.035;
   // Exakt eine Fortsetzung pro realer Faser des oberen Strangs.
   var sphereFiberCount=sFibers.length||FN.count;
+  var sphereFiberMaxParentLength=1;
+  for(var sphereFiberLengthIndex=0;sphereFiberLengthIndex<sFibers.length;sphereFiberLengthIndex++){
+    sphereFiberMaxParentLength=Math.max(sphereFiberMaxParentLength,sFibers[sphereFiberLengthIndex].len);
+  }
   var sphereFiberColor=new THREE.Color();
   var strandPointColorOffsetByVertex=new Map();
   for(var strandColorRefIndex=0;strandColorRefIndex<wobblePtsRefs.length;strandColorRefIndex++){
@@ -1207,8 +1211,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   for(var sphereFiberIndex=0;sphereFiberIndex<sphereFiberCount;sphereFiberIndex++){
     // Keine neue Zufallsstruktur auf der Kugel. Länge, Phase, Farbe und
     // Laufrichtung stammen ausschließlich von der jeweiligen Originalfaser.
-    var sphereFiberEndTheta=Math.PI*.94;
     var sphereFiberParent=sFibers.length?sFibers[sphereFiberIndex%sFibers.length]:null;
+    // Wie oben enden die Fasern unterschiedlich lang. Dadurch gibt es keinen
+    // künstlichen Sammelpunkt am unteren Kugelpol.
+    var sphereFiberLengthShare=sphereFiberParent?sphereFiberParent.len/sphereFiberMaxParentLength:1;
+    var sphereFiberEndTheta=1.72+1.18*sphereFiberLengthShare;
     var sphereFiberParentVertex=sphereFiberParent
       ? sphereFiberParent.start+sphereFiberParent.len-1
       : 0;
@@ -1265,10 +1272,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         phase:sphereFiberParentPhase,
         travel:sphereFiberT,
         arc:sphereFiberTheta*sphereFiberRadius,
-        sourceProgress:1-sphereFiberT,
-        sourceVertex:sphereFiberParent
-          ? sphereFiberParent.start+Math.round((sphereFiberParent.len-1)*(1-sphereFiberT))
-          : sphereFiberParentVertex,
         parentVertex:sphereFiberParentVertex,
         parentColorOffset:sphereFiberParentColorOffset,
         escapeWeight:goldEscapeWeights[sphereFiberParentVertex]||0,
@@ -1325,8 +1328,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var sphereContinuationScratch=new THREE.Vector3();
   var sphereContinuationDirection=new THREE.Vector3();
   var sphereContinuationPreviousDirection=new THREE.Vector3();
-  var spherePatternVertex=new THREE.Vector3();
-  var spherePatternCenter=new THREE.Vector3();
   var sphereContinuationData=[];
   function updateSphereFibers(time){
     if(lastSphereFiberUpdate>=0&&time-lastSphereFiberUpdate<.028) return;
@@ -1357,15 +1358,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         Math.PI*2
       )-Math.PI;
       var sphereContinuationSourceSpacing=Math.max(.0001,sphereContinuationEndpoint.distanceTo(sphereContinuationPrevious));
-      sampleGoldCenterline(1,spherePatternCenter);
-      goldStrandVertexLocal(sphereContinuationRef.parentVertex,spherePatternVertex,true);
       sphereContinuationData.push({
         endpoint:sphereContinuationEndpoint.clone(),
         tangent:sphereContinuationTangent,
         startTheta:Math.acos(THREE.MathUtils.clamp(sphereContinuationDirection.y,-1,1)),
         startPhi:sphereContinuationStartPhi,
-        patternEndX:spherePatternVertex.x-spherePatternCenter.x,
-        patternEndZ:spherePatternVertex.z-spherePatternCenter.z,
         // Exakt die lokale Drehgeschwindigkeit des letzten Originalsegments,
         // damit Nachbarschaft und Bündelstruktur unverändert weiterlaufen.
         phiPerUnit:THREE.MathUtils.clamp(sphereContinuationPhiStep/sphereContinuationSourceSpacing,-1.15,1.15)
@@ -1410,18 +1407,22 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         sphereLateralWave+=Math.cos(sphereAnimatedMeta.phase)*sphereEscapeWave;
         sphereDepthWave+=Math.sin(sphereAnimatedMeta.phase)*sphereEscapeWave*.72;
       }
-      // Zusätzlich wird die wirkliche statische Bahn derselben Originalfaser
-      // erneut abgetastet. Damit werden deren Kreuzungen, Bündelgruppen und
-      // unregelmäßige Abstände übernommen statt durch Meridiane ersetzt.
-      goldStrandVertexLocal(sphereAnimatedMeta.sourceVertex,spherePatternVertex,true);
-      sampleGoldCenterline(sphereAnimatedMeta.sourceProgress,spherePatternCenter);
-      var spherePatternEnvelope=smoother(sphereAnimatedTravel/.09);
+      // Mehrskalige, phasengleiche Verwebung wie im dichten Hauptstrang.
+      // Die Auslenkung bleibt in echten Welteinheiten und wird erst danach
+      // tangential auf die Kugel gelegt — so entstehen organische Kreuzungen
+      // statt sauberer Längengrade.
+      var sphereWeaveEnvelope=smoother(sphereAnimatedTravel/.055);
+      var sphereWeaveTravel=stretchedWavePhase(sphereAnimatedTravel,11.5,1.48);
+      var sphereWeaveAmplitude=THREE.MathUtils.lerp(.12,.42,smoother(sphereAnimatedTravel))
+        *sphereWeaveEnvelope;
       sphereLateralWave+=(
-        spherePatternVertex.x-spherePatternCenter.x-sphereContinuation.patternEndX
-      )*spherePatternEnvelope;
+        Math.sin(sphereAnimatedMeta.phase+sphereWeaveTravel+time*WIND.speed*.28)
+        +Math.sin(sphereAnimatedMeta.phase*.47+sphereWeaveTravel*1.83-time*WIND.speed*.17)*.38
+      )*sphereWeaveAmplitude;
       sphereDepthWave+=(
-        spherePatternVertex.z-spherePatternCenter.z-sphereContinuation.patternEndZ
-      )*spherePatternEnvelope;
+        Math.cos(sphereAnimatedMeta.phase*.83+sphereWeaveTravel*.91+time*WIND.speed*.23)
+        +Math.cos(sphereAnimatedMeta.phase*1.31+sphereWeaveTravel*1.57+time*WIND.speed*.13)*.34
+      )*sphereWeaveAmplitude*.82;
       // Keine Auffächerung: Die bestehende Winkelordnung der Faserenden wird
       // bewahrt und nur deren reale Enddrehung entlang der Kugel fortgesetzt.
       var sphereAnimatedAngle=sphereContinuation.startPhi
