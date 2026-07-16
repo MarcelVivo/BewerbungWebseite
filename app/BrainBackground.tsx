@@ -535,11 +535,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var organismRightVector=new THREE.Vector3(
     Math.cos(organismStationAngle),0,-Math.sin(organismStationAngle)
   ).applyQuaternion(organismBrainQuaternion).normalize();
-  // Im vertikal begradigten Strangrahmen tauschen Bildschirmbreite und
-  // Radialtiefe ihre Rollen. Exakte 90°-Korrektur: Tangente wird Tiefe,
-  // negative Radialachse wird sichtbare Querachse.
-  var organismCorrectedForward=organismRightVector.clone();
-  var organismCorrectedRight=organismForwardVector.clone().multiplyScalar(-1);
+  // Die reale Tiefenprojektion liegt exakt zwischen den beiden getesteten
+  // Achsen: Radialachse lief nach links, Tangente nach rechts. Ihr normierter
+  // 45°-Bisektor hebt beide seitlichen Bildanteile auf und läuft mittig in die
+  // Kamera-/Horizonttiefe. Die Differenz bildet die sichtbare Talbreite.
+  var organismCorrectedForward=organismForwardVector.clone().add(organismRightVector).normalize();
+  var organismCorrectedRight=organismRightVector.clone().sub(organismForwardVector).normalize();
   var organismForwardX=organismCorrectedForward.x, organismForwardY=organismCorrectedForward.y, organismForwardZ=organismCorrectedForward.z;
   var organismRightX=organismCorrectedRight.x, organismRightY=organismCorrectedRight.y, organismRightZ=organismCorrectedRight.z;
   var wobbleX=new Float32Array(0), wobbleZ=new Float32Array(0);
