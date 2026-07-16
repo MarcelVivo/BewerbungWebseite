@@ -539,7 +539,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   // Achsen: Radialachse lief nach links, Tangente nach rechts. Ihr normierter
   // 45°-Bisektor hebt beide seitlichen Bildanteile auf und läuft mittig in die
   // Kamera-/Horizonttiefe. Die Differenz bildet die sichtbare Talbreite.
-  var organismCorrectedForward=organismForwardVector.clone().add(organismRightVector).normalize();
+  // Der Hauptstrang steht am Horizont; die Landschaft fließt von dort nach
+  // VORNE zur Kamera. Negativer Bisektor = Vorderseite statt Rückseite.
+  var organismCorrectedForward=organismForwardVector.clone().add(organismRightVector).normalize().multiplyScalar(-1);
   var organismCorrectedRight=organismRightVector.clone().sub(organismForwardVector).normalize();
   var organismForwardX=organismCorrectedForward.x, organismForwardY=organismCorrectedForward.y, organismForwardZ=organismCorrectedForward.z;
   var organismRightX=organismCorrectedRight.x, organismRightY=organismCorrectedRight.y, organismRightZ=organismCorrectedRight.z;
