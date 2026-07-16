@@ -1141,27 +1141,56 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
           })}
           <div className="spiral-mobile-services">
             {serviceCards.map((card, i) => {
+              const isOpen = activeServiceSlug === card.slug;
               return (
-                <div
+                <button
                   key={`${card.code}-mobile-service-${i}`}
-                  className="spiral-service-card ngp-panel ngp-panel-static is-materialized"
+                  type="button"
+                  className={`spiral-service-card ngp-panel ngp-panel-static is-materialized ${isOpen ? 'is-selected mobile-service-detail' : ''}`}
+                  aria-expanded={isOpen}
+                  aria-label={isOpen
+                    ? `${card.title}: ${lang === 'de' ? 'Details schliessen' : 'Close details'}`
+                    : `${card.title}: ${lang === 'de' ? 'Details öffnen' : 'Open details'}`}
                   style={{
                     '--service-accent': card.accent,
                     '--service-accent-rgb': card.accentRgb,
                   } as CSSProperties}
+                  onClick={() => setActiveServiceSlug(isOpen ? null : card.slug || null)}
                 >
-                  <span className="ngp-core">
-                    <span className="spiral-intro-meta">
-                      <span className="spiral-intro-index">{card.code}</span>
-                      <span className="spiral-intro-icon">
-                        <NeuralNodeIcon variant={i} />
+                  {isOpen ? (
+                    <span className="ngp-core">
+                      <span className="spiral-detail-close" aria-hidden="true">
+                        <X size={19} strokeWidth={2.2} />
+                      </span>
+                      <span className="spiral-intro-meta">
+                        <span className="spiral-intro-index">{card.code}</span>
+                        <span className="spiral-intro-icon">
+                          <NeuralNodeIcon variant={i} />
+                        </span>
+                      </span>
+                      <span className="spiral-detail-title">{card.detailTitle}</span>
+                      <span className="spiral-detail-text">{card.detailText}</span>
+                      <span className="spiral-detail-list">
+                        {card.detailPoints?.map((point) => <span key={point}>{point}</span>)}
                       </span>
                     </span>
-                    <h3 className="spiral-service-title">{card.title}</h3>
-                    <p className="spiral-service-body">{card.body}</p>
-                    <span className="spiral-intro-rule" />
-                  </span>
-                </div>
+                  ) : (
+                    <span className="ngp-core">
+                      <span className="spiral-intro-meta">
+                        <span className="spiral-intro-index">{card.code}</span>
+                        <span className="spiral-intro-icon">
+                          <NeuralNodeIcon variant={i} />
+                        </span>
+                      </span>
+                      <h3 className="spiral-service-title">{card.title}</h3>
+                      <p className="spiral-service-body">{card.body}</p>
+                      <span className="spiral-intro-rule" />
+                      <span className="spiral-service-more" aria-hidden="true">
+                        <Maximize2 size={16} strokeWidth={2.1} />
+                      </span>
+                    </span>
+                  )}
+                </button>
               );
             })}
           </div>

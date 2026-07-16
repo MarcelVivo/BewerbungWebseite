@@ -1445,6 +1445,17 @@ body {
     aspect-ratio: auto;
     overflow: visible;
     padding: 1rem 1.1rem 1.05rem;
+    color: inherit;
+    font: inherit;
+  }
+
+  .spiral-mobile-services .mobile-service-detail {
+    padding: 1.15rem;
+  }
+
+  .spiral-mobile-services .mobile-service-detail .spiral-detail-title {
+    max-width: calc(100% - 3rem);
+    font-size: clamp(1.25rem, 6vw, 1.65rem);
   }
 
   .spiral-mobile-services .spiral-service-title {
