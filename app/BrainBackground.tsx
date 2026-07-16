@@ -1129,18 +1129,20 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var neuralGlassContactDrop=.9;
   var neuralGlassGeometry=new THREE.SphereGeometry(neuralGlassRadius,96,64);
   var neuralGlassMaterial=new THREE.MeshPhysicalMaterial({
-    color:0xffffff,
-    emissive:0xffffff,
-    emissiveIntensity:.18,
+    color:0x020203,
+    emissive:0x000000,
+    emissiveIntensity:0,
     transparent:true,
-    opacity:.2,
-    transmission:.92,
-    thickness:1.35,
-    ior:1.46,
-    roughness:.06,
-    metalness:0,
+    opacity:.96,
+    transmission:.035,
+    thickness:1.8,
+    ior:1.5,
+    roughness:.012,
+    metalness:.42,
     clearcoat:1,
-    clearcoatRoughness:.04,
+    clearcoatRoughness:.006,
+    specularIntensity:1,
+    specularColor:0xffffff,
     depthWrite:false,
     side:THREE.DoubleSide
   });
@@ -1152,9 +1154,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
 
   var neuralGlassGlowGeometry=new THREE.SphereGeometry(neuralGlassRadius*1.018,64,48);
   var neuralGlassGlowMaterial=new THREE.MeshBasicMaterial({
-    color:0xffffff,
+    color:0xb9d2e8,
     transparent:true,
-    opacity:.075,
+    opacity:.035,
     blending:THREE.AdditiveBlending,
     depthWrite:false,
     side:THREE.BackSide
@@ -1163,6 +1165,15 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   neuralGlassGlow.name='helix-axis-glass-sphere-glow';
   neuralGlassGlow.renderOrder=17;
   neuralGlassSphere.add(neuralGlassGlow);
+
+  // Kleine, an der Kugel befestigte Studiolichter erzeugen auf dem nahezu
+  // schwarzen Material klar lesbare Hochglanzreflexe und eine feine Kontur.
+  var neuralGlassKeyLight=new THREE.PointLight(0xffffff,22,18,2);
+  neuralGlassKeyLight.position.set(-4.2,4.8,5.6);
+  neuralGlassSphere.add(neuralGlassKeyLight);
+  var neuralGlassRimLight=new THREE.PointLight(0xc9e6ff,12,16,2);
+  neuralGlassRimLight.position.set(4.8,1.2,-4.6);
+  neuralGlassSphere.add(neuralGlassRimLight);
 
   var neuralGlassTipWorld=new THREE.Vector3();
   function updateNeuralGlassSphere(){
