@@ -1487,12 +1487,14 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var sphereFusionSelector=Math.sin(sphereAnimatedMeta.phase*2.71+sphereAnimatedMeta.fiberIndex*.037);
       // Blau dominiert wie im sichtbaren Zielbereich; Violett entsteht nicht
       // als Ersatzfarbe, sondern physisch durch die Überlagerung beider Farben.
-      sphereFusionMixed.copy(sphereFusionSelector>.22?fusionRedColor:fusionBlueColor);
+      var sphereUsesRed=sphereFusionSelector>.48;
+      sphereFusionMixed.copy(sphereUsesRed?fusionRedColor:fusionBlueColor);
       var sphereFusionBrightness=THREE.MathUtils.clamp(
-        .42+sphereLiveLuminance*.42,
-        .48,
-        .74
+        .5+sphereLiveLuminance*.5,
+        .58,
+        .88
       );
+      if(sphereUsesRed) sphereFusionBrightness*=.76;
       if(sphereAnimatedMeta.additionalFiber) sphereFusionBrightness*=.24;
       animatedPointColors[sphereAnimatedOffset]=sphereFusionMixed.r*sphereFusionBrightness;
       animatedPointColors[sphereAnimatedOffset+1]=sphereFusionMixed.g*sphereFusionBrightness;
