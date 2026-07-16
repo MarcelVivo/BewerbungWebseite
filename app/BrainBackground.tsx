@@ -1390,7 +1390,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       // Gum- und Escape-Wellen. Dieselben Formeln laufen auf der Kugel weiter.
       var sphereGumEnvelope=smoother(sphereAnimatedTravel/.16);
       var sphereGumTravel=stretchedWavePhase(sphereAnimatedTravel,8,1.35);
-      var sphereGumAmplitude=THREE.MathUtils.lerp(.028,.17,smoother(sphereAnimatedTravel))*sphereGumEnvelope;
+      var sphereGumAmplitude=THREE.MathUtils.lerp(.065,.38,smoother(sphereAnimatedTravel))*sphereGumEnvelope;
       sphereLateralWave+=Math.sin(
         sphereAnimatedMeta.phase+sphereGumTravel+time*WIND.speed*.42
       )*sphereGumAmplitude;
@@ -1412,17 +1412,17 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       // tangential auf die Kugel gelegt — so entstehen organische Kreuzungen
       // statt sauberer Längengrade.
       var sphereWeaveEnvelope=smoother(sphereAnimatedTravel/.055);
-      var sphereWeaveTravel=stretchedWavePhase(sphereAnimatedTravel,11.5,1.48);
-      var sphereWeaveAmplitude=THREE.MathUtils.lerp(.12,.42,smoother(sphereAnimatedTravel))
+      var sphereWeaveTravel=stretchedWavePhase(sphereAnimatedTravel,13.8,1.62);
+      var sphereWeaveAmplitude=THREE.MathUtils.lerp(.28,.92,smoother(sphereAnimatedTravel))
         *sphereWeaveEnvelope;
       sphereLateralWave+=(
         Math.sin(sphereAnimatedMeta.phase+sphereWeaveTravel+time*WIND.speed*.28)
-        +Math.sin(sphereAnimatedMeta.phase*.47+sphereWeaveTravel*1.83-time*WIND.speed*.17)*.38
+        +Math.sin(sphereAnimatedMeta.phase*.47+sphereWeaveTravel*1.83-time*WIND.speed*.17)*.52
       )*sphereWeaveAmplitude;
       sphereDepthWave+=(
         Math.cos(sphereAnimatedMeta.phase*.83+sphereWeaveTravel*.91+time*WIND.speed*.23)
-        +Math.cos(sphereAnimatedMeta.phase*1.31+sphereWeaveTravel*1.57+time*WIND.speed*.13)*.34
-      )*sphereWeaveAmplitude*.82;
+        +Math.cos(sphereAnimatedMeta.phase*1.31+sphereWeaveTravel*1.57+time*WIND.speed*.13)*.48
+      )*sphereWeaveAmplitude*.9;
       // Keine Auffächerung: Die bestehende Winkelordnung der Faserenden wird
       // bewahrt und nur deren reale Enddrehung entlang der Kugel fortgesetzt.
       var sphereAnimatedAngle=sphereContinuation.startPhi
@@ -1431,8 +1431,16 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var sphereAnimatedTheta=sphereContinuation.startTheta
         +sphereAnimatedMeta.arc/sphereFiberRadius
         +sphereDepthWave/sphereFiberRadius;
-      var sphereAnimatedRadius=sphereFiberRadius
-        +Math.sin(time*WIND.speed*2.43+sphereAnimatedMeta.phase+sphereContinuedTravel*WIND.waveFrequency*.78)*WIND.wave*.08;
+      // Ausgeprägte dreidimensionale Wülste: einzelne Fasergruppen steigen
+      // sichtbar über die Oberfläche, statt nur flach auf ihr zu mäandrieren.
+      var sphereBulgeWave=Math.sin(
+        sphereAnimatedMeta.phase*.71+sphereWeaveTravel*.64+time*WIND.speed*.19
+      );
+      var sphereBulgeCluster=Math.pow(Math.max(0,sphereBulgeWave),2)
+        *THREE.MathUtils.lerp(.08,.34,smoother(sphereAnimatedTravel))
+        *sphereWeaveEnvelope;
+      var sphereAnimatedRadius=sphereFiberRadius+sphereBulgeCluster
+        +Math.sin(time*WIND.speed*2.43+sphereAnimatedMeta.phase+sphereContinuedTravel*WIND.waveFrequency*.78)*WIND.wave*.35;
       var sphereAnimatedSin=Math.sin(sphereAnimatedTheta);
       var sphereLocalX=sphereAnimatedRadius*sphereAnimatedSin*Math.cos(sphereAnimatedAngle);
       var sphereLocalY=sphereAnimatedRadius*Math.cos(sphereAnimatedTheta);
