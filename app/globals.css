@@ -1337,7 +1337,8 @@ body {
   }
 
   .spiral-mobile .spiral-service-card {
-    min-height: auto;
+    min-height: 0;
+    aspect-ratio: 4 / 3;
     padding: 1rem;
     border-radius: 1rem;
   }
