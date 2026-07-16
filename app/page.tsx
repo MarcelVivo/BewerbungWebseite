@@ -8,7 +8,6 @@ import {
   CheckCircle, Zap, Users, Award,
   MessageSquare, Search, Compass, Wrench, Heart, ClipboardList,
 } from 'lucide-react';
-import HomeNavBar from './HomeNavBar';
 import JourneyNavigator from './JourneyNavigator';
 import BrainBackground from './BrainBackground';
 import { buildFlapWord, setFlapWordMode, type FlapLetter } from './lib/splitFlap';
@@ -490,10 +489,10 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
         const ndcY = viewY / (viewZ * tanHalfFovY);
         const screenX = (ndcX * 0.5 + 0.5) * vw;
         const projectedY = 1 - (ndcY * 0.5 + 0.5);
-        // iPhone: in den tatsächlich sichtbaren Bereich unter Navigation
-        // und Safe Area projizieren, damit grosse Flap-Texte oben nicht am
+        // iPhone: in den tatsächlich sichtbaren Bereich unter der Safe Area
+        // projizieren, damit grosse Flap-Texte oben nicht am
         // overflow:hidden der Sticky-Bühne abgeschnitten werden.
-        const mobileTopInset = vw <= 699 ? Math.max(104, vh * 0.14) : 0;
+        const mobileTopInset = vw <= 699 ? Math.max(48, vh * 0.07) : 0;
         const mobileBottomInset = vw <= 699 ? Math.max(24, vh * 0.04) : 0;
         const screenY = mobileTopInset + projectedY * (vh - mobileTopInset - mobileBottomInset);
         const scale = Math.max(0.4, Math.min(1.6, s.referenceViewZ / viewZ));
@@ -1308,20 +1307,15 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#0c0a06] text-[#f4edd8]">
-      <HomeNavBar />
       <JourneyNavigator />
       <BrainBackground introTexts={introWorldTexts} serviceCards={serviceWorldCards} />
 
       {/* ── Hero ── */}
-      <section id="journey-start" className="home-hero relative z-10 min-h-screen overflow-hidden pt-16">
+      <section id="journey-start" className="home-hero relative z-10 min-h-screen overflow-hidden">
         <div
           className={heroScale !== 1 ? 'absolute left-0' : undefined}
           style={heroScale !== 1 ? {
-            // Feste, NICHT skalierte Distanz zur echten (ebenfalls nicht
-            // skalierten) Fixed-Navbar — sonst würde der Abstand zwischen
-            // Navbar und Überschrift mitschrumpfen und die Überschrift
-            // könnte hinter der Navbar verschwinden.
-            top: '4rem',
+            top: 0,
             width: `${REF_WIDTH}px`,
             height: `${REF_HEIGHT}px`,
             transform: `scale(${heroScale})`,
