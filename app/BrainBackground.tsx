@@ -1205,10 +1205,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     }
   }
   for(var sphereFiberIndex=0;sphereFiberIndex<sphereFiberCount;sphereFiberIndex++){
-    var sphereFiberSeed=(Math.sin((sphereFiberIndex+1)*91.731)*43758.5453)%1;
-    sphereFiberSeed=sphereFiberSeed<0?sphereFiberSeed+1:sphereFiberSeed;
-    var sphereFiberPhi=(sphereFiberIndex/sphereFiberCount)*Math.PI*2+(sphereFiberSeed-.5)*.24;
-    var sphereFiberEndTheta=1.05+sphereFiberSeed*1.18;
+    // Keine neue Zufallsstruktur auf der Kugel. Länge, Phase, Farbe und
+    // Laufrichtung stammen ausschließlich von der jeweiligen Originalfaser.
+    var sphereFiberEndTheta=Math.PI*.94;
     var sphereFiberParent=sFibers.length?sFibers[sphereFiberIndex%sFibers.length]:null;
     var sphereFiberParentVertex=sphereFiberParent
       ? sphereFiberParent.start+sphereFiberParent.len-1
@@ -1236,9 +1235,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     for(var sphereFiberSegment=0;sphereFiberSegment<sphereFiberSegments;sphereFiberSegment++){
       var sphereFiberT=sphereFiberSegment/(sphereFiberSegments-1);
       var sphereFiberTheta=.018+sphereFiberEndTheta*sphereFiberT;
-      var sphereFiberWave=Math.sin(sphereFiberT*15+sphereFiberIndex*1.73)*(.014+.055*sphereFiberT);
-      var sphereFiberTwist=(sphereFiberSeed-.5)*.72*sphereFiberT+sphereFiberWave;
-      var sphereFiberAngle=sphereFiberPhi+sphereFiberTwist;
+      // Die Initialwerte werden im Frame aus dem echten Endsegment ersetzt.
+      var sphereFiberAngle=0;
       var sphereFiberSin=Math.sin(sphereFiberTheta);
       var sphereFiberX=sphereFiberRadius*sphereFiberSin*Math.cos(sphereFiberAngle);
       var sphereFiberY=sphereFiberRadius*Math.cos(sphereFiberTheta);
@@ -1264,9 +1262,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       sphereFiberVertexMeta.push({
         fiberIndex:sphereFiberIndex,
         theta:sphereFiberTheta,
-        phi:sphereFiberPhi+(sphereFiberSeed-.5)*.72*sphereFiberT,
         phase:sphereFiberParentPhase,
         travel:sphereFiberT,
+        arc:sphereFiberTheta*sphereFiberRadius,
         parentVertex:sphereFiberParentVertex,
         parentColorOffset:sphereFiberParentColorOffset,
         arcShare:(sphereFiberEndTheta*sphereFiberRadius)/SP.length,
@@ -1316,7 +1314,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var brainToSphereMatrix=new THREE.Matrix4();
   var sphereContinuationEndpoint=new THREE.Vector3();
   var sphereContinuationPrevious=new THREE.Vector3();
-  var sphereContinuationScratch=new THREE.Vector3();
+    var sphereContinuationScratch=new THREE.Vector3();
+  var sphereContinuationDirection=new THREE.Vector3();
+  var sphereContinuationPreviousDirection=new THREE.Vector3();
   var sphereContinuationData=[];
   function updateSphereFibers(time){
     if(lastSphereFiberUpdate>=0&&time-lastSphereFiberUpdate<.028) return;
@@ -1338,44 +1338,52 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       goldStrandVertexLocal(sphereContinuationRef.previousVertex,goldDragScratch,true);
       sphereContinuationPrevious.copy(goldDragScratch).applyMatrix4(brainToSphereMatrix);
       var sphereContinuationTangent=sphereContinuationEndpoint.clone().sub(sphereContinuationPrevious).normalize();
-      var sphereContinuationDirection=sphereContinuationEndpoint.clone().normalize();
+      sphereContinuationDirection.copy(sphereContinuationEndpoint).normalize();
+      sphereContinuationPreviousDirection.copy(sphereContinuationPrevious).normalize();
+      var sphereContinuationStartPhi=Math.atan2(sphereContinuationDirection.z,sphereContinuationDirection.x);
+      var sphereContinuationPreviousPhi=Math.atan2(sphereContinuationPreviousDirection.z,sphereContinuationPreviousDirection.x);
+      var sphereContinuationPhiStep=THREE.MathUtils.euclideanModulo(
+        sphereContinuationStartPhi-sphereContinuationPreviousPhi+Math.PI,
+        Math.PI*2
+      )-Math.PI;
+      var sphereContinuationSourceSpacing=Math.max(.0001,sphereContinuationEndpoint.distanceTo(sphereContinuationPrevious));
       sphereContinuationData.push({
         endpoint:sphereContinuationEndpoint.clone(),
         tangent:sphereContinuationTangent,
         startTheta:Math.acos(THREE.MathUtils.clamp(sphereContinuationDirection.y,-1,1)),
-        startPhi:Math.atan2(sphereContinuationDirection.z,sphereContinuationDirection.x)
+        startPhi:sphereContinuationStartPhi,
+        // Exakt die lokale Drehgeschwindigkeit des letzten Originalsegments,
+        // damit Nachbarschaft und Bündelstruktur unverändert weiterlaufen.
+        phiPerUnit:THREE.MathUtils.clamp(sphereContinuationPhiStep/sphereContinuationSourceSpacing,-1.15,1.15)
       });
     }
     for(var sphereAnimatedIndex=0;sphereAnimatedIndex<sphereFiberVertexMeta.length;sphereAnimatedIndex++){
       var sphereAnimatedMeta=sphereFiberVertexMeta[sphereAnimatedIndex];
       var sphereAnimatedTravel=sphereAnimatedMeta.travel;
       var sphereContinuation=sphereContinuationData[sphereAnimatedMeta.fiberIndex];
-      // Am Pol exakt null, danach dieselbe Wellenfamilie wie der Elternstrang.
-      var sphereAnimatedEnvelope=smoother(sphereAnimatedTravel/.18);
+      // Die Originalwellen laufen mit demselben fortgesetzten Wegparameter
+      // weiter; es gibt keine separate Kugel-Wellenanimation.
       var sphereContinuedTravel=1+sphereAnimatedTravel*sphereAnimatedMeta.arcShare;
       // Identische beide Wellenformeln des oberen Strangs, nur in die lokale
       // Tangentialebene der Kugeloberfläche übertragen.
       var sphereLateralWave=(
         Math.sin(time*WIND.speed*2.95+sphereContinuedTravel*WIND.waveFrequency+sphereAnimatedMeta.phase)*WIND.wave
         +Math.sin(time*WIND.speed*1.31+sphereAnimatedMeta.phase)*WIND.sway*.08
-      )*sphereAnimatedEnvelope;
+      )*sphereContinuedTravel*sphereContinuedTravel;
       var sphereDepthWave=(
         Math.cos(time*WIND.speed*2.43+sphereContinuedTravel*WIND.waveFrequency*.78+sphereAnimatedMeta.phase)*WIND.wave*.82
         +Math.cos(time*WIND.speed*1.07+sphereAnimatedMeta.phase)*WIND.sway*.06
-      )*sphereAnimatedEnvelope;
-      var spherePhiDelta=THREE.MathUtils.euclideanModulo(
-        sphereAnimatedMeta.phi-sphereContinuation.startPhi+Math.PI,
-        Math.PI*2
-      )-Math.PI;
-      var sphereSpreadEnvelope=smoother(sphereAnimatedTravel/.34);
+      )*sphereContinuedTravel*sphereContinuedTravel;
+      // Keine Auffächerung: Die bestehende Winkelordnung der Faserenden wird
+      // bewahrt und nur deren reale Enddrehung entlang der Kugel fortgesetzt.
       var sphereAnimatedAngle=sphereContinuation.startPhi
-        +spherePhiDelta*sphereSpreadEnvelope
+        +sphereContinuation.phiPerUnit*sphereAnimatedMeta.arc
         +sphereLateralWave/sphereFiberRadius;
       var sphereAnimatedTheta=sphereContinuation.startTheta
-        +(sphereAnimatedMeta.theta-sphereContinuation.startTheta)*sphereAnimatedTravel
+        +sphereAnimatedMeta.arc/sphereFiberRadius
         +sphereDepthWave/sphereFiberRadius;
       var sphereAnimatedRadius=sphereFiberRadius
-        +Math.sin(time*WIND.speed*2.43+sphereAnimatedMeta.phase+sphereContinuedTravel*WIND.waveFrequency*.78)*WIND.wave*.08*sphereAnimatedEnvelope;
+        +Math.sin(time*WIND.speed*2.43+sphereAnimatedMeta.phase+sphereContinuedTravel*WIND.waveFrequency*.78)*WIND.wave*.08;
       var sphereAnimatedSin=Math.sin(sphereAnimatedTheta);
       var sphereLocalX=sphereAnimatedRadius*sphereAnimatedSin*Math.cos(sphereAnimatedAngle);
       var sphereLocalY=sphereAnimatedRadius*Math.cos(sphereAnimatedTheta);
@@ -1394,18 +1402,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       animatedPointPositions[sphereAnimatedOffset+1]=sphereTransformElements[1]*sphereLocalX+sphereTransformElements[5]*sphereLocalY+sphereTransformElements[9]*sphereLocalZ+sphereTransformElements[13];
       animatedPointPositions[sphereAnimatedOffset+2]=sphereTransformElements[2]*sphereLocalX+sphereTransformElements[6]*sphereLocalY+sphereTransformElements[10]*sphereLocalZ+sphereTransformElements[14];
 
-      // Wandernder Nervenimpuls setzt die Bewegung des oberen Strangs über
-      // den Kontaktpunkt hinweg entlang der Kugelfaser fort.
-      var spherePulsePhase=((time*.24-sphereAnimatedTravel*.92+sphereAnimatedMeta.phase/(Math.PI*2))%1+1)%1;
-      var spherePulse=Math.exp(-Math.pow((spherePulsePhase-.5)/.055,2))*1.65;
       var sphereParentColorOffset=sphereAnimatedMeta.parentColorOffset;
       var sphereLiveRed=sphereParentColorOffset>=0?parentStrandColors[sphereParentColorOffset]:sphereAnimatedMeta.red;
       var sphereLiveGreen=sphereParentColorOffset>=0?parentStrandColors[sphereParentColorOffset+1]:sphereAnimatedMeta.green;
       var sphereLiveBlue=sphereParentColorOffset>=0?parentStrandColors[sphereParentColorOffset+2]:sphereAnimatedMeta.blue;
-      var sphereBaseLight=1+spherePulse;
-      animatedPointColors[sphereAnimatedOffset]=sphereLiveRed*sphereBaseLight;
-      animatedPointColors[sphereAnimatedOffset+1]=sphereLiveGreen*sphereBaseLight;
-      animatedPointColors[sphereAnimatedOffset+2]=sphereLiveBlue*sphereBaseLight;
+      animatedPointColors[sphereAnimatedOffset]=sphereLiveRed;
+      animatedPointColors[sphereAnimatedOffset+1]=sphereLiveGreen;
+      animatedPointColors[sphereAnimatedOffset+2]=sphereLiveBlue;
     }
     var animatedLinePositions=linesObj.geometry.attributes.position.array;
     var animatedLineColors=linesObj.geometry.attributes.color.array;
