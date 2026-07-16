@@ -181,7 +181,6 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
   const introFlapWorldRefs = useRef<(HTMLDivElement | null)[]>([]);
   const introFlapSmallRefs = useRef<(HTMLDivElement | null)[]>([]);
   const introFlapBigRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const mobileIntroFlapRefs = useRef<(HTMLHeadingElement | null)[]>([]);
 
   // Neural Glass Panels: die vier Karten bilden EIN zusammenstehendes
   // 2×2-Element (CardsHelixGroup), fixiert an EINER festen Helix-Position
@@ -305,38 +304,6 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
     rafId = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(rafId);
   }, []);
-
-  // Mobile Split-Flap: Die iPhone-Darstellung bleibt im stabilen normalen
-  // Dokumentfluss, während ihre fünf Introtexte beim Scrollen durch Zeichen
-  // laufen und kurz nach dem Scroll-Stopp wieder lesbar einrasten.
-  useEffect(() => {
-    if (!window.matchMedia('(max-width: 699px)').matches) return;
-
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const words = INTRO_SEQUENCE.map((text, index) => {
-      const element = mobileIntroFlapRefs.current[index];
-      return element ? buildFlapWord(element, text) : [];
-    });
-
-    words.forEach((letters) => setFlapWordMode(letters, 'settle', true));
-
-    let settleTimer = 0;
-    const onScroll = () => {
-      if (reduced) return;
-      window.clearTimeout(settleTimer);
-      words.forEach((letters) => setFlapWordMode(letters, 'spin', false));
-      settleTimer = window.setTimeout(() => {
-        words.forEach((letters) => setFlapWordMode(letters, 'settle', false));
-      }, 180);
-    };
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.clearTimeout(settleTimer);
-      words.forEach((letters) => setFlapWordMode(letters, 'settle', true));
-    };
-  }, [lang]);
 
   // Die Kartenüberschrift ist Teil desselben projizierten DOM-Weltobjekts
   // wie die vier Karten. Sie besitzt deshalb keine eigene Scroll- oder
@@ -1135,10 +1102,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
                       {MobileIcon ? <MobileIcon size={15} strokeWidth={1.8} /> : null}
                     </span>
                   </span>
-                  <h3
-                    ref={(el) => { mobileIntroFlapRefs.current[i] = el; }}
-                    className={`mobile-intro-flap intro-flap-word text-2xl font-bold text-white leading-tight tracking-[-0.035em] drop-shadow ${chakraPetch.className}`}
-                  >
+                  <h3 className="text-2xl font-bold text-white leading-tight tracking-[-0.035em] drop-shadow">
                     {card.title}
                   </h3>
                   <span className="spiral-intro-rule" />

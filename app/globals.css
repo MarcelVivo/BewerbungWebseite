@@ -1378,15 +1378,24 @@ body {
 @media (max-width: 699px) {
   .spiral-section {
     min-height: auto;
-    padding: 4rem 0;
+    padding: 0;
   }
 
   .spiral-sticky {
-    display: none;
+    display: block;
   }
 
   .spiral-mobile {
     display: block;
+    padding-top: 100vh;
+  }
+
+  .spiral-cards-world {
+    display: none;
+  }
+
+  .spiral-mobile > div > .spiral-intro-statement {
+    display: none;
   }
 
   .spiral-service-stations {
@@ -1488,11 +1497,6 @@ body {
 
   .spiral-mobile .spiral-intro-statement h3 {
     font-size: clamp(1.75rem, 10vw, 2.35rem);
-  }
-
-  .spiral-mobile .mobile-intro-flap {
-    flex-wrap: wrap;
-    white-space: normal;
   }
 
   .spiral-mobile-services .spiral-service-card .ngp-core {

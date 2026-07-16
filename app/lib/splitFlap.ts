@@ -26,7 +26,7 @@ export function buildFlapWord(container: HTMLElement, text: string): FlapLetter[
 }
 
 function startFlapLetter(letter: FlapLetter, reduced: boolean) {
-  if (!FLAP_SCRAMBLE_CHARS.includes(letter.target.toUpperCase())) return;
+  if (!FLAP_SCRAMBLE_CHARS.includes(letter.target)) return;
   if (reduced) {
     letter.glyph.textContent = letter.target;
     return;
