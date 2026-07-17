@@ -478,8 +478,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
            ringSpread:0.1, offX:0, offY:0, offZ:0,
            droop:1.5, frayStart:0.98, fraySpread:0.12 };
   // Anteil (0..1) des Bündels, ab dem Fasern seitlich/nach vorne ausbrechen
-  // dürfen. Darüber bleibt der Strang ein ruhiges, gerades Bündel.
-  var BREAKOUT_START=0.985;
+  // dürfen. Niedrig gesetzt, damit die Verdrehung/Verwebung (der "Wulst"-
+  // Look aus der Rot/Blau-Assimilation) über die gesamte sichtbare Länge
+  // aktiv bleibt statt in einen ruhigen, geraden Abschnitt überzugehen.
+  var BREAKOUT_START=0.12;
   // Trichter: Jede Faser startet an einem echten goldenen Vertex im Stumpf-
   // Bereich, läuft über einen organischen Fächer zu einem individuellen Punkt
   // auf dem unteren Auslassring und ordnet sich erst danach weich im Bündel.
