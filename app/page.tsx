@@ -318,8 +318,10 @@ function ValueImpactWorld({ lang }: { lang: 'de' | 'en' }) {
       const exitProgress = Math.max(0, Math.min(1, cameraState.exitProgress || 0));
       // Am Navigationsstopp "Dein Mehrwert" (kurz nach der Kartenstation)
       // ist die Gruppe bereits vollständig lesbar; direkt an der
-      // Karten-Totalen bleibt sie trotzdem komplett hinter der Kamera.
-      const revealRaw = Math.max(0, Math.min(1, exitProgress / 0.22));
+      // Karten-Totalen bleibt sie trotzdem komplett hinter der Kamera. Die
+      // ersten 6 % der Ausfahrt gehören ausschliesslich dem Ausblenden der
+      // Lösungskarten; erst danach fährt die Mehrwert-Einheit ins Sichtfeld.
+      const revealRaw = Math.max(0, Math.min(1, (exitProgress - 0.06) / 0.16));
       const reveal = revealRaw * revealRaw * (3 - 2 * revealRaw);
       const depth = exitProgress * exitProgress * (3 - 2 * exitProgress);
       const translateY = (1 - reveal) * 112;
@@ -460,7 +462,17 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       const viewZ = relX * fx + relY * fy + relZ * fz;
 
       const distance = Math.abs(cam.cameraLookY - stationPos.y);
-      const visibility = Math.max(0, Math.min(1, 1 - distance / fadeWindow));
+      const stationVisibility = Math.max(0, Math.min(1, 1 - distance / fadeWindow));
+
+      // Nach dem Helix-Stopp bleibt cameraLookY absichtlich auf Kartenhöhe,
+      // während nur der Kameraradius wächst. Eine reine Y-Distanzprüfung
+      // hielt die Karten deshalb während der gesamten Tal-Ausfahrt sichtbar.
+      // Der echte Ausfahrfortschritt blendet die komplette Kartengruppe
+      // inklusive "LÖSUNGEN" nun aus, bevor "Dein Mehrwert" aufsteigt.
+      const exitProgress = Math.max(0, Math.min(1, cam.exitProgress || 0));
+      const exitFadeRaw = Math.max(0, Math.min(1, (exitProgress - 0.015) / 0.075));
+      const exitFade = 1 - exitFadeRaw * exitFadeRaw * (3 - 2 * exitFadeRaw);
+      const visibility = stationVisibility * exitFade;
 
       if (viewZ <= 0.001 || visibility <= 0) {
         group.style.opacity = '0';
