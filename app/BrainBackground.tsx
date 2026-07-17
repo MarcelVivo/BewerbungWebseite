@@ -2291,19 +2291,14 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     addSatelliteBrain(-5.7,-.62+DESKTOP_HERO_BRAIN_LIFT,-.7,.35,SATELLITE_METALS.red);
     addSatelliteBrain(5.7,-.44+DESKTOP_HERO_BRAIN_LIFT,-.9,2.7,SATELLITE_METALS.blue);
   }
-  // Das grüne Satellitengehirn sitzt auf halber realer Höhe des goldenen
-  // Hauptstrangs. Seine horizontale Position wird in die linke
-  // Kameratangente dieser Station gelegt: Es bleibt dadurch beim
-  // Vorbeifahren sichtbar links im freien Bildraum, unabhängig davon, wie
-  // weit sich die Kamera bis zu dieser Höhe bereits um den Strang gedreht hat.
-  var greenSatelliteY=BRAIN_BASE_Y-SP.length*brain.scale.x*.5;
-  var greenSatelliteProgress=THREE.MathUtils.clamp(
-    (cameraTargetStart-greenSatelliteY)/cameraTravel,
-    0,
-    1
-  );
-  var greenSatelliteAngle=greenSatelliteProgress*Math.PI*2;
-  var greenSatelliteRadius=isMobile?2.35:5.7;
+  // Das grüne Satellitengehirn wird bewusst auf die endgültige
+  // Kameraperspektive ausgerichtet: weit entlang ihrer linken Tangente und
+  // oberhalb des sichtbaren Bildrands. In der Mehrwert-Totalen bleibt so nur
+  // sein schräg nach links oben auslaufender grüner Nervenstrang sichtbar,
+  // das Gehirn selbst liegt vollständig ausserhalb des Bildes.
+  var greenSatelliteY=BRAIN_BASE_Y-SP.length*brain.scale.x*.26;
+  var greenSatelliteAngle=cameraHelixExitStart*Math.PI*2;
+  var greenSatelliteRadius=isMobile?8.2:13.4;
   addSatelliteBrain(
     -Math.cos(greenSatelliteAngle)*greenSatelliteRadius,
     greenSatelliteY,
