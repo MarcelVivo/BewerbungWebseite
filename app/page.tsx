@@ -162,12 +162,12 @@ const VALUE_DIAGRAMS: Record<'de' | 'en', ValueDiagramCopy[]> = {
   de: [
     {
       code: '01', eyebrow: 'MARKE',
-      result: '2,5×', resultLabel: 'ANFRAGEN',
+      result: '+150 %', resultLabel: 'ANFRAGEN',
       accent: '#c89a3d', accentRgb: '200,154,61',
     },
     {
       code: '02', eyebrow: 'WEB',
-      result: '4×', resultLabel: 'SCHNELLER',
+      result: '−75 %', resultLabel: 'LADEZEIT',
       accent: '#4d7fbf', accentRgb: '77,127,191',
     },
     {
@@ -184,12 +184,12 @@ const VALUE_DIAGRAMS: Record<'de' | 'en', ValueDiagramCopy[]> = {
   en: [
     {
       code: '01', eyebrow: 'BRAND',
-      result: '2.5×', resultLabel: 'ENQUIRIES',
+      result: '+150%', resultLabel: 'ENQUIRIES',
       accent: '#c89a3d', accentRgb: '200,154,61',
     },
     {
       code: '02', eyebrow: 'WEB',
-      result: '4×', resultLabel: 'FASTER',
+      result: '−75%', resultLabel: 'LOAD TIME',
       accent: '#4d7fbf', accentRgb: '77,127,191',
     },
     {
@@ -271,7 +271,7 @@ function animateValueNumbers(root: HTMLElement, lang: 'de' | 'en', reduced: bool
   return () => cancelAnimationFrame(rafId);
 }
 
-function ValueDiagramGraphic({ index }: { index: number }) {
+function ValueDiagramGraphic({ index, lang }: { index: number; lang: 'de' | 'en' }) {
   if (index === 0) {
     return (
       <svg className="value-chart-svg" viewBox="0 0 280 122" aria-hidden="true">
@@ -282,6 +282,8 @@ function ValueDiagramGraphic({ index }: { index: number }) {
         <path className="value-chart-accent value-chart-arrow" d="M199 14L210 15L207 26" />
         <circle className="value-chart-dot" cx="67" cy="65" r="4" />
         <circle className="value-chart-dot" cx="208" cy="16" r="4" />
+        <text className="value-chart-label" x="38" y="119">1×</text>
+        <text className="value-chart-label value-chart-label--accent" x="188" y="119">{lang === 'de' ? '2,5×' : '2.5×'}</text>
       </svg>
     );
   }
@@ -297,6 +299,8 @@ function ValueDiagramGraphic({ index }: { index: number }) {
         <circle className="value-chart-dot value-pulse-dot" cx="206" cy="62" r="5" />
         <path className="value-chart-accent value-flow-line" d="M116 62H163" pathLength="1" />
         <path className="value-chart-accent" d="M155 54L164 62L155 70" />
+        <text className="value-chart-label" x="57" y="117">12 s</text>
+        <text className="value-chart-label value-chart-label--accent" x="195" y="117">3 s</text>
       </svg>
     );
   }
@@ -308,6 +312,8 @@ function ValueDiagramGraphic({ index }: { index: number }) {
         <path className="value-chart-line value-draw-line" d="M22 29C62 33 76 47 108 54C139 61 153 83 183 86C214 89 234 95 258 98" pathLength="1" />
         <path className="value-chart-accent value-draw-line value-draw-line--delay" d="M22 29C61 29 77 40 108 40C139 40 153 54 183 54C213 54 235 63 258 63" pathLength="1" />
         {[22, 108, 183, 258].map((x, i) => <circle key={x} className={i === 3 ? 'value-chart-dot value-pulse-dot' : 'value-chart-dot'} cx={x} cy={[29, 40, 54, 63][i]} r="4" />)}
+        <text className="value-chart-label" x="14" y="117">30 h</text>
+        <text className="value-chart-label value-chart-label--accent" x="239" y="117">8 h</text>
       </svg>
     );
   }
@@ -319,6 +325,8 @@ function ValueDiagramGraphic({ index }: { index: number }) {
       <path className="value-chart-line" d="M126 35H164V61H204V87H256" />
       {[126, 164, 204, 256].map((x, i) => <circle key={x} className={i === 3 ? 'value-chart-dot value-pulse-dot' : 'value-chart-dot'} cx={x} cy={[35, 61, 87, 87][i]} r="5" />)}
       <path className="value-chart-accent value-flow-line" d="M126 35H164V61H204V87H256" pathLength="1" />
+      <text className="value-chart-label" x="114" y="117">100 h</text>
+      <text className="value-chart-label value-chart-label--accent" x="238" y="117">30 h</text>
     </svg>
   );
 }
@@ -352,7 +360,7 @@ function ValueImpactContent({
               <span className="value-diagram-code">{diagram.code}</span>
               <span className="value-diagram-eyebrow">{diagram.eyebrow}</span>
             </header>
-            <ValueDiagramGraphic index={index} />
+            <ValueDiagramGraphic index={index} lang={lang} />
             <div className="value-diagram-result">
               <strong><AnimatedValueNumber label={diagram.result} delay={index * 120} /></strong>
               <span>{diagram.resultLabel}</span>
@@ -434,7 +442,7 @@ function ValueImpactWorld({ lang }: { lang: 'de' | 'en' }) {
       const opacity = Math.max(0, Math.min(1, (revealRaw - 0.08) / 0.44));
 
       world.style.opacity = opacity.toFixed(3);
-      world.style.transform = `translate3d(-50%, ${translateY.toFixed(2)}vh, 0) perspective(1400px) rotateX(${rotateX.toFixed(2)}deg) scale(${scale.toFixed(4)})`;
+      world.style.transform = `translate3d(-50%, calc(-50% + ${translateY.toFixed(2)}vh), 0) perspective(1400px) rotateX(${rotateX.toFixed(2)}deg) scale(${scale.toFixed(4)})`;
       world.style.pointerEvents = opacity > 0.92 ? 'auto' : 'none';
       world.setAttribute('aria-hidden', opacity > 0.65 ? 'false' : 'true');
 
