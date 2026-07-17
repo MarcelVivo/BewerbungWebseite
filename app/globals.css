@@ -937,88 +937,93 @@ body {
 }
 
 .value-system-input-track,
-.value-system-output-track {
+.value-system-sync-track {
   fill: none;
   stroke: #fff;
-  stroke-width: 2.3;
-  opacity: 0.16;
+  stroke-width: 2.2;
+  opacity: 0.14;
 }
 
 .value-system-input,
-.value-system-output {
+.value-system-sync-line {
   fill: none;
   stroke: #fff;
-  stroke-width: 3;
+  stroke-width: 2.8;
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
 }
 
-.value-system-task-card,
-.value-system-bar {
+.value-system-silo,
+.value-system-database,
+.value-system-module {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.value-system-silo-shell {
   fill: #fff;
   stroke: #fff;
   stroke-width: 1.4;
 }
 
-.value-system-task-mark {
+.value-system-silo-line {
   fill: none;
   stroke: #050505;
-  stroke-width: 1.8;
+  stroke-width: 1.5;
 }
 
-.value-system-core,
-.value-system-task,
-.value-system-bar {
+.value-system-packet {
+  fill: var(--value-accent);
+  stroke: #fff;
+  stroke-width: 1.8;
   transform-box: fill-box;
   transform-origin: center;
 }
 
-.value-system-core-shell {
+.value-system-db-body,
+.value-system-db-top {
   fill: #fff;
   stroke: var(--value-accent);
   stroke-width: 2;
   filter: drop-shadow(0 0 7px rgba(255,255,255,0.24));
 }
 
-.value-system-core-grid {
+.value-system-db-separator {
   fill: none;
   stroke: #050505;
   stroke-width: 1.5;
-  opacity: 0.72;
+  opacity: 0.62;
 }
 
-.value-system-core-node {
+.value-system-db-text {
+  fill: #050505;
+  stroke: none;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.value-system-sync-hub {
   fill: var(--value-accent);
   stroke: #fff;
-  stroke-width: 2;
-}
-
-.value-system-baseline {
-  fill: none;
-  stroke: rgba(255,255,255,0.24);
-  stroke-width: 1.5;
-}
-
-.value-system-bar {
-  transform-origin: center bottom;
-}
-
-.value-system-bar--3 {
-  stroke: var(--value-accent);
   stroke-width: 2;
   filter: drop-shadow(0 0 7px rgba(var(--value-accent-rgb),0.34));
 }
 
-.value-system-arrow {
-  fill: none;
+.value-system-module-shell {
+  fill: #fff;
   stroke: #fff;
-  stroke-width: 3;
+  stroke-width: 1.5;
 }
 
-.value-system-target {
-  fill: var(--value-accent);
-  stroke: #fff;
-  stroke-width: 2.4;
+.value-system-check {
+  fill: none;
+  stroke: var(--value-accent);
+  stroke-width: 2.8;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  filter: drop-shadow(0 0 4px rgba(var(--value-accent-rgb),0.42));
 }
 
 .value-ai-input-track,
@@ -1217,46 +1222,83 @@ body {
 }
 
 .is-revealed .value-diagram:nth-child(3) .value-system-input {
-  animation: value-ai-input-story 6.8s cubic-bezier(.2,.68,.3,1) infinite;
+  animation: value-system-input-story 6.8s cubic-bezier(.2,.68,.3,1) infinite;
 }
 
-.is-revealed .value-diagram:nth-child(3) .value-system-task {
-  animation: value-ai-task-story 6.8s ease-in-out infinite;
+.is-revealed .value-diagram:nth-child(3) .value-system-silo {
+  animation: value-system-silo-story 6.8s ease-in-out infinite;
 }
 
-.is-revealed .value-diagram:nth-child(3) .value-system-input--2,
-.is-revealed .value-diagram:nth-child(3) .value-system-task--2 {
-  animation-delay: 100ms;
+.is-revealed .value-diagram:nth-child(3) .value-system-silo--2 {
+  animation-delay: 90ms;
 }
 
-.is-revealed .value-diagram:nth-child(3) .value-system-input--3,
-.is-revealed .value-diagram:nth-child(3) .value-system-task--3 {
-  animation-delay: 200ms;
+.is-revealed .value-diagram:nth-child(3) .value-system-silo--3 {
+  animation-delay: 180ms;
 }
 
-.is-revealed .value-diagram:nth-child(3) .value-system-core {
-  animation: value-ai-core-story 6.8s ease-in-out infinite;
+.is-revealed .value-diagram:nth-child(3) .value-system-silo--4 {
+  animation-delay: 270ms;
 }
 
-.is-revealed .value-diagram:nth-child(3) .value-system-output {
-  animation: value-system-output-story 6.8s cubic-bezier(.2,.68,.3,1) infinite;
+.is-revealed .value-diagram:nth-child(3) .value-system-packet {
+  animation: value-system-packet-story 6.8s cubic-bezier(.22,.68,.3,1) infinite;
 }
 
-.is-revealed .value-diagram:nth-child(3) .value-system-bar {
-  animation: value-system-bar-story 6.8s cubic-bezier(.2,.72,.28,1) infinite;
+.is-revealed .value-diagram:nth-child(3) .value-system-packet--2 {
+  animation-delay: 90ms;
 }
 
-.is-revealed .value-diagram:nth-child(3) .value-system-bar--2 {
-  animation-delay: 110ms;
+.is-revealed .value-diagram:nth-child(3) .value-system-packet--3 {
+  animation-delay: 180ms;
 }
 
-.is-revealed .value-diagram:nth-child(3) .value-system-bar--3 {
-  animation-delay: 220ms;
+.is-revealed .value-diagram:nth-child(3) .value-system-packet--4 {
+  animation-delay: 270ms;
 }
 
-.is-revealed .value-diagram:nth-child(3) .value-system-arrow,
-.is-revealed .value-diagram:nth-child(3) .value-system-target {
-  animation: value-ai-target-story 6.8s ease-in-out infinite;
+.is-revealed .value-diagram:nth-child(3) .value-system-database {
+  animation: value-system-database-story 6.8s ease-in-out infinite;
+}
+
+.is-revealed .value-diagram:nth-child(3) .value-system-sync-line {
+  animation: value-system-sync-story 6.8s cubic-bezier(.2,.68,.3,1) infinite;
+}
+
+.is-revealed .value-diagram:nth-child(3) .value-system-sync-hub {
+  animation: value-system-hub-story 6.8s ease-in-out infinite;
+}
+
+.is-revealed .value-diagram:nth-child(3) .value-system-module {
+  animation: value-system-module-story 6.8s cubic-bezier(.2,.72,.28,1) infinite;
+}
+
+.is-revealed .value-diagram:nth-child(3) .value-system-module--2 {
+  animation-delay: 90ms;
+}
+
+.is-revealed .value-diagram:nth-child(3) .value-system-module--3 {
+  animation-delay: 180ms;
+}
+
+.is-revealed .value-diagram:nth-child(3) .value-system-module--4 {
+  animation-delay: 270ms;
+}
+
+.is-revealed .value-diagram:nth-child(3) .value-system-check {
+  animation: value-system-check-story 6.8s cubic-bezier(.2,.72,.28,1) infinite;
+}
+
+.is-revealed .value-diagram:nth-child(3) .value-system-module--2 .value-system-check {
+  animation-delay: 90ms;
+}
+
+.is-revealed .value-diagram:nth-child(3) .value-system-module--3 .value-system-check {
+  animation-delay: 180ms;
+}
+
+.is-revealed .value-diagram:nth-child(3) .value-system-module--4 .value-system-check {
+  animation-delay: 270ms;
 }
 
 .is-revealed .value-diagram:nth-child(4) .value-ai-input {
@@ -1434,17 +1476,55 @@ body {
   100% { opacity: 0.12; filter: none; }
 }
 
-@keyframes value-system-output-story {
-  0%, 28% { opacity: 0; stroke-dashoffset: 1; filter: none; }
-  62%, 86% { opacity: 1; stroke-dashoffset: 0; filter: drop-shadow(0 0 6px rgba(var(--value-accent-rgb),0.4)); }
+@keyframes value-system-input-story {
+  0%, 4% { opacity: 0; stroke-dashoffset: 1; }
+  27%, 86% { opacity: 0.76; stroke-dashoffset: 0; }
+  100% { opacity: 0; stroke-dashoffset: 1; }
+}
+
+@keyframes value-system-silo-story {
+  0% { opacity: 0.2; transform: translateY(2px) scale(0.92); }
+  8%, 24% { opacity: 1; transform: translateY(0) scale(1); }
+  34%, 86% { opacity: 0.36; transform: translateY(0) scale(0.94); }
+  100% { opacity: 0.16; transform: translateY(2px) scale(0.92); }
+}
+
+@keyframes value-system-packet-story {
+  0%, 7% { opacity: 0; transform: translate(0, 0) scale(0.7); }
+  12% { opacity: 1; transform: translate(0, 0) scale(1); }
+  30% { opacity: 1; transform: translate(var(--system-travel-x), var(--system-travel-y)) scale(1); }
+  34%, 100% { opacity: 0; transform: translate(var(--system-travel-x), var(--system-travel-y)) scale(0.6); }
+}
+
+@keyframes value-system-database-story {
+  0%, 18% { opacity: 0.28; transform: scale(0.92); filter: none; }
+  34% { opacity: 1; transform: scale(1.06); filter: drop-shadow(0 0 10px rgba(var(--value-accent-rgb),0.54)); }
+  42%, 86% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 5px rgba(var(--value-accent-rgb),0.3)); }
+  100% { opacity: 0.22; transform: scale(0.92); filter: none; }
+}
+
+@keyframes value-system-sync-story {
+  0%, 34% { opacity: 0; stroke-dashoffset: 1; filter: none; }
+  58%, 86% { opacity: 1; stroke-dashoffset: 0; filter: drop-shadow(0 0 6px rgba(var(--value-accent-rgb),0.38)); }
   100% { opacity: 0; stroke-dashoffset: 1; filter: none; }
 }
 
-@keyframes value-system-bar-story {
-  0%, 28% { opacity: 0.1; transform: scaleY(0.04); }
-  58%, 86% { opacity: 1; transform: scaleY(1); }
-  94% { opacity: 0.58; transform: scaleY(1); }
-  100% { opacity: 0; transform: scaleY(0.04); }
+@keyframes value-system-hub-story {
+  0%, 34% { opacity: 0.12; filter: none; }
+  54%, 86% { opacity: 1; filter: drop-shadow(0 0 8px rgba(var(--value-accent-rgb),0.82)); }
+  100% { opacity: 0.12; filter: none; }
+}
+
+@keyframes value-system-module-story {
+  0%, 42% { opacity: 0.12; transform: scale(0.84); }
+  62%, 86% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0.12; transform: scale(0.84); }
+}
+
+@keyframes value-system-check-story {
+  0%, 49% { opacity: 0; stroke-dashoffset: 1; }
+  66%, 86% { opacity: 1; stroke-dashoffset: 0; }
+  100% { opacity: 0; stroke-dashoffset: 1; }
 }
 
 @keyframes value-story-source-label {
@@ -2508,12 +2588,12 @@ body {
   .is-revealed .value-speed-ring--fast,
   .is-revealed .value-speed-needle-after,
   .is-revealed .value-system-input,
-  .is-revealed .value-system-output,
-  .is-revealed .value-system-task,
-  .is-revealed .value-system-core,
-  .is-revealed .value-system-bar,
-  .is-revealed .value-system-arrow,
-  .is-revealed .value-system-target,
+  .is-revealed .value-system-silo,
+  .is-revealed .value-system-database,
+  .is-revealed .value-system-sync-line,
+  .is-revealed .value-system-sync-hub,
+  .is-revealed .value-system-module,
+  .is-revealed .value-system-check,
   .is-revealed .value-ai-input,
   .is-revealed .value-ai-output,
   .is-revealed .value-ai-task,
@@ -2533,22 +2613,25 @@ body {
   .is-revealed .value-flow-line,
   .is-revealed .value-speed-ring--fast,
   .is-revealed .value-system-input,
-  .is-revealed .value-system-output,
+  .is-revealed .value-system-sync-line,
+  .is-revealed .value-system-check,
   .is-revealed .value-ai-input,
   .is-revealed .value-ai-output {
     stroke-dashoffset: 0 !important;
   }
 
   .is-revealed .value-speed-needle-after,
-  .is-revealed .value-system-task,
-  .is-revealed .value-system-core,
+  .is-revealed .value-system-silo,
+  .is-revealed .value-system-database,
+  .is-revealed .value-system-module,
   .is-revealed .value-ai-task,
   .is-revealed .value-ai-core {
     transform: rotate(0deg) !important;
   }
 
-  .is-revealed .value-system-bar {
-    transform: scaleY(1) !important;
+  .is-revealed .value-system-packet {
+    animation: none !important;
+    opacity: 0 !important;
   }
 
   .is-revealed .value-ai-packet {

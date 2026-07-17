@@ -333,37 +333,58 @@ function ValueDiagramGraphic({ index, lang }: { index: number; lang: 'de' | 'en'
   }
 
   if (index === 2) {
+    const silos = [
+      { x: 12, y: 21, packetX: 39, packetY: 32, travelX: 63, travelY: 8 },
+      { x: 49, y: 13, packetX: 76, packetY: 24, travelX: 26, travelY: 23 },
+      { x: 12, y: 71, packetX: 39, packetY: 82, travelX: 63, travelY: -12 },
+      { x: 49, y: 79, packetX: 76, packetY: 90, travelX: 26, travelY: -12 },
+    ];
+    const modules = [
+      { x: 202, y: 20 },
+      { x: 239, y: 20 },
+      { x: 202, y: 72 },
+      { x: 239, y: 72 },
+    ];
+
     return (
       <svg className="value-chart-svg" viewBox="0 0 280 122" aria-hidden="true">
-        <path className="value-system-input-track" d="M42 27H65L92 45M42 61H92M42 95H65L92 77" />
-        <path className="value-system-input value-system-input--1" d="M42 27H65L92 45" pathLength="1" />
-        <path className="value-system-input value-system-input--2" d="M42 61H92" pathLength="1" />
-        <path className="value-system-input value-system-input--3" d="M42 95H65L92 77" pathLength="1" />
+        <path className="value-system-input-track" d="M39 32L102 40M76 24L102 47M39 82L102 70M76 90L102 78" />
+        <path className="value-system-input" d="M39 32L102 40M76 24L102 47M39 82L102 70M76 90L102 78" pathLength="1" />
 
-        {[19, 53, 87].map((y, index) => (
-          <g key={y} className={`value-system-task value-system-task--${index + 1}`}>
-            <rect className="value-system-task-card" x="13" y={y} width="29" height="16" rx="3" />
-            <path className="value-system-task-mark" d={`M20 ${y + 6}H35M20 ${y + 11}H30`} />
+        {silos.map((silo, siloIndex) => (
+          <g key={`${silo.x}-${silo.y}`} className={`value-system-silo value-system-silo--${siloIndex + 1}`}>
+            <rect className="value-system-silo-shell" x={silo.x} y={silo.y} width="27" height="22" rx="6" />
+            <path className="value-system-silo-line" d={`M${silo.x + 4} ${silo.y + 8}C${silo.x + 9} ${silo.y + 11},${silo.x + 18} ${silo.y + 11},${silo.x + 23} ${silo.y + 8}`} />
+            <circle
+              className={`value-system-packet value-system-packet--${siloIndex + 1}`}
+              cx={silo.packetX}
+              cy={silo.packetY}
+              r="3.5"
+              style={{ '--system-travel-x': `${silo.travelX}px`, '--system-travel-y': `${silo.travelY}px` } as CSSProperties}
+            />
           </g>
         ))}
 
-        <g className="value-system-core">
-          <rect className="value-system-core-shell" x="92" y="34" width="64" height="54" rx="8" />
-          <path className="value-system-core-grid" d="M103 47H145M103 61H145M103 75H145M116 42V80M132 42V80" />
-          <circle className="value-system-core-node" cx="124" cy="61" r="5" />
+        <g className="value-system-database">
+          <path className="value-system-db-body" d="M102 27V82C102 92 158 92 158 82V27Z" />
+          <ellipse className="value-system-db-top" cx="130" cy="27" rx="28" ry="9" />
+          <path className="value-system-db-separator" d="M102 47C102 57 158 57 158 47M102 70C102 80 158 80 158 70" />
+          <text className="value-system-db-text" x="130" y="65" textAnchor="middle">DB</text>
         </g>
 
-        <path className="value-system-baseline" d="M170 96H266" />
-        <rect className="value-system-bar value-system-bar--1" x="178" y="78" width="18" height="18" rx="2" />
-        <rect className="value-system-bar value-system-bar--2" x="207" y="58" width="18" height="38" rx="2" />
-        <rect className="value-system-bar value-system-bar--3" x="236" y="34" width="18" height="62" rx="2" />
-        <path className="value-system-output-track" d="M156 76C181 76 190 68 208 57C226 46 235 34 255 23" />
-        <path className="value-system-output" d="M156 76C181 76 190 68 208 57C226 46 235 34 255 23" pathLength="1" />
-        <path className="value-system-arrow" d="M244 20L256 22L253 34" />
-        <circle className="value-system-target" cx="255" cy="23" r="5" />
+        <path className="value-system-sync-track" d="M158 61H181M181 30V82M181 30H202M181 30H239M181 82H202M181 82H239" />
+        <path className="value-system-sync-line" d="M158 61H181M181 30V82M181 30H202M181 30H239M181 82H202M181 82H239" pathLength="1" />
+        <circle className="value-system-sync-hub" cx="181" cy="61" r="5" />
+
+        {modules.map((module, moduleIndex) => (
+          <g key={`${module.x}-${module.y}`} className={`value-system-module value-system-module--${moduleIndex + 1}`}>
+            <rect className="value-system-module-shell" x={module.x} y={module.y} width="28" height="20" rx="5" />
+            <path className="value-system-check" d={`M${module.x + 7} ${module.y + 10}L${module.x + 12} ${module.y + 15}L${module.x + 21} ${module.y + 6}`} pathLength="1" />
+          </g>
+        ))}
 
         <text className="value-chart-label" x="28" y="118" textAnchor="middle">30 h</text>
-        <text className="value-chart-label value-chart-label--accent" x="254" y="118" textAnchor="end">8 h</text>
+        <text className="value-chart-label value-chart-label--accent" x="267" y="118" textAnchor="end">8 h</text>
       </svg>
     );
   }
