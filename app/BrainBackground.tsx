@@ -864,7 +864,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       // Kein gemeinsamer Bodenpunkt und keine gemeinsame Knickhöhe.
       var transitionDrop=1.18+landscapeRandom()*.34;
       var transitionForwardEnd=1.55+landscapeRandom()*.28;
-      var transitionSideEnd=targetSide*(.22+landscapeRandom()*.16);
+      // Nahe am Fuss (Übergangsphase) darf kaum seitliche Bewegung
+      // entstehen - das eigentliche Ausbrechen beginnt erst in der
+      // Feld-/Talphase, weit hinten am Horizont-Referenzpunkt.
+      var transitionSideEnd=targetSide*(.03+landscapeRandom()*.04);
       var transitionControlOneDrop=transitionDrop*(.23+landscapeRandom()*.13);
       var transitionControlTwoDrop=transitionDrop*(.88+landscapeRandom()*.08);
       var transitionControlTwoForward=.24+landscapeRandom()*.28;
