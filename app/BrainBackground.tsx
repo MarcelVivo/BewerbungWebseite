@@ -3463,6 +3463,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       ['deltaPoints','Knotenpunkte · Übergangszone',4,140,1],
       ['fieldPoints','Knotenpunkte · Talfläche',10,240,2]
     ];
+    var LANDSCAPE_HORIZONTAL_SLIDERS=[
+      ['horizontalZoneFraction','Horizontale Zone (Anteil der Talfläche)',0,1,0.02],
+      ['horizontalLinkStep','Abstand der horizontalen Linien',1,12,1]
+    ];
     var LANDSCAPE_COLOR_SLIDERS=[
       ['colorHue','Farbton-Verschiebung',-0.3,0.3,0.002],
       ['colorSaturation','Sättigung',0,2,0.01],
@@ -3693,6 +3697,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     });
     sectionLabel('Tal • Färbung','#7fd9a8');
     LANDSCAPE_COLOR_SLIDERS.forEach(function(def){
+      addSlider(def,LANDSCAPE_TUNING,function(){ refreshGoldStrand(true); });
+    });
+    sectionLabel('Tal • Horizontale Linien','#7fd9a8');
+    LANDSCAPE_HORIZONTAL_SLIDERS.forEach(function(def){
       addSlider(def,LANDSCAPE_TUNING,function(){ refreshGoldStrand(true); });
     });
 
