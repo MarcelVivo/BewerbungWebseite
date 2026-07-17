@@ -323,14 +323,23 @@ function ValueDiagramGraphic({ index }: { index: number }) {
   );
 }
 
-function ValueImpactContent({ lang }: { lang: 'de' | 'en' }) {
+function ValueImpactContent({
+  lang,
+  titleRef,
+}: {
+  lang: 'de' | 'en';
+  titleRef?: (element: HTMLHeadingElement | null) => void;
+}) {
   const diagrams = VALUE_DIAGRAMS[lang];
   return (
     <div className={`value-impact-content ${chakraPetch.className}`}>
-      <div className="value-impact-heading">
-        <span>{lang === 'de' ? 'DEIN' : 'YOUR'}</span>
-        <strong>{lang === 'de' ? 'MEHRWERT.' : 'VALUE.'}</strong>
-      </div>
+      <h2
+        ref={titleRef}
+        className={`value-impact-flap intro-flap-word ${chakraPetch.className}`}
+        aria-label={lang === 'de' ? 'Dein Mehrwert' : 'Your value'}
+      >
+        {titleRef ? null : (lang === 'de' ? 'DEIN MEHRWERT' : 'YOUR VALUE')}
+      </h2>
       <div className="value-diagram-grid">
         {diagrams.map((diagram, index) => (
           <article
@@ -362,6 +371,40 @@ function ValueImpactContent({ lang }: { lang: 'de' | 'en' }) {
 
 function ValueImpactWorld({ lang }: { lang: 'de' | 'en' }) {
   const worldRef = useRef<HTMLDivElement | null>(null);
+  const valueTitleRef = useRef<HTMLHeadingElement | null>(null);
+  const flapTriggerRef = useRef<() => void>(() => {});
+
+  // Exakt dieselbe Split-Flap-Mechanik wie beim Titel "LÖSUNGEN": kurz
+  // durchlaufen, danach sauber auf dem Zieltext einrasten und den Effekt im
+  // gleichen 5-Sekunden-Rhythmus wiederholen.
+  useEffect(() => {
+    const title = valueTitleRef.current;
+    if (!title) return;
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const label = lang === 'de' ? 'DEIN MEHRWERT' : 'YOUR VALUE';
+    const letters = buildFlapWord(title, label);
+    setFlapWordMode(letters, 'settle', true);
+
+    let settleTimer = 0;
+    const triggerFlap = () => {
+      if (reduced) return;
+      window.clearTimeout(settleTimer);
+      setFlapWordMode(letters, 'spin', false);
+      settleTimer = window.setTimeout(() => {
+        setFlapWordMode(letters, 'settle', false);
+      }, 720);
+    };
+
+    flapTriggerRef.current = triggerFlap;
+    const flapInterval = window.setInterval(triggerFlap, 5000);
+    return () => {
+      window.clearInterval(flapInterval);
+      window.clearTimeout(settleTimer);
+      flapTriggerRef.current = () => {};
+      setFlapWordMode(letters, 'settle', true);
+    };
+  }, [lang]);
 
   useEffect(() => {
     const world = worldRef.current;
@@ -398,6 +441,7 @@ function ValueImpactWorld({ lang }: { lang: 'de' | 'en' }) {
       if (!wasVisible && revealRaw > 0.12) {
         wasVisible = true;
         world.classList.add('is-revealed');
+        flapTriggerRef.current();
         cancelNumberAnimation();
         cancelNumberAnimation = animateValueNumbers(world, lang, reduced);
       } else if (wasVisible && revealRaw <= 0.02) {
@@ -415,7 +459,10 @@ function ValueImpactWorld({ lang }: { lang: 'de' | 'en' }) {
 
   return (
     <div ref={worldRef} className="value-impact-world" aria-hidden="true">
-      <ValueImpactContent lang={lang} />
+      <ValueImpactContent
+        lang={lang}
+        titleRef={(element) => { valueTitleRef.current = element; }}
+      />
     </div>
   );
 }
@@ -734,6 +781,15 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
 
+      // Beim Verlassen der Kartenstation bleibt die Kamera auf der Höhe der
+      // letzten Intro-Station. Ohne einen Ausfahr-Fade blieb deshalb "Deine
+      // Erfolgsgeschichte." über der neuen Mehrwert-Szene stehen. Noch bevor
+      // deren Split-Flap-Titel erscheint, wird die Intro-Ebene vollständig
+      // ausgeblendet; beim Zurückscrollen läuft der Übergang reversibel.
+      const exitProgress = Math.max(0, Math.min(1, cam.exitProgress || 0));
+      const introExitRaw = Math.max(0, Math.min(1, (exitProgress - 0.01) / 0.06));
+      const introExitOpacity = 1 - introExitRaw * introExitRaw * (3 - 2 * introExitRaw);
+
       stations.forEach((s) => {
         if (!s.settled && scrollIdle) {
           s.settled = true;
@@ -755,7 +811,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
 
         const distance = Math.abs(cam.cameraLookY - s.stationPos.y);
         const visibility = Math.max(0, Math.min(1, 1 - distance / fadeWindow));
-        const inWindow = viewZ > 0.001 && visibility > 0;
+        const inWindow = viewZ > 0.001 && visibility > 0 && introExitOpacity > 0;
 
         if (!inWindow) {
           s.world.style.opacity = '0';
@@ -793,7 +849,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
         // sichtbar (kein Überblenden) — die An-/Abwesenheit wird durch Spin
         // (unleserlich, beim Scrollen) vs. Settle (lesbar, im Stillstand)
         // ausgedrückt (siehe scrollIdle oben).
-        s.world.style.opacity = '1';
+        s.world.style.opacity = introExitOpacity.toFixed(3);
       });
     };
 

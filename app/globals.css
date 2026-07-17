@@ -750,27 +750,17 @@ body {
   text-shadow: 0 3px 18px rgba(0,0,0,0.9);
 }
 
-.value-impact-heading {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  align-items: baseline;
-  width: fit-content;
-  margin: 0 0 clamp(0.7rem, 1.3vh, 1.3rem) 0.25rem;
-  line-height: 0.9;
-}
-
-.value-impact-heading span {
-  grid-column: 1 / -1;
-  margin: 0 0 0.3rem 0.16rem;
-  color: rgba(255,255,255,0.66);
-  font-size: clamp(0.58rem, 0.8vw, 0.82rem);
-  letter-spacing: 0.22em;
-}
-
-.value-impact-heading strong {
-  font-size: clamp(1.45rem, 2.65vw, 3rem);
-  font-weight: 700;
-  letter-spacing: 0.025em;
+.value-impact-flap {
+  position: relative;
+  z-index: 6;
+  justify-content: center;
+  width: 100%;
+  margin: 0 0 clamp(1.25rem, 2.2vh, 2rem);
+  font-size: clamp(1.07rem, 2.36vw, 2.17rem);
+  letter-spacing: 0.035em;
+  line-height: 1;
+  text-align: center;
+  text-shadow: 0 0 24px rgba(255,255,255,0.12);
 }
 
 .value-diagram-grid {
@@ -1913,11 +1903,8 @@ body {
     scroll-margin-top: 5rem;
   }
 
-  .mobile-value-impact .value-impact-heading {
+  .mobile-value-impact .value-impact-flap {
     margin-bottom: 1.25rem;
-  }
-
-  .mobile-value-impact .value-impact-heading strong {
     font-size: clamp(1.8rem, 8vw, 2.75rem);
   }
 
