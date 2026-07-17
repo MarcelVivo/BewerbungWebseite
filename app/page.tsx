@@ -170,7 +170,7 @@ const VALUE_DIAGRAMS: Record<'de' | 'en', ValueDiagramCopy[]> = {
     },
     {
       code: '02', eyebrow: 'WEB',
-      before: '12 s', after: '3 s', counterStart: '−0 %', result: '−75 %', resultLabel: 'LADEZEIT',
+      before: '12 s', after: '3 s', counterStart: '1×', result: '4×', resultLabel: 'SCHNELLER',
       accent: '#4d7fbf', accentRgb: '77,127,191',
     },
     {
@@ -192,7 +192,7 @@ const VALUE_DIAGRAMS: Record<'de' | 'en', ValueDiagramCopy[]> = {
     },
     {
       code: '02', eyebrow: 'WEB',
-      before: '12 s', after: '3 s', counterStart: '−0%', result: '−75%', resultLabel: 'LOAD TIME',
+      before: '12 s', after: '3 s', counterStart: '1×', result: '4×', resultLabel: 'FASTER',
       accent: '#4d7fbf', accentRgb: '77,127,191',
     },
     {
@@ -317,17 +317,38 @@ function ValueDiagramGraphic({ index, lang }: { index: number; lang: 'de' | 'en'
   if (index === 1) {
     return (
       <svg className="value-chart-svg" viewBox="0 0 280 122" aria-hidden="true">
-        <path className="value-grid-line" d="M12 103H268" />
-        <circle className="value-speed-ring" cx="74" cy="62" r="38" pathLength="1" />
-        <circle className="value-speed-ring value-chart-accent value-speed-ring--fast" cx="206" cy="62" r="38" pathLength="1" />
-        <path className="value-chart-line value-speed-needle-before" d="M74 62L52 39" />
-        <path className="value-chart-line value-speed-needle-after" d="M206 62L228 40" />
-        <circle className="value-chart-dot" cx="74" cy="62" r="5" />
-        <circle className="value-chart-dot value-pulse-dot" cx="206" cy="62" r="5" />
-        <path className="value-chart-accent value-flow-line" d="M116 62H163" pathLength="1" />
-        <path className="value-chart-accent" d="M155 54L164 62L155 70" />
-        <text className="value-chart-label" x="74" y="118" textAnchor="middle">12 s</text>
-        <text className="value-chart-label value-chart-label--accent" x="206" y="118" textAnchor="middle">3 s</text>
+        <g className="value-web-browser value-web-browser--slow">
+          <rect className="value-web-frame" x="9" y="23" width="92" height="69" rx="7" />
+          <path className="value-web-chrome" d="M9 37H101" />
+          <circle className="value-web-chrome-dot" cx="19" cy="30" r="2.3" />
+          <circle className="value-web-chrome-dot" cx="27" cy="30" r="2.3" />
+          <circle className="value-web-chrome-dot" cx="35" cy="30" r="2.3" />
+          <rect className="value-web-slow-block value-web-slow-block--1" x="20" y="47" width="67" height="7" rx="2" />
+          <rect className="value-web-slow-block value-web-slow-block--2" x="20" y="59" width="43" height="7" rx="2" />
+          <rect className="value-web-slow-block value-web-slow-block--3" x="20" y="71" width="58" height="7" rx="2" />
+          <rect className="value-web-progress-track" x="20" y="83" width="70" height="3" rx="1.5" />
+          <rect className="value-web-slow-progress" x="20" y="83" width="70" height="3" rx="1.5" />
+        </g>
+
+        <path className="value-web-transfer-track" d="M108 58H160" />
+        <path className="value-web-transfer" d="M108 58H160" pathLength="1" />
+        <path className="value-web-boost" d="M136 38L125 59H137L129 79L151 52H139L147 38Z" />
+
+        <g className="value-web-browser value-web-browser--fast">
+          <rect className="value-web-frame" x="168" y="18" width="103" height="77" rx="7" />
+          <path className="value-web-chrome" d="M168 32H271" />
+          <circle className="value-web-chrome-dot" cx="178" cy="25" r="2.3" />
+          <circle className="value-web-chrome-dot" cx="186" cy="25" r="2.3" />
+          <circle className="value-web-chrome-dot" cx="194" cy="25" r="2.3" />
+          <rect className="value-web-fast-block value-web-fast-block--1" x="179" y="41" width="81" height="17" rx="3" />
+          <rect className="value-web-fast-block value-web-fast-block--2" x="179" y="64" width="36" height="19" rx="3" />
+          <rect className="value-web-fast-block value-web-fast-block--3" x="220" y="64" width="40" height="19" rx="3" />
+          <circle className="value-web-check-ring" cx="249" cy="79" r="11" pathLength="1" />
+          <path className="value-web-check" d="M243 79L247 83L255 74" pathLength="1" />
+        </g>
+
+        <text className="value-chart-label" x="55" y="118" textAnchor="middle">12 s</text>
+        <text className="value-chart-label value-chart-label--accent" x="251" y="118" textAnchor="middle">3 s</text>
       </svg>
     );
   }
