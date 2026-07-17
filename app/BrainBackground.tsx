@@ -526,7 +526,16 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     wallBumpAmount:.4,
     colorHue:0,
     colorSaturation:1,
-    colorLightness:1
+    colorLightness:1,
+    // Rund um den Stamm/in der Mitte des Tals sollen nur horizontale
+    // Querverbindungen zwischen Nachbarfasern das Tal zeichnen, keine
+    // radialen (vertikal wirkenden) Einzelfaser-Linien. horizontalZoneFraction
+    // legt fest, welcher Anteil (0..1) jedes Faserpfads ab dem Stammfuss
+    // horizontal-only bleibt; der Rest (Richtung Horizont) darf wieder als
+    // durchgehende Faser gezeichnet werden. horizontalLinkStep steuert die
+    // Dichte der horizontalen Linien (kleiner = dichter).
+    horizontalZoneFraction:1,
+    horizontalLinkStep:2
   };
   var LANDSCAPE_MOBILE_SCALE=.61;
   function moveX(){ return SP.offX + MP.moveRight - MP.moveLeft; }
@@ -813,6 +822,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     // Zusätzliche, feste Vertiefung des Talbodens (unabhängig von den
     // zufälligen Pro-Faser transitionDrop-Werten).
     var landscapeFloorDepth=LANDSCAPE_TUNING.floorDepth;
+    // Mittelwert des bisherigen pro-Faser-zufälligen transitionDrop-Bereichs
+    // (1.18-1.52), aber für ALLE Fasern gleich - siehe fieldY weiter unten.
+    var landscapeSharedFloorBase=1.35;
     var landscapeColor=new THREE.Color();
     var landscapePaths=[];
 
@@ -835,14 +847,21 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       return palette[Math.abs(fiberIndex*11+tipVertex*3)%palette.length];
     }
 
-    function appendLandscapeVertex(parentVertex,x,y,z,waveStrength,phase,travel,color,previousVertex){
+    function appendLandscapeVertex(parentVertex,x,y,z,waveStrength,phase,travel,color,previousVertex,drawRadialLine){
       var vertexIndex=organismVertices.length/3;
       organismVertices.push(x,y,z);
+      // Punkte in der horizontalen Zone (drawRadialLine===false) bekommen
+      // eine STATISCHE Elternposition (kein wobbleX/wobbleZ vom Stamm-
+      // Tip-Vertex) - sonst wackelt jeder Tip-Vertex mit eigener, unabhängiger
+      // Phase (bis zu ~0.17 Einheiten Ausschlag), und die horizontale
+      // Querverbindung zwischen zwei UNTERSCHIEDLICHEN, unkorreliert
+      // wackelnden Fasern sieht bei jedem Frame wie ein Zacken aus.
       organismMeta.push({
         parentVertex:parentVertex,
-        waveStrength:waveStrength,
+        waveStrength:drawRadialLine===false?0:waveStrength,
         phase:phase,
-        travel:travel
+        travel:travel,
+        static:drawRadialLine===false
       });
       var parentOffset=parentVertex*3;
       var px=sBase[parentOffset]+x;
@@ -852,7 +871,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       outPtsPos.push(px,py,pz);
       outPtsCol.push(color.r,color.g,color.b);
       organismPointRefs.push({off:pointOffset,src:vertexIndex});
-      if(previousVertex!==null){
+      if(previousVertex!==null&&drawRadialLine!==false){
         var previousOffset=previousVertex*3;
         var previousMeta=organismMeta[previousVertex];
         var previousParentOffset=previousMeta.parentVertex*3;
@@ -870,6 +889,16 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       return vertexIndex;
     }
 
+    // Gemeinsamer, fixer Referenzpunkt für alle Punkte der horizontalen
+    // Zone: jede Faser endet an einer ANDEREN Stelle des Hauptstrangs (siehe
+    // endF-Streuung in genStrandInto), wodurch sBase[tipVertex] pro Faser
+    // um mehrere Einheiten in Y abweicht. Würde jede Faser weiterhin ihren
+    // eigenen tipVertex als Bezugspunkt nutzen, würde diese Streuung direkt
+    // in die Weltposition durchschlagen und jede horizontale Querverbindung
+    // zwischen zwei verschiedenen Fasern wie einen Zacken aussehen lassen -
+    // selbst wenn ihr lokaler Feld-Offset (fieldSide/fieldForward/fieldDrop)
+    // längst absolut identisch behandelt wird.
+    var landscapeSharedTipVertex=sFibers[0].start+sFibers[0].len-1;
     for(var landscapeFiberIndex=0;landscapeFiberIndex<landscapeFiberCount;landscapeFiberIndex++){
       var landscapeFiberFamily=Math.floor(landscapeFiberIndex/landscapeSourceFiberCount);
       var landscapeSourceIndex=landscapeFiberIndex%landscapeSourceFiberCount;
@@ -886,11 +915,18 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var laneSign=laneMix<0?-1:1;
       var targetSide=laneSign*Math.pow(Math.abs(laneMix),.72)*landscapeHalfWidth;
       targetSide+=(landscapeRandom()-.5)*landscapeHalfWidth*.12;
-      var targetDepth=landscapeDepth*(.8+landscapeRandom()*.24);
+      // targetDepth/transitionForwardEnd waren bisher pro Faser zufällig,
+      // wodurch "gleicher Row-Index" NICHT "gleiche Tiefe" bedeutete - zwei
+      // bei angeblich gleicher Tiefe verbundene Fasern konnten in Wirklichkeit
+      // weit auseinanderliegende Z-Werte haben. Das erzeugte beim Zeichnen
+      // der horizontalen Querverbindungen (appendLandscapeLink) Sprünge, die
+      // wie vertikale Zacken aussahen. Jetzt für alle Fasern gleich, damit
+      // "Row R" bei jeder Faser wirklich dieselbe Tiefe meint.
+      var targetDepth=landscapeDepth*.92;
       // Individuelle Kontrollwerte der langen, kontinuierlichen Umlenkung.
       // Kein gemeinsamer Bodenpunkt und keine gemeinsame Knickhöhe.
       var transitionDrop=1.18+landscapeRandom()*.34;
-      var transitionForwardEnd=1.55+landscapeRandom()*.28;
+      var transitionForwardEnd=1.69;
       // Nahe am Fuss (Übergangsphase) darf kaum seitliche Bewegung
       // entstehen - das eigentliche Ausbrechen beginnt erst in der
       // Feld-/Talphase, weit hinten am Horizont-Referenzpunkt.
@@ -915,18 +951,36 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       }
       var previousVertex=null;
       var pathVertices=[];
+      var pathSides=[];
       var emitted=0;
       var total=landscapeTrunkPoints+landscapeDeltaPoints+landscapeFieldPoints;
 
-      function emitLandscape(x,y,z,waveStrength){
+      // "Im Tal" = die Feldphase (die flache Talfläche selbst). Die
+      // Übergangszone (Stamm -> Tal) bleibt eine durchgehende Faser, weil
+      // ihre Höhe pro Faser stark streut (individuelle Übergangskurve) und
+      // horizontale Querverbindungen dort trotz gleicher Tiefe wie Zacken
+      // aussähen.
+      var landscapeFieldStartRow=landscapeTrunkPoints+landscapeDeltaPoints;
+      var horizontalZoneEnd=landscapeFieldStartRow
+        +LANDSCAPE_TUNING.horizontalZoneFraction*(landscapeFieldPoints-1);
+      function emitLandscape(x,y,z,waveStrength,sideValue){
         var pathProgress=emitted/Math.max(1,total-1);
         // Am Hauptstrang-Ende bei Phase 1 weiterlaufen. Die Ableitung des
         // Phasenwegs nimmt nach unten stetig ab -> längere Wellen im Tal.
         var continuedWaveTravel=1+pathProgress-.38*pathProgress*pathProgress;
+        // Rund um den Stamm/in der Mitte des Tals nur horizontale
+        // Querverbindungen (appendLandscapeLink unten) zeichnen lassen -
+        // keine radiale Einzelfaser-Linie zum Vorgängerpunkt.
+        var drawRadialLine=emitted<landscapeFieldStartRow||emitted>horizontalZoneEnd;
+        // In der horizontalen Zone gemeinsamen Referenzpunkt statt der
+        // eigenen (unterschiedlich hohen) Faserspitze verwenden - siehe
+        // landscapeSharedTipVertex weiter oben.
+        var emitParentVertex=drawRadialLine?tipVertex:landscapeSharedTipVertex;
         previousVertex=appendLandscapeVertex(
-          tipVertex,x,y,z,waveStrength,phase,continuedWaveTravel,fiberColor,previousVertex
+          emitParentVertex,x,y,z,waveStrength,phase,continuedWaveTravel,fiberColor,previousVertex,drawRadialLine
         );
         pathVertices.push(previousVertex);
+        pathSides.push(sideValue);
         emitted++;
       }
 
@@ -952,7 +1006,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           organismRightX*transitionSide+organismForwardX*transitionForward+organismDownX*transitionDown,
           organismRightY*transitionSide+organismForwardY*transitionForward+organismDownY*transitionDown,
           organismRightZ*transitionSide+organismForwardZ*transitionForward+organismDownZ*transitionDown,
-          1-.12*smoother(transitionT)
+          1-.12*smoother(transitionT),
+          transitionSide
         );
       }
 
@@ -969,7 +1024,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         // sonst exakt an derselben X/Z-Position gleichzeitig die Wand
         // erreichen -> künstliches Gitter. Bricht die Regelmässigkeit auf.
         var fieldJitterX=(landscapeRandom()-.5)*landscapeHalfWidth*LANDSCAPE_TUNING.jitterXAmount;
-        var fieldJitterZ=(landscapeRandom()-.5)*landscapeDepth*LANDSCAPE_TUNING.jitterZAmount;
+        // Tiefen-Jitter ist bewusst NICHT pro Faser zufällig, sondern eine
+        // reine Funktion von fieldT (identisch für alle Fasern) - sonst
+        // bedeutet "Row R" bei jeder Faser eine andere Tiefe, und die
+        // horizontalen Querverbindungen springen sichtbar in Z (siehe
+        // targetDepth/transitionForwardEnd weiter oben, gleicher Grund).
+        var fieldJitterZ=Math.sin(fieldT*11.3)*landscapeDepth*LANDSCAPE_TUNING.jitterZAmount*.5;
         var fieldSide=THREE.MathUtils.clamp(
           transitionSideEnd+(targetSide-transitionSideEnd)*fieldSpread+fieldMeander+fieldJitterX,
           -landscapeHalfWidth*1.08,
@@ -979,7 +1039,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         // Grossflächiges Rauschen verschiebt die Wandkante pro (X,Z)-Position,
         // statt sie starr an einer festen X-Schwelle zu fixieren -> Nachbar-
         // fasern klettern nicht mehr synchron hoch (kein Gittermuster).
-        var corridorWidthNoise=corridorNoise(fieldSide*.6,fieldForward*.6,phase);
+        // Seed ist reine POSITION (kein "phase", das ist pro Faser
+        // unterschiedlich) - sonst bekommen räumlich benachbarte Fasern
+        // unterschiedliche Höhen und jede horizontale Querverbindung
+        // (appendLandscapeLink) sieht wie ein Zacken statt einer glatten
+        // Höhenlinie aus.
+        var corridorWidthNoise=corridorNoise(fieldSide*.6,fieldForward*.6,0);
         var effectiveCorridorWidth=Math.max(
           landscapeCorridorWidth*.35,
           landscapeCorridorWidth+corridorWidthNoise*landscapeCorridorWidth*.6
@@ -993,27 +1058,32 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         // mesh3d: zwei Oktaven), skaliert mit der Nähe zur Wand, damit der
         // Talboden ruhig bleibt und nur die Hänge Textur bekommen.
         var wallBumpiness=smoother(Math.min(1,wallDistance/1.4));
-        var fieldBumpNoise=corridorNoise(fieldSide*2.3,fieldForward*2.1,phase*1.3)
+        var fieldBumpNoise=corridorNoise(fieldSide*2.3,fieldForward*2.1,0)
           *LANDSCAPE_TUNING.wallBumpAmount*wallBumpiness;
-        var terrainWave=(Math.sin(fieldSide*.72+phase)+Math.sin(fieldForward*.34+phase*.61)*.55)
+        var terrainWave=(Math.sin(fieldSide*.72)+Math.sin(fieldForward*.34)*.55)
           *.12*(1-fieldT*.55);
-        var fieldY=-transitionDrop-landscapeFloorDepth+fieldBank+fieldBumpNoise+terrainWave-.28*fieldT;
+        // Gemeinsamer, NICHT pro-Faser-zufälliger Talboden: transitionDrop
+        // ist bewusst pro Faser unterschiedlich (für die individuelle
+        // Übergangskurve), würde hier aber räumlich benachbarte Fasern auf
+        // verschiedene Grundhöhen setzen und jede horizontale Querverbindung
+        // wie einen Zacken aussehen lassen.
+        var fieldY=-landscapeSharedFloorBase-landscapeFloorDepth+fieldBank+fieldBumpNoise+terrainWave-.28*fieldT;
         var fieldDrop=Math.max(transitionDrop,-fieldY);
         emitLandscape(
           organismRightX*fieldSide+organismForwardX*fieldForward+organismDownX*fieldDrop,
           organismRightY*fieldSide+organismForwardY*fieldForward+organismDownY*fieldDrop,
           organismRightZ*fieldSide+organismForwardZ*fieldForward+organismDownZ*fieldDrop,
-          .84-.16*fieldT
+          .84-.16*fieldT,
+          fieldSide
         );
       }
-      landscapePaths.push({side:targetSide,vertices:pathVertices,color:fiberColor});
+      landscapePaths.push({side:targetSide,vertices:pathVertices,sides:pathSides,color:fiberColor});
     }
 
     // Die Referenz ist keine Ansammlung isolierter Fäden, sondern eine dichte
     // neuronale Oberfläche. Benachbarte Originalfasern werden deshalb in
-    // regelmäßigen Tiefenabständen sowie diagonal miteinander verflochten.
+    // regelmäßigen Tiefenabständen horizontal miteinander verflochten.
     // Auch diese Segmente werden demselben linesObj-Buffer hinzugefügt.
-    landscapePaths.sort(function(a,b){ return a.side-b.side; });
     function appendLandscapeLink(sourceVertex,targetVertex,sourceColor,targetColor){
       var sourceMeta=organismMeta[sourceVertex], targetMeta=organismMeta[targetVertex];
       var sourceOffset=sourceVertex*3, targetOffset=targetVertex*3;
@@ -1034,28 +1104,41 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       organismLineRefs.push({off:lineOffset,src:sourceVertex});
       organismLineRefs.push({off:lineOffset+3,src:targetVertex});
     }
-    var landscapeSurfaceStart=landscapeTrunkPoints+Math.floor(landscapeDeltaPoints*.28);
     var landscapePathLength=landscapeTrunkPoints+landscapeDeltaPoints+landscapeFieldPoints;
-    // Deaktiviert: Die Originalstränge besitzen keine künstlichen Querstreben.
-    // Die Landschaft besteht ausschließlich aus den weiterlaufenden Fasern.
-    for(var landscapeRow=landscapePathLength;landscapeRow<landscapePathLength;landscapeRow+=3){
-      for(var landscapePathIndex=0;landscapePathIndex<landscapePaths.length-1;landscapePathIndex++){
-        var currentPath=landscapePaths[landscapePathIndex];
-        var nextPath=landscapePaths[landscapePathIndex+1];
+    // Rund um den Stamm/in der Mitte des Tals sollen ausschliesslich
+    // horizontale Querverbindungen zwischen Nachbarfasern das Tal zeichnen
+    // (wie Höhenlinien) statt radialer Einzelfaser-Linien - siehe
+    // drawRadialLine in emitLandscape weiter oben. Deckt exakt dieselbe
+    // Zone ab (horizontalZoneFraction).
+    var landscapeFieldStartRow=landscapeTrunkPoints+landscapeDeltaPoints;
+    var landscapeHorizontalRowEnd=Math.min(
+      landscapePathLength-1,
+      Math.floor(landscapeFieldStartRow+LANDSCAPE_TUNING.horizontalZoneFraction*(landscapeFieldPoints-1))
+    );
+    var landscapeLinkStep=Math.max(1,Math.round(LANDSCAPE_TUNING.horizontalLinkStep));
+    // Nachbarschaft wird PRO REIHE neu bestimmt: nahe am Stamm haben Fasern
+    // noch nicht ihre finale Seiten-Reihenfolge erreicht (transitionSideEnd,
+    // Meander, Jitter variieren pro Faser). Eine feste Sortierung nach dem
+    // Zielwert verband dort falsche Nachbarn und erzeugte chaotische
+    // Zickzack-Linien statt sauberer horizontaler Ringe.
+    var landscapeRowOrder=landscapePaths.map(function(_,pathIndex){ return pathIndex; });
+    for(var landscapeRow=landscapeFieldStartRow;landscapeRow<=landscapeHorizontalRowEnd;landscapeRow+=landscapeLinkStep){
+      landscapeRowOrder.sort(function(a,b){
+        return landscapePaths[a].sides[landscapeRow]-landscapePaths[b].sides[landscapeRow];
+      });
+      for(var landscapePathIndex=0;landscapePathIndex<landscapeRowOrder.length-1;landscapePathIndex++){
+        var currentPath=landscapePaths[landscapeRowOrder[landscapePathIndex]];
+        var nextPath=landscapePaths[landscapeRowOrder[landscapePathIndex+1]];
+        // Nur exakt derselbe Row-Index (= exakt dieselbe Tiefe/derselbe
+        // Fortschritt entlang des Pfads) wird verbunden, damit die Linie
+        // wirklich rein horizontal bleibt und keine Tiefenkomponente
+        // (= optisch "vertikal" wirkend) enthält.
         appendLandscapeLink(
           currentPath.vertices[landscapeRow],
           nextPath.vertices[landscapeRow],
           currentPath.color,
           nextPath.color
         );
-        if(landscapeRow+2<landscapePathLength&&landscapePathIndex%2===0){
-          appendLandscapeLink(
-            currentPath.vertices[landscapeRow],
-            nextPath.vertices[landscapeRow+2],
-            currentPath.color,
-            nextPath.color
-          );
-        }
       }
     }
   }
@@ -1874,7 +1957,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   function livingOrganismVertexLocal(vertexIndex,out,time){
     var organismVertexMeta=organismMeta[vertexIndex];
     if(!organismVertexMeta) return out.set(0,0,0);
-    goldStrandVertexLocal(organismVertexMeta.parentVertex,out,true);
+    if(organismVertexMeta.static){
+      var staticParentOffset=organismVertexMeta.parentVertex*3;
+      out.set(sBase[staticParentOffset],sBase[staticParentOffset+1],sBase[staticParentOffset+2]);
+    } else {
+      goldStrandVertexLocal(organismVertexMeta.parentVertex,out,true);
+    }
     var organismOffset=vertexIndex*3;
     out.x+=organismVertices[organismOffset];
     out.y+=organismVertices[organismOffset+1];
@@ -4106,6 +4194,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         window.__cardsCameraState = {
           orbit: orbit, cameraY: cameraY, cameraLookY: cameraAimY,
           cameraRadius: cameraRadius, fov: camera.fov, aspect: camera.aspect,
+          // Der Ausfahrfortschritt ist die gemeinsame Quelle für alle
+          // Weltobjekte hinter der Kartenstation. DOM-Szenen können damit
+          // exakt auf dieselbe gedämpfte Kamerafahrt reagieren, ohne den
+          // Scrollstand ein zweites Mal zu berechnen.
+          exitProgress: chapterTransitionProgress,
+          cameraProgress: cameraProgress,
         };
       }
       renderer.render(scene, camera);
