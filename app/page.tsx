@@ -208,6 +208,77 @@ const VALUE_DIAGRAMS: Record<'de' | 'en', ValueDiagramCopy[]> = {
   ],
 };
 
+type ValueInfoCopy = {
+  title: string;
+  summary: string;
+  optimizes: string[];
+  benefits: string[];
+  stages: [string, string, string];
+};
+
+const VALUE_INFO: Record<'de' | 'en', ValueInfoCopy[]> = {
+  de: [
+    {
+      title: 'Aus einem Auftritt wird eine erkennbare Marke.',
+      summary: 'Ich verbinde Positionierung, Gestaltung und digitale Nutzerführung zu einem konsistenten Markenerlebnis, das dein Angebot schneller verständlich und glaubwürdig macht.',
+      optimizes: ['Markenbild, Typografie, Farben und Bildsprache', 'Botschaft und Wiedererkennung über alle Kontaktpunkte', 'Nutzerführung von der Aufmerksamkeit bis zur Anfrage'],
+      benefits: ['Passende Kunden verstehen dein Angebot schneller', 'Ein professioneller Auftritt schafft messbar mehr Vertrauen', 'Mehr qualifizierte Anfragen statt unnötigem Streuverlust'],
+      stages: ['KLARHEIT', 'VERTRAUEN', 'ANFRAGE'],
+    },
+    {
+      title: 'Schnelle Technik wird zur besseren Nutzererfahrung.',
+      summary: 'Ich optimiere Architektur, Inhalte und Frontend als ein System. Dadurch laden Websites und Applikationen schneller, reagieren direkter und bleiben auf allen Geräten stabil.',
+      optimizes: ['Ladepfad, Assets, Code und technische Architektur', 'Responsive Darstellung und verständliche Bedienabläufe', 'Stabilität, Erweiterbarkeit und technische SEO-Basis'],
+      benefits: ['Weniger Absprünge während des Seitenaufbaus', 'Schnellere Entscheidungen und angenehmere Interaktion', 'Eine belastbare Plattform für Kampagnen und Wachstum'],
+      stages: ['ANFRAGE', 'OPTIMIERUNG', 'BEREIT'],
+    },
+    {
+      title: 'Eine zentrale Datenbasis ersetzt isolierte Einzellösungen.',
+      summary: 'Ich bilde Kunden, Projekte, Dokumente, Angebote und Abläufe in einem durchgängigen CRM-/ERP-System ab. Informationen werden einmal gepflegt und überall zuverlässig genutzt.',
+      optimizes: ['Datenmodell, Rollen, Rechte und zentrale Stammdaten', 'Workflows zwischen Verkauf, Projekt und Administration', 'Schnittstellen, Dashboards und automatische Auswertungen'],
+      benefits: ['Weniger Doppelerfassung, Suchaufwand und Fehler', 'Aktuelle Informationen für alle beteiligten Personen', 'Mehr freie Zeit für Kunden und wertschöpfende Arbeit'],
+      stages: ['SILOS', 'ZENTRAL', 'SYNCHRON'],
+    },
+    {
+      title: 'Wiederkehrende Arbeit wird zu einem kontrollierten Ablauf.',
+      summary: 'Ich kombiniere Automation, passende AI-Modelle und bestehende Werkzeuge zu nachvollziehbaren Prozessen. Menschen behalten die Kontrolle, während Routinen zuverlässig im Hintergrund laufen.',
+      optimizes: ['Wiederkehrende Kommunikation, Daten- und Prüfschritte', 'AI-Assistenten mit klaren Regeln und Freigabepunkten', 'Integration in vorhandene Tools statt zusätzlichem Tool-Chaos'],
+      benefits: ['Weniger manuelle Routinearbeit und Medienbrüche', 'Kürzere Durchlaufzeiten bei gleichbleibender Qualität', 'Skalierbare Abläufe ohne proportional mehr Personalaufwand'],
+      stages: ['ROUTINE', 'AI-FLOW', 'FREIRAUM'],
+    },
+  ],
+  en: [
+    {
+      title: 'A visual presence becomes a recognizable brand.',
+      summary: 'I combine positioning, design and digital user guidance into a consistent brand experience that makes your offer easier to understand and trust.',
+      optimizes: ['Brand identity, typography, color and imagery', 'Message and recognition across every touchpoint', 'User guidance from first attention to enquiry'],
+      benefits: ['The right customers understand your offer faster', 'A professional presence creates measurable trust', 'More qualified enquiries with less wasted reach'],
+      stages: ['CLARITY', 'TRUST', 'ENQUIRY'],
+    },
+    {
+      title: 'Fast technology becomes a better user experience.',
+      summary: 'I optimize architecture, content and frontend as one system. Websites and applications load faster, respond directly and remain stable across devices.',
+      optimizes: ['Loading path, assets, code and architecture', 'Responsive presentation and intuitive user flows', 'Stability, extensibility and technical SEO foundation'],
+      benefits: ['Fewer users leave while the page is loading', 'Faster decisions and smoother interaction', 'A robust platform for campaigns and growth'],
+      stages: ['REQUEST', 'OPTIMIZE', 'READY'],
+    },
+    {
+      title: 'One central data source replaces isolated solutions.',
+      summary: 'I map customers, projects, documents, quotes and operations in one consistent CRM/ERP system. Information is maintained once and used reliably everywhere.',
+      optimizes: ['Data model, roles, permissions and master data', 'Workflows across sales, projects and administration', 'Interfaces, dashboards and automated reporting'],
+      benefits: ['Less duplicate entry, searching and avoidable errors', 'Current information for every involved person', 'More free time for customers and valuable work'],
+      stages: ['SILOS', 'CENTRAL', 'SYNCED'],
+    },
+    {
+      title: 'Recurring work becomes a controlled workflow.',
+      summary: 'I combine automation, suitable AI models and existing tools into transparent processes. People stay in control while routines run reliably in the background.',
+      optimizes: ['Recurring communication, data and validation steps', 'AI assistants with clear rules and approval points', 'Integration into existing tools without tool chaos'],
+      benefits: ['Less manual routine work and fewer handovers', 'Shorter lead times with consistent quality', 'Scalable operations without proportional staffing growth'],
+      stages: ['ROUTINE', 'AI FLOW', 'CAPACITY'],
+    },
+  ],
+};
+
 function splitValueNumber(label: string) {
   const match = label.match(/^([^\d]*)(\d+(?:[.,]\d+)?)(.*)$/);
   if (!match) return { prefix: '', value: 0, decimals: 0, suffix: label };
@@ -485,6 +556,110 @@ function ValueDiagramGraphic({ index, lang }: { index: number; lang: 'de' | 'en'
   );
 }
 
+function ValueInfoGraphic({ index }: { index: number }) {
+  if (index === 0) {
+    return (
+      <svg className="value-info-svg" viewBox="0 0 420 220" aria-hidden="true">
+        <path className="value-info-line--muted" d="M178 30V190M98 110H258M122 54L234 166M122 166L234 54" />
+        {[48, 78, 108].map((radius) => (
+          <circle key={radius} className="value-info-wave" cx="178" cy="110" r={radius} pathLength="1" />
+        ))}
+        <rect className="value-info-accent-line value-info-pop" x="143" y="75" width="70" height="70" rx="13" />
+        {[0, 1, 2, 3].map((fragment) => (
+          <rect
+            key={fragment}
+            className="value-info-fill value-info-pop"
+            x={151 + (fragment % 2) * 28}
+            y={83 + Math.floor(fragment / 2) * 28}
+            width="23"
+            height="23"
+            rx="4"
+          />
+        ))}
+        {[[306, 54], [344, 90], [300, 141], [366, 152]].map(([x, y], person) => (
+          <g key={`${x}-${y}`} className={person === 3 ? 'value-info-person value-info-person--accent' : 'value-info-person'}>
+            <circle cx={x} cy={y} r="8" />
+            <path d={`M${x - 13} ${y + 24}C${x - 11} ${y + 8},${x + 11} ${y + 8},${x + 13} ${y + 24}`} />
+          </g>
+        ))}
+      </svg>
+    );
+  }
+
+  if (index === 1) {
+    return (
+      <svg className="value-info-svg" viewBox="0 0 420 220" aria-hidden="true">
+        <g className="value-info-browser value-info-browser--slow">
+          <rect className="value-info-line" x="24" y="55" width="132" height="104" rx="11" />
+          <path className="value-info-line" d="M24 76H156" />
+          <rect className="value-info-fill" x="40" y="91" width="92" height="10" rx="3" />
+          <rect className="value-info-fill" x="40" y="110" width="56" height="10" rx="3" />
+          <rect className="value-info-line--muted" x="40" y="137" width="96" height="5" rx="2.5" />
+          <rect className="value-info-progress" x="40" y="137" width="96" height="5" rx="2.5" />
+        </g>
+        <path className="value-info-flow" d="M166 108H243" pathLength="1" />
+        <path className="value-info-accent-fill value-info-pulse" d="M207 72L190 109H208L196 147L229 98H211L222 72Z" />
+        <g className="value-info-browser value-info-pop">
+          <rect className="value-info-line" x="255" y="40" width="142" height="122" rx="11" />
+          <path className="value-info-line" d="M255 62H397" />
+          <rect className="value-info-fill" x="271" y="78" width="110" height="31" rx="5" />
+          <rect className="value-info-fill" x="271" y="119" width="50" height="26" rx="5" />
+          <rect className="value-info-fill" x="331" y="119" width="50" height="26" rx="5" />
+          <circle className="value-info-accent-line value-info-pulse" cx="368" cy="137" r="18" />
+          <path className="value-info-line" d="M359 137L366 144L378 129" />
+        </g>
+      </svg>
+    );
+  }
+
+  if (index === 2) {
+    return (
+      <svg className="value-info-svg" viewBox="0 0 420 220" aria-hidden="true">
+        {[[26, 44], [26, 130], [88, 28], [88, 146]].map(([x, y]) => (
+          <g key={`${x}-${y}`} className="value-info-pop">
+            <rect className="value-info-fill" x={x} y={y} width="46" height="34" rx="8" />
+            <path className="value-info-dark-line" d={`M${x + 7} ${y + 12}C${x + 17} ${y + 20},${x + 29} ${y + 20},${x + 39} ${y + 12}`} />
+          </g>
+        ))}
+        <path className="value-info-flow" d="M72 61L158 86M134 45L158 94M72 147L158 125M134 163L158 132" pathLength="1" />
+        <g className="value-info-pop">
+          <path className="value-info-fill value-info-accent-line" d="M158 69V145C158 162 248 162 248 145V69Z" />
+          <ellipse className="value-info-fill value-info-accent-line" cx="203" cy="69" rx="45" ry="15" />
+          <path className="value-info-dark-line" d="M158 99C158 116 248 116 248 99M158 130C158 147 248 147 248 130" />
+          <text className="value-info-dark-text" x="203" y="128" textAnchor="middle">DB</text>
+        </g>
+        <path className="value-info-flow" d="M248 111H286M286 61V161M286 61H330M286 111H330M286 161H330" pathLength="1" />
+        {[48, 98, 148].map((y) => (
+          <g key={y} className="value-info-pop">
+            <rect className="value-info-fill" x="330" y={y} width="62" height="28" rx="7" />
+            <path className="value-info-accent-line" d={`M346 ${y + 14}L354 ${y + 21}L374 ${y + 7}`} />
+          </g>
+        ))}
+      </svg>
+    );
+  }
+
+  return (
+    <svg className="value-info-svg" viewBox="0 0 420 220" aria-hidden="true">
+      {[48, 96, 144].map((y) => (
+        <g key={y} className="value-info-pop">
+          <rect className="value-info-fill" x="24" y={y} width="72" height="28" rx="7" />
+          <path className="value-info-dark-line" d={`M38 ${y + 10}H80M38 ${y + 19}H68`} />
+        </g>
+      ))}
+      <path className="value-info-flow" d="M96 62L154 91M96 110H154M96 158L154 129" pathLength="1" />
+      <g className="value-info-pop">
+        <path className="value-info-line" d="M143 82H154M143 110H154M143 138H154M246 82H257M246 110H257M246 138H257" />
+        <rect className="value-info-fill value-info-accent-line" x="154" y="65" width="92" height="90" rx="16" />
+        <text className="value-info-dark-text value-info-dark-text--large" x="200" y="121" textAnchor="middle">AI</text>
+      </g>
+      <path className="value-info-flow" d="M257 110H300L335 76H394" pathLength="1" />
+      <circle className="value-info-accent-fill value-info-pulse" cx="394" cy="76" r="10" />
+      <path className="value-info-accent-line" d="M376 58L395 76L376 94" />
+    </svg>
+  );
+}
+
 function ValueImpactContent({
   lang,
   titleRef,
@@ -493,6 +668,24 @@ function ValueImpactContent({
   titleRef?: (element: HTMLHeadingElement | null) => void;
 }) {
   const diagrams = VALUE_DIAGRAMS[lang];
+  const infoCards = VALUE_INFO[lang];
+  const [activeInfoIndex, setActiveInfoIndex] = useState<number | null>(null);
+  const activeDiagram = diagrams[activeInfoIndex ?? 0];
+  const activeInfo = infoCards[activeInfoIndex ?? 0];
+
+  useEffect(() => {
+    setActiveInfoIndex(null);
+  }, [lang]);
+
+  useEffect(() => {
+    if (activeInfoIndex === null) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setActiveInfoIndex(null);
+    };
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [activeInfoIndex]);
+
   return (
     <div className={`value-impact-content ${chakraPetch.className}`}>
       <h2
@@ -502,31 +695,105 @@ function ValueImpactContent({
       >
         {titleRef ? null : (lang === 'de' ? 'DEIN MEHRWERT' : 'YOUR VALUE')}
       </h2>
-      <div className="value-diagram-grid">
-        {diagrams.map((diagram, index) => (
-          <article
-            key={diagram.code}
-            className="value-diagram"
-            aria-label={`${diagram.eyebrow}: ${diagram.before} → ${diagram.after} ${diagram.resultLabel}`}
-            style={{ '--value-accent': diagram.accent, '--value-accent-rgb': diagram.accentRgb } as CSSProperties}
+      <div className={`value-diagram-stage ${activeInfoIndex !== null ? 'is-info-open' : ''}`}>
+        <div className="value-diagram-grid" aria-hidden={activeInfoIndex !== null}>
+          {diagrams.map((diagram, index) => (
+            <button
+              key={diagram.code}
+              type="button"
+              className="value-diagram"
+              aria-label={`${diagram.eyebrow}: ${diagram.before} → ${diagram.after}. ${lang === 'de' ? 'Details öffnen' : 'Open details'}`}
+              aria-expanded={activeInfoIndex === index}
+              tabIndex={activeInfoIndex === null ? 0 : -1}
+              style={{ '--value-accent': diagram.accent, '--value-accent-rgb': diagram.accentRgb } as CSSProperties}
+              onClick={() => setActiveInfoIndex(index)}
+            >
+              <span className="value-diagram-header">
+                <span className="value-diagram-code">{diagram.code}</span>
+                <span className="value-diagram-eyebrow">{diagram.eyebrow}</span>
+              </span>
+              <ValueDiagramGraphic index={index} lang={lang} />
+              <span className="value-diagram-result">
+                <strong>
+                  <AnimatedValueNumber
+                    fromLabel={diagram.counterStart}
+                    label={diagram.result}
+                    delay={index * 90}
+                  />
+                </strong>
+                <span>{diagram.resultLabel}</span>
+              </span>
+              <span
+                className="value-diagram-more"
+                title={lang === 'de' ? 'Details öffnen' : 'Open details'}
+                aria-hidden="true"
+              >
+                <Maximize2 size={16} strokeWidth={2.1} />
+              </span>
+            </button>
+          ))}
+        </div>
+
+        <section
+          className={`value-info-card ${activeInfoIndex !== null ? 'is-open' : ''}`}
+          aria-hidden={activeInfoIndex === null}
+          aria-label={`${activeDiagram.eyebrow}: ${activeInfo.title}`}
+          style={{ '--value-accent': activeDiagram.accent, '--value-accent-rgb': activeDiagram.accentRgb } as CSSProperties}
+        >
+          <button
+            type="button"
+            className="value-info-close"
+            title={lang === 'de' ? 'Schliessen' : 'Close'}
+            aria-label={lang === 'de' ? 'Infokarte schliessen' : 'Close information card'}
+            tabIndex={activeInfoIndex !== null ? 0 : -1}
+            onClick={() => setActiveInfoIndex(null)}
           >
-            <header>
-              <span className="value-diagram-code">{diagram.code}</span>
-              <span className="value-diagram-eyebrow">{diagram.eyebrow}</span>
-            </header>
-            <ValueDiagramGraphic index={index} lang={lang} />
-            <div className="value-diagram-result">
-              <strong>
-                <AnimatedValueNumber
-                  fromLabel={diagram.counterStart}
-                  label={diagram.result}
-                  delay={index * 90}
-                />
-              </strong>
-              <span>{diagram.resultLabel}</span>
+            <X size={19} strokeWidth={2.2} />
+          </button>
+
+          <div className="value-info-copy">
+            <div className="value-info-meta">
+              <span className="value-diagram-code">{activeDiagram.code}</span>
+              <span className="value-diagram-eyebrow">{activeDiagram.eyebrow}</span>
             </div>
-          </article>
-        ))}
+            <h3>{activeInfo.title}</h3>
+            <p>{activeInfo.summary}</p>
+            <div className="value-info-columns">
+              <div>
+                <h4>{lang === 'de' ? 'WAS ICH OPTIMIERE' : 'WHAT I OPTIMIZE'}</h4>
+                <ul>
+                  {activeInfo.optimizes.map((point) => (
+                    <li key={point}><CheckCircle size={14} strokeWidth={1.9} /><span>{point}</span></li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h4>{lang === 'de' ? 'DEIN NUTZEN' : 'YOUR BENEFIT'}</h4>
+                <ul>
+                  {activeInfo.benefits.map((point) => (
+                    <li key={point}><CheckCircle size={14} strokeWidth={1.9} /><span>{point}</span></li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div className="value-info-visual">
+            <ValueInfoGraphic index={activeInfoIndex ?? 0} />
+            <div className="value-info-stages" aria-hidden="true">
+              {activeInfo.stages.map((stage, stageIndex) => (
+                <span key={stage}>
+                  <i>{String(stageIndex + 1).padStart(2, '0')}</i>
+                  <b>{stage}</b>
+                </span>
+              ))}
+            </div>
+            <div className="value-info-result">
+              <strong>{activeDiagram.result}</strong>
+              <span>{activeDiagram.resultLabel}</span>
+            </div>
+          </div>
+        </section>
       </div>
       <p className="value-impact-disclaimer">
         {lang === 'de'
