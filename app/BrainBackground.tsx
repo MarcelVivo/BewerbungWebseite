@@ -2309,8 +2309,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   );
   // Während die Kamera diese Höhe passiert, fährt das Gehirn kurz an den
   // linken Bildrand. Sein Mittelpunkt bleibt ausserhalb, die innere Kante
-  // wird jedoch angeschnitten sichtbar. Danach gleitet es wieder in die für
-  // die Endansicht definierte Position zurück.
+  // wird jedoch angeschnitten sichtbar. Diese Weltposition hält es danach
+  // bis zur Anfahrt auf die vier Lösungskarten. Erst unmittelbar vor dieser
+  // Station gleitet es in die für die Endansicht definierte Position zurück.
   var greenRevealProgress=THREE.MathUtils.clamp(
     (cameraTargetStart-greenSatelliteY)/cameraTravel,
     0,
@@ -4097,7 +4098,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
             (cameraProgress-(satelliteData.cameraReveal.progress-.065))/.04
           );
           var greenRevealOut=1-smoother(
-            (cameraProgress-(satelliteData.cameraReveal.progress+.025))/.045
+            (cameraProgress-(cameraHelixExitStart-.04))/.04
           );
           var greenRevealWeight=greenRevealIn*greenRevealOut;
           satelliteBaseX=THREE.MathUtils.lerp(
