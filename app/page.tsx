@@ -347,13 +347,37 @@ function ValueDiagramGraphic({ index, lang }: { index: number; lang: 'de' | 'en'
 
   return (
     <svg className="value-chart-svg" viewBox="0 0 280 122" aria-hidden="true">
-      <circle className="value-donut-track" cx="69" cy="62" r="39" pathLength="1" />
-      <circle className="value-chart-accent value-donut-value" cx="69" cy="62" r="39" pathLength="1" />
-      <path className="value-chart-line" d="M126 35H164V61H204V87H256" />
-      {[126, 164, 204, 256].map((x, i) => <circle key={x} className={i === 3 ? 'value-chart-dot value-pulse-dot' : 'value-chart-dot'} cx={x} cy={[35, 61, 87, 87][i]} r="5" />)}
-      <path className="value-chart-accent value-flow-line" d="M126 35H164V61H204V87H256" pathLength="1" />
-      <text className="value-chart-label" x="69" y="118" textAnchor="middle">100 h</text>
-      <text className="value-chart-label value-chart-label--accent" x="256" y="118" textAnchor="end">30 h</text>
+      <path className="value-ai-input-track" d="M43 27H67L96 49M43 61H96M43 95H67L96 73" />
+      <path className="value-ai-input value-ai-input--1" d="M43 27H67L96 49" pathLength="1" />
+      <path className="value-ai-input value-ai-input--2" d="M43 61H96" pathLength="1" />
+      <path className="value-ai-input value-ai-input--3" d="M43 95H67L96 73" pathLength="1" />
+
+      {[19, 53, 87].map((y, index) => (
+        <g key={y} className={`value-ai-task value-ai-task--${index + 1}`}>
+          <rect className="value-ai-task-card" x="13" y={y} width="30" height="16" rx="3" />
+          <path className="value-ai-task-mark" d={`M20 ${y + 6}H36M20 ${y + 11}H31`} />
+        </g>
+      ))}
+
+      <g className="value-ai-core">
+        <path className="value-ai-core-pins" d="M89 47H96M89 61H96M89 75H96M154 47H161M154 61H161M154 75H161" />
+        <rect className="value-ai-core-shell" x="96" y="36" width="58" height="50" rx="9" />
+        <circle className="value-ai-core-node" cx="111" cy="51" r="3" />
+        <circle className="value-ai-core-node" cx="139" cy="51" r="3" />
+        <path className="value-ai-core-circuit" d="M111 51L119 61L111 71M139 51L131 61L139 71" />
+        <text className="value-ai-core-text" x="125" y="66" textAnchor="middle">
+          {lang === 'de' ? 'KI' : 'AI'}
+        </text>
+      </g>
+
+      <path className="value-ai-output-track" d="M161 61H191L217 35H258" />
+      <path className="value-ai-output" d="M161 61H191L217 35H258" pathLength="1" />
+      <circle className="value-ai-packet" cx="161" cy="61" r="5" />
+      <path className="value-ai-arrow" d="M248 25L259 35L248 45" />
+      <circle className="value-ai-target" cx="258" cy="35" r="5" />
+
+      <text className="value-chart-label" x="28" y="118" textAnchor="middle">100 h</text>
+      <text className="value-chart-label value-chart-label--accent" x="258" y="118" textAnchor="end">30 h</text>
     </svg>
   );
 }

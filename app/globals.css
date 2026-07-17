@@ -922,8 +922,7 @@ body {
   filter: drop-shadow(0 0 7px rgba(255,255,255,0.22));
 }
 
-.value-speed-ring,
-.value-donut-track {
+.value-speed-ring {
   stroke: #fff;
   stroke-width: 10;
   opacity: 0.24;
@@ -937,12 +936,90 @@ body {
   transform-origin: 206px 62px;
 }
 
-.value-donut-value {
-  stroke-width: 10;
-  stroke-dasharray: 0.7 0.3;
-  stroke-dashoffset: 0.7;
-  transform: rotate(-90deg);
-  transform-origin: 69px 62px;
+.value-ai-input-track,
+.value-ai-output-track {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2.4;
+  opacity: 0.16;
+}
+
+.value-ai-input,
+.value-ai-output {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 3;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+.value-ai-task-card {
+  fill: #fff;
+  stroke: #fff;
+  stroke-width: 1.4;
+}
+
+.value-ai-task-mark {
+  fill: none;
+  stroke: #050505;
+  stroke-width: 1.8;
+}
+
+.value-ai-core {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.value-ai-core-pins,
+.value-ai-core-circuit {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2.3;
+}
+
+.value-ai-core-shell {
+  fill: #fff;
+  stroke: var(--value-accent);
+  stroke-width: 2;
+  filter: drop-shadow(0 0 7px rgba(255,255,255,0.24));
+}
+
+.value-ai-core-node {
+  fill: #050505;
+}
+
+.value-ai-core-circuit {
+  stroke: #050505;
+  stroke-width: 1.7;
+}
+
+.value-ai-core-text {
+  fill: #050505;
+  stroke: none;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.value-ai-packet {
+  fill: #fff;
+  stroke: var(--value-accent);
+  stroke-width: 2;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.value-ai-arrow {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 3;
+}
+
+.value-ai-target {
+  fill: var(--value-accent);
+  stroke: #fff;
+  stroke-width: 2.4;
 }
 
 .value-diagram-result {
@@ -1026,11 +1103,6 @@ body {
   animation-delay: calc(620ms + var(--value-index, 0) * 100ms);
 }
 
-.is-revealed .value-donut-value {
-  animation: value-donut-fill 1.25s cubic-bezier(.2,.72,.3,1) forwards;
-  animation-delay: 650ms;
-}
-
 .is-revealed .value-speed-ring--fast {
   animation: value-gauge-spin 1.1s cubic-bezier(.2,.75,.3,1) forwards;
   animation-delay: 510ms;
@@ -1077,12 +1149,47 @@ body {
   animation: value-story-path 6.8s cubic-bezier(.2,.68,.3,1) infinite;
 }
 
-.is-revealed .value-diagram:nth-child(4) .value-donut-value {
-  animation: value-story-donut 6.8s cubic-bezier(.2,.72,.3,1) infinite;
+.is-revealed .value-diagram:nth-child(4) .value-ai-input {
+  animation: value-ai-input-story 6.8s cubic-bezier(.2,.68,.3,1) infinite;
 }
 
-.is-revealed .value-diagram:nth-child(4) .value-flow-line {
-  animation: value-story-path 6.8s cubic-bezier(.2,.68,.3,1) infinite;
+.is-revealed .value-diagram:nth-child(4) .value-ai-input--2 {
+  animation-delay: 100ms;
+}
+
+.is-revealed .value-diagram:nth-child(4) .value-ai-input--3 {
+  animation-delay: 200ms;
+}
+
+.is-revealed .value-diagram:nth-child(4) .value-ai-task {
+  animation: value-ai-task-story 6.8s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.is-revealed .value-diagram:nth-child(4) .value-ai-task--2 {
+  animation-delay: 100ms;
+}
+
+.is-revealed .value-diagram:nth-child(4) .value-ai-task--3 {
+  animation-delay: 200ms;
+}
+
+.is-revealed .value-diagram:nth-child(4) .value-ai-core {
+  animation: value-ai-core-story 6.8s ease-in-out infinite;
+}
+
+.is-revealed .value-diagram:nth-child(4) .value-ai-output {
+  animation: value-ai-output-story 6.8s cubic-bezier(.2,.68,.3,1) infinite;
+}
+
+.is-revealed .value-diagram:nth-child(4) .value-ai-packet {
+  animation: value-ai-packet-story 6.8s cubic-bezier(.22,.68,.3,1) infinite;
+}
+
+.is-revealed .value-diagram:nth-child(4) .value-ai-arrow,
+.is-revealed .value-diagram:nth-child(4) .value-ai-target {
+  animation: value-ai-target-story 6.8s ease-in-out infinite;
 }
 
 .is-revealed .value-chart-label:not(.value-chart-label--accent) {
@@ -1115,11 +1222,6 @@ body {
 }
 
 @keyframes value-line-draw {
-  to { stroke-dashoffset: 0; }
-}
-
-@keyframes value-donut-fill {
-  from { stroke-dashoffset: 0.7; }
   to { stroke-dashoffset: 0; }
 }
 
@@ -1187,15 +1289,46 @@ body {
   100% { opacity: 0; transform: rotate(-96deg); }
 }
 
-@keyframes value-story-donut {
-  0%, 18% { opacity: 0.15; stroke-dashoffset: 0.7; filter: none; }
-  42%, 86% {
-    opacity: 1;
-    stroke-dashoffset: 0;
-    filter: drop-shadow(0 0 8px rgba(var(--value-accent-rgb),0.42));
-  }
-  94% { opacity: 0.5; stroke-dashoffset: 0; }
-  100% { opacity: 0; stroke-dashoffset: 0.7; filter: none; }
+@keyframes value-ai-input-story {
+  0%, 5% { opacity: 0; stroke-dashoffset: 1; }
+  25%, 86% { opacity: 1; stroke-dashoffset: 0; }
+  94% { opacity: 0.35; stroke-dashoffset: 0; }
+  100% { opacity: 0; stroke-dashoffset: 1; }
+}
+
+@keyframes value-ai-task-story {
+  0% { opacity: 0.24; transform: scale(0.9); }
+  8%, 24% { opacity: 1; transform: scale(1); }
+  31%, 86% { opacity: 0.48; transform: scale(0.94); }
+  100% { opacity: 0.18; transform: scale(0.9); }
+}
+
+@keyframes value-ai-core-story {
+  0%, 14% { opacity: 0.28; transform: scale(0.9); filter: none; }
+  30% { opacity: 1; transform: scale(1.06); filter: drop-shadow(0 0 10px rgba(var(--value-accent-rgb),0.54)); }
+  40%, 86% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 5px rgba(var(--value-accent-rgb),0.3)); }
+  100% { opacity: 0.22; transform: scale(0.9); filter: none; }
+}
+
+@keyframes value-ai-output-story {
+  0%, 29% { opacity: 0; stroke-dashoffset: 1; }
+  58%, 86% { opacity: 1; stroke-dashoffset: 0; filter: drop-shadow(0 0 6px rgba(var(--value-accent-rgb),0.38)); }
+  100% { opacity: 0; stroke-dashoffset: 1; filter: none; }
+}
+
+@keyframes value-ai-packet-story {
+  0%, 29% { opacity: 0; transform: translate(0, 0) scale(0.7); }
+  34% { opacity: 1; transform: translate(0, 0) scale(1); }
+  45% { opacity: 1; transform: translate(30px, 0) scale(1); }
+  55% { opacity: 1; transform: translate(56px, -26px) scale(1); }
+  64%, 86% { opacity: 1; transform: translate(97px, -26px) scale(1.12); }
+  100% { opacity: 0; transform: translate(97px, -26px) scale(0.7); }
+}
+
+@keyframes value-ai-target-story {
+  0%, 48% { opacity: 0.12; filter: none; }
+  64%, 86% { opacity: 1; filter: drop-shadow(0 0 8px rgba(var(--value-accent-rgb),0.88)); }
+  100% { opacity: 0.12; filter: none; }
 }
 
 @keyframes value-story-source-label {
@@ -2258,7 +2391,12 @@ body {
   .is-revealed .value-flow-line,
   .is-revealed .value-speed-ring--fast,
   .is-revealed .value-speed-needle-after,
-  .is-revealed .value-donut-value,
+  .is-revealed .value-ai-input,
+  .is-revealed .value-ai-output,
+  .is-revealed .value-ai-task,
+  .is-revealed .value-ai-core,
+  .is-revealed .value-ai-arrow,
+  .is-revealed .value-ai-target,
   .is-revealed .value-chart-label {
     animation: none !important;
     opacity: 1 !important;
@@ -2271,12 +2409,20 @@ body {
   .is-revealed .value-draw-line,
   .is-revealed .value-flow-line,
   .is-revealed .value-speed-ring--fast,
-  .is-revealed .value-donut-value {
+  .is-revealed .value-ai-input,
+  .is-revealed .value-ai-output {
     stroke-dashoffset: 0 !important;
   }
 
-  .is-revealed .value-speed-needle-after {
+  .is-revealed .value-speed-needle-after,
+  .is-revealed .value-ai-task,
+  .is-revealed .value-ai-core {
     transform: rotate(0deg) !important;
+  }
+
+  .is-revealed .value-ai-packet {
+    animation: none !important;
+    opacity: 0 !important;
   }
 
   .spiral-section {
