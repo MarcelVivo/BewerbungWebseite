@@ -868,14 +868,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       // entstehen - das eigentliche Ausbrechen beginnt erst in der
       // Feld-/Talphase, weit hinten am Horizont-Referenzpunkt.
       var transitionSideEnd=targetSide*(.03+landscapeRandom()*.04);
-      // Jede Faser biegt zu einem eigenen Zeitpunkt und eigenem Tempo ab.
-      // Ohne diese Entkopplung durchlaufen alle Fasern exakt dieselbe
-      // S-Kurve gleichzeitig und bewegen sich als kohärente "Wellenfront",
-      // die als scharfe, kastenartige Kante statt organischem Auffächern
-      // erscheint. spreadDelay verschiebt WANN eine Faser zu biegen beginnt,
-      // spreadPower variiert zusätzlich das Tempo.
-      var spreadDelay=landscapeRandom()*.62;
-      var spreadPower=.4+landscapeRandom()*2.1;
       var transitionControlOneDrop=transitionDrop*(.23+landscapeRandom()*.13);
       var transitionControlTwoDrop=transitionDrop*(.88+landscapeRandom()*.08);
       var transitionControlTwoForward=.24+landscapeRandom()*.28;
@@ -935,29 +927,31 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         var fieldEnvelope=Math.sin(Math.PI*fieldT);
         var fieldMeander=Math.sin(phase+fieldT*meanderFrequency*Math.PI*2)
           *meanderAmplitude*fieldEnvelope;
-        var spreadT=THREE.MathUtils.clamp((fieldT-spreadDelay)/(1-spreadDelay),0,1);
-        var fieldSpread=smoother(Math.pow(spreadT,spreadPower));
+        var fieldSpread=smoother(fieldT);
         // Glatte, stetige Wellenform statt unabhängigem Zufall pro Punkt:
         // echtes Rauschen pro Punkt erzeugt eckige Zickzack-Knicke auf der
         // Linie. corridorNoise ist stetig in fieldT, also bleibt die Kurve
         // organisch. Mit fieldSpread skaliert -> direkt am Stammfuss (kleines
         // fieldT) praktisch kein Ausschlag, erst weiter draussen sichtbar.
         var fieldJitterX=corridorNoise(fieldT*3.4,phase*1.7,phase*2.9)
-          *landscapeHalfWidth*.12*fieldSpread;
+          *landscapeHalfWidth*.05*fieldSpread;
         var fieldJitterZ=corridorNoise(fieldT*2.6+50,phase*1.3,phase*1.1)
-          *landscapeDepth*.1*fieldSpread;
+          *landscapeDepth*.05*fieldSpread;
         var fieldSide=THREE.MathUtils.clamp(
           transitionSideEnd+(targetSide-transitionSideEnd)*fieldSpread+fieldMeander+fieldJitterX,
           -landscapeHalfWidth*1.08,
           landscapeHalfWidth*1.08
         );
         var fieldForward=transitionForwardEnd+targetDepth*fieldT+fieldJitterZ;
-        // Wandschwelle bleibt fest (kein Rauschen auf der Schwelle selbst):
-        // Rauschen auf der Schwelle liess den Anstiegspunkt von Punkt zu
-        // Punkt springen, was zusammen mit der Potenzkurve ein sägezahn-
-        // artiges, eckiges Höhenprofil erzeugte. Stattdessen sorgt allein
-        // das Positions-Jitter (fieldJitterX/Z) für unregelmässige Wände.
-        var wallDistance=Math.max(Math.abs(fieldSide)-landscapeCorridorWidth,0);
+        // Grossflächiges Rauschen verschiebt die Wandkante pro (X,Z)-Position,
+        // statt sie starr an einer festen X-Schwelle zu fixieren -> Nachbar-
+        // fasern klettern nicht mehr synchron hoch (kein Gittermuster).
+        var corridorWidthNoise=corridorNoise(fieldSide*.6,fieldForward*.6,phase);
+        var effectiveCorridorWidth=Math.max(
+          landscapeCorridorWidth*.35,
+          landscapeCorridorWidth+corridorWidthNoise*landscapeCorridorWidth*.6
+        );
+        var wallDistance=Math.max(Math.abs(fieldSide)-effectiveCorridorWidth,0);
         var fieldBank=Math.pow(
           wallDistance/(landscapeHalfWidth-landscapeCorridorWidth),
           landscapeCorridorSharpness
