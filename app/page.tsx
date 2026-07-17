@@ -789,6 +789,7 @@ function ValueImpactWorld({ lang }: { lang: 'de' | 'en' }) {
       if (!cameraState) return;
 
       const exitProgress = Math.max(0, Math.min(1, cameraState.exitProgress || 0));
+      const approachProgress = Math.max(0, Math.min(1, cameraState.approachProgress || 0));
       // Am Navigationsstopp "Dein Mehrwert" (kurz nach der Kartenstation)
       // ist die Gruppe bereits vollständig lesbar; direkt an der
       // Karten-Totalen bleibt sie trotzdem komplett hinter der Kamera. Die
@@ -799,12 +800,18 @@ function ValueImpactWorld({ lang }: { lang: 'de' | 'en' }) {
       const depth = exitProgress * exitProgress * (3 - 2 * exitProgress);
       const translateY = (1 - reveal) * 112;
       const rotateX = (1 - reveal) * 34;
-      const scale = 1.12 - depth * 0.12;
-      const opacity = Math.max(0, Math.min(1, (revealRaw - 0.08) / 0.44));
+      const overviewScale = 1.12 - depth * 0.12;
+      const approachEase = approachProgress * approachProgress * (3 - 2 * approachProgress);
+      const approachScale = overviewScale * (1 + approachEase * 1.15);
+      const approachX = approachEase * 42;
+      const approachY = approachEase * 34;
+      const approachFadeRaw = Math.max(0, Math.min(1, (approachProgress - 0.52) / 0.38));
+      const approachFade = 1 - approachFadeRaw * approachFadeRaw * (3 - 2 * approachFadeRaw);
+      const opacity = Math.max(0, Math.min(1, (revealRaw - 0.08) / 0.44)) * approachFade;
 
       world.style.opacity = opacity.toFixed(3);
-      world.style.transform = `translate3d(-50%, calc(-50% + ${translateY.toFixed(2)}vh), 0) perspective(1400px) rotateX(${rotateX.toFixed(2)}deg) scale(${scale.toFixed(4)})`;
-      world.style.pointerEvents = opacity > 0.92 ? 'auto' : 'none';
+      world.style.transform = `translate3d(calc(-50% + ${approachX.toFixed(2)}vw), calc(-50% + ${(translateY + approachY).toFixed(2)}vh), 0) perspective(1400px) rotateX(${rotateX.toFixed(2)}deg) scale(${approachScale.toFixed(4)})`;
+      world.style.pointerEvents = opacity > 0.92 && approachProgress < 0.04 ? 'auto' : 'none';
       world.setAttribute('aria-hidden', opacity > 0.65 ? 'false' : 'true');
 
       if (!wasVisible && revealRaw > 0.34) {
@@ -912,14 +919,14 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       if (!cam) return;
 
       const camPos = {
-        x: Math.sin(cam.orbit) * cam.cameraRadius,
+        x: typeof cam.cameraX === 'number' ? cam.cameraX : Math.sin(cam.orbit) * cam.cameraRadius,
         y: cam.cameraY,
-        z: Math.cos(cam.orbit) * cam.cameraRadius,
+        z: typeof cam.cameraZ === 'number' ? cam.cameraZ : Math.cos(cam.orbit) * cam.cameraRadius,
       };
 
-      let fx = 0 - camPos.x;
+      let fx = (typeof cam.cameraLookX === 'number' ? cam.cameraLookX : 0) - camPos.x;
       let fy = cam.cameraLookY - camPos.y;
-      let fz = 0 - camPos.z;
+      let fz = (typeof cam.cameraLookZ === 'number' ? cam.cameraLookZ : 0) - camPos.z;
       const fLen = Math.hypot(fx, fy, fz) || 1;
       fx /= fLen; fy /= fLen; fz /= fLen;
 
@@ -1124,14 +1131,14 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       const scrollIdle = performance.now() - lastScrollAt > SCROLL_IDLE_MS;
 
       const camPos = {
-        x: Math.sin(cam.orbit) * cam.cameraRadius,
+        x: typeof cam.cameraX === 'number' ? cam.cameraX : Math.sin(cam.orbit) * cam.cameraRadius,
         y: cam.cameraY,
-        z: Math.cos(cam.orbit) * cam.cameraRadius,
+        z: typeof cam.cameraZ === 'number' ? cam.cameraZ : Math.cos(cam.orbit) * cam.cameraRadius,
       };
 
-      let fx = 0 - camPos.x;
+      let fx = (typeof cam.cameraLookX === 'number' ? cam.cameraLookX : 0) - camPos.x;
       let fy = cam.cameraLookY - camPos.y;
-      let fz = 0 - camPos.z;
+      let fz = (typeof cam.cameraLookZ === 'number' ? cam.cameraLookZ : 0) - camPos.z;
       const fLen = Math.hypot(fx, fy, fz) || 1;
       fx /= fLen; fy /= fLen; fz /= fLen;
 

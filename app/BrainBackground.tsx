@@ -77,6 +77,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     .92
   );
   var cameraExitPullback=isMobile?11.4:16.4;
+  // Die bisherige Mehrwert-Totalen wird vor dem neuen Schlussanflug bereits
+  // vollständig erreicht und kurz gehalten. Der restliche Scrollweg gehört
+  // ausschliesslich dem diagonalen Flug zum grünen Satellitengehirn.
+  var CAMERA_OVERVIEW_ARRIVAL=.82;
+  var CAMERA_BRAIN_APPROACH_START=.88;
   var SCENE_MOTION=false;
   var OBJECT_FLOATING=true;
   // Feine, entlang des echten Knotennetzes laufende Nervenimpulse.
@@ -549,6 +554,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   function smoother(x){
     x=x<0?0:x>1?1:x;
     return x*x*x*(x*(x*6-15)+10);
+  }
+  function cubicBezierValue(start,controlA,controlB,end,progress){
+    var inverse=1-progress;
+    return inverse*inverse*inverse*start
+      +3*inverse*inverse*progress*controlA
+      +3*inverse*progress*progress*controlB
+      +progress*progress*progress*end;
   }
   function stretchedWavePhase(progress,startCycles,endCycles){
     var u=THREE.MathUtils.clamp(progress,0,1);
@@ -3923,7 +3935,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       // Fingerweg. Die normale mobile Kartenliste verkürzt den Container,
       // darf aber nicht die Kamera-Timeline zusammendrücken.
       var distance=isMobile
-        ? Math.max(1,innerHeight*6.5)
+        ? Math.max(1,innerHeight*7.95)
         : Math.max(1,journey.offsetHeight);
       targetScrollP=Math.max(0,Math.min(1,(scrollY-start)/distance));
     };
@@ -4197,10 +4209,16 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       scrollP=cameraProgress;
       var sf = cameraProgress;
       var chapterTransitionProgress=THREE.MathUtils.clamp(
-        (sf-cameraHelixExitStart)/Math.max(.0001,1-cameraHelixExitStart),
+        (sf-cameraHelixExitStart)/Math.max(.0001,CAMERA_OVERVIEW_ARRIVAL-cameraHelixExitStart),
         0,
         1
       );
+      var brainApproachProgress=THREE.MathUtils.clamp(
+        (sf-CAMERA_BRAIN_APPROACH_START)/Math.max(.0001,1-CAMERA_BRAIN_APPROACH_START),
+        0,
+        1
+      );
+      var brainApproachEase=smoother(brainApproachProgress);
       var valleyRevealProgress=THREE.MathUtils.clamp(
         (chapterTransitionProgress-.1)/.9,
         0,
@@ -4218,7 +4236,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var railSf=sf;
       var dollyPullback=0;
       if(sf>cameraHelixExitStart){
-        var exitRange=Math.max(.0001,1-cameraHelixExitStart);
+        var exitRange=Math.max(.0001,CAMERA_OVERVIEW_ARRIVAL-cameraHelixExitStart);
         var exitT=THREE.MathUtils.clamp((sf-cameraHelixExitStart)/exitRange,0,1);
         var exitEase=smoother(exitT);
         // Ab Einblendung der vier Karten ist die Helixrotation vollständig
@@ -4244,6 +4262,54 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       }
       var cameraRadius=baseCameraRadius*mobileHeroFraming+dollyPullback;
       var targetFov=53+Math.sin(railSf*Math.PI*2*2.15+.45)*1.65;
+      var cameraX=Math.sin(orbit)*cameraRadius;
+      var cameraZ=Math.cos(orbit)*cameraRadius;
+      var cameraLookX=0;
+      var cameraLookY=cameraAimY;
+      var cameraLookZ=0;
+      if(brainApproachProgress>0){
+        // Startpunkt ist exakt die ruhende Mehrwert-Totalen. Der erste
+        // Kontrollpunkt zieht die Kamera in ihrer aktuellen Bildebene nach
+        // links oben, sodass sie knapp über die gelbe 01-Karte gleitet. Der
+        // zweite Kontrollpunkt richtet die Flugbahn auf das grüne Gehirn aus.
+        var approachStartX=cameraX;
+        var approachStartY=cameraY;
+        var approachStartZ=cameraZ;
+        var approachFocusX=greenSatelliteBrain.position.x;
+        var approachFocusY=greenSatelliteBrain.position.y;
+        var approachFocusZ=greenSatelliteBrain.position.z;
+        var approachFromX=approachStartX-approachFocusX;
+        var approachFromY=approachStartY-approachFocusY;
+        var approachFromZ=approachStartZ-approachFocusZ;
+        var approachFromLength=Math.sqrt(
+          approachFromX*approachFromX
+          +approachFromY*approachFromY
+          +approachFromZ*approachFromZ
+        )||1;
+        approachFromX/=approachFromLength;
+        approachFromY/=approachFromLength;
+        approachFromZ/=approachFromLength;
+        var approachDistance=isMobile?5.2:6.2;
+        var approachEndX=approachFocusX+approachFromX*approachDistance;
+        var approachEndY=approachFocusY+approachFromY*approachDistance-(isMobile?.45:.72);
+        var approachEndZ=approachFocusZ+approachFromZ*approachDistance;
+        var cameraLeftX=-Math.cos(orbit);
+        var cameraLeftZ=Math.sin(orbit);
+        var approachControlAX=approachStartX+cameraLeftX*(isMobile?1.7:3.4);
+        var approachControlAY=approachStartY+(isMobile?1.4:2.8);
+        var approachControlAZ=approachStartZ+cameraLeftZ*(isMobile?1.7:3.4);
+        var approachControlBX=approachEndX+approachFromX*(isMobile?1.2:2.1);
+        var approachControlBY=approachEndY+approachFromY*(isMobile?1.2:2.1)-.35;
+        var approachControlBZ=approachEndZ+approachFromZ*(isMobile?1.2:2.1);
+        cameraX=cubicBezierValue(approachStartX,approachControlAX,approachControlBX,approachEndX,brainApproachEase);
+        cameraY=cubicBezierValue(approachStartY,approachControlAY,approachControlBY,approachEndY,brainApproachEase);
+        cameraZ=cubicBezierValue(approachStartZ,approachControlAZ,approachControlBZ,approachEndZ,brainApproachEase);
+        var approachLookBlend=smoother(Math.min(1,brainApproachProgress/.7));
+        cameraLookX=approachFocusX*approachLookBlend;
+        cameraLookY=cameraAimY+(approachFocusY-cameraAimY)*approachLookBlend;
+        cameraLookZ=approachFocusZ*approachLookBlend;
+        targetFov=THREE.MathUtils.lerp(targetFov,isMobile?49:46.5,brainApproachEase);
+      }
       if(Math.abs(targetFov-lastCameraFov)>.015){
         camera.fov=targetFov;
         camera.updateProjectionMatrix();
@@ -4251,8 +4317,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       }
       world.rotation.y = 0;
       world.position.y = 0;
-      camera.position.set(Math.sin(orbit)*cameraRadius, cameraY, Math.cos(orbit)*cameraRadius);
-      camera.lookAt(0, cameraAimY, 0);
+      camera.position.set(cameraX,cameraY,cameraZ);
+      camera.lookAt(cameraLookX,cameraLookY,cameraLookZ);
       // Die fünf Texte bleiben vollständig an ihren Weltstationen. Nur ihre
       // Materialwirkung folgt der echten Kameradistanz: der nächstgelegene
       // Text bleibt klar, alle übrigen werden weich, dunkel und zunehmend
@@ -4297,13 +4363,16 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       // Kamera-Berechnung zu duplizieren.
       if (typeof window !== 'undefined') {
         window.__cardsCameraState = {
-          orbit: orbit, cameraY: cameraY, cameraLookY: cameraAimY,
+          orbit: orbit, cameraY: cameraY, cameraLookY: cameraLookY,
           cameraRadius: cameraRadius, fov: camera.fov, aspect: camera.aspect,
+          cameraX: cameraX, cameraZ: cameraZ,
+          cameraLookX: cameraLookX, cameraLookZ: cameraLookZ,
           // Der Ausfahrfortschritt ist die gemeinsame Quelle für alle
           // Weltobjekte hinter der Kartenstation. DOM-Szenen können damit
           // exakt auf dieselbe gedämpfte Kamerafahrt reagieren, ohne den
           // Scrollstand ein zweites Mal zu berechnen.
           exitProgress: chapterTransitionProgress,
+          approachProgress: brainApproachProgress,
           cameraProgress: cameraProgress,
         };
       }
