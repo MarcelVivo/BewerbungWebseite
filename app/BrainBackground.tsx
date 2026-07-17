@@ -477,6 +477,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
            curve:0, twist:5.2, jitter:0, ptSize:0.044, spacing:0.06,
            ringSpread:0.1, offX:0, offY:0, offZ:0,
            droop:1.5, frayStart:0.98, fraySpread:0.12 };
+  // Anteil (0..1) des Bündels, ab dem Fasern seitlich/nach vorne ausbrechen
+  // dürfen. Darüber bleibt der Strang ein ruhiges, gerades Bündel.
+  var BREAKOUT_START=0.82;
   // Trichter: Jede Faser startet an einem echten goldenen Vertex im Stumpf-
   // Bereich, läuft über einen organischen Fächer zu einem individuellen Punkt
   // auf dem unteren Auslassring und ordnet sich erst danach weich im Bündel.
@@ -1076,13 +1079,17 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         } else {
           var br=r-rootSteps;
           var btv=bundleSteps>1?br/(bundleSteps-1):0;
-          var ang=a0+btv*tw;
+          // Bündel bleibt bis BREAKOUT_START ein ruhiger, gerader Strang ohne
+          // Verdrehung; erst danach setzt Twist und Ausbrechen zur Landschaft
+          // hin ein (deckt sich mit dem Übergangspunkt zur Landschaft).
+          var breakoutProgress=smooth(Math.max(0,(btv-BREAKOUT_START)/(1-BREAKOUT_START)));
+          var ang=a0+breakoutProgress*tw;
           var bundleScale=1-SP.taper*btv;
           var thicknessScale=GOLD_STRAND_TUNING.topThickness+(GOLD_STRAND_TUNING.bottomThickness-GOLD_STRAND_TUNING.topThickness)*btv;
-          var swirl=SP.rStr*smooth(Math.min(1,btv/Math.max(SP.gather,.001)))*thicknessScale;
+          var swirl=SP.rStr*smooth(Math.min(1,btv/Math.max(SP.gather,.001)))*thicknessScale*breakoutProgress;
           var frayEnv=smooth(Math.max(0,(btv-SP.frayStart)/Math.max(.001,1-SP.frayStart)));
           var fraySpread=frayEnv*SP.fraySpread*frayJitter*thicknessScale;
-          var escapeEnvelope=smooth((btv-.08)/.2)*smooth((.96-btv)/.18);
+          var escapeEnvelope=breakoutProgress;
           var escapeTravel=btv*pairProfile.escapeFrequency*GOLD_STRAND_TUNING.escapeFrequency/GOLD_STRAND_TUNING.escapeWavelength
             -pairProfile.escapeSpeed*GOLD_STRAND_TUNING.escapeSpeed;
           var escapeWave=(Math.sin(escapeTravel+pairProfile.escapePhase)+Math.sin(escapeTravel*1.71+pairProfile.escapePhase*.43)*.36)
