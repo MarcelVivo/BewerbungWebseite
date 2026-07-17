@@ -928,15 +928,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         var fieldMeander=Math.sin(phase+fieldT*meanderFrequency*Math.PI*2)
           *meanderAmplitude*fieldEnvelope;
         var fieldSpread=smoother(fieldT);
-        // Glatte, stetige Wellenform statt unabhängigem Zufall pro Punkt:
-        // echtes Rauschen pro Punkt erzeugt eckige Zickzack-Knicke auf der
-        // Linie. corridorNoise ist stetig in fieldT, also bleibt die Kurve
-        // organisch. Mit fieldSpread skaliert -> direkt am Stammfuss (kleines
-        // fieldT) praktisch kein Ausschlag, erst weiter draussen sichtbar.
-        var fieldJitterX=corridorNoise(fieldT*3.4,phase*1.7,phase*2.9)
-          *landscapeHalfWidth*.05*fieldSpread;
-        var fieldJitterZ=corridorNoise(fieldT*2.6+50,phase*1.3,phase*1.1)
-          *landscapeDepth*.05*fieldSpread;
+        // Echtes Zufalls-Jitter pro Punkt: die Lane-Zuteilung der Fasern ist
+        // deterministisch gleichmässig verteilt, wodurch viele Nachbarfasern
+        // sonst exakt an derselben X/Z-Position gleichzeitig die Wand
+        // erreichen -> künstliches Gitter. Bricht die Regelmässigkeit auf.
+        var fieldJitterX=(landscapeRandom()-.5)*landscapeHalfWidth*.16;
+        var fieldJitterZ=(landscapeRandom()-.5)*landscapeDepth*.12;
         var fieldSide=THREE.MathUtils.clamp(
           transitionSideEnd+(targetSide-transitionSideEnd)*fieldSpread+fieldMeander+fieldJitterX,
           -landscapeHalfWidth*1.08,
