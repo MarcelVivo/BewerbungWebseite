@@ -864,28 +864,6 @@ body {
   stroke-linejoin: round;
 }
 
-.value-grid-line {
-  stroke: rgba(255,255,255,0.17);
-  stroke-width: 1.2;
-}
-
-.value-chart-line {
-  stroke: #fff;
-  stroke-width: 2.8;
-}
-
-.value-chart-accent {
-  stroke: #fff;
-  stroke-width: 3.2;
-  filter: drop-shadow(0 0 7px rgba(255,255,255,0.34));
-}
-
-.value-chart-dot {
-  fill: #fff;
-  stroke: #fff;
-  stroke-width: 2.5;
-}
-
 .value-chart-label {
   fill: rgba(255,255,255,0.62);
   stroke: none;
@@ -900,26 +878,74 @@ body {
   filter: drop-shadow(0 0 5px rgba(var(--value-accent-rgb),0.42));
 }
 
-.value-pulse-dot {
-  fill: var(--value-accent);
+.value-brand-guides,
+.value-brand-wave {
+  fill: none;
+  stroke: #fff;
+  stroke-linecap: round;
 }
 
-.value-bar {
+.value-brand-guides {
+  stroke-width: 1.1;
+  opacity: 0.16;
+}
+
+.value-brand-wave {
+  stroke-width: 1.7;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
   transform-box: fill-box;
-  transform-origin: center bottom;
+  transform-origin: center;
 }
 
-.value-bar-before {
+.value-brand-core,
+.value-brand-person {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.value-brand-core-frame {
+  fill: rgba(5,5,5,0.82);
+  stroke: var(--value-accent);
+  stroke-width: 2;
+  filter: drop-shadow(0 0 7px rgba(var(--value-accent-rgb),0.26));
+}
+
+.value-brand-fragment {
   fill: #fff;
   stroke: #fff;
-  stroke-width: 1.6;
+  stroke-width: 1.2;
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
-.value-bar-after {
+.value-brand-core-dot {
+  fill: var(--value-accent);
+  stroke: #fff;
+  stroke-width: 2;
+}
+
+.value-brand-person-head {
   fill: #fff;
+  stroke: #fff;
+  stroke-width: 1.2;
+}
+
+.value-brand-person-body {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2;
+}
+
+.value-brand-person--qualified .value-brand-person-head {
+  fill: var(--value-accent);
+  stroke: #fff;
+  filter: drop-shadow(0 0 6px rgba(var(--value-accent-rgb),0.62));
+}
+
+.value-brand-person--qualified .value-brand-person-body {
   stroke: var(--value-accent);
-  stroke-width: 1.8;
-  filter: drop-shadow(0 0 7px rgba(255,255,255,0.22));
+  filter: drop-shadow(0 0 5px rgba(var(--value-accent-rgb),0.42));
 }
 
 .value-web-browser {
@@ -1228,40 +1254,66 @@ body {
   transform-origin: 50% 50%;
 }
 
-.is-revealed .value-bar {
-  animation: value-bar-rise 1.05s cubic-bezier(.16,.78,.28,1) both;
-  animation-delay: calc(260ms + var(--value-index, 0) * 100ms);
-}
-
-.is-revealed .value-draw-line,
-.is-revealed .value-flow-line {
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  animation: value-line-draw 1.25s cubic-bezier(.2,.68,.3,1) forwards;
-  animation-delay: calc(380ms + var(--value-index, 0) * 100ms);
-}
-
-.is-revealed .value-draw-line--delay {
-  animation-delay: calc(620ms + var(--value-index, 0) * 100ms);
-}
-
-.is-revealed .value-pulse-dot {
-  animation: value-dot-pulse 2.1s ease-in-out 1.25s infinite;
-}
-
 /* Jede Anzeige erklärt sich auch bei ruhender Kamera in derselben
    6,8-Sekunden-Sequenz: Ausgangslage, sichtbarer Übergang, optimierter
    Zielzustand, kurze Lesepause und ein weicher Neustart. */
-.is-revealed .value-diagram:nth-child(1) .value-bar-before {
-  animation: value-story-source-bar 6.8s ease-in-out infinite;
+.is-revealed .value-diagram:nth-child(1) .value-brand-guides {
+  animation: value-brand-guides-story 6.8s ease-in-out infinite;
 }
 
-.is-revealed .value-diagram:nth-child(1) .value-bar-after {
-  animation: value-story-target-bar 6.8s cubic-bezier(.2,.72,.28,1) infinite;
+.is-revealed .value-diagram:nth-child(1) .value-brand-fragment {
+  animation: value-brand-fragment-story 6.8s cubic-bezier(.2,.72,.28,1) infinite;
 }
 
-.is-revealed .value-diagram:nth-child(1) .value-draw-line {
-  animation: value-story-path 6.8s cubic-bezier(.2,.68,.3,1) infinite;
+.is-revealed .value-diagram:nth-child(1) .value-brand-fragment--2 {
+  animation-delay: 80ms;
+}
+
+.is-revealed .value-diagram:nth-child(1) .value-brand-fragment--3 {
+  animation-delay: 160ms;
+}
+
+.is-revealed .value-diagram:nth-child(1) .value-brand-fragment--4 {
+  animation-delay: 240ms;
+}
+
+.is-revealed .value-diagram:nth-child(1) .value-brand-core-frame,
+.is-revealed .value-diagram:nth-child(1) .value-brand-core-dot {
+  animation: value-brand-core-story 6.8s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.is-revealed .value-diagram:nth-child(1) .value-brand-wave {
+  animation: value-brand-wave-story 6.8s cubic-bezier(.2,.68,.3,1) infinite;
+}
+
+.is-revealed .value-diagram:nth-child(1) .value-brand-wave--2 {
+  animation-delay: 170ms;
+}
+
+.is-revealed .value-diagram:nth-child(1) .value-brand-wave--3 {
+  animation-delay: 340ms;
+}
+
+.is-revealed .value-diagram:nth-child(1) .value-brand-person {
+  animation: value-brand-person-story 6.8s cubic-bezier(.2,.72,.28,1) infinite;
+}
+
+.is-revealed .value-diagram:nth-child(1) .value-brand-person--2 {
+  animation-delay: 80ms;
+}
+
+.is-revealed .value-diagram:nth-child(1) .value-brand-person--3 {
+  animation-delay: 160ms;
+}
+
+.is-revealed .value-diagram:nth-child(1) .value-brand-person--4 {
+  animation-delay: 240ms;
+}
+
+.is-revealed .value-diagram:nth-child(1) .value-brand-person--5 {
+  animation-delay: 320ms;
 }
 
 .is-revealed .value-diagram:nth-child(2) .value-web-browser--slow {
@@ -1460,47 +1512,58 @@ body {
   100% { opacity: 1; transform: scale(1); filter: blur(0) brightness(1); }
 }
 
-@keyframes value-bar-rise {
-  from { transform: scaleY(0.02); opacity: 0; }
-  to { transform: scaleY(1); opacity: 1; }
+@keyframes value-brand-guides-story {
+  0% { opacity: 0; }
+  7%, 28% { opacity: 0.28; }
+  40%, 86% { opacity: 0.08; }
+  100% { opacity: 0; }
 }
 
-@keyframes value-line-draw {
-  to { stroke-dashoffset: 0; }
-}
-
-@keyframes value-dot-pulse {
-  0%, 100% { stroke: rgba(255,255,255,0.9); filter: drop-shadow(0 0 0 rgba(var(--value-accent-rgb),0)); }
-  50% { stroke: var(--value-accent); filter: drop-shadow(0 0 7px rgba(var(--value-accent-rgb),0.9)); }
-}
-
-@keyframes value-story-source-bar {
-  0% { opacity: 0; transform: scaleY(0.2); }
-  10%, 86% { opacity: 1; transform: scaleY(1); }
-  94% { opacity: 0.45; transform: scaleY(1); }
-  100% { opacity: 0; transform: scaleY(0.2); }
-}
-
-@keyframes value-story-target-bar {
-  0%, 18% { opacity: 0.12; transform: scaleY(0.03); filter: none; }
-  42%, 86% {
-    opacity: 1;
-    transform: scaleY(1);
-    filter: drop-shadow(0 0 8px rgba(var(--value-accent-rgb),0.46));
+@keyframes value-brand-fragment-story {
+  0%, 5% {
+    opacity: 0.28;
+    transform: translate(var(--brand-fragment-x), var(--brand-fragment-y)) rotate(var(--brand-fragment-r)) scale(0.66);
+    filter: none;
   }
-  94% { opacity: 0.55; transform: scaleY(1); }
-  100% { opacity: 0; transform: scaleY(0.03); filter: none; }
+  31%, 86% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg) scale(1);
+    filter: drop-shadow(0 0 4px rgba(255,255,255,0.34));
+  }
+  100% {
+    opacity: 0.18;
+    transform: translate(var(--brand-fragment-x), var(--brand-fragment-y)) rotate(var(--brand-fragment-r)) scale(0.66);
+    filter: none;
+  }
 }
 
-@keyframes value-story-path {
-  0%, 16% { opacity: 0; stroke-dashoffset: 1; filter: none; }
-  42%, 86% {
-    opacity: 1;
+@keyframes value-brand-core-story {
+  0%, 20% { opacity: 0.12; transform: scale(0.82); filter: none; }
+  35% { opacity: 1; transform: scale(1.08); filter: drop-shadow(0 0 10px rgba(var(--value-accent-rgb),0.58)); }
+  43%, 86% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 5px rgba(var(--value-accent-rgb),0.32)); }
+  100% { opacity: 0.12; transform: scale(0.82); filter: none; }
+}
+
+@keyframes value-brand-wave-story {
+  0%, 29% { opacity: 0; stroke-dashoffset: 1; transform: scale(0.7); filter: none; }
+  59%, 80% {
+    opacity: 0.42;
     stroke-dashoffset: 0;
-    filter: drop-shadow(0 0 5px rgba(var(--value-accent-rgb),0.34));
+    transform: scale(1);
+    filter: drop-shadow(0 0 5px rgba(var(--value-accent-rgb),0.24));
   }
-  94% { opacity: 0.48; stroke-dashoffset: 0; }
-  100% { opacity: 0; stroke-dashoffset: 1; filter: none; }
+  88% { opacity: 0.16; stroke-dashoffset: 0; transform: scale(1.04); }
+  100% { opacity: 0; stroke-dashoffset: 1; transform: scale(0.7); filter: none; }
+}
+
+@keyframes value-brand-person-story {
+  0%, 38% { opacity: 0.16; transform: translateX(12px) scale(0.82); filter: none; }
+  62%, 86% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    filter: drop-shadow(0 0 5px rgba(var(--value-accent-rgb),0.3));
+  }
+  100% { opacity: 0.12; transform: translateX(12px) scale(0.82); filter: none; }
 }
 
 @keyframes value-web-slow-story {
@@ -2701,9 +2764,12 @@ body {
     scroll-behavior: auto !important;
   }
 
-  .is-revealed .value-bar,
-  .is-revealed .value-draw-line,
-  .is-revealed .value-flow-line,
+  .is-revealed .value-brand-guides,
+  .is-revealed .value-brand-wave,
+  .is-revealed .value-brand-fragment,
+  .is-revealed .value-brand-core-frame,
+  .is-revealed .value-brand-core-dot,
+  .is-revealed .value-brand-person,
   .is-revealed .value-web-browser,
   .is-revealed .value-web-slow-block,
   .is-revealed .value-web-slow-progress,
@@ -2730,12 +2796,7 @@ body {
     opacity: 1 !important;
   }
 
-  .is-revealed .value-bar {
-    transform: scaleY(1) !important;
-  }
-
-  .is-revealed .value-draw-line,
-  .is-revealed .value-flow-line,
+  .is-revealed .value-brand-wave,
   .is-revealed .value-web-transfer,
   .is-revealed .value-web-check-ring,
   .is-revealed .value-web-check,
@@ -2747,6 +2808,11 @@ body {
     stroke-dashoffset: 0 !important;
   }
 
+  .is-revealed .value-brand-wave,
+  .is-revealed .value-brand-fragment,
+  .is-revealed .value-brand-core-frame,
+  .is-revealed .value-brand-core-dot,
+  .is-revealed .value-brand-person,
   .is-revealed .value-web-browser,
   .is-revealed .value-web-slow-block,
   .is-revealed .value-web-fast-block,
@@ -2757,6 +2823,14 @@ body {
   .is-revealed .value-ai-task,
   .is-revealed .value-ai-core {
     transform: rotate(0deg) !important;
+  }
+
+  .is-revealed .value-brand-guides {
+    opacity: 0.14 !important;
+  }
+
+  .is-revealed .value-brand-wave {
+    opacity: 0.34 !important;
   }
 
   .is-revealed .value-web-slow-progress {

@@ -295,19 +295,62 @@ function animateValueNumbers(root: HTMLElement, lang: 'de' | 'en', reduced: bool
 
 function ValueDiagramGraphic({ index, lang }: { index: number; lang: 'de' | 'en' }) {
   if (index === 0) {
+    const brandFragments = [
+      { x: 87, y: 42, offsetX: -61, offsetY: -23, rotation: -28 },
+      { x: 108, y: 42, offsetX: -34, offsetY: 34, rotation: 22 },
+      { x: 87, y: 63, offsetX: -52, offsetY: 23, rotation: 31 },
+      { x: 108, y: 63, offsetX: -15, offsetY: -42, rotation: -19 },
+    ];
+    const brandPeople = [
+      { x: 190, y: 28 },
+      { x: 220, y: 46 },
+      { x: 253, y: 29 },
+      { x: 202, y: 82 },
+      { x: 244, y: 79 },
+    ];
+
     return (
       <svg className="value-chart-svg" viewBox="0 0 280 122" aria-hidden="true">
-        <path className="value-grid-line" d="M12 103H268M12 78H268M12 53H268M12 28H268" />
-        <rect className="value-bar value-bar-before" x="38" y="70" width="48" height="33" rx="2" pathLength="1" />
-        <rect className="value-bar value-bar-after" x="188" y="20" width="48" height="83" rx="2" pathLength="1" />
-        <path className="value-chart-accent value-draw-line" d="M67 65C105 65 119 48 143 47C166 46 177 30 208 16" pathLength="1" />
-        <path className="value-chart-accent value-chart-arrow" d="M199 14L210 15L207 26" />
-        <circle className="value-chart-dot" cx="67" cy="65" r="4" />
-        <circle className="value-chart-dot value-pulse-dot" cx="208" cy="16" r="4" />
-        <text className="value-chart-label" x="62" y="118" textAnchor="middle">
+        <path className="value-brand-guides" d="M106 13V106M56 61H156M73 28L139 94M73 94L139 28" />
+        <circle className="value-brand-wave value-brand-wave--1" cx="106" cy="61" r="30" pathLength="1" />
+        <circle className="value-brand-wave value-brand-wave--2" cx="106" cy="61" r="51" pathLength="1" />
+        <circle className="value-brand-wave value-brand-wave--3" cx="106" cy="61" r="73" pathLength="1" />
+
+        <g className="value-brand-core">
+          <rect className="value-brand-core-frame" x="81" y="36" width="50" height="50" rx="9" />
+          {brandFragments.map((fragment, fragmentIndex) => (
+            <rect
+              key={`${fragment.x}-${fragment.y}`}
+              className={`value-brand-fragment value-brand-fragment--${fragmentIndex + 1}`}
+              x={fragment.x}
+              y={fragment.y}
+              width="17"
+              height="17"
+              rx="2.5"
+              style={{
+                '--brand-fragment-x': `${fragment.offsetX}px`,
+                '--brand-fragment-y': `${fragment.offsetY}px`,
+                '--brand-fragment-r': `${fragment.rotation}deg`,
+              } as CSSProperties}
+            />
+          ))}
+          <circle className="value-brand-core-dot" cx="106" cy="61" r="4" />
+        </g>
+
+        {brandPeople.map((person, personIndex) => (
+          <g
+            key={`${person.x}-${person.y}`}
+            className={`value-brand-person value-brand-person--${personIndex + 1}${personIndex === brandPeople.length - 1 ? ' value-brand-person--qualified' : ''}`}
+          >
+            <circle className="value-brand-person-head" cx={person.x} cy={person.y} r="3.8" />
+            <path className="value-brand-person-body" d={`M${person.x - 6} ${person.y + 11}C${person.x - 5} ${person.y + 4},${person.x + 5} ${person.y + 4},${person.x + 6} ${person.y + 11}`} />
+          </g>
+        ))}
+
+        <text className="value-chart-label" x="32" y="118" textAnchor="middle">
           {lang === 'de' ? '1,0×' : '1.0×'}
         </text>
-        <text className="value-chart-label value-chart-label--accent" x="212" y="118" textAnchor="middle">
+        <text className="value-chart-label value-chart-label--accent" x="252" y="118" textAnchor="middle">
           {lang === 'de' ? '2,5×' : '2.5×'}
         </text>
       </svg>
