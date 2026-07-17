@@ -2269,7 +2269,7 @@ body {
   position: relative;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
+  gap: clamp(1.1rem, 1.7vw, 1.8rem);
   width: min(64rem, 78vw);
   transform: translate3d(-50%, -50%, 0) rotateX(3deg);
   perspective: 900px;
@@ -2298,7 +2298,12 @@ body {
   width: 100%;
   will-change: opacity, transform;
   contain: layout paint style;
-  transition: opacity 140ms ease-out, transform 140ms ease-out;
+  transition:
+    opacity 140ms ease-out,
+    transform 140ms ease-out,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background-color 180ms ease;
 }
 
 .spiral-service-stations.is-detail-open .spiral-service-card {
@@ -2311,223 +2316,27 @@ body {
 }
 
 .spiral-detail-panel {
-  --service-accent: var(--gold);
-  --service-accent-rgb: 200,154,61;
-  position: absolute;
-  inset: 0;
-  z-index: 4;
-  width: 100%;
+  z-index: 8;
   height: 100%;
-  min-height: 0;
-  padding: clamp(1.35rem, 2.4vw, 2.4rem);
-  overflow: visible;
-  appearance: none;
-  text-align: left;
-  font: inherit;
-  cursor: pointer;
-  border: 1px solid rgba(var(--service-accent-rgb),0.24);
-  border-radius: 1.45rem;
-  background:
-    radial-gradient(circle at 50% 0%, rgba(var(--service-accent-rgb),0.15), transparent 36%),
-    linear-gradient(145deg, rgba(var(--service-accent-rgb),0.08), transparent 44%),
-    linear-gradient(145deg, rgba(18,19,21,0.84), rgba(15,16,18,0.62));
-  box-shadow:
-    0 24px 80px rgba(0,0,0,0.58),
-    0 0 44px rgba(var(--service-accent-rgb),0.14),
-    inset 0 1px 0 rgba(246,227,161,0.1);
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transform: translate3d(0, 0, 24px);
-  transform-origin: left center;
-  transform-style: preserve-3d;
-  transition: opacity 260ms ease;
 }
 
 .spiral-detail-panel.is-open {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-  transform: translate3d(0, 0, 24px);
-  transition: opacity 140ms ease-out;
+  transform: scale(1);
 }
 
 .spiral-detail-panel::before {
-  content: "";
-  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: auto;
   left: 0;
-  top: 1.15rem;
-  bottom: 1.15rem;
-  width: 1px;
-  background: linear-gradient(to bottom, transparent, rgba(var(--service-accent-rgb),0.92), transparent);
-  box-shadow: 0 0 18px rgba(var(--service-accent-rgb),0.34);
+  width: auto;
+  height: 2px;
+  background: linear-gradient(90deg, var(--value-accent), rgba(var(--value-accent-rgb),0.18) 42%, transparent 82%);
+  box-shadow: 0 0 16px rgba(var(--value-accent-rgb),0.5);
 }
 
 .spiral-detail-panel::after {
-  content: "";
-  position: absolute;
-  left: 1.35rem;
-  right: 1.35rem;
-  bottom: 0;
-  height: 1px;
-  background: linear-gradient(90deg, rgba(var(--service-accent-rgb),0.95), rgba(var(--service-accent-rgb),0.16), transparent);
-  box-shadow: 0 0 16px rgba(var(--service-accent-rgb),0.22);
-}
-
-.spiral-detail-fiber-spine {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  z-index: 5;
-  display: block;
-  width: clamp(4.75rem, 7.2vw, 7.75rem);
-  overflow: visible;
-  pointer-events: none;
-  opacity: 0;
-  visibility: hidden;
-  /* Die SVG-Mittelachse liegt bei 50 % ihrer Breite. Auf derselben
-     Z-Ebene wie das Detailpanel bleibt sie auch unter Perspektive exakt
-     auf dessen linker Kartenkante. */
-  transform: translate3d(-50%,0,24px);
-  transform-origin: center center;
-  transition: none !important;
-  filter: drop-shadow(4px 0 10px rgba(var(--service-accent-rgb),0.32));
-  mask-image: linear-gradient(to bottom, transparent, #000 7%, #000 93%, transparent);
-}
-
-.spiral-service-stations.is-detail-open > .spiral-detail-fiber-spine {
-  opacity: 0.96;
-  visibility: visible;
-}
-
-.spiral-detail-fiber-spine svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-
-.spiral-detail-fiber {
-  fill: none;
-  stroke-linecap: round;
-  vector-effect: non-scaling-stroke;
-  opacity: 0;
-  transform-box: fill-box;
-  transform-origin: center;
-  animation-iteration-count: infinite;
-  animation-timing-function: ease-in-out;
-}
-
-.spiral-detail-fiber--hair {
-  filter: blur(0.14px);
-}
-
-.spiral-detail-fiber-flow {
-  fill: none;
-  stroke-linecap: round;
-  vector-effect: non-scaling-stroke;
-  pointer-events: none;
-  opacity: 0.26;
-}
-
-@keyframes detail-fiber-breathe-core {
-  0%, 100% { opacity: 0.16; }
-  34% { opacity: 0.62; }
-  69% { opacity: 0.28; }
-}
-
-@keyframes detail-fiber-breathe-hair {
-  0%, 100% { opacity: 0.04; }
-  39% { opacity: 0.24; }
-  74% { opacity: 0.09; }
-}
-
-.spiral-service-stations.is-detail-open > .spiral-detail-fiber-spine .spiral-detail-fiber--core {
-  animation-name: detail-fiber-breathe-core;
-}
-
-.spiral-service-stations.is-detail-open > .spiral-detail-fiber-spine .spiral-detail-fiber--hair {
-  animation-name: detail-fiber-breathe-hair;
-}
-
-.spiral-detail-close,
-.spiral-detail-panel > .spiral-intro-meta,
-.spiral-detail-title,
-.spiral-detail-text,
-.spiral-detail-list {
-  position: relative;
-  z-index: 3;
-}
-
-.spiral-detail-close {
-  position: absolute;
-  top: 1.1rem;
-  right: 1.2rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.4rem;
-  height: 2.4rem;
-  padding: 0;
-  border: 1px solid rgba(var(--service-accent-rgb),0.34);
-  border-radius: 999px;
-  color: rgba(246,227,161,0.9);
-  background: rgba(0,0,0,0.2);
-  line-height: 1;
-  box-shadow: 0 0 18px rgba(var(--service-accent-rgb),0.12);
-}
-
-.spiral-detail-title {
-  display: block;
-  margin-top: 0.85rem;
-  max-width: min(34rem, 78%);
-  color: #fff;
-  font-size: clamp(1.35rem, 2.25vw, 2.6rem);
-  font-weight: 900;
-  line-height: 0.96;
-  letter-spacing: -0.055em;
-  text-shadow:
-    0 0 22px rgba(231,197,106,0.2),
-    0 8px 34px rgba(0,0,0,0.88);
-}
-
-.spiral-detail-text {
-  display: block;
-  margin-top: 0.95rem;
-  color: rgba(244,245,247,0.82);
-  font-size: clamp(0.86rem, 1vw, 1rem);
-  font-weight: 500;
-  line-height: 1.55;
-  text-shadow: 0 8px 24px rgba(0,0,0,0.72);
-}
-
-.spiral-detail-list {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.6rem 0.75rem;
-  margin-top: 1rem;
-}
-
-.spiral-detail-list > span {
-  position: relative;
-  padding-left: 0.95rem;
-  color: rgba(246,227,161,0.76);
-  font-size: 0.78rem;
-  font-weight: 700;
-  line-height: 1.35;
-}
-
-.spiral-detail-list > span::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0.47rem;
-  width: 0.36rem;
-  height: 0.36rem;
-  border-radius: 999px;
-  background: var(--service-accent);
-  box-shadow: 0 0 14px rgba(var(--service-accent-rgb),0.48);
+  display: none;
 }
 
 .spiral-intro-statement {
@@ -2563,8 +2372,7 @@ body {
   to { transform: translate3d(4px, -3px, 0); opacity: 0.68; }
 }
 
-.spiral-intro-statement::before,
-.spiral-service-card::before {
+.spiral-intro-statement::before {
   content: "";
   position: absolute;
   left: 0;
@@ -2581,26 +2389,25 @@ body {
 .spiral-service-card {
   --service-accent: var(--gold);
   --service-accent-rgb: 200,154,61;
+  --value-accent: var(--service-accent);
+  --value-accent-rgb: var(--service-accent-rgb);
   position: relative;
   display: block;
   width: 100%;
-  min-height: 10.4rem;
-  padding: 1rem 1.18rem 1.05rem 1.15rem;
+  min-height: clamp(11.5rem, 22vh, 14rem);
+  padding: clamp(1rem, 1.25vw, 1.4rem);
   text-align: left;
   appearance: none;
   cursor: pointer;
   background:
-    radial-gradient(circle at 18% 12%, rgba(var(--service-accent-rgb),0.2), transparent 34%),
-    linear-gradient(135deg, rgba(var(--service-accent-rgb),0.1), transparent 42%),
-    linear-gradient(135deg, rgba(18,19,21,0.76), rgba(15,16,18,0.48));
-  border: 1px solid rgba(var(--service-accent-rgb),0.28);
-  border-radius: 1.6rem 1.05rem 1.6rem 0.6rem;
-  box-shadow:
-    0 18px 60px rgba(0,0,0,0.46),
-    0 0 28px rgba(var(--service-accent-rgb),0.08),
-    inset 0 1px 0 rgba(246,227,161,0.08);
+    linear-gradient(180deg, rgba(255,255,255,0.035), transparent 24%),
+    rgba(0,0,0,0.24);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-top-color: rgba(255,255,255,0.26);
+  border-radius: 0.45rem;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.035), 0 18px 48px rgba(0,0,0,0.14);
   overflow: visible;
-  transition: border-color 420ms ease, box-shadow 640ms ease, background 640ms ease;
+  transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
 }
 
 .spiral-service-card:not(.ngp-panel-static) {
@@ -2616,15 +2423,23 @@ body {
 }
 
 .spiral-service-card.is-selected {
-  border-color: rgba(var(--service-accent-rgb),0.68);
+  border-color: rgba(var(--service-accent-rgb),0.48);
   box-shadow:
-    0 24px 76px rgba(0,0,0,0.54),
-    0 0 38px rgba(var(--service-accent-rgb),0.24),
-    inset 0 1px 0 rgba(246,227,161,0.14);
+    inset 0 1px 0 rgba(255,255,255,0.055),
+    0 18px 48px rgba(0,0,0,0.2),
+    0 0 22px rgba(var(--service-accent-rgb),0.11);
 }
 
 .spiral-service-card::before {
-  transition: opacity 520ms ease, box-shadow 520ms ease;
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  content: '';
+  background: linear-gradient(90deg, var(--service-accent), rgba(var(--service-accent-rgb),0));
+  box-shadow: 0 0 15px rgba(var(--service-accent-rgb),0.62);
+  transition: opacity 180ms ease, box-shadow 180ms ease;
 }
 
 .spiral-service-card:hover::before,
@@ -2638,21 +2453,30 @@ body {
   backdrop-filter: none;
 }
 
+.spiral-service-card:hover,
+.spiral-service-card:focus-visible {
+  border-color: rgba(var(--service-accent-rgb),0.48);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.055),
+    0 18px 48px rgba(0,0,0,0.2),
+    0 0 22px rgba(var(--service-accent-rgb),0.11);
+  outline: none;
+}
+
 .spiral-service-card::after {
   content: "";
   position: absolute;
-  left: 1.05rem;
-  right: 1.2rem;
+  left: 0;
+  right: 0;
   bottom: 0;
   height: 1px;
-  background: linear-gradient(90deg, rgba(var(--service-accent-rgb),0.95), rgba(var(--service-accent-rgb),0.16), transparent);
-  box-shadow: 0 0 16px rgba(var(--service-accent-rgb),0.24);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.24) 18%, rgba(255,255,255,0.24) 82%, transparent);
 }
 
 .spiral-service-more {
   position: absolute;
-  top: 1rem;
-  right: 1.12rem;
+  top: 0.9rem;
+  right: 0.9rem;
   z-index: 3;
   display: inline-flex;
   align-items: center;
@@ -2666,6 +2490,22 @@ body {
   line-height: 1;
   text-shadow: 0 0 12px rgba(var(--service-accent-rgb),0.32);
   box-shadow: 0 0 18px rgba(var(--service-accent-rgb),0.12);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.spiral-service-card:hover .spiral-service-more,
+.spiral-service-card:focus-visible .spiral-service-more {
+  transform: scale(1.08);
+  box-shadow: 0 0 22px rgba(var(--service-accent-rgb),0.24);
+}
+
+.spiral-service-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.62rem;
+  width: 100%;
+  padding: 0 2.7rem;
 }
 
 .spiral-service-card .spiral-intro-index,
@@ -2686,6 +2526,11 @@ body {
   box-shadow: 0 0 16px rgba(var(--service-accent-rgb),0.22);
 }
 
+.spiral-service-card .ngp-core {
+  align-items: center;
+  text-align: center;
+}
+
 /* ── Data Core: Textinhalt liegt sichtbar vor Glas/Fasern/Partikeln ── */
 .ngp-core {
   position: relative;
@@ -2695,6 +2540,8 @@ body {
   align-items: flex-start;
   gap: 0.58rem;
   width: 100%;
+  height: 100%;
+  justify-content: center;
 }
 
 /* Die Kartenflächen bleiben auf Desktop und Mobile statisch; Bewegung und
@@ -2758,7 +2605,7 @@ body {
 
 .spiral-service-title {
   color: #fff;
-  font-size: clamp(1.35rem, 2.15vw, 2.25rem);
+  font-size: clamp(1.18rem, 1.75vw, 1.85rem);
   font-weight: 900;
   line-height: 0.94;
   letter-spacing: -0.055em;
@@ -2771,7 +2618,7 @@ body {
 .spiral-service-body {
   max-width: 24rem;
   color: rgba(244,245,247,0.78);
-  font-size: clamp(0.82rem, 1vw, 0.96rem);
+  font-size: clamp(0.72rem, 0.82vw, 0.88rem);
   font-weight: 500;
   line-height: 1.45;
   text-shadow: 0 8px 24px rgba(0,0,0,0.72);
@@ -2850,6 +2697,22 @@ body {
   display: none;
 }
 
+.spiral-mobile-service-stage {
+  position: relative;
+  width: 100%;
+}
+
+.spiral-mobile-service-stage .spiral-mobile-services {
+  transition: opacity 180ms ease, transform 220ms cubic-bezier(.2,.72,.28,1), visibility 0s;
+}
+
+.spiral-mobile-service-stage.is-info-open .spiral-mobile-services {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: scale(0.985);
+}
+
 .spiral-intro-line {
   opacity: 0 !important;
   pointer-events: none !important;
@@ -2901,7 +2764,7 @@ body {
     box-sizing: border-box;
     overflow: hidden;
     padding: 0.68rem;
-    border-radius: 0.85rem;
+    border-radius: 0.45rem;
   }
 
   .spiral-mobile-services .spiral-service-title {
@@ -3052,6 +2915,49 @@ body {
     overflow: auto;
   }
 
+  .mobile-solution-info.value-info-card {
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+    gap: 1.2rem;
+    min-height: 100%;
+    padding: 1.25rem;
+    overflow: auto;
+  }
+
+  .mobile-solution-info .value-info-copy {
+    justify-content: flex-start;
+    padding-top: 0.35rem;
+  }
+
+  .mobile-solution-info .value-info-copy h3 {
+    max-width: calc(100% - 2.8rem);
+    font-size: clamp(1.35rem, 6vw, 1.85rem);
+  }
+
+  .mobile-solution-info .value-info-copy > p {
+    font-size: 0.82rem;
+  }
+
+  .mobile-solution-info .value-info-columns {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+
+  .mobile-solution-info .value-info-columns li {
+    font-size: 0.76rem;
+  }
+
+  .mobile-solution-info .value-info-visual {
+    min-height: 20rem;
+    padding: 1rem 0 0;
+    border-top: 1px solid rgba(255,255,255,0.14);
+    border-left: 0;
+  }
+
+  .mobile-solution-info .value-info-svg {
+    max-height: 15rem;
+  }
+
   .mobile-value-impact .value-info-copy {
     justify-content: flex-start;
     padding-top: 0.35rem;
@@ -3103,7 +3009,7 @@ body {
     aspect-ratio: auto;
     overflow: visible;
     padding: 0.85rem 1rem 0.9rem;
-    border-radius: 1rem;
+    border-radius: 0.45rem;
   }
 
   .spiral-service-stations .ngp-core {
@@ -3137,15 +3043,6 @@ body {
     padding: 1rem 1.1rem 1.05rem;
     color: inherit;
     font: inherit;
-  }
-
-  .spiral-mobile-services .mobile-service-detail {
-    padding: 1.15rem;
-  }
-
-  .spiral-mobile-services .mobile-service-detail .spiral-detail-title {
-    max-width: calc(100% - 3rem);
-    font-size: clamp(1.25rem, 6vw, 1.65rem);
   }
 
   .spiral-mobile-services .spiral-service-title {

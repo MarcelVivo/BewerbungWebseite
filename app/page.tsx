@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import {
   Bot, BarChart3, Workflow, FolderKanban,
   GraduationCap, Globe, Lightbulb,
@@ -62,92 +62,6 @@ const INTRO_SEQUENCE = [
   'Deine Lösung.',
   'Deine Erfolgsgeschichte.',
 ];
-
-// ── Neural Glass Panels: eigenes, reduziertes Knoten-Icon statt generischer
-// Stock-Icons — vier leicht unterschiedliche Netzwerk-Topologien, gezeichnet
-// mit currentColor, damit die bestehende Accent-Farbe pro Karte greift. ───
-const NEURAL_ICON_VARIANTS: { nodes: [number, number][]; edges: [number, number][] }[] = [
-  { nodes: [[5, 18], [12, 6], [19, 17], [12, 12]], edges: [[0, 3], [1, 3], [2, 3], [0, 1]] },
-  { nodes: [[4, 8], [12, 4], [20, 9], [16, 19], [7, 18]], edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 0], [1, 4]] },
-  { nodes: [[6, 5], [18, 6], [20, 17], [9, 20], [4, 13]], edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 0]] },
-  { nodes: [[12, 4], [20, 10], [17, 19], [7, 19], [4, 10]], edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 0], [0, 2], [0, 3]] },
-];
-
-function NeuralNodeIcon({ variant = 0 }: { variant?: number }) {
-  const v = NEURAL_ICON_VARIANTS[variant % NEURAL_ICON_VARIANTS.length];
-  return (
-    <svg viewBox="0 0 24 24" width={15} height={15} className="ngp-icon" aria-hidden="true">
-      {v.edges.map(([a, b], idx) => {
-        const [x1, y1] = v.nodes[a];
-        const [x2, y2] = v.nodes[b];
-        return <line key={idx} x1={x1} y1={y1} x2={x2} y2={y2} stroke="currentColor" strokeWidth={1} strokeOpacity={0.85} />;
-      })}
-      {v.nodes.map(([x, y], idx) => (
-        <circle key={idx} cx={x} cy={y} r={idx === v.nodes.length - 1 ? 2.1 : 1.4} fill="currentColor" />
-      ))}
-    </svg>
-  );
-}
-
-const DETAIL_EDGE_FIBERS = [
-  { kind: 'core', base: 'M54,-20 C42,50 67,112 48,180 C29,256 79,344 45,438 C11,536 88,652 40,770 C8,850 70,940 43,1020', alt: 'M54,-20 C48,47 59,116 52,182 C41,252 70,351 42,442 C20,540 78,648 46,774 C23,852 62,943 43,1020' },
-  { kind: 'core', base: 'M41,40 C58,100 33,171 53,238 C76,318 28,405 58,500 C91,606 22,724 64,836 C79,878 71,925 59,960', alt: 'M41,40 C51,103 39,168 49,242 C62,321 36,409 54,503 C76,608 33,721 60,839 C69,882 65,922 59,960' },
-  { kind: 'core', base: 'M69,118 C48,183 78,246 55,318 C25,402 86,495 49,596 C15,692 82,806 45,914 C34,949 37,988 52,1020', alt: 'M69,118 C57,180 70,250 59,320 C42,399 76,501 46,600 C27,696 72,801 50,917 C45,952 43,987 52,1020' },
-  { kind: 'core', base: 'M32,-10 C49,47 28,112 45,170 C66,239 24,321 52,410 C83,510 20,625 60,735 C87,801 68,858 43,890', alt: 'M32,-10 C43,50 34,108 41,174 C54,244 31,325 48,414 C69,514 32,621 56,739 C72,803 61,857 43,890' },
-  { kind: 'core', base: 'M57,205 C78,275 31,356 61,446 C94,548 23,667 67,786 C91,854 78,929 51,1000', alt: 'M57,205 C69,278 40,352 57,450 C78,553 35,663 63,790 C79,858 70,925 51,1000' },
-  { kind: 'core', base: 'M47,72 C31,128 65,187 43,249 C16,320 76,399 46,482 C21,553 69,635 54,762', alt: 'M47,72 C39,130 57,184 47,252 C32,322 67,395 43,486 C34,557 61,632 54,762' },
-  { kind: 'hair', base: 'M24,34 C35,87 18,144 31,205 C47,276 21,348 39,426', alt: 'M24,34 C30,90 23,141 28,208 C38,278 28,345 39,426' },
-  { kind: 'hair', base: 'M76,286 C54,350 83,421 59,498 C30,586 91,680 55,784 C33,850 42,918 67,982', alt: 'M76,286 C63,353 74,418 62,502 C45,588 81,676 52,788 C43,852 48,916 67,982' },
-  { kind: 'hair', base: 'M61,0 C73,59 48,119 65,184 C84,256 44,333 70,418 C82,465 73,510 51,552', alt: 'M61,0 C68,62 55,116 61,187 C73,259 52,329 66,422 C72,467 67,507 51,552' },
-  { kind: 'hair', base: 'M35,170 C19,231 54,293 32,365 C6,447 65,534 34,628 C22,668 27,710 46,744', alt: 'M35,170 C27,234 46,289 36,369 C21,449 56,530 31,632 C28,671 31,708 46,744' },
-  { kind: 'hair', base: 'M82,438 C61,503 88,577 62,657 C32,748 92,851 54,955 C47,978 48,1000 58,1020', alt: 'M82,438 C70,507 79,573 65,661 C48,750 82,847 51,959 C50,980 52,999 58,1020' },
-  { kind: 'hair', base: 'M50,96 C64,153 37,218 57,287 C80,366 34,454 63,547 C91,638 34,744 68,858', alt: 'M50,96 C58,156 44,215 53,291 C68,369 43,451 59,551 C76,641 45,741 68,858' },
-  { kind: 'hair', base: 'M28,518 C44,571 21,634 40,702 C62,779 25,866 52,950', alt: 'M28,518 C38,574 28,631 36,706 C51,781 34,863 52,950' },
-];
-
-function DetailFiberSpine() {
-  const gradientId = `detail-fiber-gradient-${useId().replace(/:/g, '')}`;
-  return (
-    <svg viewBox="-5 0 110 1000" preserveAspectRatio="none" aria-hidden="true">
-      <defs>
-        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="var(--service-accent)" stopOpacity="0" />
-          <stop offset="10%" stopColor="var(--service-accent)" stopOpacity="0.62" />
-          <stop offset="52%" stopColor="var(--service-accent)" stopOpacity="1" />
-          <stop offset="91%" stopColor="var(--service-accent)" stopOpacity="0.5" />
-          <stop offset="100%" stopColor="var(--service-accent)" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      {DETAIL_EDGE_FIBERS.map((fiber, index) => {
-        const fadeDuration = 10.8 + (index % 5) * 1.43;
-        const strokeWidth = fiber.kind === 'core' ? 0.82 + (index % 3) * 0.11 : 0.38 + (index % 2) * 0.09;
-        return (
-          <g key={fiber.base}>
-            <path
-              className={`spiral-detail-fiber spiral-detail-fiber--${fiber.kind}`}
-              d={fiber.base}
-              stroke={`url(#${gradientId})`}
-              style={{
-                animationDuration: `${fadeDuration.toFixed(2)}s`,
-                animationDelay: `${(-index * 1.67).toFixed(2)}s`,
-                animationDirection: index % 2 ? 'reverse' : 'normal',
-                strokeWidth,
-              }}
-            />
-            <path
-              className="spiral-detail-fiber-flow"
-              d={fiber.base}
-              stroke={`url(#${gradientId})`}
-              pathLength={1}
-              strokeDasharray="0.14 0.86"
-              style={{ strokeWidth: strokeWidth * 1.65 }}
-            />
-          </g>
-        );
-      })}
-    </svg>
-  );
-}
 
 type ValueDiagramCopy = {
   code: string;
@@ -946,8 +860,6 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
   const serviceStationsRef = useRef<HTMLDivElement | null>(null);
   const cardsWorldRef = useRef<HTMLDivElement | null>(null);
   const solutionsFlapRef = useRef<HTMLHeadingElement | null>(null);
-  const detailScrollDistanceRef = useRef(0);
-  const detailScrollStepsRef = useRef(0);
   // Je 1 Ref-Slot pro Intro-Station (worldIndex 0..4, "Deine …") — Arrays
   // statt einzelner Refs, da alle 5 Stationen dieselbe Split-Flap-Logik in
   // derselben Schleife (IntroFlapWorld-Effekt) durchlaufen.
@@ -1507,29 +1419,11 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
 
   useEffect(() => {
     if (!activeServiceSlug) return;
-
-    let lastScrollY = window.scrollY;
-    detailScrollDistanceRef.current = 0;
-    detailScrollStepsRef.current = 0;
-
-    const handleScroll = () => {
-      const delta = Math.abs(window.scrollY - lastScrollY);
-      lastScrollY = window.scrollY;
-      if (delta < 4) return;
-
-      detailScrollDistanceRef.current += delta;
-      while (detailScrollDistanceRef.current >= 90) {
-        detailScrollDistanceRef.current -= 90;
-        detailScrollStepsRef.current += 1;
-      }
-
-      if (detailScrollStepsRef.current >= 3) {
-        setActiveServiceSlug(null);
-      }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setActiveServiceSlug(null);
     };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activeServiceSlug]);
 
   const cards = [
@@ -1646,6 +1540,9 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
   const serviceCards = cards.filter((card) => card.kind === 'service');
   const activeService = serviceCards.find((card) => card.slug === activeServiceSlug) || null;
   const detailService = activeService || serviceCards[0];
+  const detailServiceIndex = Math.max(0, serviceCards.findIndex((card) => card.slug === detailService.slug));
+  const detailValueInfo = VALUE_INFO[lang][detailServiceIndex];
+  const detailValueDiagram = VALUE_DIAGRAMS[lang][detailServiceIndex];
   const totalTravel = introCards.length * verticalStep + 780;
   const radius = 520;
   const spiralAngleStep = 58;
@@ -1809,6 +1706,8 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
                 style={{
                   '--service-accent': card.accent,
                   '--service-accent-rgb': card.accentRgb,
+                  '--value-accent': card.accent,
+                  '--value-accent-rgb': card.accentRgb,
                 } as CSSProperties}
                 onPointerUp={(event) => {
                   if (event.pointerType !== 'mouse' || event.button === 0) {
@@ -1820,15 +1719,12 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
                 }}
               >
                 <span className="ngp-core">
-                  <span className="spiral-intro-meta">
-                    <span className="spiral-intro-index">{card.code}</span>
-                    <span className="spiral-intro-icon">
-                      <NeuralNodeIcon variant={i} />
-                    </span>
+                  <span className="spiral-service-header">
+                    <span className="value-diagram-code">{card.code}</span>
+                    <span className="value-diagram-eyebrow">{VALUE_DIAGRAMS[lang][i].eyebrow}</span>
                   </span>
                   <h3 className="spiral-service-title">{card.title}</h3>
                   <p className="spiral-service-body">{card.body}</p>
-                  <span className="spiral-intro-rule" />
                 </span>
                 <span
                   className="spiral-service-more"
@@ -1840,56 +1736,71 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
               </button>
             );
           })}
-          <span
-            className="spiral-detail-fiber-spine"
-            aria-hidden="true"
-            style={{
-              '--service-accent': detailService.accent,
-              '--service-accent-rgb': detailService.accentRgb,
-            } as CSSProperties}
-          >
-            <DetailFiberSpine />
-          </span>
-          <button
-            type="button"
-            className={`spiral-detail-panel ${activeService ? 'is-open' : ''}`}
+          <section
+            className={`spiral-detail-panel value-info-card ${activeService ? 'is-open' : ''}`}
             aria-hidden={!activeService}
-            aria-label={lang === 'de' ? 'Detailansicht schliessen' : 'Close detail view'}
-            tabIndex={activeService ? 0 : -1}
-            onPointerUp={(event) => {
-              if (activeService && (event.pointerType !== 'mouse' || event.button === 0)) {
-                setActiveServiceSlug(null);
-              }
-            }}
-            onClick={(event) => {
-              if (activeService && event.detail === 0) setActiveServiceSlug(null);
-            }}
+            aria-label={`${detailValueDiagram.eyebrow}: ${detailService.detailTitle}`}
             style={{
               '--service-accent': detailService.accent,
               '--service-accent-rgb': detailService.accentRgb,
+              '--value-accent': detailService.accent,
+              '--value-accent-rgb': detailService.accentRgb,
             } as CSSProperties}
           >
-            <span
-              className="spiral-detail-close"
+            <button
+              type="button"
+              className="value-info-close"
               title={lang === 'de' ? 'Schliessen' : 'Close'}
-              aria-hidden="true"
+              aria-label={lang === 'de' ? 'Infokarte schliessen' : 'Close information card'}
+              tabIndex={activeService ? 0 : -1}
+              onClick={() => setActiveServiceSlug(null)}
             >
               <X size={19} strokeWidth={2.2} />
-            </span>
-            <span className="spiral-intro-meta">
-              <span className="spiral-intro-index">{detailService.code}</span>
-              <span className="spiral-intro-icon">
-                {detailService.icon ? <detailService.icon size={15} strokeWidth={1.8} /> : null}
-              </span>
-            </span>
-            <span className="spiral-detail-title">{detailService.detailTitle}</span>
-            <span className="spiral-detail-text">{detailService.detailText}</span>
-            <span className="spiral-detail-list">
-              {detailService.detailPoints?.map((point) => (
-                <span key={point}>{point}</span>
-              ))}
-            </span>
-          </button>
+            </button>
+
+            <div className="value-info-copy">
+              <div className="value-info-meta">
+                <span className="value-diagram-code">{detailService.code}</span>
+                <span className="value-diagram-eyebrow">{detailValueDiagram.eyebrow}</span>
+              </div>
+              <h3>{detailService.detailTitle}</h3>
+              <p>{detailService.detailText}</p>
+              <div className="value-info-columns">
+                <div>
+                  <h4>{lang === 'de' ? 'LEISTUNGSUMFANG' : 'SCOPE'}</h4>
+                  <ul>
+                    {detailService.detailPoints?.map((point) => (
+                      <li key={point}><CheckCircle size={14} strokeWidth={1.9} /><span>{point}</span></li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h4>{lang === 'de' ? 'DEIN NUTZEN' : 'YOUR BENEFIT'}</h4>
+                  <ul>
+                    {detailValueInfo.benefits.map((point) => (
+                      <li key={point}><CheckCircle size={14} strokeWidth={1.9} /><span>{point}</span></li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div className="value-info-visual">
+              <ValueInfoGraphic index={detailServiceIndex} />
+              <div className="value-info-stages" aria-hidden="true">
+                {detailValueInfo.stages.map((stage, stageIndex) => (
+                  <span key={stage}>
+                    <i>{String(stageIndex + 1).padStart(2, '0')}</i>
+                    <b>{stage}</b>
+                  </span>
+                ))}
+              </div>
+              <div className="value-info-result">
+                <strong>{detailValueDiagram.result}</strong>
+                <span>{detailValueDiagram.resultLabel}</span>
+              </div>
+            </div>
+          </section>
         </div>
         </div>
       </div>
@@ -1938,60 +1849,101 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
               </div>
             );
           })}
-          <div id="mobile-solutions" className="spiral-mobile-services scroll-mt-24">
-            {serviceCards.map((card, i) => {
-              const isOpen = activeServiceSlug === card.slug;
-              return (
+          <div
+            id="mobile-solutions"
+            className={`spiral-mobile-service-stage scroll-mt-24 ${activeService ? 'is-info-open' : ''}`}
+          >
+            <div className="spiral-mobile-services">
+              {serviceCards.map((card, i) => (
                 <button
                   key={`${card.code}-mobile-service-${i}`}
                   type="button"
-                  className={`spiral-service-card ngp-panel ngp-panel-static is-materialized ${isOpen ? 'is-selected mobile-service-detail' : ''}`}
-                  aria-expanded={isOpen}
-                  aria-label={isOpen
-                    ? `${card.title}: ${lang === 'de' ? 'Details schliessen' : 'Close details'}`
-                    : `${card.title}: ${lang === 'de' ? 'Details öffnen' : 'Open details'}`}
+                  className="spiral-service-card ngp-panel ngp-panel-static is-materialized"
+                  aria-expanded={activeServiceSlug === card.slug}
+                  aria-label={`${card.title}: ${lang === 'de' ? 'Details öffnen' : 'Open details'}`}
                   style={{
                     '--service-accent': card.accent,
                     '--service-accent-rgb': card.accentRgb,
+                    '--value-accent': card.accent,
+                    '--value-accent-rgb': card.accentRgb,
                   } as CSSProperties}
-                  onClick={() => setActiveServiceSlug(isOpen ? null : card.slug || null)}
+                  onClick={() => setActiveServiceSlug(card.slug || null)}
                 >
-                  {isOpen ? (
-                    <span className="ngp-core">
-                      <span className="spiral-detail-close" aria-hidden="true">
-                        <X size={19} strokeWidth={2.2} />
-                      </span>
-                      <span className="spiral-intro-meta">
-                        <span className="spiral-intro-index">{card.code}</span>
-                        <span className="spiral-intro-icon">
-                          <NeuralNodeIcon variant={i} />
-                        </span>
-                      </span>
-                      <span className="spiral-detail-title">{card.detailTitle}</span>
-                      <span className="spiral-detail-text">{card.detailText}</span>
-                      <span className="spiral-detail-list">
-                        {card.detailPoints?.map((point) => <span key={point}>{point}</span>)}
-                      </span>
+                  <span className="ngp-core">
+                    <span className="spiral-service-header">
+                      <span className="value-diagram-code">{card.code}</span>
+                      <span className="value-diagram-eyebrow">{VALUE_DIAGRAMS[lang][i].eyebrow}</span>
                     </span>
-                  ) : (
-                    <span className="ngp-core">
-                      <span className="spiral-intro-meta">
-                        <span className="spiral-intro-index">{card.code}</span>
-                        <span className="spiral-intro-icon">
-                          <NeuralNodeIcon variant={i} />
-                        </span>
-                      </span>
-                      <h3 className="spiral-service-title">{card.title}</h3>
-                      <p className="spiral-service-body">{card.body}</p>
-                      <span className="spiral-intro-rule" />
-                      <span className="spiral-service-more" aria-hidden="true">
-                        <Maximize2 size={16} strokeWidth={2.1} />
-                      </span>
-                    </span>
-                  )}
+                    <h3 className="spiral-service-title">{card.title}</h3>
+                    <p className="spiral-service-body">{card.body}</p>
+                  </span>
+                  <span className="spiral-service-more" aria-hidden="true">
+                    <Maximize2 size={16} strokeWidth={2.1} />
+                  </span>
                 </button>
-              );
-            })}
+              ))}
+            </div>
+
+            <section
+              className={`mobile-solution-info value-info-card ${activeService ? 'is-open' : ''}`}
+              aria-hidden={!activeService}
+              aria-label={`${detailValueDiagram.eyebrow}: ${detailService.detailTitle}`}
+              style={{
+                '--value-accent': detailService.accent,
+                '--value-accent-rgb': detailService.accentRgb,
+              } as CSSProperties}
+            >
+              <button
+                type="button"
+                className="value-info-close"
+                aria-label={lang === 'de' ? 'Infokarte schliessen' : 'Close information card'}
+                tabIndex={activeService ? 0 : -1}
+                onClick={() => setActiveServiceSlug(null)}
+              >
+                <X size={19} strokeWidth={2.2} />
+              </button>
+              <div className="value-info-copy">
+                <div className="value-info-meta">
+                  <span className="value-diagram-code">{detailService.code}</span>
+                  <span className="value-diagram-eyebrow">{detailValueDiagram.eyebrow}</span>
+                </div>
+                <h3>{detailService.detailTitle}</h3>
+                <p>{detailService.detailText}</p>
+                <div className="value-info-columns">
+                  <div>
+                    <h4>{lang === 'de' ? 'LEISTUNGSUMFANG' : 'SCOPE'}</h4>
+                    <ul>
+                      {detailService.detailPoints?.map((point) => (
+                        <li key={point}><CheckCircle size={14} strokeWidth={1.9} /><span>{point}</span></li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <h4>{lang === 'de' ? 'DEIN NUTZEN' : 'YOUR BENEFIT'}</h4>
+                    <ul>
+                      {detailValueInfo.benefits.map((point) => (
+                        <li key={point}><CheckCircle size={14} strokeWidth={1.9} /><span>{point}</span></li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div className="value-info-visual">
+                <ValueInfoGraphic index={detailServiceIndex} />
+                <div className="value-info-stages" aria-hidden="true">
+                  {detailValueInfo.stages.map((stage, stageIndex) => (
+                    <span key={stage}>
+                      <i>{String(stageIndex + 1).padStart(2, '0')}</i>
+                      <b>{stage}</b>
+                    </span>
+                  ))}
+                </div>
+                <div className="value-info-result">
+                  <strong>{detailValueDiagram.result}</strong>
+                  <span>{detailValueDiagram.resultLabel}</span>
+                </div>
+              </div>
+            </section>
           </div>
           <MobileValueImpact lang={lang} />
         </div>
