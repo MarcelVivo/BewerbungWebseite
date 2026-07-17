@@ -208,6 +208,72 @@ const VALUE_DIAGRAMS: Record<'de' | 'en', ValueDiagramCopy[]> = {
   ],
 };
 
+function splitValueNumber(label: string) {
+  const match = label.match(/^([^\d]*)(\d+(?:[.,]\d+)?)(.*)$/);
+  if (!match) return { prefix: '', value: 0, decimals: 0, suffix: label };
+  const numeric = match[2];
+  const separatorIndex = Math.max(numeric.lastIndexOf(','), numeric.lastIndexOf('.'));
+  return {
+    prefix: match[1],
+    value: Number(numeric.replace(',', '.')),
+    decimals: separatorIndex >= 0 ? numeric.length - separatorIndex - 1 : 0,
+    suffix: match[3],
+  };
+}
+
+function AnimatedValueNumber({ label, delay = 0 }: { label: string; delay?: number }) {
+  const parsed = splitValueNumber(label);
+  return (
+    <span
+      className="value-number"
+      aria-label={label}
+      data-value-number
+      data-value-prefix={parsed.prefix}
+      data-value-target={parsed.value}
+      data-value-decimals={parsed.decimals}
+      data-value-suffix={parsed.suffix}
+      data-value-delay={delay}
+      data-value-final={label}
+    >
+      {label}
+    </span>
+  );
+}
+
+function animateValueNumbers(root: HTMLElement, lang: 'de' | 'en', reduced: boolean) {
+  const elements = Array.from(root.querySelectorAll<HTMLElement>('[data-value-number]'));
+  if (!elements.length) return () => {};
+
+  if (reduced) {
+    elements.forEach((element) => { element.textContent = element.dataset.valueFinal || ''; });
+    return () => {};
+  }
+
+  const startedAt = performance.now();
+  let rafId = 0;
+  const duration = 980;
+
+  const frame = (now: number) => {
+    let complete = true;
+    elements.forEach((element) => {
+      const target = Number(element.dataset.valueTarget || 0);
+      const decimals = Number(element.dataset.valueDecimals || 0);
+      const delay = Number(element.dataset.valueDelay || 0);
+      const raw = Math.max(0, Math.min(1, (now - startedAt - delay) / duration));
+      const eased = 1 - Math.pow(1 - raw, 4);
+      const current = target * eased;
+      const number = current.toFixed(decimals).replace('.', lang === 'de' ? ',' : '.');
+      element.textContent = `${element.dataset.valuePrefix || ''}${number}${element.dataset.valueSuffix || ''}`;
+      if (raw < 1) complete = false;
+    });
+
+    if (!complete) rafId = requestAnimationFrame(frame);
+  };
+
+  rafId = requestAnimationFrame(frame);
+  return () => cancelAnimationFrame(rafId);
+}
+
 function ValueDiagramGraphic({ index }: { index: number }) {
   if (index === 0) {
     return (
@@ -283,10 +349,16 @@ function ValueImpactContent({ lang }: { lang: 'de' | 'en' }) {
             <h3>{diagram.title}</h3>
             <ValueDiagramGraphic index={index} />
             <div className="value-diagram-numbers">
-              <span><small>{lang === 'de' ? 'VORHER' : 'BEFORE'}</small>{diagram.before}</span>
+              <span>
+                <small>{lang === 'de' ? 'VORHER' : 'BEFORE'}</small>
+                <AnimatedValueNumber label={diagram.before} delay={index * 110} />
+              </span>
               <b aria-hidden="true">→</b>
-              <span><small>{lang === 'de' ? 'NACHHER' : 'AFTER'}</small>{diagram.after}</span>
-              <strong>{diagram.metric}</strong>
+              <span>
+                <small>{lang === 'de' ? 'NACHHER' : 'AFTER'}</small>
+                <AnimatedValueNumber label={diagram.after} delay={160 + index * 110} />
+              </span>
+              <strong><AnimatedValueNumber label={diagram.metric} delay={310 + index * 110} /></strong>
             </div>
             <p>{diagram.note}</p>
           </article>
@@ -307,8 +379,10 @@ function ValueImpactWorld({ lang }: { lang: 'de' | 'en' }) {
   useEffect(() => {
     const world = worldRef.current;
     if (!world) return;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let rafId = 0;
     let wasVisible = false;
+    let cancelNumberAnimation = () => {};
 
     const frame = () => {
       rafId = requestAnimationFrame(frame);
@@ -337,6 +411,8 @@ function ValueImpactWorld({ lang }: { lang: 'de' | 'en' }) {
       if (!wasVisible && revealRaw > 0.12) {
         wasVisible = true;
         world.classList.add('is-revealed');
+        cancelNumberAnimation();
+        cancelNumberAnimation = animateValueNumbers(world, lang, reduced);
       } else if (wasVisible && revealRaw <= 0.02) {
         wasVisible = false;
         world.classList.remove('is-revealed');
@@ -344,8 +420,11 @@ function ValueImpactWorld({ lang }: { lang: 'de' | 'en' }) {
     };
 
     rafId = requestAnimationFrame(frame);
-    return () => cancelAnimationFrame(rafId);
-  }, []);
+    return () => {
+      cancelAnimationFrame(rafId);
+      cancelNumberAnimation();
+    };
+  }, [lang]);
 
   return (
     <div ref={worldRef} className="value-impact-world" aria-hidden="true">
