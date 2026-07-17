@@ -152,6 +152,9 @@ function DetailFiberSpine() {
 type ValueDiagramCopy = {
   code: string;
   eyebrow: string;
+  before: string;
+  after: string;
+  counterStart: string;
   result: string;
   resultLabel: string;
   accent: string;
@@ -162,44 +165,44 @@ const VALUE_DIAGRAMS: Record<'de' | 'en', ValueDiagramCopy[]> = {
   de: [
     {
       code: '01', eyebrow: 'MARKE',
-      result: '+150 %', resultLabel: 'ANFRAGEN',
+      before: '1,0×', after: '2,5×', counterStart: '+0 %', result: '+150 %', resultLabel: 'ANFRAGEN',
       accent: '#c89a3d', accentRgb: '200,154,61',
     },
     {
       code: '02', eyebrow: 'WEB',
-      result: '−75 %', resultLabel: 'LADEZEIT',
+      before: '12 s', after: '3 s', counterStart: '−0 %', result: '−75 %', resultLabel: 'LADEZEIT',
       accent: '#4d7fbf', accentRgb: '77,127,191',
     },
     {
       code: '03', eyebrow: 'SYSTEME',
-      result: '−22 h', resultLabel: '/ MONAT',
+      before: '30 h', after: '8 h', counterStart: '−0 h', result: '−22 h', resultLabel: '/ MONAT',
       accent: '#a6425c', accentRgb: '166,66,92',
     },
     {
       code: '04', eyebrow: 'AUTOMATION',
-      result: '−70 %', resultLabel: 'ROUTINE',
+      before: '100 h', after: '30 h', counterStart: '−0 %', result: '−70 %', resultLabel: 'ROUTINE',
       accent: '#4dbf7f', accentRgb: '77,191,127',
     },
   ],
   en: [
     {
       code: '01', eyebrow: 'BRAND',
-      result: '+150%', resultLabel: 'ENQUIRIES',
+      before: '1.0×', after: '2.5×', counterStart: '+0%', result: '+150%', resultLabel: 'ENQUIRIES',
       accent: '#c89a3d', accentRgb: '200,154,61',
     },
     {
       code: '02', eyebrow: 'WEB',
-      result: '−75%', resultLabel: 'LOAD TIME',
+      before: '12 s', after: '3 s', counterStart: '−0%', result: '−75%', resultLabel: 'LOAD TIME',
       accent: '#4d7fbf', accentRgb: '77,127,191',
     },
     {
       code: '03', eyebrow: 'SYSTEMS',
-      result: '−22 h', resultLabel: '/ MONTH',
+      before: '30 h', after: '8 h', counterStart: '−0 h', result: '−22 h', resultLabel: '/ MONTH',
       accent: '#a6425c', accentRgb: '166,66,92',
     },
     {
       code: '04', eyebrow: 'AUTOMATION',
-      result: '−70%', resultLabel: 'ROUTINE',
+      before: '100 h', after: '30 h', counterStart: '−0%', result: '−70%', resultLabel: 'ROUTINE',
       accent: '#4dbf7f', accentRgb: '77,191,127',
     },
   ],
@@ -218,17 +221,27 @@ function splitValueNumber(label: string) {
   };
 }
 
-function AnimatedValueNumber({ label, delay = 0 }: { label: string; delay?: number }) {
-  const parsed = splitValueNumber(label);
+function AnimatedValueNumber({
+  fromLabel,
+  label,
+  delay = 0,
+}: {
+  fromLabel: string;
+  label: string;
+  delay?: number;
+}) {
+  const start = splitValueNumber(fromLabel);
+  const target = splitValueNumber(label);
   return (
     <span
       className="value-number"
-      aria-label={label}
+      aria-label={`${fromLabel} → ${label}`}
       data-value-number
-      data-value-prefix={parsed.prefix}
-      data-value-target={parsed.value}
-      data-value-decimals={parsed.decimals}
-      data-value-suffix={parsed.suffix}
+      data-value-start={start.value}
+      data-value-prefix={target.prefix}
+      data-value-target={target.value}
+      data-value-decimals={Math.max(start.decimals, target.decimals)}
+      data-value-suffix={target.suffix}
       data-value-delay={delay}
       data-value-final={label}
     >
@@ -248,23 +261,32 @@ function animateValueNumbers(root: HTMLElement, lang: 'de' | 'en', reduced: bool
 
   const startedAt = performance.now();
   let rafId = 0;
-  const duration = 980;
+  const cycleDuration = 6800;
+  const countStart = 920;
+  const countDuration = 1650;
+  const resetFadeStart = 6250;
 
   const frame = (now: number) => {
-    let complete = true;
     elements.forEach((element) => {
+      const start = Number(element.dataset.valueStart || 0);
       const target = Number(element.dataset.valueTarget || 0);
       const decimals = Number(element.dataset.valueDecimals || 0);
       const delay = Number(element.dataset.valueDelay || 0);
-      const raw = Math.max(0, Math.min(1, (now - startedAt - delay) / duration));
-      const eased = 1 - Math.pow(1 - raw, 4);
-      const current = target * eased;
+      const elapsed = Math.max(0, now - startedAt - delay);
+      const cycleTime = elapsed % cycleDuration;
+      const raw = Math.max(0, Math.min(1, (cycleTime - countStart) / countDuration));
+      const eased = raw * raw * (3 - 2 * raw);
+      const current = start + (target - start) * eased;
       const number = current.toFixed(decimals).replace('.', lang === 'de' ? ',' : '.');
       element.textContent = `${element.dataset.valuePrefix || ''}${number}${element.dataset.valueSuffix || ''}`;
-      if (raw < 1) complete = false;
+      const fadeOut = cycleTime > resetFadeStart
+        ? Math.max(0, 1 - (cycleTime - resetFadeStart) / (cycleDuration - resetFadeStart))
+        : 1;
+      const fadeIn = Math.min(1, cycleTime / 260);
+      element.style.opacity = String(Math.min(fadeIn, fadeOut));
     });
 
-    if (!complete) rafId = requestAnimationFrame(frame);
+    rafId = requestAnimationFrame(frame);
   };
 
   rafId = requestAnimationFrame(frame);
@@ -281,9 +303,13 @@ function ValueDiagramGraphic({ index, lang }: { index: number; lang: 'de' | 'en'
         <path className="value-chart-accent value-draw-line" d="M67 65C105 65 119 48 143 47C166 46 177 30 208 16" pathLength="1" />
         <path className="value-chart-accent value-chart-arrow" d="M199 14L210 15L207 26" />
         <circle className="value-chart-dot" cx="67" cy="65" r="4" />
-        <circle className="value-chart-dot" cx="208" cy="16" r="4" />
-        <text className="value-chart-label" x="38" y="119">1×</text>
-        <text className="value-chart-label value-chart-label--accent" x="188" y="119">{lang === 'de' ? '2,5×' : '2.5×'}</text>
+        <circle className="value-chart-dot value-pulse-dot" cx="208" cy="16" r="4" />
+        <text className="value-chart-label" x="62" y="118" textAnchor="middle">
+          {lang === 'de' ? '1,0×' : '1.0×'}
+        </text>
+        <text className="value-chart-label value-chart-label--accent" x="212" y="118" textAnchor="middle">
+          {lang === 'de' ? '2,5×' : '2.5×'}
+        </text>
       </svg>
     );
   }
@@ -294,13 +320,14 @@ function ValueDiagramGraphic({ index, lang }: { index: number; lang: 'de' | 'en'
         <path className="value-grid-line" d="M12 103H268" />
         <circle className="value-speed-ring" cx="74" cy="62" r="38" pathLength="1" />
         <circle className="value-speed-ring value-chart-accent value-speed-ring--fast" cx="206" cy="62" r="38" pathLength="1" />
-        <path className="value-chart-line" d="M74 62L52 39M206 62L228 40" />
+        <path className="value-chart-line value-speed-needle-before" d="M74 62L52 39" />
+        <path className="value-chart-line value-speed-needle-after" d="M206 62L228 40" />
         <circle className="value-chart-dot" cx="74" cy="62" r="5" />
         <circle className="value-chart-dot value-pulse-dot" cx="206" cy="62" r="5" />
         <path className="value-chart-accent value-flow-line" d="M116 62H163" pathLength="1" />
         <path className="value-chart-accent" d="M155 54L164 62L155 70" />
-        <text className="value-chart-label" x="57" y="117">12 s</text>
-        <text className="value-chart-label value-chart-label--accent" x="195" y="117">3 s</text>
+        <text className="value-chart-label" x="74" y="118" textAnchor="middle">12 s</text>
+        <text className="value-chart-label value-chart-label--accent" x="206" y="118" textAnchor="middle">3 s</text>
       </svg>
     );
   }
@@ -312,8 +339,8 @@ function ValueDiagramGraphic({ index, lang }: { index: number; lang: 'de' | 'en'
         <path className="value-chart-line value-draw-line" d="M22 29C62 33 76 47 108 54C139 61 153 83 183 86C214 89 234 95 258 98" pathLength="1" />
         <path className="value-chart-accent value-draw-line value-draw-line--delay" d="M22 29C61 29 77 40 108 40C139 40 153 54 183 54C213 54 235 63 258 63" pathLength="1" />
         {[22, 108, 183, 258].map((x, i) => <circle key={x} className={i === 3 ? 'value-chart-dot value-pulse-dot' : 'value-chart-dot'} cx={x} cy={[29, 40, 54, 63][i]} r="4" />)}
-        <text className="value-chart-label" x="14" y="117">30 h</text>
-        <text className="value-chart-label value-chart-label--accent" x="239" y="117">8 h</text>
+        <text className="value-chart-label" x="22" y="118" textAnchor="start">30 h</text>
+        <text className="value-chart-label value-chart-label--accent" x="258" y="118" textAnchor="end">8 h</text>
       </svg>
     );
   }
@@ -325,8 +352,8 @@ function ValueDiagramGraphic({ index, lang }: { index: number; lang: 'de' | 'en'
       <path className="value-chart-line" d="M126 35H164V61H204V87H256" />
       {[126, 164, 204, 256].map((x, i) => <circle key={x} className={i === 3 ? 'value-chart-dot value-pulse-dot' : 'value-chart-dot'} cx={x} cy={[35, 61, 87, 87][i]} r="5" />)}
       <path className="value-chart-accent value-flow-line" d="M126 35H164V61H204V87H256" pathLength="1" />
-      <text className="value-chart-label" x="114" y="117">100 h</text>
-      <text className="value-chart-label value-chart-label--accent" x="238" y="117">30 h</text>
+      <text className="value-chart-label" x="69" y="118" textAnchor="middle">100 h</text>
+      <text className="value-chart-label value-chart-label--accent" x="256" y="118" textAnchor="end">30 h</text>
     </svg>
   );
 }
@@ -353,7 +380,7 @@ function ValueImpactContent({
           <article
             key={diagram.code}
             className="value-diagram"
-            aria-label={`${diagram.eyebrow}: ${diagram.result} ${diagram.resultLabel}`}
+            aria-label={`${diagram.eyebrow}: ${diagram.before} → ${diagram.after} ${diagram.resultLabel}`}
             style={{ '--value-accent': diagram.accent, '--value-accent-rgb': diagram.accentRgb } as CSSProperties}
           >
             <header>
@@ -362,7 +389,13 @@ function ValueImpactContent({
             </header>
             <ValueDiagramGraphic index={index} lang={lang} />
             <div className="value-diagram-result">
-              <strong><AnimatedValueNumber label={diagram.result} delay={index * 120} /></strong>
+              <strong>
+                <AnimatedValueNumber
+                  fromLabel={diagram.counterStart}
+                  label={diagram.result}
+                  delay={index * 90}
+                />
+              </strong>
               <span>{diagram.resultLabel}</span>
             </div>
           </article>
@@ -373,6 +406,26 @@ function ValueImpactContent({
           ? 'Illustratives Potenzial · abhängig von der Ausgangslage'
           : 'Illustrative potential · depends on the starting point'}
       </p>
+    </div>
+  );
+}
+
+function MobileValueImpact({ lang }: { lang: 'de' | 'en' }) {
+  const mobileRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const mobile = mobileRef.current;
+    if (!mobile) return;
+    return animateValueNumbers(
+      mobile,
+      lang,
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+    );
+  }, [lang]);
+
+  return (
+    <div ref={mobileRef} className="mobile-value-impact is-revealed" id="mobile-journey-value">
+      <ValueImpactContent lang={lang} />
     </div>
   );
 }
@@ -446,7 +499,7 @@ function ValueImpactWorld({ lang }: { lang: 'de' | 'en' }) {
       world.style.pointerEvents = opacity > 0.92 ? 'auto' : 'none';
       world.setAttribute('aria-hidden', opacity > 0.65 ? 'false' : 'true');
 
-      if (!wasVisible && revealRaw > 0.12) {
+      if (!wasVisible && revealRaw > 0.34) {
         wasVisible = true;
         world.classList.add('is-revealed');
         flapTriggerRef.current();
@@ -1546,9 +1599,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
               );
             })}
           </div>
-          <div className="mobile-value-impact is-revealed" id="mobile-journey-value">
-            <ValueImpactContent lang={lang} />
-          </div>
+          <MobileValueImpact lang={lang} />
         </div>
       </div>
     </section>

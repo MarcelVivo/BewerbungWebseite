@@ -886,6 +886,20 @@ body {
   stroke-width: 2.5;
 }
 
+.value-chart-label {
+  fill: rgba(255,255,255,0.62);
+  stroke: none;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.value-chart-label--accent {
+  fill: var(--value-accent);
+  filter: drop-shadow(0 0 5px rgba(var(--value-accent-rgb),0.42));
+}
+
 .value-pulse-dot {
   fill: var(--value-accent);
 }
@@ -931,18 +945,6 @@ body {
   transform-origin: 69px 62px;
 }
 
-.value-chart-label {
-  fill: #fff;
-  font-family: inherit;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-}
-
-.value-chart-label--accent {
-  fill: var(--value-accent);
-}
-
 .value-diagram-result {
   display: flex;
   align-items: baseline;
@@ -953,6 +955,7 @@ body {
 }
 
 .value-diagram-result strong {
+  display: block;
   color: #fff;
   font-size: clamp(1.9rem, 2.35vw, 3rem);
   font-weight: 700;
@@ -971,10 +974,11 @@ body {
 
 .value-number {
   display: inline-block;
-  min-width: 2.2ch;
+  min-width: 4.2ch;
   color: inherit;
   font: inherit;
   font-variant-numeric: tabular-nums;
+  text-align: center;
   white-space: nowrap;
 }
 
@@ -1003,11 +1007,6 @@ body {
   animation: value-chart-boot 980ms cubic-bezier(.16,.74,.26,1) both;
   animation-delay: calc(240ms + var(--value-index, 0) * 110ms);
   transform-origin: 50% 50%;
-}
-
-.is-revealed .value-number {
-  animation: value-number-lock 820ms steps(8, end) both;
-  animation-delay: calc(360ms + var(--value-index, 0) * 110ms);
 }
 
 .is-revealed .value-bar {
@@ -1041,31 +1040,57 @@ body {
   animation: value-dot-pulse 2.1s ease-in-out 1.25s infinite;
 }
 
-/* Nach der einmaligen Ladeanimation bleiben die vier Anzeigen im ruhenden
-   Kamerabild funktional aktiv: Zielbalken, schneller Tacho, optimierte
-   Prozesskurve und Automationsring geben nacheinander einen leisen Impuls. */
+/* Jede Anzeige erklärt sich auch bei ruhender Kamera in derselben
+   6,8-Sekunden-Sequenz: Ausgangslage, sichtbarer Übergang, optimierter
+   Zielzustand, kurze Lesepause und ein weicher Neustart. */
+.is-revealed .value-diagram:nth-child(1) .value-bar-before {
+  animation: value-story-source-bar 6.8s ease-in-out infinite;
+}
+
 .is-revealed .value-diagram:nth-child(1) .value-bar-after {
-  animation:
-    value-bar-rise 1.05s cubic-bezier(.16,.78,.28,1) 260ms both,
-    value-dashboard-live 3.2s ease-in-out 1.4s infinite;
+  animation: value-story-target-bar 6.8s cubic-bezier(.2,.72,.28,1) infinite;
+}
+
+.is-revealed .value-diagram:nth-child(1) .value-draw-line {
+  animation: value-story-path 6.8s cubic-bezier(.2,.68,.3,1) infinite;
+}
+
+.is-revealed .value-diagram:nth-child(2) .value-flow-line {
+  animation: value-story-path 6.8s cubic-bezier(.2,.68,.3,1) infinite;
 }
 
 .is-revealed .value-diagram:nth-child(2) .value-speed-ring--fast {
-  animation:
-    value-gauge-spin 1.1s cubic-bezier(.2,.75,.3,1) 510ms forwards,
-    value-dashboard-live 3.2s ease-in-out 1.8s infinite;
+  animation: value-story-gauge 6.8s cubic-bezier(.2,.72,.3,1) infinite;
+}
+
+.is-revealed .value-diagram:nth-child(2) .value-speed-needle-after {
+  transform-box: view-box;
+  transform-origin: 206px 62px;
+  animation: value-story-needle 6.8s cubic-bezier(.2,.72,.3,1) infinite;
+}
+
+.is-revealed .value-diagram:nth-child(3) .value-draw-line:not(.value-draw-line--delay) {
+  animation: value-story-source-path 6.8s cubic-bezier(.2,.68,.3,1) infinite;
 }
 
 .is-revealed .value-diagram:nth-child(3) .value-draw-line--delay {
-  animation:
-    value-line-draw 1.25s cubic-bezier(.2,.68,.3,1) 820ms forwards,
-    value-dashboard-live 3.2s ease-in-out 2.2s infinite;
+  animation: value-story-path 6.8s cubic-bezier(.2,.68,.3,1) infinite;
 }
 
 .is-revealed .value-diagram:nth-child(4) .value-donut-value {
-  animation:
-    value-donut-fill 1.25s cubic-bezier(.2,.72,.3,1) 650ms forwards,
-    value-dashboard-live 3.2s ease-in-out 2.6s infinite;
+  animation: value-story-donut 6.8s cubic-bezier(.2,.72,.3,1) infinite;
+}
+
+.is-revealed .value-diagram:nth-child(4) .value-flow-line {
+  animation: value-story-path 6.8s cubic-bezier(.2,.68,.3,1) infinite;
+}
+
+.is-revealed .value-chart-label:not(.value-chart-label--accent) {
+  animation: value-story-source-label 6.8s ease-in-out infinite;
+}
+
+.is-revealed .value-chart-label--accent {
+  animation: value-story-target-label 6.8s ease-in-out infinite;
 }
 
 @keyframes value-rule-in {
@@ -1082,12 +1107,6 @@ body {
   0% { opacity: 0.08; transform: scale(0.92); filter: blur(1.4px) brightness(2.2); }
   38% { opacity: 0.52; filter: blur(0.45px) brightness(1.65); }
   100% { opacity: 1; transform: scale(1); filter: blur(0) brightness(1); }
-}
-
-@keyframes value-number-lock {
-  0% { opacity: 0.12; transform: translateY(0.35em); text-shadow: 0 0 12px rgba(255,255,255,0.8); }
-  62% { opacity: 0.86; }
-  100% { opacity: 1; transform: translateY(0); text-shadow: 0 0 0 rgba(255,255,255,0); }
 }
 
 @keyframes value-bar-rise {
@@ -1114,17 +1133,81 @@ body {
   50% { stroke: var(--value-accent); filter: drop-shadow(0 0 7px rgba(var(--value-accent-rgb),0.9)); }
 }
 
-@keyframes value-dashboard-live {
-  0%, 100% {
-    opacity: 0.82;
-    filter: drop-shadow(0 0 2px rgba(255,255,255,0.14));
-  }
-  50% {
+@keyframes value-story-source-bar {
+  0% { opacity: 0; transform: scaleY(0.2); }
+  10%, 86% { opacity: 1; transform: scaleY(1); }
+  94% { opacity: 0.45; transform: scaleY(1); }
+  100% { opacity: 0; transform: scaleY(0.2); }
+}
+
+@keyframes value-story-target-bar {
+  0%, 18% { opacity: 0.12; transform: scaleY(0.03); filter: none; }
+  42%, 86% {
     opacity: 1;
-    filter:
-      drop-shadow(0 0 6px rgba(255,255,255,0.42))
-      drop-shadow(0 0 9px rgba(var(--value-accent-rgb),0.34));
+    transform: scaleY(1);
+    filter: drop-shadow(0 0 8px rgba(var(--value-accent-rgb),0.46));
   }
+  94% { opacity: 0.55; transform: scaleY(1); }
+  100% { opacity: 0; transform: scaleY(0.03); filter: none; }
+}
+
+@keyframes value-story-path {
+  0%, 16% { opacity: 0; stroke-dashoffset: 1; filter: none; }
+  42%, 86% {
+    opacity: 1;
+    stroke-dashoffset: 0;
+    filter: drop-shadow(0 0 5px rgba(var(--value-accent-rgb),0.34));
+  }
+  94% { opacity: 0.48; stroke-dashoffset: 0; }
+  100% { opacity: 0; stroke-dashoffset: 1; filter: none; }
+}
+
+@keyframes value-story-source-path {
+  0% { opacity: 0; stroke-dashoffset: 1; }
+  16%, 86% { opacity: 0.58; stroke-dashoffset: 0; }
+  94% { opacity: 0.28; stroke-dashoffset: 0; }
+  100% { opacity: 0; stroke-dashoffset: 1; }
+}
+
+@keyframes value-story-gauge {
+  0%, 18% { opacity: 0.16; stroke-dashoffset: 0.76; filter: none; }
+  42%, 86% {
+    opacity: 1;
+    stroke-dashoffset: 0;
+    filter: drop-shadow(0 0 8px rgba(var(--value-accent-rgb),0.42));
+  }
+  94% { opacity: 0.5; stroke-dashoffset: 0; }
+  100% { opacity: 0; stroke-dashoffset: 0.76; filter: none; }
+}
+
+@keyframes value-story-needle {
+  0%, 18% { opacity: 0.25; transform: rotate(-96deg); }
+  42%, 86% { opacity: 1; transform: rotate(0deg); }
+  94% { opacity: 0.5; transform: rotate(0deg); }
+  100% { opacity: 0; transform: rotate(-96deg); }
+}
+
+@keyframes value-story-donut {
+  0%, 18% { opacity: 0.15; stroke-dashoffset: 0.7; filter: none; }
+  42%, 86% {
+    opacity: 1;
+    stroke-dashoffset: 0;
+    filter: drop-shadow(0 0 8px rgba(var(--value-accent-rgb),0.42));
+  }
+  94% { opacity: 0.5; stroke-dashoffset: 0; }
+  100% { opacity: 0; stroke-dashoffset: 0.7; filter: none; }
+}
+
+@keyframes value-story-source-label {
+  0% { opacity: 0; }
+  9%, 86% { opacity: 0.62; }
+  100% { opacity: 0; }
+}
+
+@keyframes value-story-target-label {
+  0%, 30% { opacity: 0; }
+  42%, 86% { opacity: 1; }
+  100% { opacity: 0; }
 }
 
 /* IntroFlapWorld: ersetzt die WebGL-Textebene der ersten Intro-Station
@@ -2168,6 +2251,32 @@ body {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
+  }
+
+  .is-revealed .value-bar,
+  .is-revealed .value-draw-line,
+  .is-revealed .value-flow-line,
+  .is-revealed .value-speed-ring--fast,
+  .is-revealed .value-speed-needle-after,
+  .is-revealed .value-donut-value,
+  .is-revealed .value-chart-label {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+
+  .is-revealed .value-bar {
+    transform: scaleY(1) !important;
+  }
+
+  .is-revealed .value-draw-line,
+  .is-revealed .value-flow-line,
+  .is-revealed .value-speed-ring--fast,
+  .is-revealed .value-donut-value {
+    stroke-dashoffset: 0 !important;
+  }
+
+  .is-revealed .value-speed-needle-after {
+    transform: rotate(0deg) !important;
   }
 
   .spiral-section {
