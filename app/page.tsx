@@ -152,11 +152,8 @@ function DetailFiberSpine() {
 type ValueDiagramCopy = {
   code: string;
   eyebrow: string;
-  title: string;
-  before: string;
-  after: string;
-  metric: string;
-  note: string;
+  result: string;
+  resultLabel: string;
   accent: string;
   accentRgb: string;
 };
@@ -164,45 +161,45 @@ type ValueDiagramCopy = {
 const VALUE_DIAGRAMS: Record<'de' | 'en', ValueDiagramCopy[]> = {
   de: [
     {
-      code: '01', eyebrow: 'AUFTRITT & VERTRAUEN', title: 'Mehr qualifizierte Anfragen',
-      before: '1,0×', after: '2,5×', metric: '+150 %', note: 'Potenzial bei gleicher Reichweite',
+      code: '01', eyebrow: 'MARKE',
+      result: '2,5×', resultLabel: 'ANFRAGEN',
       accent: '#c89a3d', accentRgb: '200,154,61',
     },
     {
-      code: '02', eyebrow: 'WEBSITE & APPLIKATION', title: 'Schneller zum Ergebnis',
-      before: '12 s', after: '3 s', metric: '−75 %', note: 'Kürzere Lade- und Reaktionszeit',
+      code: '02', eyebrow: 'WEB',
+      result: '4×', resultLabel: 'SCHNELLER',
       accent: '#4d7fbf', accentRgb: '77,127,191',
     },
     {
-      code: '03', eyebrow: 'CRM, ERP & DATEN', title: 'Weniger Prozessaufwand',
-      before: '30 h', after: '8 h', metric: '−22 h', note: 'Monatlicher manueller Aufwand',
+      code: '03', eyebrow: 'SYSTEME',
+      result: '−22 h', resultLabel: '/ MONAT',
       accent: '#a6425c', accentRgb: '166,66,92',
     },
     {
-      code: '04', eyebrow: 'KI & AUTOMATION', title: 'Mehr Zeit fürs Kerngeschäft',
-      before: '100 h', after: '30 h', metric: '−70 %', note: 'Wiederkehrende Routinearbeit',
+      code: '04', eyebrow: 'AUTOMATION',
+      result: '−70 %', resultLabel: 'ROUTINE',
       accent: '#4dbf7f', accentRgb: '77,191,127',
     },
   ],
   en: [
     {
-      code: '01', eyebrow: 'BRAND & TRUST', title: 'More qualified enquiries',
-      before: '1.0×', after: '2.5×', metric: '+150%', note: 'Potential at the same reach',
+      code: '01', eyebrow: 'BRAND',
+      result: '2.5×', resultLabel: 'ENQUIRIES',
       accent: '#c89a3d', accentRgb: '200,154,61',
     },
     {
-      code: '02', eyebrow: 'WEBSITE & APPLICATION', title: 'Faster to the result',
-      before: '12 s', after: '3 s', metric: '−75%', note: 'Shorter load and response time',
+      code: '02', eyebrow: 'WEB',
+      result: '4×', resultLabel: 'FASTER',
       accent: '#4d7fbf', accentRgb: '77,127,191',
     },
     {
-      code: '03', eyebrow: 'CRM, ERP & DATA', title: 'Less process overhead',
-      before: '30 h', after: '8 h', metric: '−22 h', note: 'Monthly manual effort',
+      code: '03', eyebrow: 'SYSTEMS',
+      result: '−22 h', resultLabel: '/ MONTH',
       accent: '#a6425c', accentRgb: '166,66,92',
     },
     {
-      code: '04', eyebrow: 'AI & AUTOMATION', title: 'More time for core work',
-      before: '100 h', after: '30 h', metric: '−70%', note: 'Recurring routine work',
+      code: '04', eyebrow: 'AUTOMATION',
+      result: '−70%', resultLabel: 'ROUTINE',
       accent: '#4dbf7f', accentRgb: '77,191,127',
     },
   ],
@@ -333,41 +330,31 @@ function ValueImpactContent({ lang }: { lang: 'de' | 'en' }) {
       <div className="value-impact-heading">
         <span>{lang === 'de' ? 'DEIN' : 'YOUR'}</span>
         <strong>{lang === 'de' ? 'MEHRWERT.' : 'VALUE.'}</strong>
-        <i>{lang === 'de' ? 'Vier Lösungen. Eine messbare Wirkung.' : 'Four solutions. One measurable impact.'}</i>
       </div>
       <div className="value-diagram-grid">
         {diagrams.map((diagram, index) => (
           <article
             key={diagram.code}
             className="value-diagram"
+            aria-label={`${diagram.eyebrow}: ${diagram.result} ${diagram.resultLabel}`}
             style={{ '--value-accent': diagram.accent, '--value-accent-rgb': diagram.accentRgb } as CSSProperties}
           >
             <header>
               <span className="value-diagram-code">{diagram.code}</span>
               <span className="value-diagram-eyebrow">{diagram.eyebrow}</span>
             </header>
-            <h3>{diagram.title}</h3>
             <ValueDiagramGraphic index={index} />
-            <div className="value-diagram-numbers">
-              <span>
-                <small>{lang === 'de' ? 'VORHER' : 'BEFORE'}</small>
-                <AnimatedValueNumber label={diagram.before} delay={index * 110} />
-              </span>
-              <b aria-hidden="true">→</b>
-              <span>
-                <small>{lang === 'de' ? 'NACHHER' : 'AFTER'}</small>
-                <AnimatedValueNumber label={diagram.after} delay={160 + index * 110} />
-              </span>
-              <strong><AnimatedValueNumber label={diagram.metric} delay={310 + index * 110} /></strong>
+            <div className="value-diagram-result">
+              <strong><AnimatedValueNumber label={diagram.result} delay={index * 120} /></strong>
+              <span>{diagram.resultLabel}</span>
             </div>
-            <p>{diagram.note}</p>
           </article>
         ))}
       </div>
       <p className="value-impact-disclaimer">
         {lang === 'de'
-          ? 'Illustrative Beispielszenarien – das konkrete Potenzial hängt von Ausgangslage, Umfang und Nutzung ab.'
-          : 'Illustrative scenarios — actual potential depends on the starting point, scope and adoption.'}
+          ? 'Illustratives Potenzial · abhängig von der Ausgangslage'
+          : 'Illustrative potential · depends on the starting point'}
       </p>
     </div>
   );
