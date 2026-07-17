@@ -2266,6 +2266,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     satellite.userData={baseX:x,baseY:y,baseZ:z,baseRotY:BASE_Y,phase:phase};
     world.add(satellite);
     satelliteBrains.push(satellite);
+    return satellite;
   }
   // Auf schmalen Mobile-Viewports ist das horizontale Sichtfeld der Kamera
   // (gleiche vertikale FOV, aber viel kleineres Seitenverhältnis) deutlich
@@ -2299,13 +2300,29 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var greenSatelliteY=BRAIN_BASE_Y-SP.length*brain.scale.x*.26;
   var greenSatelliteAngle=cameraHelixExitStart*Math.PI*2;
   var greenSatelliteRadius=isMobile?8.2:13.4;
-  addSatelliteBrain(
+  var greenSatelliteBrain=addSatelliteBrain(
     -Math.cos(greenSatelliteAngle)*greenSatelliteRadius,
     greenSatelliteY,
     Math.sin(greenSatelliteAngle)*greenSatelliteRadius,
     4.35,
     SATELLITE_METALS.green
   );
+  // Während die Kamera diese Höhe passiert, fährt das Gehirn kurz an den
+  // linken Bildrand. Sein Mittelpunkt bleibt ausserhalb, die innere Kante
+  // wird jedoch angeschnitten sichtbar. Danach gleitet es wieder in die für
+  // die Endansicht definierte Position zurück.
+  var greenRevealProgress=THREE.MathUtils.clamp(
+    (cameraTargetStart-greenSatelliteY)/cameraTravel,
+    0,
+    1
+  );
+  var greenRevealAngle=greenRevealProgress*Math.PI*2;
+  var greenRevealRadius=isMobile?2.45:5.65;
+  greenSatelliteBrain.userData.cameraReveal={
+    progress:greenRevealProgress,
+    x:-Math.cos(greenRevealAngle)*greenRevealRadius,
+    z:Math.sin(greenRevealAngle)*greenRevealRadius
+  };
 
   // --- Verbindliche Maske für beide Gehirnhälften: dieselbe Scatter-Punktwolke
   // (BR.scatter, bereits als pts[0..scatterN) vorhanden), nach dem Vorzeichen
@@ -2469,10 +2486,22 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   BLUE_STRAND.escapeAmplitude=1.35;
   BLUE_STRAND.escapeWavelength=1;
   GREEN_STRAND.baseBrightness=.94;
-  GREEN_STRAND.pulseStrength=.15;
-  GREEN_STRAND.bottomThickness=1.02;
-  GREEN_STRAND.escapeAmplitude=1.32;
-  GREEN_STRAND.escapeWavelength=.92;
+  GREEN_STRAND.pulseStrength=.12;
+  GREEN_STRAND.fiberAmount=.5;
+  GREEN_STRAND.topThickness=.72;
+  GREEN_STRAND.bottomThickness=.74;
+  GREEN_STRAND.topFunnel=.82;
+  GREEN_STRAND.funnelSpread=.48;
+  GREEN_STRAND.funnelLength=.58;
+  GREEN_STRAND.funnelTopRadius=.22;
+  GREEN_STRAND.funnelOutletRadius=.038;
+  GREEN_STRAND.firstDroop=.78;
+  GREEN_STRAND.secondDroop=.88;
+  GREEN_STRAND.sway=.34;
+  GREEN_STRAND.escapeAmount=.12;
+  GREEN_STRAND.escapeAmplitude=.3;
+  GREEN_STRAND.escapeFrequency=1.15;
+  GREEN_STRAND.escapeWavelength=1.25;
   // Der grüne Ursprung liegt bereits auf halber Stranghöhe. Seine Fasern
   // steigen deshalb erst etwas tiefer in die Goldbahn ein und knicken nicht
   // sichtbar nach oben zurück.
@@ -4061,9 +4090,30 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         var satelliteBrain=satelliteBrains[satelliteIndex];
         var satelliteData=satelliteBrain.userData;
         var satelliteTime=t*.31+satelliteData.phase;
-        satelliteBrain.position.x=satelliteData.baseX+Math.sin(satelliteTime)*.16;
+        var satelliteBaseX=satelliteData.baseX;
+        var satelliteBaseZ=satelliteData.baseZ;
+        if(satelliteData.cameraReveal){
+          var greenRevealIn=smoother(
+            (cameraProgress-(satelliteData.cameraReveal.progress-.065))/.04
+          );
+          var greenRevealOut=1-smoother(
+            (cameraProgress-(satelliteData.cameraReveal.progress+.025))/.045
+          );
+          var greenRevealWeight=greenRevealIn*greenRevealOut;
+          satelliteBaseX=THREE.MathUtils.lerp(
+            satelliteData.baseX,
+            satelliteData.cameraReveal.x,
+            greenRevealWeight
+          );
+          satelliteBaseZ=THREE.MathUtils.lerp(
+            satelliteData.baseZ,
+            satelliteData.cameraReveal.z,
+            greenRevealWeight
+          );
+        }
+        satelliteBrain.position.x=satelliteBaseX+Math.sin(satelliteTime)*.16;
         satelliteBrain.position.y=satelliteData.baseY+Math.cos(satelliteTime*1.17)*.13;
-        satelliteBrain.position.z=satelliteData.baseZ+Math.sin(satelliteTime*1.43+1.4)*.12;
+        satelliteBrain.position.z=satelliteBaseZ+Math.sin(satelliteTime*1.43+1.4)*.12;
         satelliteBrain.rotation.x=BASE_X+Math.sin(satelliteTime*.81)*.025;
         satelliteBrain.rotation.y=satelliteData.baseRotY+satelliteSway;
         // Keine seitliche Roll-Neigung, siehe Kommentar beim Hauptgehirn.
