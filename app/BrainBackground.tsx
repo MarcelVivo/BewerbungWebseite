@@ -503,6 +503,32 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     topBrightness:1,
     bottomBrightness:1
   };
+  // Talwerte der neuronalen Landschaft (appendReferenceNeuralLandscape),
+  // per Tuning-Panel live einstellbar. Werte sind die Desktop-Basis; auf
+  // Mobile skaliert LANDSCAPE_MOBILE_SCALE Breite/Tiefe/Punktdichte mit.
+  var LANDSCAPE_TUNING={
+    halfWidth:7.2,
+    depth:4.8,
+    corridorWidthFactor:.32,
+    corridorSharpness:1.55,
+    corridorHeight:3,
+    floorDepth:1.1,
+    meanderAmplitudeBase:.22,
+    meanderAmplitudeRange:.68,
+    meanderFrequencyBase:1.1,
+    meanderFrequencyRange:2.4,
+    fiberFamilyCount:3,
+    trunkPoints:26,
+    deltaPoints:64,
+    fieldPoints:118,
+    jitterXAmount:.16,
+    jitterZAmount:.12,
+    wallBumpAmount:.4,
+    colorHue:0,
+    colorSaturation:1,
+    colorLightness:1
+  };
+  var LANDSCAPE_MOBILE_SCALE=.61;
   function moveX(){ return SP.offX + MP.moveRight - MP.moveLeft; }
   function moveY(){ return SP.offY + MP.moveVertical; }
   function moveZ(){ return SP.offZ + MP.moveForward - MP.moveBack; }
@@ -766,26 +792,27 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var landscapeSourceFiberCount=sFibers.length;
     // Hauptstrang = drei vollständige, am gemeinsamen Endquerschnitt bereits
     // assimilierte Faserfamilien. Keine nachträgliche Zufalls-Einfärbung.
-    var landscapeFiberFamilyCount=3;
+    var landscapeMobileScale=isMobile?LANDSCAPE_MOBILE_SCALE:1;
+    var landscapeFiberFamilyCount=Math.max(1,Math.round(LANDSCAPE_TUNING.fiberFamilyCount));
     var landscapeFiberCount=landscapeSourceFiberCount*landscapeFiberFamilyCount;
-    var landscapeTrunkPoints=isMobile?18:26;
-    var landscapeDeltaPoints=isMobile?42:64;
-    var landscapeFieldPoints=isMobile?72:118;
+    var landscapeTrunkPoints=Math.max(2,Math.round(LANDSCAPE_TUNING.trunkPoints*landscapeMobileScale));
+    var landscapeDeltaPoints=Math.max(2,Math.round(LANDSCAPE_TUNING.deltaPoints*landscapeMobileScale));
+    var landscapeFieldPoints=Math.max(4,Math.round(LANDSCAPE_TUNING.fieldPoints*landscapeMobileScale));
     // brain.scale=3.2775: Diese lokalen Maße bleiben bewusst innerhalb der
     // Distanz zur Endkamera. Größere alte Werte liefen durch die Kamera durch
     // und erzeugten den spiegelverkehrten radialen Fächer.
-    var landscapeHalfWidth=isMobile?4.4:7.2;
-    var landscapeDepth=isMobile?3.15:4.8;
+    var landscapeHalfWidth=LANDSCAPE_TUNING.halfWidth*landscapeMobileScale;
+    var landscapeDepth=LANDSCAPE_TUNING.depth*landscapeMobileScale;
     // Tal-Prinzip (Referenz: mesh3d.gallery "corridor walls"): flacher
     // Talboden um den Strang, Wände steigen erst jenseits der Corridor-
     // Breite an -> Kamera/Betrachter blickt in ein Tal statt auf eine
     // gleichmässig gewölbte Schale.
-    var landscapeCorridorWidth=landscapeHalfWidth*.32;
-    var landscapeCorridorSharpness=1.55;
-    var landscapeCorridorHeight=3;
+    var landscapeCorridorWidth=landscapeHalfWidth*LANDSCAPE_TUNING.corridorWidthFactor;
+    var landscapeCorridorSharpness=LANDSCAPE_TUNING.corridorSharpness;
+    var landscapeCorridorHeight=LANDSCAPE_TUNING.corridorHeight;
     // Zusätzliche, feste Vertiefung des Talbodens (unabhängig von den
     // zufälligen Pro-Faser transitionDrop-Werten).
-    var landscapeFloorDepth=1.1;
+    var landscapeFloorDepth=LANDSCAPE_TUNING.floorDepth;
     var landscapeColor=new THREE.Color();
     var landscapePaths=[];
 
@@ -872,11 +899,20 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var transitionControlTwoDrop=transitionDrop*(.88+landscapeRandom()*.08);
       var transitionControlTwoForward=.24+landscapeRandom()*.28;
       var transitionControlTwoSide=transitionSideEnd*(.12+landscapeRandom()*.18);
-      var meanderAmplitude=.22+landscapeRandom()*.68;
-      var meanderFrequency=1.1+landscapeRandom()*2.4;
+      var meanderAmplitude=LANDSCAPE_TUNING.meanderAmplitudeBase+landscapeRandom()*LANDSCAPE_TUNING.meanderAmplitudeRange;
+      var meanderFrequency=LANDSCAPE_TUNING.meanderFrequencyBase+landscapeRandom()*LANDSCAPE_TUNING.meanderFrequencyRange;
       var fiberColor=landscapeColor.copy(landscapeFiberColor(
         landscapeFiberFamily,landscapeSourceIndex,tipVertex
       )).clone();
+      if(LANDSCAPE_TUNING.colorHue!==0||LANDSCAPE_TUNING.colorSaturation!==1||LANDSCAPE_TUNING.colorLightness!==1){
+        var landscapeHsl={h:0,s:0,l:0};
+        fiberColor.getHSL(landscapeHsl);
+        fiberColor.setHSL(
+          (landscapeHsl.h+LANDSCAPE_TUNING.colorHue+1)%1,
+          THREE.MathUtils.clamp(landscapeHsl.s*LANDSCAPE_TUNING.colorSaturation,0,1),
+          THREE.MathUtils.clamp(landscapeHsl.l*LANDSCAPE_TUNING.colorLightness,0,1)
+        );
+      }
       var previousVertex=null;
       var pathVertices=[];
       var emitted=0;
@@ -932,8 +968,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         // deterministisch gleichmässig verteilt, wodurch viele Nachbarfasern
         // sonst exakt an derselben X/Z-Position gleichzeitig die Wand
         // erreichen -> künstliches Gitter. Bricht die Regelmässigkeit auf.
-        var fieldJitterX=(landscapeRandom()-.5)*landscapeHalfWidth*.16;
-        var fieldJitterZ=(landscapeRandom()-.5)*landscapeDepth*.12;
+        var fieldJitterX=(landscapeRandom()-.5)*landscapeHalfWidth*LANDSCAPE_TUNING.jitterXAmount;
+        var fieldJitterZ=(landscapeRandom()-.5)*landscapeDepth*LANDSCAPE_TUNING.jitterZAmount;
         var fieldSide=THREE.MathUtils.clamp(
           transitionSideEnd+(targetSide-transitionSideEnd)*fieldSpread+fieldMeander+fieldJitterX,
           -landscapeHalfWidth*1.08,
@@ -958,7 +994,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         // Talboden ruhig bleibt und nur die Hänge Textur bekommen.
         var wallBumpiness=smoother(Math.min(1,wallDistance/1.4));
         var fieldBumpNoise=corridorNoise(fieldSide*2.3,fieldForward*2.1,phase*1.3)
-          *.4*wallBumpiness;
+          *LANDSCAPE_TUNING.wallBumpAmount*wallBumpiness;
         var terrainWave=(Math.sin(fieldSide*.72+phase)+Math.sin(fieldForward*.34+phase*.61)*.55)
           *.12*(1-fieldT*.55);
         var fieldY=-transitionDrop-landscapeFloorDepth+fieldBank+fieldBumpNoise+terrainWave-.28*fieldT;
@@ -3211,10 +3247,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var neuralActivityController=new NeuralActivityController();
 
   // Das interne Entwicklungswerkzeug bleibt auf der öffentlichen Website
-  // vollständig ausgeblendet.
-  var SHOW_STRAND_TUNING=false;
+  // standardmässig ausgeblendet, ist aber über ?tune=1 in der URL erreichbar
+  // (z.B. zum Live-Einstellen der Tal-Werte), ohne die Produktivseite zu
+  // beeinflussen.
+  var SHOW_STRAND_TUNING=typeof window!=='undefined'
+    &&new URLSearchParams(window.location.search).get('tune')==='1';
   var tunePanel=null, tuneLauncher=null;
-  var tuneStartsOpen=false;
+  var tuneStartsOpen=SHOW_STRAND_TUNING;
   if (SHOW_STRAND_TUNING&&typeof window!=='undefined') {
     function sectionLabel(text,color){
       var s=document.createElement('div');
@@ -3312,6 +3351,34 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var GOLD_LIGHT_GRADIENT_SLIDERS=[
       ['topBrightness','Belichtung oben',0,3,0.01],
       ['bottomBrightness','Belichtung unten',0,3,0.01]
+    ];
+    var LANDSCAPE_SHAPE_SLIDERS=[
+      ['halfWidth','Talbreite (Berg links/rechts)',2,14,0.05],
+      ['depth','Taltiefe nach hinten',1,10,0.05],
+      ['floorDepth','Talboden-Tiefe (Mitte)',0,4,0.02],
+      ['corridorWidthFactor','Breite des flachen Bodens',0.05,0.9,0.01],
+      ['corridorSharpness','Wand-Schärfe',0.5,4,0.02],
+      ['corridorHeight','Berghöhen links/rechts',0,7,0.02]
+    ];
+    var LANDSCAPE_TEXTURE_SLIDERS=[
+      ['meanderAmplitudeBase','Wellen-Ausschlag (Basis)',0,2,0.01],
+      ['meanderAmplitudeRange','Wellen-Ausschlag (Streuung)',0,2,0.01],
+      ['meanderFrequencyBase','Wellenlänge (Basis)',0.1,6,0.05],
+      ['meanderFrequencyRange','Wellenlänge (Streuung)',0,6,0.05],
+      ['jitterXAmount','Unregelmässigkeit seitlich',0,0.6,0.005],
+      ['jitterZAmount','Unregelmässigkeit in die Tiefe',0,0.6,0.005],
+      ['wallBumpAmount','Unebenheit der Hänge',0,1.5,0.01]
+    ];
+    var LANDSCAPE_DENSITY_SLIDERS=[
+      ['fiberFamilyCount','Faserfamilien (Farbgruppen)',1,6,1],
+      ['trunkPoints','Knotenpunkte · Stammnahe Zone',4,60,1],
+      ['deltaPoints','Knotenpunkte · Übergangszone',4,140,1],
+      ['fieldPoints','Knotenpunkte · Talfläche',10,240,2]
+    ];
+    var LANDSCAPE_COLOR_SLIDERS=[
+      ['colorHue','Farbton-Verschiebung',-0.3,0.3,0.002],
+      ['colorSaturation','Sättigung',0,2,0.01],
+      ['colorLightness','Helligkeit',0.2,2,0.01]
     ];
     var SECONDARY_GEOMETRY_SLIDERS=[
       ['fiberAmount','Faseranzahl',0.08,1.6,0.01],
@@ -3524,6 +3591,23 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     GOLD_RENDER_SLIDERS.forEach(function(def){ addSlider(def,GOLD_RENDER,function(){ applyGoldRendering(); }); });
     GOLD_POINT_SLIDERS.forEach(function(def){ addSlider(def,SP,function(){ applyGoldRendering(); }); });
 
+    sectionLabel('Tal • Form & Ausmasse','#7fd9a8');
+    LANDSCAPE_SHAPE_SLIDERS.forEach(function(def){
+      addSlider(def,LANDSCAPE_TUNING,function(){ refreshGoldStrand(true); });
+    });
+    sectionLabel('Tal • Wellen & Unebenheit','#7fd9a8');
+    LANDSCAPE_TEXTURE_SLIDERS.forEach(function(def){
+      addSlider(def,LANDSCAPE_TUNING,function(){ refreshGoldStrand(true); });
+    });
+    sectionLabel('Tal • Fasern & Knotenpunkte','#7fd9a8');
+    LANDSCAPE_DENSITY_SLIDERS.forEach(function(def){
+      addSlider(def,LANDSCAPE_TUNING,function(){ refreshGoldStrand(true); });
+    });
+    sectionLabel('Tal • Färbung','#7fd9a8');
+    LANDSCAPE_COLOR_SLIDERS.forEach(function(def){
+      addSlider(def,LANDSCAPE_TUNING,function(){ refreshGoldStrand(true); });
+    });
+
     appendSecondaryControls('Rot • linker Strang',satelliteStrands[0],'#d9788a');
     appendSecondaryControls('Blau • rechter Strang',satelliteStrands[1],'#8ebef2');
     sectionLabel('Gold • Interaktives Ende','#f6e3a1');
@@ -3534,7 +3618,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       +'border:1px solid rgba(231,197,106,.52);border-radius:5px;font-weight:bold;cursor:pointer;';
     resetGoldEndBtn.onclick=resetGoldStrandEnd;
     tunePanel.appendChild(resetGoldEndBtn);
-    window.__strandTuning={SP:SP,FN:FN,MP:MP,WIND:WIND,GOLD_RENDER:GOLD_RENDER,GOLD_STRAND_TUNING:GOLD_STRAND_TUNING,WULST_TUNING:WULST_TUNING,RED_STRAND:RED_STRAND,BLUE_STRAND:BLUE_STRAND,resetGoldEnd:resetGoldStrandEnd};
+    window.__strandTuning={SP:SP,FN:FN,MP:MP,WIND:WIND,GOLD_RENDER:GOLD_RENDER,GOLD_STRAND_TUNING:GOLD_STRAND_TUNING,WULST_TUNING:WULST_TUNING,LANDSCAPE_TUNING:LANDSCAPE_TUNING,RED_STRAND:RED_STRAND,BLUE_STRAND:BLUE_STRAND,resetGoldEnd:resetGoldStrandEnd};
     var copyBtn=document.createElement('button');
     copyBtn.textContent='Werte kopieren';
     copyBtn.style.cssText='margin-top:8px;width:100%;padding:6px;background:#c89a3d;color:#000;'
@@ -3558,6 +3642,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         +'GOLD_RENDER='+JSON.stringify(GOLD_RENDER)+'\n'
         +'GOLD_STRAND_TUNING='+JSON.stringify(GOLD_STRAND_TUNING)+'\n'
         +'WULST_TUNING='+JSON.stringify(WULST_TUNING)+'\n'
+        +'LANDSCAPE_TUNING='+JSON.stringify(LANDSCAPE_TUNING)+'\n'
         +'GOLD_END='+(strandEndTargetWorld?JSON.stringify({x:strandEndTargetWorld.x,y:strandEndTargetWorld.y,z:strandEndTargetWorld.z}):'null')+'\n'
         +'RED_STRAND='+JSON.stringify(RED_STRAND)+'\n'
         +'BLUE_STRAND='+JSON.stringify(BLUE_STRAND);
