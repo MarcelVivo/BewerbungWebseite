@@ -801,11 +801,15 @@ function ValueImpactWorld({ lang }: { lang: 'de' | 'en' }) {
       const translateY = (1 - reveal) * 112;
       const rotateX = (1 - reveal) * 34;
       const overviewScale = 1.12 - depth * 0.12;
-      const approachEase = approachProgress * approachProgress * (3 - 2 * approachProgress);
-      const approachScale = overviewScale * (1 + approachEase * 1.15);
-      const approachX = approachEase * 42;
-      const approachY = approachEase * 34;
-      const approachFadeRaw = Math.max(0, Math.min(1, (approachProgress - 0.52) / 0.38));
+      // Der komplette Kartenüberflug liegt im ersten Drittel des neuen
+      // Schlussflugs. Danach ist die DOM-Ebene vollständig verschwunden,
+      // bevor das grüne WebGL-Gehirn im leeren Raum eingeblendet wird.
+      const cardFlightRaw = Math.max(0, Math.min(1, approachProgress / 0.36));
+      const cardFlightEase = cardFlightRaw * cardFlightRaw * (3 - 2 * cardFlightRaw);
+      const approachScale = overviewScale * (1 + cardFlightEase * 1.28);
+      const approachX = cardFlightEase * 44;
+      const approachY = cardFlightEase * 36;
+      const approachFadeRaw = Math.max(0, Math.min(1, (approachProgress - 0.2) / 0.22));
       const approachFade = 1 - approachFadeRaw * approachFadeRaw * (3 - 2 * approachFadeRaw);
       const opacity = Math.max(0, Math.min(1, (revealRaw - 0.08) / 0.44)) * approachFade;
 

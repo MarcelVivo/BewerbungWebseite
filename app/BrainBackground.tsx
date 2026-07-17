@@ -2309,7 +2309,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   // oberhalb des sichtbaren Bildrands. In der Mehrwert-Totalen bleibt so nur
   // sein schräg nach links oben auslaufender grüner Nervenstrang sichtbar,
   // das Gehirn selbst liegt vollständig ausserhalb des Bildes.
-  var greenSatelliteY=BRAIN_BASE_Y-SP.length*brain.scale.x*.26;
+  var greenSatelliteY=BRAIN_BASE_Y-SP.length*brain.scale.x*.18;
   var greenSatelliteAngle=cameraHelixExitStart*Math.PI*2;
   var greenSatelliteRadius=isMobile?8.2:13.4;
   var greenSatelliteBrain=addSatelliteBrain(
@@ -4218,7 +4218,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         0,
         1
       );
-      var brainApproachEase=smoother(brainApproachProgress);
+      // Vor der Kartenstation bleibt der frühere angeschnittene Blick auf
+      // das grüne Gehirn erhalten. Während Totalen und Kartenüberflug wird
+      // das komplette Gehirn ausgeblendet; erst im leeren Raum hinter der
+      // Karte darf es wieder Teil des Kamerabilds werden.
+      greenSatelliteBrain.visible=sf<cameraHelixExitStart-.015
+        ||brainApproachProgress>.42;
       var valleyRevealProgress=THREE.MathUtils.clamp(
         (chapterTransitionProgress-.1)/.9,
         0,
@@ -4268,47 +4273,97 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var cameraLookY=cameraAimY;
       var cameraLookZ=0;
       if(brainApproachProgress>0){
-        // Startpunkt ist exakt die ruhende Mehrwert-Totalen. Der erste
-        // Kontrollpunkt zieht die Kamera in ihrer aktuellen Bildebene nach
-        // links oben, sodass sie knapp über die gelbe 01-Karte gleitet. Der
-        // zweite Kontrollpunkt richtet die Flugbahn auf das grüne Gehirn aus.
+        // Phase 1: Über die gelbe 01-Karte hinweg in den noch leeren Raum.
+        // Der Blick bleibt zunächst auf der Kartenebene; das Gehirn wird in
+        // dieser Phase absichtlich noch nicht anvisiert oder eingeblendet.
         var approachStartX=cameraX;
         var approachStartY=cameraY;
         var approachStartZ=cameraZ;
         var approachFocusX=greenSatelliteBrain.position.x;
         var approachFocusY=greenSatelliteBrain.position.y;
         var approachFocusZ=greenSatelliteBrain.position.z;
-        var approachFromX=approachStartX-approachFocusX;
-        var approachFromY=approachStartY-approachFocusY;
-        var approachFromZ=approachStartZ-approachFocusZ;
-        var approachFromLength=Math.sqrt(
-          approachFromX*approachFromX
-          +approachFromY*approachFromY
-          +approachFromZ*approachFromZ
-        )||1;
-        approachFromX/=approachFromLength;
-        approachFromY/=approachFromLength;
-        approachFromZ/=approachFromLength;
-        var approachDistance=isMobile?5.2:6.2;
-        var approachEndX=approachFocusX+approachFromX*approachDistance;
-        var approachEndY=approachFocusY+approachFromY*approachDistance-(isMobile?.45:.72);
-        var approachEndZ=approachFocusZ+approachFromZ*approachDistance;
         var cameraLeftX=-Math.cos(orbit);
         var cameraLeftZ=Math.sin(orbit);
-        var approachControlAX=approachStartX+cameraLeftX*(isMobile?1.7:3.4);
-        var approachControlAY=approachStartY+(isMobile?1.4:2.8);
-        var approachControlAZ=approachStartZ+cameraLeftZ*(isMobile?1.7:3.4);
-        var approachControlBX=approachEndX+approachFromX*(isMobile?1.2:2.1);
-        var approachControlBY=approachEndY+approachFromY*(isMobile?1.2:2.1)-.35;
-        var approachControlBZ=approachEndZ+approachFromZ*(isMobile?1.2:2.1);
-        cameraX=cubicBezierValue(approachStartX,approachControlAX,approachControlBX,approachEndX,brainApproachEase);
-        cameraY=cubicBezierValue(approachStartY,approachControlAY,approachControlBY,approachEndY,brainApproachEase);
-        cameraZ=cubicBezierValue(approachStartZ,approachControlAZ,approachControlBZ,approachEndZ,brainApproachEase);
-        var approachLookBlend=smoother(Math.min(1,brainApproachProgress/.7));
-        cameraLookX=approachFocusX*approachLookBlend;
-        cameraLookY=cameraAimY+(approachFocusY-cameraAimY)*approachLookBlend;
-        cameraLookZ=approachFocusZ*approachLookBlend;
-        targetFov=THREE.MathUtils.lerp(targetFov,isMobile?49:46.5,brainApproachEase);
+        var emptySpaceX=approachStartX+cameraLeftX*(isMobile?2.1:4.2)+(0-approachStartX)*.22;
+        var emptySpaceY=approachStartY+(isMobile?1.7:3.4);
+        var emptySpaceZ=approachStartZ+cameraLeftZ*(isMobile?2.1:4.2)+(0-approachStartZ)*.22;
+        var overflightRaw=THREE.MathUtils.clamp(brainApproachProgress/.32,0,1);
+        var overflightEase=smoother(overflightRaw);
+        var overflightControlX=approachStartX+cameraLeftX*(isMobile?1.25:2.7);
+        var overflightControlY=approachStartY+(isMobile?.45:.85);
+        var overflightControlZ=approachStartZ+cameraLeftZ*(isMobile?1.25:2.7);
+        cameraX=cubicBezierValue(approachStartX,overflightControlX,emptySpaceX,emptySpaceX,overflightEase);
+        cameraY=cubicBezierValue(approachStartY,overflightControlY,emptySpaceY,emptySpaceY,overflightEase);
+        cameraZ=cubicBezierValue(approachStartZ,overflightControlZ,emptySpaceZ,emptySpaceZ,overflightEase);
+
+        // Phase 2: Erst hinter der Karte kippt die Optik nach oben. Die
+        // Kamera nähert sich langsam aus einer tieferen, seitlichen Position,
+        // ohne bereits frontal auf dem Gehirn zu stehen.
+        var riseRaw=THREE.MathUtils.clamp((brainApproachProgress-.32)/.46,0,1);
+        var riseEase=smoother(riseRaw);
+        var emptyFromBrainX=emptySpaceX-approachFocusX;
+        var emptyFromBrainY=emptySpaceY-approachFocusY;
+        var emptyFromBrainZ=emptySpaceZ-approachFocusZ;
+        var emptyFromBrainLength=Math.sqrt(
+          emptyFromBrainX*emptyFromBrainX
+          +emptyFromBrainY*emptyFromBrainY
+          +emptyFromBrainZ*emptyFromBrainZ
+        )||1;
+        emptyFromBrainX/=emptyFromBrainLength;
+        emptyFromBrainY/=emptyFromBrainLength;
+        emptyFromBrainZ/=emptyFromBrainLength;
+        var preFrontDistance=isMobile?6.4:7.8;
+        var preFrontX=approachFocusX+emptyFromBrainX*preFrontDistance;
+        var preFrontY=Math.min(
+          approachFocusY-(isMobile?.9:1.45),
+          approachFocusY+emptyFromBrainY*preFrontDistance
+        );
+        var preFrontZ=approachFocusZ+emptyFromBrainZ*preFrontDistance;
+        var riseControlAX=emptySpaceX+cameraLeftX*(isMobile?.6:1.2);
+        var riseControlAY=emptySpaceY+(isMobile?1.1:2.1);
+        var riseControlAZ=emptySpaceZ+cameraLeftZ*(isMobile?.6:1.2);
+        var riseControlBX=preFrontX+emptyFromBrainX*(isMobile?.8:1.5);
+        var riseControlBY=preFrontY-1;
+        var riseControlBZ=preFrontZ+emptyFromBrainZ*(isMobile?.8:1.5);
+        if(riseRaw>0){
+          cameraX=cubicBezierValue(emptySpaceX,riseControlAX,riseControlBX,preFrontX,riseEase);
+          cameraY=cubicBezierValue(emptySpaceY,riseControlAY,riseControlBY,preFrontY,riseEase);
+          cameraZ=cubicBezierValue(emptySpaceZ,riseControlAZ,riseControlBZ,preFrontZ,riseEase);
+        }
+        var upwardLookRaw=THREE.MathUtils.clamp((riseRaw-.08)/.72,0,1);
+        var upwardLookEase=smoother(upwardLookRaw);
+        cameraLookX=approachFocusX*upwardLookEase;
+        cameraLookY=cameraAimY+(approachFocusY-cameraAimY)*upwardLookEase;
+        cameraLookZ=approachFocusZ*upwardLookEase;
+
+        // Phase 3: Vor dem Gehirn schwenkt die Kamera auf die Welt-Z-Achse.
+        // Diese Endachse zeigt das identisch ausgerichtete Satellitengehirn
+        // frontal; die leicht tiefere Y-Position bewahrt den Blick von unten.
+        var frontalRaw=THREE.MathUtils.clamp((brainApproachProgress-.78)/.22,0,1);
+        var frontalEase=smoother(frontalRaw);
+        var frontalDistance=isMobile?5.3:6.4;
+        var frontalX=approachFocusX;
+        var frontalY=approachFocusY-(isMobile?.32:.48);
+        var frontalZ=approachFocusZ+frontalDistance;
+        var frontalControlAX=preFrontX+(frontalX-preFrontX)*.28;
+        var frontalControlAY=preFrontY+(frontalY-preFrontY)*.18;
+        var frontalControlAZ=preFrontZ+(frontalZ-preFrontZ)*.12;
+        var frontalControlBX=frontalX-(isMobile?.8:1.35);
+        var frontalControlBY=frontalY-.12;
+        var frontalControlBZ=frontalZ+(isMobile?.7:1.15);
+        if(frontalRaw>0){
+          cameraX=cubicBezierValue(preFrontX,frontalControlAX,frontalControlBX,frontalX,frontalEase);
+          cameraY=cubicBezierValue(preFrontY,frontalControlAY,frontalControlBY,frontalY,frontalEase);
+          cameraZ=cubicBezierValue(preFrontZ,frontalControlAZ,frontalControlBZ,frontalZ,frontalEase);
+          cameraLookX=approachFocusX;
+          cameraLookY=approachFocusY;
+          cameraLookZ=approachFocusZ;
+        }
+        targetFov=THREE.MathUtils.lerp(
+          targetFov,
+          isMobile?47.5:44.5,
+          smoother(THREE.MathUtils.clamp((brainApproachProgress-.3)/.7,0,1))
+        );
       }
       if(Math.abs(targetFov-lastCameraFov)>.015){
         camera.fov=targetFov;
