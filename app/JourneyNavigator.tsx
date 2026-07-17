@@ -8,7 +8,7 @@ const chakraPetch = Chakra_Petch({ subsets: ['latin'], weight: '700', display: '
 const STATIONS = [
   { label: 'Start', target: 'journey-start' },
   { label: 'Lösungen', target: 'journey-solutions', mobileTarget: 'mobile-solutions' },
-  { label: 'Dein Mehrwert', target: 'journey-value' },
+  { label: 'Dein Mehrwert', target: 'journey-value', mobileTarget: 'mobile-journey-value' },
   { label: 'Meine Referenzen', target: 'journey-references' },
   { label: 'Kontakt', target: 'journey-contact' },
   { label: 'Über mich', target: 'journey-about' },

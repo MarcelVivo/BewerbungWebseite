@@ -149,6 +149,209 @@ function DetailFiberSpine() {
   );
 }
 
+type ValueDiagramCopy = {
+  code: string;
+  eyebrow: string;
+  title: string;
+  before: string;
+  after: string;
+  metric: string;
+  note: string;
+  accent: string;
+  accentRgb: string;
+};
+
+const VALUE_DIAGRAMS: Record<'de' | 'en', ValueDiagramCopy[]> = {
+  de: [
+    {
+      code: '01', eyebrow: 'AUFTRITT & VERTRAUEN', title: 'Mehr qualifizierte Anfragen',
+      before: '1,0×', after: '2,5×', metric: '+150 %', note: 'Potenzial bei gleicher Reichweite',
+      accent: '#c89a3d', accentRgb: '200,154,61',
+    },
+    {
+      code: '02', eyebrow: 'WEBSITE & APPLIKATION', title: 'Schneller zum Ergebnis',
+      before: '12 s', after: '3 s', metric: '−75 %', note: 'Kürzere Lade- und Reaktionszeit',
+      accent: '#4d7fbf', accentRgb: '77,127,191',
+    },
+    {
+      code: '03', eyebrow: 'CRM, ERP & DATEN', title: 'Weniger Prozessaufwand',
+      before: '30 h', after: '8 h', metric: '−22 h', note: 'Monatlicher manueller Aufwand',
+      accent: '#a6425c', accentRgb: '166,66,92',
+    },
+    {
+      code: '04', eyebrow: 'KI & AUTOMATION', title: 'Mehr Zeit fürs Kerngeschäft',
+      before: '100 h', after: '30 h', metric: '−70 %', note: 'Wiederkehrende Routinearbeit',
+      accent: '#4dbf7f', accentRgb: '77,191,127',
+    },
+  ],
+  en: [
+    {
+      code: '01', eyebrow: 'BRAND & TRUST', title: 'More qualified enquiries',
+      before: '1.0×', after: '2.5×', metric: '+150%', note: 'Potential at the same reach',
+      accent: '#c89a3d', accentRgb: '200,154,61',
+    },
+    {
+      code: '02', eyebrow: 'WEBSITE & APPLICATION', title: 'Faster to the result',
+      before: '12 s', after: '3 s', metric: '−75%', note: 'Shorter load and response time',
+      accent: '#4d7fbf', accentRgb: '77,127,191',
+    },
+    {
+      code: '03', eyebrow: 'CRM, ERP & DATA', title: 'Less process overhead',
+      before: '30 h', after: '8 h', metric: '−22 h', note: 'Monthly manual effort',
+      accent: '#a6425c', accentRgb: '166,66,92',
+    },
+    {
+      code: '04', eyebrow: 'AI & AUTOMATION', title: 'More time for core work',
+      before: '100 h', after: '30 h', metric: '−70%', note: 'Recurring routine work',
+      accent: '#4dbf7f', accentRgb: '77,191,127',
+    },
+  ],
+};
+
+function ValueDiagramGraphic({ index }: { index: number }) {
+  if (index === 0) {
+    return (
+      <svg className="value-chart-svg" viewBox="0 0 280 122" aria-hidden="true">
+        <path className="value-grid-line" d="M12 103H268M12 78H268M12 53H268M12 28H268" />
+        <rect className="value-bar value-bar-before" x="38" y="70" width="48" height="33" rx="2" pathLength="1" />
+        <rect className="value-bar value-bar-after" x="188" y="20" width="48" height="83" rx="2" pathLength="1" />
+        <path className="value-chart-accent value-draw-line" d="M67 65C105 65 119 48 143 47C166 46 177 30 208 16" pathLength="1" />
+        <path className="value-chart-accent value-chart-arrow" d="M199 14L210 15L207 26" />
+        <circle className="value-chart-dot" cx="67" cy="65" r="4" />
+        <circle className="value-chart-dot" cx="208" cy="16" r="4" />
+      </svg>
+    );
+  }
+
+  if (index === 1) {
+    return (
+      <svg className="value-chart-svg" viewBox="0 0 280 122" aria-hidden="true">
+        <path className="value-grid-line" d="M12 103H268" />
+        <circle className="value-speed-ring" cx="74" cy="62" r="38" pathLength="1" />
+        <circle className="value-speed-ring value-chart-accent value-speed-ring--fast" cx="206" cy="62" r="38" pathLength="1" />
+        <path className="value-chart-line" d="M74 62L52 39M206 62L228 40" />
+        <circle className="value-chart-dot" cx="74" cy="62" r="5" />
+        <circle className="value-chart-dot value-pulse-dot" cx="206" cy="62" r="5" />
+        <path className="value-chart-accent value-flow-line" d="M116 62H163" pathLength="1" />
+        <path className="value-chart-accent" d="M155 54L164 62L155 70" />
+      </svg>
+    );
+  }
+
+  if (index === 2) {
+    return (
+      <svg className="value-chart-svg" viewBox="0 0 280 122" aria-hidden="true">
+        <path className="value-grid-line" d="M12 103H268M12 78H268M12 53H268M12 28H268" />
+        <path className="value-chart-line value-draw-line" d="M22 29C62 33 76 47 108 54C139 61 153 83 183 86C214 89 234 95 258 98" pathLength="1" />
+        <path className="value-chart-accent value-draw-line value-draw-line--delay" d="M22 29C61 29 77 40 108 40C139 40 153 54 183 54C213 54 235 63 258 63" pathLength="1" />
+        {[22, 108, 183, 258].map((x, i) => <circle key={x} className={i === 3 ? 'value-chart-dot value-pulse-dot' : 'value-chart-dot'} cx={x} cy={[29, 40, 54, 63][i]} r="4" />)}
+      </svg>
+    );
+  }
+
+  return (
+    <svg className="value-chart-svg" viewBox="0 0 280 122" aria-hidden="true">
+      <circle className="value-donut-track" cx="69" cy="62" r="39" pathLength="1" />
+      <circle className="value-chart-accent value-donut-value" cx="69" cy="62" r="39" pathLength="1" />
+      <path className="value-chart-line" d="M126 35H164V61H204V87H256" />
+      {[126, 164, 204, 256].map((x, i) => <circle key={x} className={i === 3 ? 'value-chart-dot value-pulse-dot' : 'value-chart-dot'} cx={x} cy={[35, 61, 87, 87][i]} r="5" />)}
+      <path className="value-chart-accent value-flow-line" d="M126 35H164V61H204V87H256" pathLength="1" />
+    </svg>
+  );
+}
+
+function ValueImpactContent({ lang }: { lang: 'de' | 'en' }) {
+  const diagrams = VALUE_DIAGRAMS[lang];
+  return (
+    <div className={`value-impact-content ${chakraPetch.className}`}>
+      <div className="value-impact-heading">
+        <span>{lang === 'de' ? 'DEIN' : 'YOUR'}</span>
+        <strong>{lang === 'de' ? 'MEHRWERT.' : 'VALUE.'}</strong>
+        <i>{lang === 'de' ? 'Vier Lösungen. Eine messbare Wirkung.' : 'Four solutions. One measurable impact.'}</i>
+      </div>
+      <div className="value-diagram-grid">
+        {diagrams.map((diagram, index) => (
+          <article
+            key={diagram.code}
+            className="value-diagram"
+            style={{ '--value-accent': diagram.accent, '--value-accent-rgb': diagram.accentRgb } as CSSProperties}
+          >
+            <header>
+              <span className="value-diagram-code">{diagram.code}</span>
+              <span className="value-diagram-eyebrow">{diagram.eyebrow}</span>
+            </header>
+            <h3>{diagram.title}</h3>
+            <ValueDiagramGraphic index={index} />
+            <div className="value-diagram-numbers">
+              <span><small>{lang === 'de' ? 'VORHER' : 'BEFORE'}</small>{diagram.before}</span>
+              <b aria-hidden="true">→</b>
+              <span><small>{lang === 'de' ? 'NACHHER' : 'AFTER'}</small>{diagram.after}</span>
+              <strong>{diagram.metric}</strong>
+            </div>
+            <p>{diagram.note}</p>
+          </article>
+        ))}
+      </div>
+      <p className="value-impact-disclaimer">
+        {lang === 'de'
+          ? 'Illustrative Beispielszenarien – das konkrete Potenzial hängt von Ausgangslage, Umfang und Nutzung ab.'
+          : 'Illustrative scenarios — actual potential depends on the starting point, scope and adoption.'}
+      </p>
+    </div>
+  );
+}
+
+function ValueImpactWorld({ lang }: { lang: 'de' | 'en' }) {
+  const worldRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const world = worldRef.current;
+    if (!world) return;
+    let rafId = 0;
+    let wasVisible = false;
+
+    const frame = () => {
+      rafId = requestAnimationFrame(frame);
+      const cameraState = (window as any).__cardsCameraState;
+      if (!cameraState) return;
+
+      const exitProgress = Math.max(0, Math.min(1, cameraState.exitProgress || 0));
+      // Am Navigationsstopp "Dein Mehrwert" (kurz nach der Kartenstation)
+      // ist die Gruppe bereits vollständig lesbar; direkt an der
+      // Karten-Totalen bleibt sie trotzdem komplett hinter der Kamera.
+      const revealRaw = Math.max(0, Math.min(1, exitProgress / 0.22));
+      const reveal = revealRaw * revealRaw * (3 - 2 * revealRaw);
+      const depth = exitProgress * exitProgress * (3 - 2 * exitProgress);
+      const translateY = (1 - reveal) * 112;
+      const rotateX = (1 - reveal) * 34;
+      const scale = 1.12 - depth * 0.12;
+      const opacity = Math.max(0, Math.min(1, (revealRaw - 0.08) / 0.44));
+
+      world.style.opacity = opacity.toFixed(3);
+      world.style.transform = `translate3d(-50%, ${translateY.toFixed(2)}vh, 0) perspective(1400px) rotateX(${rotateX.toFixed(2)}deg) scale(${scale.toFixed(4)})`;
+      world.style.pointerEvents = opacity > 0.92 ? 'auto' : 'none';
+      world.setAttribute('aria-hidden', opacity > 0.65 ? 'false' : 'true');
+
+      if (!wasVisible && revealRaw > 0.12) {
+        wasVisible = true;
+        world.classList.add('is-revealed');
+      } else if (wasVisible && revealRaw <= 0.02) {
+        wasVisible = false;
+        world.classList.remove('is-revealed');
+      }
+    };
+
+    rafId = requestAnimationFrame(frame);
+    return () => cancelAnimationFrame(rafId);
+  }, []);
+
+  return (
+    <div ref={worldRef} className="value-impact-world" aria-hidden="true">
+      <ValueImpactContent lang={lang} />
+    </div>
+  );
+}
+
 // Split-Flap-Buchstaben-Zerhacker für alle 5 "Deine …"-Intro-Textstationen:
 // jeder Buchstabe klappt unabhängig von seinen Nachbarn (eigenes Tempo,
 // eigene Pausen) endlos durch zufällige Zeichen — kein Split-Flap-Kästchen
@@ -992,6 +1195,8 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
           })}
         </div>
 
+        <ValueImpactWorld lang={lang} />
+
         <div ref={cardsWorldRef} className="spiral-cards-world">
         <div
           ref={serviceStationsRef}
@@ -1198,6 +1403,9 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
                 </button>
               );
             })}
+          </div>
+          <div className="mobile-value-impact is-revealed" id="mobile-journey-value">
+            <ValueImpactContent lang={lang} />
           </div>
         </div>
       </div>
