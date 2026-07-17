@@ -20,7 +20,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var isMobile = innerWidth < 700;
     // Timing und Verlauf der Kameraschiene bleiben identisch. Auf schmalen
-    // Viewports erweitert sich nur der Bildausschnitt, damit alle drei Gehirne
+    // Viewports erweitert sich nur der Bildausschnitt, damit alle Gehirne
     // im gleichen Größenverhältnis wie auf dem Desktop sichtbar bleiben.
     var MOBILE_RADIUS_SCALE = isMobile ? 1.9 : 1;
     var MOBILE_BRAIN_Y_OFFSET = isMobile ? 1.65 : 0;
@@ -266,7 +266,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   GOLD.white=GOLD.highlight;
   var SATELLITE_METALS={
     red:{ deep:new THREE.Color(0x37131d), primary:new THREE.Color(0x6a263b), light:new THREE.Color(0xd9788a) },
-    blue:{ deep:new THREE.Color(0x102a4a), primary:new THREE.Color(0x244d82), light:new THREE.Color(0x8ebef2) }
+    blue:{ deep:new THREE.Color(0x102a4a), primary:new THREE.Color(0x244d82), light:new THREE.Color(0x8ebef2) },
+    green:{ deep:new THREE.Color(0x0c3023), primary:new THREE.Color(0x176b48), light:new THREE.Color(0x75e0aa) }
   };
   // Dieselbe gewichtete Metallic-Palette treibt das gesamte Hauptgehirn und
   // den direkt daraus wachsenden Goldstrang: tiefe Schatten, ein warmer Kern
@@ -1326,7 +1327,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   }
 
   // Die zentrale Goldbahn wird einmal aus den bereits vorhandenen Goldfasern
-  // gemittelt. Rot und Blau verwenden diese Bahn später nur als räumlichen
+  // gemittelt. Rot, Blau und Grün verwenden diese Bahn später nur als räumlichen
   // Bezug ab dem Merge-Punkt – es werden keinerlei neue Fasern erzeugt.
   var GOLD_CENTERLINE_SAMPLES=96;
   var goldCenterlineLocal=new Float32Array(GOLD_CENTERLINE_SAMPLES*3);
@@ -2290,6 +2291,26 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     addSatelliteBrain(-5.7,-.62+DESKTOP_HERO_BRAIN_LIFT,-.7,.35,SATELLITE_METALS.red);
     addSatelliteBrain(5.7,-.44+DESKTOP_HERO_BRAIN_LIFT,-.9,2.7,SATELLITE_METALS.blue);
   }
+  // Das grüne Satellitengehirn sitzt auf halber realer Höhe des goldenen
+  // Hauptstrangs. Seine horizontale Position wird in die linke
+  // Kameratangente dieser Station gelegt: Es bleibt dadurch beim
+  // Vorbeifahren sichtbar links im freien Bildraum, unabhängig davon, wie
+  // weit sich die Kamera bis zu dieser Höhe bereits um den Strang gedreht hat.
+  var greenSatelliteY=BRAIN_BASE_Y-SP.length*brain.scale.x*.5;
+  var greenSatelliteProgress=THREE.MathUtils.clamp(
+    (cameraTargetStart-greenSatelliteY)/cameraTravel,
+    0,
+    1
+  );
+  var greenSatelliteAngle=greenSatelliteProgress*Math.PI*2;
+  var greenSatelliteRadius=isMobile?2.35:5.7;
+  addSatelliteBrain(
+    -Math.cos(greenSatelliteAngle)*greenSatelliteRadius,
+    greenSatelliteY,
+    Math.sin(greenSatelliteAngle)*greenSatelliteRadius,
+    4.35,
+    SATELLITE_METALS.green
+  );
 
   // --- Verbindliche Maske für beide Gehirnhälften: dieselbe Scatter-Punktwolke
   // (BR.scatter, bereits als pts[0..scatterN) vorhanden), nach dem Vorzeichen
@@ -2430,6 +2451,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       escapeFrequency:3,
       escapeWavelength:.72,
       escapeSpeed:1,
+      goldEntryProgressStart:.41,
+      goldEntryProgressRange:.24,
       colorHue:0,
       colorSaturation:1,
       colorLightness:1,
@@ -2441,6 +2464,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   }
   var RED_STRAND=createSecondaryStrandParams();
   var BLUE_STRAND=createSecondaryStrandParams();
+  var GREEN_STRAND=createSecondaryStrandParams();
   var WULST_TUNING={stretch:.54,liquify:1.52,redBlueDrop:4.46};
   RED_STRAND.baseBrightness=.95;
   RED_STRAND.pulseStrength=.14;
@@ -2449,6 +2473,16 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   BLUE_STRAND.bottomThickness=1.04;
   BLUE_STRAND.escapeAmplitude=1.35;
   BLUE_STRAND.escapeWavelength=1;
+  GREEN_STRAND.baseBrightness=.94;
+  GREEN_STRAND.pulseStrength=.15;
+  GREEN_STRAND.bottomThickness=1.02;
+  GREEN_STRAND.escapeAmplitude=1.32;
+  GREEN_STRAND.escapeWavelength=.92;
+  // Der grüne Ursprung liegt bereits auf halber Stranghöhe. Seine Fasern
+  // steigen deshalb erst etwas tiefer in die Goldbahn ein und knicken nicht
+  // sichtbar nach oben zurück.
+  GREEN_STRAND.goldEntryProgressStart=.52;
+  GREEN_STRAND.goldEntryProgressRange=.18;
   // Die Assimilation beginnt erst auf der vorhandenen Gold-Mittelbahn und
   // verwendet deren lokalen 3D-Rahmen als organischen Bezug.
   var ASSIMILATION_GOLD_PROGRESS=.55;
@@ -2534,13 +2568,14 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         edgeWeight:smooth((radialDistribution-.52)/.48),
         branchPhase:Math.random()*Math.PI*2,
         // Deterministische, pro Faser gespeicherte Assimilationsdaten.
-        // Rot und Blau werden damit über eine lange Zone einzeln zwischen
-        // die Goldfasern verteilt, ohne je als Bündel zusammenzuklappen.
-        assimilationAngle:(selectedIndex*2+(strand.sideSign>0?1:0))*2.399963229728653,
-        assimilationRadius:Math.sqrt(((selectedIndex*2+(strand.sideSign>0?1:0))*0.7548776662466927)%1),
+        // Rot, Blau und Grün werden damit über eine lange Zone einzeln und
+        // gegeneinander versetzt zwischen die Goldfasern verteilt, ohne je
+        // als drei kompakte Farbbündel zusammenzuklappen.
+        assimilationAngle:(selectedIndex*strand.weaveCount+strand.weaveIndex)*2.399963229728653,
+        assimilationRadius:Math.sqrt(((selectedIndex*strand.weaveCount+strand.weaveIndex)*0.7548776662466927)%1),
         assimilationStart:.24+Math.random()*.3,
         assimilationEnd:.62+Math.random()*.22,
-        goldEntryProgress:.41+Math.random()*.24,
+        goldEntryProgress:params.goldEntryProgressStart+Math.random()*params.goldEntryProgressRange,
         goldExitProgress:1,
         assimilationPhase:Math.random()*Math.PI*2,
         assimilationRadiusDrift:(Math.random()-.5)*.16,
@@ -2581,7 +2616,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     for(var rebuildIndex=0;rebuildIndex<satelliteStrands.length;rebuildIndex++) rebuildSecondaryStrandGeometry(satelliteStrands[rebuildIndex]);
   }
 
-  function useExistingSatelliteStrand(satellite,phase,palette,flowDirection,sideSign,params){
+  function useExistingSatelliteStrand(satellite,phase,palette,flowDirection,sideSign,params,weaveIndex,weaveCount){
     hideSatelliteTail(satellite);
     var tailGroup=new THREE.Group();
     tailGroup.name='secondary-energy-strand';
@@ -2609,6 +2644,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       tunedLight:new THREE.Color(),
       flowDirection:flowDirection,
       sideSign:sideSign,
+      weaveIndex:weaveIndex,
+      weaveCount:weaveCount,
       params:params,
       lineMesh:lineMesh,
       pointMesh:pointMesh,
@@ -2644,7 +2681,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     updateSecondaryMetal(strand);
     // Der goldene Trichter arbeitet mit einem breiten Faserursprung, drei
     // weichen Sammelstufen (.34/.38/.28) und einer relativ langen
-    // Wurzelzone. Die roten/blauen Trichter nutzen exakt diese Logik, nur
+    // Wurzelzone. Die farbigen Satellitentrichter nutzen exakt diese Logik, nur
     // proportional zur Skalierung ihres jeweiligen Satelliten-Gehirns.
     if(!strand.lowerAnchors){
       var satellitePoints=strand.satellite.getObjectByName('neural-points');
@@ -2817,7 +2854,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           // Jede Faser wird auf einer eigenen Station in den bereits
           // vorhandenen Goldstrang eingewoben. Die unterschiedliche
           // Eintrittshöhe und das gestaffelte Auslaufen verhindern, dass
-          // Rot und Blau als synchroner, blockartiger Körper erscheinen.
+          // die Farben als synchroner, blockartiger Körper erscheinen.
           var sharedGoldProgress=fiber.goldEntryProgress
             +(fiber.goldExitProgress-fiber.goldEntryProgress)*assimilationTravel;
           sampleGoldStrandFrame(sharedGoldProgress);
@@ -2873,7 +2910,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           y+=(assimilatedY-y)*assimilationBlend;
           z+=(assimilatedZ-z)*assimilationBlend;
         }
-        // Rot und Blau erhalten eine eigene vertikale Dehnung, die erst nach
+        // Rot, Blau und Grün erhalten eine eigene vertikale Dehnung, die erst nach
         // der Einordnung auf der Goldbahn angewandt wird. Dadurch bleibt ihr
         // oberer Ursprung fest, während sich die sichtbare Unterkante real in
         // Welt-Y nach unten ziehen lässt. Der Goldstrang und seine Ankerpunkte
@@ -2885,7 +2922,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         var brightness=(params.baseBrightness+pulse*params.pulseStrength)
           *params.intensity*params.colorIntensity*verticalBrightness;
         // Jede Faser bleibt innerhalb ihrer eigenen Metallic-Palette. Der
-        // Verlauf verschiebt sich sanft, ohne Rot und Blau zu vermischen.
+        // Verlauf verschiebt sich sanft, ohne die drei Metallfarben zu vermischen.
         var metallic=.5+.5*Math.sin(fiber.metallicPhase+progress*7.2+flowTime*.28);
         var metallicFrom=metallic<.5?strand.tunedDeep:strand.tunedPrimary;
         var metallicTo=metallic<.5?strand.tunedPrimary:strand.tunedLight;
@@ -2935,12 +2972,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     applySecondaryRendering(strand);
   }
 
-  if(satelliteBrains.length>1){
-    useExistingSatelliteStrand(satelliteBrains[0],Math.PI,SATELLITE_METALS.red,1,-1,RED_STRAND);
-    useExistingSatelliteStrand(satelliteBrains[1],0,SATELLITE_METALS.blue,-1,1,BLUE_STRAND);
+  if(satelliteBrains.length>2){
+    useExistingSatelliteStrand(satelliteBrains[0],Math.PI,SATELLITE_METALS.red,1,-1,RED_STRAND,0,3);
+    useExistingSatelliteStrand(satelliteBrains[1],0,SATELLITE_METALS.blue,-1,1,BLUE_STRAND,1,3);
+    useExistingSatelliteStrand(satelliteBrains[2],Math.PI*.5,SATELLITE_METALS.green,1,-1,GREEN_STRAND,2,3);
   }
 
-  // Zentraler Controller für alle drei Gehirne. Er benutzt ausschliesslich
+  // Zentraler Controller für das Hauptgehirn und alle drei Satelliten. Er benutzt ausschliesslich
   // bestehende Knoten und Kanten des neuronalen Graphen; es gibt keine freien
   // Blitze, keine globalen Flashes und keine unabhängigen Zufallstimer mehr.
   function neuralHash(value){
@@ -3270,24 +3308,28 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     this.goldImpulses=[];
     this.redImpulses=[];
     this.blueImpulses=[];
+    this.greenImpulses=[];
     for(var goldImpulseCreateIndex=0;goldImpulseCreateIndex<40;goldImpulseCreateIndex++){
       this.goldImpulses.push(new NeuralImpulse(brain,goldImpulsePalette));
     }
     for(var satelliteImpulseCreateIndex=0;satelliteImpulseCreateIndex<40;satelliteImpulseCreateIndex++){
       this.redImpulses.push(new NeuralImpulse(satelliteBrains[0],{primary:SATELLITE_METALS.red.primary,light:SATELLITE_METALS.red.light,highlight:new THREE.Color(0xf3b0b9),intensity:4.4,sizeScale:.42,depthTest:false,toneMapped:false}));
       this.blueImpulses.push(new NeuralImpulse(satelliteBrains[1],{primary:SATELLITE_METALS.blue.primary,light:SATELLITE_METALS.blue.light,highlight:new THREE.Color(0xc4e3ff),intensity:4.4,sizeScale:.42,depthTest:false,toneMapped:false}));
+      this.greenImpulses.push(new NeuralImpulse(satelliteBrains[2],{primary:SATELLITE_METALS.green.primary,light:SATELLITE_METALS.green.light,highlight:new THREE.Color(0xc7ffe1),intensity:4.4,sizeScale:.42,depthTest:false,toneMapped:false}));
     }
     this.impulses={
       gold:this.goldImpulses[0],
       red:this.redImpulses[0],
-      blue:this.blueImpulses[0]
+      blue:this.blueImpulses[0],
+      green:this.greenImpulses[0]
     };
     this.randomSeed=1;
-    this.randomTimers={gold:[],red:[],blue:[]};
+    this.randomTimers={gold:[],red:[],blue:[],green:[]};
     for(var goldTimerCreateIndex=0;goldTimerCreateIndex<this.goldImpulses.length;goldTimerCreateIndex++) this.randomTimers.gold.push(Math.random()*6.6);
     for(var satelliteTimerCreateIndex=0;satelliteTimerCreateIndex<this.redImpulses.length;satelliteTimerCreateIndex++){
       this.randomTimers.red.push(Math.random()*2.6);
       this.randomTimers.blue.push(Math.random()*3.1);
+      this.randomTimers.green.push(Math.random()*3.4);
     }
     this.sequenceIndex=0;
     this.sequenceTime=0;
@@ -3297,7 +3339,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     this.sequences=[
       [{actor:'gold',delay:0,hops:14,duration:2.05},{actor:'red',delay:.86,hops:11,duration:2.25}],
       [{actor:'gold',delay:0,hops:13,duration:1.95},{actor:'blue',delay:.78,hops:12,duration:1.85}],
-      [{actor:'gold',delay:0,hops:11,duration:1.9},{actor:'red',delay:.7,hops:10,duration:2.1},{actor:'blue',delay:1.58,hops:12,duration:1.8},{actor:'gold',delay:2.35,hops:8,duration:1.45}]
+      [{actor:'gold',delay:0,hops:12,duration:1.9},{actor:'green',delay:.82,hops:11,duration:2.05}],
+      [{actor:'gold',delay:0,hops:11,duration:1.9},{actor:'red',delay:.7,hops:10,duration:2.1},{actor:'blue',delay:1.58,hops:12,duration:1.8},{actor:'green',delay:2.12,hops:11,duration:1.9},{actor:'gold',delay:2.75,hops:8,duration:1.45}]
     ];
   }
   NeuralActivityController.prototype.startSequence=function(){
@@ -3311,6 +3354,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     for(var goldUpdateIndex=0;goldUpdateIndex<this.goldImpulses.length;goldUpdateIndex++) this.goldImpulses[goldUpdateIndex].update(dt);
     for(var redUpdateIndex=0;redUpdateIndex<this.redImpulses.length;redUpdateIndex++) this.redImpulses[redUpdateIndex].update(dt);
     for(var blueUpdateIndex=0;blueUpdateIndex<this.blueImpulses.length;blueUpdateIndex++) this.blueImpulses[blueUpdateIndex].update(dt);
+    for(var greenUpdateIndex=0;greenUpdateIndex<this.greenImpulses.length;greenUpdateIndex++) this.greenImpulses[greenUpdateIndex].update(dt);
     for(var goldTimerIndex=0;goldTimerIndex<this.goldImpulses.length;goldTimerIndex++){
       this.randomTimers.gold[goldTimerIndex]-=dt;
       if(this.randomTimers.gold[goldTimerIndex]<=0&&!this.goldImpulses[goldTimerIndex].active){
@@ -3319,7 +3363,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         this.randomTimers.gold[goldTimerIndex]=1.8+Math.random()*4.8;
       }
     }
-    var satelliteActors=[{name:'red',impulses:this.redImpulses},{name:'blue',impulses:this.blueImpulses}];
+    var satelliteActors=[
+      {name:'red',impulses:this.redImpulses,basePause:2.5,pauseRange:5.2},
+      {name:'blue',impulses:this.blueImpulses,basePause:3.4,pauseRange:6.4},
+      {name:'green',impulses:this.greenImpulses,basePause:3,pauseRange:5.8}
+    ];
     for(var actorIndex=0;actorIndex<satelliteActors.length;actorIndex++){
       var actor=satelliteActors[actorIndex].name;
       var actorImpulses=satelliteActors[actorIndex].impulses;
@@ -3329,7 +3377,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         if(this.randomTimers[actor][actorImpulseIndex]<=0&&!impulse.active){
           this.randomSeed++;
           impulse.begin(buildNeuralRoute(this.randomSeed*23+actorIndex*41+actorImpulseIndex*13,actor,10+Math.floor(Math.random()*9)),1.45+Math.random()*.9,null);
-          this.randomTimers[actor][actorImpulseIndex]=(actor==='red'?2.5:3.4)+Math.random()*(actor==='red'?5.2:6.4);
+          this.randomTimers[actor][actorImpulseIndex]=satelliteActors[actorIndex].basePause+Math.random()*satelliteActors[actorIndex].pauseRange;
         }
       }
     }
@@ -3613,24 +3661,21 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       ['stretch','Wulst nach unten ziehen',.5,2.4,.01],
       WULST_TUNING,
       function(){
-        refreshSecondaryStrand(satelliteStrands[0],false);
-        refreshSecondaryStrand(satelliteStrands[1],false);
+        for(var strandIndex=0;strandIndex<satelliteStrands.length;strandIndex++) refreshSecondaryStrand(satelliteStrands[strandIndex],false);
       }
     );
     addSlider(
-      ['redBlueDrop','Rot/Blau-Kante nach unten',0,5,.02],
+      ['redBlueDrop','Farbstränge nach unten',0,5,.02],
       WULST_TUNING,
       function(){
-        refreshSecondaryStrand(satelliteStrands[0],false);
-        refreshSecondaryStrand(satelliteStrands[1],false);
+        for(var strandIndex=0;strandIndex<satelliteStrands.length;strandIndex++) refreshSecondaryStrand(satelliteStrands[strandIndex],false);
       }
     );
     addSlider(
       ['liquify','Kante verflüssigen',.6,3,.01],
       WULST_TUNING,
       function(){
-        refreshSecondaryStrand(satelliteStrands[0],false);
-        refreshSecondaryStrand(satelliteStrands[1],false);
+        for(var strandIndex=0;strandIndex<satelliteStrands.length;strandIndex++) refreshSecondaryStrand(satelliteStrands[strandIndex],false);
       }
     );
 
@@ -3708,6 +3753,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
 
     appendSecondaryControls('Rot • linker Strang',satelliteStrands[0],'#d9788a');
     appendSecondaryControls('Blau • rechter Strang',satelliteStrands[1],'#8ebef2');
+    appendSecondaryControls('Grün • mittlerer linker Strang',satelliteStrands[2],'#75e0aa');
     sectionLabel('Gold • Interaktives Ende','#f6e3a1');
     var resetGoldEndBtn=document.createElement('button');
     resetGoldEndBtn.type='button';
@@ -3716,7 +3762,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       +'border:1px solid rgba(231,197,106,.52);border-radius:5px;font-weight:bold;cursor:pointer;';
     resetGoldEndBtn.onclick=resetGoldStrandEnd;
     tunePanel.appendChild(resetGoldEndBtn);
-    window.__strandTuning={SP:SP,FN:FN,MP:MP,WIND:WIND,GOLD_RENDER:GOLD_RENDER,GOLD_STRAND_TUNING:GOLD_STRAND_TUNING,WULST_TUNING:WULST_TUNING,LANDSCAPE_TUNING:LANDSCAPE_TUNING,RED_STRAND:RED_STRAND,BLUE_STRAND:BLUE_STRAND,resetGoldEnd:resetGoldStrandEnd};
+    window.__strandTuning={SP:SP,FN:FN,MP:MP,WIND:WIND,GOLD_RENDER:GOLD_RENDER,GOLD_STRAND_TUNING:GOLD_STRAND_TUNING,WULST_TUNING:WULST_TUNING,LANDSCAPE_TUNING:LANDSCAPE_TUNING,RED_STRAND:RED_STRAND,BLUE_STRAND:BLUE_STRAND,GREEN_STRAND:GREEN_STRAND,resetGoldEnd:resetGoldStrandEnd};
     var copyBtn=document.createElement('button');
     copyBtn.textContent='Werte kopieren';
     copyBtn.style.cssText='margin-top:8px;width:100%;padding:6px;background:#c89a3d;color:#000;'
@@ -3743,7 +3789,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         +'LANDSCAPE_TUNING='+JSON.stringify(LANDSCAPE_TUNING)+'\n'
         +'GOLD_END='+(strandEndTargetWorld?JSON.stringify({x:strandEndTargetWorld.x,y:strandEndTargetWorld.y,z:strandEndTargetWorld.z}):'null')+'\n'
         +'RED_STRAND='+JSON.stringify(RED_STRAND)+'\n'
-        +'BLUE_STRAND='+JSON.stringify(BLUE_STRAND);
+        +'BLUE_STRAND='+JSON.stringify(BLUE_STRAND)+'\n'
+        +'GREEN_STRAND='+JSON.stringify(GREEN_STRAND);
       out.value=snippet;
       out.select();
       if(navigator.clipboard) navigator.clipboard.writeText(snippet).catch(function(){});
@@ -3931,9 +3978,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       }
     }
 
-    // Rot und Blau erhalten denselben bewährten Doppelimpuls, aber jeweils
+    // Rot, Blau und Grün erhalten denselben bewährten Doppelimpuls, aber jeweils
     // eine vollständig eigene Zufallsuhr. Die unterschiedlichen Zeitfenster
-    // verhindern, dass beide Satelliten regelmässig oder synchron wirken.
+    // verhindern, dass die Satelliten regelmässig oder synchron wirken.
     function createSatellitePulseState(target,minPause,maxPause,initialMin,initialMax){
       var pulseMaterials=[];
       var seenMaterials=new Set();
@@ -3963,7 +4010,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     }
     var satellitePulseStates=[
       createSatellitePulseState(satelliteBrains[0],3300,7600,700,3100),
-      createSatellitePulseState(satelliteBrains[1],4700,9800,1800,5200)
+      createSatellitePulseState(satelliteBrains[1],4700,9800,1800,5200),
+      createSatellitePulseState(satelliteBrains[2],3900,8600,1200,4300)
     ];
     function updateSatelliteBrainPulse(state,now){
       if(reduced||!state) return;
@@ -4087,8 +4135,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       if (NEURAL_INFORMATION_ACTIVE && !reduced) neuralActivityController.update(dt);
       nodesP.material.opacity = .44;
       updateGoldBrainPulse(now);
-      updateSatelliteBrainPulse(satellitePulseStates[0],now);
-      updateSatelliteBrainPulse(satellitePulseStates[1],now);
+      for(var satellitePulseIndex=0;satellitePulseIndex<satellitePulseStates.length;satellitePulseIndex++){
+        updateSatelliteBrainPulse(satellitePulseStates[satellitePulseIndex],now);
+      }
       var railSlowdown=cameraProgress<=cameraHelixExitStart?cameraRailSlowdown(cameraProgress):1;
       var cameraAcceleration=((targetScrollP-cameraProgress)*CAMERA_SPRING*railSlowdown-cameraVelocity*CAMERA_DAMPING)/CAMERA_MASS;
       cameraVelocity+=cameraAcceleration*dt;
