@@ -479,7 +479,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
            droop:1.5, frayStart:0.98, fraySpread:0.12 };
   // Anteil (0..1) des Bündels, ab dem Fasern seitlich/nach vorne ausbrechen
   // dürfen. Darüber bleibt der Strang ein ruhiges, gerades Bündel.
-  var BREAKOUT_START=0.82;
+  var BREAKOUT_START=0.985;
   // Trichter: Jede Faser startet an einem echten goldenen Vertex im Stumpf-
   // Bereich, läuft über einen organischen Fächer zu einem individuellen Punkt
   // auf dem unteren Auslassring und ordnet sich erst danach weich im Bündel.
@@ -774,17 +774,30 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     // brain.scale=3.2775: Diese lokalen Maße bleiben bewusst innerhalb der
     // Distanz zur Endkamera. Größere alte Werte liefen durch die Kamera durch
     // und erzeugten den spiegelverkehrten radialen Fächer.
-    var landscapeHalfWidth=isMobile?3.2:5.2;
+    var landscapeHalfWidth=isMobile?4.4:7.2;
     var landscapeDepth=isMobile?3.15:4.8;
     // Tal-Prinzip (Referenz: mesh3d.gallery "corridor walls"): flacher
     // Talboden um den Strang, Wände steigen erst jenseits der Corridor-
     // Breite an -> Kamera/Betrachter blickt in ein Tal statt auf eine
     // gleichmässig gewölbte Schale.
     var landscapeCorridorWidth=landscapeHalfWidth*.32;
-    var landscapeCorridorSharpness=1.9;
-    var landscapeCorridorHeight=1.9;
+    var landscapeCorridorSharpness=1.55;
+    var landscapeCorridorHeight=3;
+    // Zusätzliche, feste Vertiefung des Talbodens (unabhängig von den
+    // zufälligen Pro-Faser transitionDrop-Werten).
+    var landscapeFloorDepth=1.1;
     var landscapeColor=new THREE.Color();
     var landscapePaths=[];
+
+    // Mehrschichtiges Sinus-Rauschen (Referenz: mesh3d.gallery snoise-Summe
+    // im Terrain-Shader). Bricht die reine X-Abhängigkeit der Talwand auf,
+    // damit Nachbarfasern nicht alle an derselben Schwelle synchron
+    // hochklettern und ein künstliches Gitter bilden.
+    function corridorNoise(x:number,z:number,seed:number){
+      return Math.sin(x*1.7+z*.9+seed)*.5
+        +Math.sin(x*.6-z*1.3+seed*1.7)*.32
+        +Math.sin(x*3.1+z*2.2-seed*.6)*.18;
+    }
 
     function landscapeFiberColor(fiberFamily,fiberIndex,tipVertex){
       var palette=fiberFamily===0
@@ -912,20 +925,40 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         var fieldMeander=Math.sin(phase+fieldT*meanderFrequency*Math.PI*2)
           *meanderAmplitude*fieldEnvelope;
         var fieldSpread=smoother(fieldT);
+        // Echtes Zufalls-Jitter pro Punkt: die Lane-Zuteilung der Fasern ist
+        // deterministisch gleichmässig verteilt, wodurch viele Nachbarfasern
+        // sonst exakt an derselben X/Z-Position gleichzeitig die Wand
+        // erreichen -> künstliches Gitter. Bricht die Regelmässigkeit auf.
+        var fieldJitterX=(landscapeRandom()-.5)*landscapeHalfWidth*.16;
+        var fieldJitterZ=(landscapeRandom()-.5)*landscapeDepth*.12;
         var fieldSide=THREE.MathUtils.clamp(
-          transitionSideEnd+(targetSide-transitionSideEnd)*fieldSpread+fieldMeander,
+          transitionSideEnd+(targetSide-transitionSideEnd)*fieldSpread+fieldMeander+fieldJitterX,
           -landscapeHalfWidth*1.08,
           landscapeHalfWidth*1.08
         );
-        var fieldForward=transitionForwardEnd+targetDepth*fieldT;
-        var wallDistance=Math.max(Math.abs(fieldSide)-landscapeCorridorWidth,0);
+        var fieldForward=transitionForwardEnd+targetDepth*fieldT+fieldJitterZ;
+        // Grossflächiges Rauschen verschiebt die Wandkante pro (X,Z)-Position,
+        // statt sie starr an einer festen X-Schwelle zu fixieren -> Nachbar-
+        // fasern klettern nicht mehr synchron hoch (kein Gittermuster).
+        var corridorWidthNoise=corridorNoise(fieldSide*.6,fieldForward*.6,phase);
+        var effectiveCorridorWidth=Math.max(
+          landscapeCorridorWidth*.35,
+          landscapeCorridorWidth+corridorWidthNoise*landscapeCorridorWidth*.6
+        );
+        var wallDistance=Math.max(Math.abs(fieldSide)-effectiveCorridorWidth,0);
         var fieldBank=Math.pow(
           wallDistance/(landscapeHalfWidth-landscapeCorridorWidth),
           landscapeCorridorSharpness
         )*landscapeCorridorHeight;
+        // Feinkörnige zweite Rauschschicht direkt auf der Wandfläche (analog
+        // mesh3d: zwei Oktaven), skaliert mit der Nähe zur Wand, damit der
+        // Talboden ruhig bleibt und nur die Hänge Textur bekommen.
+        var wallBumpiness=smoother(Math.min(1,wallDistance/1.4));
+        var fieldBumpNoise=corridorNoise(fieldSide*2.3,fieldForward*2.1,phase*1.3)
+          *.4*wallBumpiness;
         var terrainWave=(Math.sin(fieldSide*.72+phase)+Math.sin(fieldForward*.34+phase*.61)*.55)
           *.12*(1-fieldT*.55);
-        var fieldY=-transitionDrop+fieldBank+terrainWave-.28*fieldT;
+        var fieldY=-transitionDrop-landscapeFloorDepth+fieldBank+fieldBumpNoise+terrainWave-.28*fieldT;
         var fieldDrop=Math.max(transitionDrop,-fieldY);
         emitLandscape(
           organismRightX*fieldSide+organismForwardX*fieldForward+organismDownX*fieldDrop,
@@ -1097,7 +1130,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           var ang=a0+breakoutProgress*tw;
           var bundleScale=1-SP.taper*btv;
           var thicknessScale=GOLD_STRAND_TUNING.topThickness+(GOLD_STRAND_TUNING.bottomThickness-GOLD_STRAND_TUNING.topThickness)*btv;
-          var swirl=SP.rStr*smooth(Math.min(1,btv/Math.max(SP.gather,.001)))*thicknessScale*breakoutProgress;
+          var swirl=SP.rStr*smooth(Math.min(1,btv/Math.max(SP.gather,.001)))*thicknessScale;
           var frayEnv=smooth(Math.max(0,(btv-SP.frayStart)/Math.max(.001,1-SP.frayStart)));
           var fraySpread=frayEnv*SP.fraySpread*frayJitter*thicknessScale;
           var escapeEnvelope=breakoutProgress;
