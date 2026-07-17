@@ -776,6 +776,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     // und erzeugten den spiegelverkehrten radialen Fächer.
     var landscapeHalfWidth=isMobile?3.2:5.2;
     var landscapeDepth=isMobile?3.15:4.8;
+    // Tal-Prinzip (Referenz: mesh3d.gallery "corridor walls"): flacher
+    // Talboden um den Strang, Wände steigen erst jenseits der Corridor-
+    // Breite an -> Kamera/Betrachter blickt in ein Tal statt auf eine
+    // gleichmässig gewölbte Schale.
+    var landscapeCorridorWidth=landscapeHalfWidth*.32;
+    var landscapeCorridorSharpness=1.9;
+    var landscapeCorridorHeight=1.9;
     var landscapeColor=new THREE.Color();
     var landscapePaths=[];
 
@@ -911,7 +918,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           landscapeHalfWidth*1.08
         );
         var fieldForward=transitionForwardEnd+targetDepth*fieldT;
-        var fieldBank=Math.pow(Math.abs(fieldSide)/landscapeHalfWidth,1.68)*1.55;
+        var wallDistance=Math.max(Math.abs(fieldSide)-landscapeCorridorWidth,0);
+        var fieldBank=Math.pow(
+          wallDistance/(landscapeHalfWidth-landscapeCorridorWidth),
+          landscapeCorridorSharpness
+        )*landscapeCorridorHeight;
         var terrainWave=(Math.sin(fieldSide*.72+phase)+Math.sin(fieldForward*.34+phase*.61)*.55)
           *.12*(1-fieldT*.55);
         var fieldY=-transitionDrop+fieldBank+terrainWave-.28*fieldT;
