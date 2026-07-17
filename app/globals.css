@@ -1055,8 +1055,7 @@ body {
   transform-origin: center;
 }
 
-.value-ai-core-pins,
-.value-ai-core-circuit {
+.value-ai-core-pins {
   fill: none;
   stroke: #fff;
   stroke-width: 2.3;
@@ -1069,22 +1068,13 @@ body {
   filter: drop-shadow(0 0 7px rgba(255,255,255,0.24));
 }
 
-.value-ai-core-node {
-  fill: #050505;
-}
-
-.value-ai-core-circuit {
-  stroke: #050505;
-  stroke-width: 1.7;
-}
-
 .value-ai-core-text {
   fill: #050505;
   stroke: none;
   font-family: inherit;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
 }
 
 .value-ai-packet {

@@ -385,12 +385,7 @@ function ValueDiagramGraphic({ index, lang }: { index: number; lang: 'de' | 'en'
       <g className="value-ai-core">
         <path className="value-ai-core-pins" d="M89 47H96M89 61H96M89 75H96M154 47H161M154 61H161M154 75H161" />
         <rect className="value-ai-core-shell" x="96" y="36" width="58" height="50" rx="9" />
-        <circle className="value-ai-core-node" cx="111" cy="51" r="3" />
-        <circle className="value-ai-core-node" cx="139" cy="51" r="3" />
-        <path className="value-ai-core-circuit" d="M111 51L119 61L111 71M139 51L131 61L139 71" />
-        <text className="value-ai-core-text" x="125" y="66" textAnchor="middle">
-          {lang === 'de' ? 'KI' : 'AI'}
-        </text>
+        <text className="value-ai-core-text" x="125" y="68" textAnchor="middle">AI</text>
       </g>
 
       <path className="value-ai-output-track" d="M161 61H191L217 35H258" />
