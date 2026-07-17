@@ -175,7 +175,7 @@ const VALUE_DIAGRAMS: Record<'de' | 'en', ValueDiagramCopy[]> = {
     },
     {
       code: '03', eyebrow: 'SYSTEME',
-      before: '30 h', after: '8 h', counterStart: '−0 h', result: '−22 h', resultLabel: '/ MONAT',
+      before: '30 h', after: '8 h', counterStart: '+0 h', result: '+22 h', resultLabel: 'FREI / MONAT',
       accent: '#a6425c', accentRgb: '166,66,92',
     },
     {
@@ -197,7 +197,7 @@ const VALUE_DIAGRAMS: Record<'de' | 'en', ValueDiagramCopy[]> = {
     },
     {
       code: '03', eyebrow: 'SYSTEMS',
-      before: '30 h', after: '8 h', counterStart: '−0 h', result: '−22 h', resultLabel: '/ MONTH',
+      before: '30 h', after: '8 h', counterStart: '+0 h', result: '+22 h', resultLabel: 'FREE / MONTH',
       accent: '#a6425c', accentRgb: '166,66,92',
     },
     {
@@ -335,12 +335,35 @@ function ValueDiagramGraphic({ index, lang }: { index: number; lang: 'de' | 'en'
   if (index === 2) {
     return (
       <svg className="value-chart-svg" viewBox="0 0 280 122" aria-hidden="true">
-        <path className="value-grid-line" d="M12 103H268M12 78H268M12 53H268M12 28H268" />
-        <path className="value-chart-line value-draw-line" d="M22 29C62 33 76 47 108 54C139 61 153 83 183 86C214 89 234 95 258 98" pathLength="1" />
-        <path className="value-chart-accent value-draw-line value-draw-line--delay" d="M22 29C61 29 77 40 108 40C139 40 153 54 183 54C213 54 235 63 258 63" pathLength="1" />
-        {[22, 108, 183, 258].map((x, i) => <circle key={x} className={i === 3 ? 'value-chart-dot value-pulse-dot' : 'value-chart-dot'} cx={x} cy={[29, 40, 54, 63][i]} r="4" />)}
-        <text className="value-chart-label" x="22" y="118" textAnchor="start">30 h</text>
-        <text className="value-chart-label value-chart-label--accent" x="258" y="118" textAnchor="end">8 h</text>
+        <path className="value-system-input-track" d="M42 27H65L92 45M42 61H92M42 95H65L92 77" />
+        <path className="value-system-input value-system-input--1" d="M42 27H65L92 45" pathLength="1" />
+        <path className="value-system-input value-system-input--2" d="M42 61H92" pathLength="1" />
+        <path className="value-system-input value-system-input--3" d="M42 95H65L92 77" pathLength="1" />
+
+        {[19, 53, 87].map((y, index) => (
+          <g key={y} className={`value-system-task value-system-task--${index + 1}`}>
+            <rect className="value-system-task-card" x="13" y={y} width="29" height="16" rx="3" />
+            <path className="value-system-task-mark" d={`M20 ${y + 6}H35M20 ${y + 11}H30`} />
+          </g>
+        ))}
+
+        <g className="value-system-core">
+          <rect className="value-system-core-shell" x="92" y="34" width="64" height="54" rx="8" />
+          <path className="value-system-core-grid" d="M103 47H145M103 61H145M103 75H145M116 42V80M132 42V80" />
+          <circle className="value-system-core-node" cx="124" cy="61" r="5" />
+        </g>
+
+        <path className="value-system-baseline" d="M170 96H266" />
+        <rect className="value-system-bar value-system-bar--1" x="178" y="78" width="18" height="18" rx="2" />
+        <rect className="value-system-bar value-system-bar--2" x="207" y="58" width="18" height="38" rx="2" />
+        <rect className="value-system-bar value-system-bar--3" x="236" y="34" width="18" height="62" rx="2" />
+        <path className="value-system-output-track" d="M156 76C181 76 190 68 208 57C226 46 235 34 255 23" />
+        <path className="value-system-output" d="M156 76C181 76 190 68 208 57C226 46 235 34 255 23" pathLength="1" />
+        <path className="value-system-arrow" d="M244 20L256 22L253 34" />
+        <circle className="value-system-target" cx="255" cy="23" r="5" />
+
+        <text className="value-chart-label" x="28" y="118" textAnchor="middle">30 h</text>
+        <text className="value-chart-label value-chart-label--accent" x="254" y="118" textAnchor="end">8 h</text>
       </svg>
     );
   }
