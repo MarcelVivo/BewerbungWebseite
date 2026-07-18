@@ -583,9 +583,10 @@ body {
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  opacity: 0;
-  transform: translateX(0.45rem);
-  transition: opacity 220ms ease, transform 260ms ease, color 220ms ease;
+  opacity: 0.24;
+  transform: translateX(0);
+  transform-origin: 100% 50%;
+  transition: opacity 220ms ease, transform 260ms ease, color 220ms ease, text-shadow 220ms ease;
   white-space: nowrap;
   text-shadow: 0 5px 18px #000;
 }
@@ -608,15 +609,32 @@ body {
   background: rgba(231,197,106,0.38);
 }
 
-.journey-station:hover .journey-label,
-.journey-station:focus-visible .journey-label,
-.journey-station.is-active .journey-label {
-  opacity: 1;
-  transform: translateX(0);
+.journey-station.is-visited {
+  color: rgba(200,154,61,0.76);
+}
+
+.journey-station.is-visited .journey-label {
+  opacity: 0.56;
+}
+
+.journey-station:hover:not(.is-active) .journey-label,
+.journey-station:focus-visible:not(.is-active) .journey-label {
+  color: #d4c4a8;
+  opacity: 0.82;
 }
 
 .journey-station.is-active {
   color: #f6e3a1;
+}
+
+.journey-station.is-active .journey-label {
+  opacity: 1;
+  transform: translateX(-0.12rem) scale(1.06);
+  text-shadow: 0 0 12px rgba(231,197,106,0.42), 0 5px 18px #000;
+}
+
+.journey-station.is-visited .journey-node {
+  border-color: rgba(200,154,61,0.66);
 }
 
 .journey-station.is-active .journey-node {
