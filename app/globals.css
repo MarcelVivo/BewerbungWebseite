@@ -755,10 +755,10 @@ body {
    Sichtbarkeit folgt ausschliesslich dem echten Anflug zum grünen Gehirn. */
 .project-cta-world {
   position: absolute;
-  bottom: clamp(2.4rem, 6vh, 5.5rem);
+  bottom: clamp(1rem, 2.8vh, 2.5rem);
   left: 50%;
   z-index: 1310;
-  width: min(90vw, 44rem);
+  width: min(92vw, 50rem);
   opacity: 0;
   transform-origin: 50% 100%;
   will-change: transform, opacity;
@@ -769,9 +769,16 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
+  padding: clamp(1rem, 2vw, 1.55rem);
+  border: 1px solid rgba(77,191,127,0.28);
+  border-radius: 0.85rem;
   color: #fff;
+  background: linear-gradient(145deg, rgba(77,191,127,0.09), transparent 48%), rgba(1,8,5,0.66);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 22px 70px rgba(0,0,0,0.42), 0 0 42px rgba(77,191,127,0.08);
   text-align: center;
   text-shadow: 0 4px 24px rgba(0,0,0,0.92);
+  backdrop-filter: blur(9px);
 }
 
 /* ── Persönliche Studio-Positionierung vor dem Schlussanflug ── */
@@ -889,7 +896,7 @@ body {
 .project-cta-content h2 {
   margin: 0;
   color: #fff;
-  font-size: clamp(2.2rem, 4.4vw, 4.8rem);
+  font-size: clamp(1.9rem, 3.3vw, 3.7rem);
   font-weight: 700;
   letter-spacing: -0.055em;
   line-height: 0.94;
@@ -897,9 +904,147 @@ body {
 
 .project-cta-copy {
   margin: clamp(0.7rem, 1.3vh, 1rem) 0 0;
+  max-width: 40rem;
   color: rgba(239,242,238,0.82);
   font-size: clamp(0.76rem, 1vw, 1rem);
   line-height: 1.45;
+}
+
+.project-consultation-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+  width: 100%;
+  margin-top: 1rem;
+  text-align: left;
+}
+
+.project-consultation-form label {
+  min-width: 0;
+}
+
+.project-consultation-form label > span {
+  display: block;
+  margin: 0 0 0.3rem 0.2rem;
+  color: rgba(212,196,168,0.78);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.project-consultation-form input,
+.project-consultation-form textarea {
+  width: 100%;
+  border: 1px solid rgba(126,239,176,0.18);
+  border-radius: 0.5rem;
+  outline: none;
+  color: #effff5;
+  background: rgba(0,0,0,0.52);
+  font: inherit;
+  font-size: 0.76rem;
+  line-height: 1.4;
+  text-shadow: none;
+  transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+}
+
+.project-consultation-form input {
+  min-height: 2.55rem;
+  padding: 0.65rem 0.8rem;
+}
+
+.project-consultation-form textarea {
+  min-height: 4.6rem;
+  padding: 0.7rem 0.8rem;
+  resize: vertical;
+}
+
+.project-consultation-form input:focus,
+.project-consultation-form textarea:focus {
+  border-color: rgba(126,239,176,0.72);
+  background: rgba(0,0,0,0.68);
+  box-shadow: 0 0 0 3px rgba(77,191,127,0.1);
+}
+
+.project-consultation-form textarea::placeholder {
+  color: rgba(168,152,128,0.5);
+}
+
+.project-consultation-message,
+.project-consultation-error,
+.project-consultation-actions {
+  grid-column: 1 / -1;
+}
+
+.project-consultation-error {
+  margin: 0;
+  color: #ff9ca8;
+  font-size: 0.66rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.project-consultation-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.project-consultation-actions .project-cta-button {
+  margin-top: 0;
+  cursor: pointer;
+  font: inherit;
+}
+
+.project-consultation-actions .project-cta-button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+  transform: none;
+}
+
+.project-consultation-detailed {
+  color: rgba(212,196,168,0.76);
+  font-size: 0.65rem;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(212,196,168,0.28);
+}
+
+.project-consultation-detailed:hover,
+.project-consultation-detailed:focus-visible {
+  color: #fff;
+  outline: none;
+}
+
+.project-consultation-success {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  max-width: 38rem;
+  margin-top: 1rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid rgba(126,239,176,0.32);
+  border-radius: 0.65rem;
+  color: #baffd5;
+  background: rgba(77,191,127,0.09);
+  text-align: left;
+}
+
+.project-consultation-success svg {
+  flex: 0 0 auto;
+}
+
+.project-consultation-success strong,
+.project-consultation-success p {
+  display: block;
+  margin: 0;
+}
+
+.project-consultation-success p {
+  margin-top: 0.25rem;
+  color: rgba(235,242,237,0.8);
+  font-size: 0.72rem;
+  line-height: 1.5;
 }
 
 .project-cta-button,
@@ -3477,6 +3622,20 @@ body {
   .mobile-project-cta .project-cta-copy {
     max-width: 22rem;
     font-size: clamp(0.86rem, 4vw, 1rem);
+  }
+
+  .mobile-project-cta .project-consultation-form {
+    grid-template-columns: 1fr;
+  }
+
+  .mobile-project-cta .project-consultation-message,
+  .mobile-project-cta .project-consultation-error,
+  .mobile-project-cta .project-consultation-actions {
+    grid-column: auto;
+  }
+
+  .mobile-project-cta .project-consultation-actions {
+    flex-direction: column;
   }
 
   .mobile-project-cta .project-cta-button {

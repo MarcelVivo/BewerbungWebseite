@@ -11,7 +11,7 @@ const STATIONS = [
   { label: 'Dein Mehrwert', target: 'journey-value', mobileTarget: 'mobile-journey-value' },
   { label: 'Meine Referenzen', target: 'journey-references', mobileTarget: 'mobile-journey-references' },
   { label: 'Über mich', target: 'journey-about', mobileTarget: 'mobile-journey-about' },
-  { label: 'Kontakt', target: 'journey-contact', mobileTarget: 'mobile-journey-contact' },
+  { label: 'Deine Beratung', target: 'journey-contact', mobileTarget: 'mobile-journey-contact' },
 ];
 
 export default function JourneyNavigator() {
@@ -60,6 +60,16 @@ export default function JourneyNavigator() {
       if (journey) {
         window.scrollTo({
           top: journey.offsetTop - window.innerHeight + journey.offsetHeight * 0.885,
+          behavior: 'smooth',
+        });
+        return;
+      }
+    }
+    if (station.target === 'journey-contact' && window.innerWidth > 699) {
+      const journey = document.getElementById('solution-spiral');
+      if (journey) {
+        window.scrollTo({
+          top: journey.offsetTop - window.innerHeight + journey.offsetHeight,
           behavior: 'smooth',
         });
         return;

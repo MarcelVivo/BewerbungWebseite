@@ -4912,36 +4912,43 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var cameraLookY=cameraAimY;
       var cameraLookZ=0;
       if(brainApproachProgress>0){
-        // Eine einzige gerade, C2-geglaettete Liftfahrt ersetzt die frueheren
-        // drei Anflugphasen. Dadurch gibt es weder Zwischenziele noch abrupte
-        // Richtungs-, Geschwindigkeits- oder Blickwechsel.
+        // Die ruhige Liftfahrt endet nicht mehr vor dem grünen Gehirn. Nach
+        // dem frontalen Anflug setzt sie sich C2-geglättet durch die sichtbare
+        // Aussenhülle bis in das Nervennetz fort. Das Gehirn selbst bleibt
+        // vollständig bestehen und wird zu keinem Zeitpunkt ausgeblendet.
         var approachStartX=cameraX;
         var approachStartY=cameraY;
         var approachStartZ=cameraZ;
         var approachFocusX=greenSatelliteBrain.position.x;
         var approachFocusY=greenSatelliteBrain.position.y;
         var approachFocusZ=greenSatelliteBrain.position.z;
-        var liftEase=smoother(brainApproachProgress);
         var frontalDistance=isMobile?4.9:5.8;
         var frontalX=approachFocusX;
         var frontalY=approachFocusY;
         var frontalZ=approachFocusZ+frontalDistance;
-        // Positionsfahrt: langsam gerade nach oben und in der aktuellen
-        // Bildschirmorientierung leicht nach links bis direkt vor das Gehirn.
-        cameraX=THREE.MathUtils.lerp(approachStartX,frontalX,liftEase);
-        cameraY=THREE.MathUtils.lerp(approachStartY,frontalY,liftEase);
-        cameraZ=THREE.MathUtils.lerp(approachStartZ,frontalZ,liftEase);
-        // Linsenschwenk und Lift benutzen exakt denselben Fortschritt. Das
-        // Gehirn wandert dadurch proportional in die Bildmitte und liegt am
-        // Ende frontal auf der optischen Achse.
-        cameraLookX=THREE.MathUtils.lerp(0,approachFocusX,liftEase);
-        cameraLookY=THREE.MathUtils.lerp(cameraAimY,approachFocusY,liftEase);
-        cameraLookZ=THREE.MathUtils.lerp(0,approachFocusZ,liftEase);
-        targetFov=THREE.MathUtils.lerp(
-          targetFov,
-          isMobile?47.5:44.5,
-          liftEase
-        );
+        var entryStart=.66;
+        var surfaceProgress=smoother(THREE.MathUtils.clamp(brainApproachProgress/entryStart,0,1));
+        var insideProgress=smoother(THREE.MathUtils.clamp((brainApproachProgress-entryStart)/Math.max(.0001,1-entryStart),0,1));
+        var insideX=approachFocusX;
+        var insideY=approachFocusY+.04;
+        var insideZ=approachFocusZ+.22;
+        cameraX=THREE.MathUtils.lerp(approachStartX,frontalX,surfaceProgress);
+        cameraY=THREE.MathUtils.lerp(approachStartY,frontalY,surfaceProgress);
+        cameraZ=THREE.MathUtils.lerp(approachStartZ,frontalZ,surfaceProgress);
+        if(insideProgress>0){
+          cameraX=THREE.MathUtils.lerp(frontalX,insideX,insideProgress);
+          cameraY=THREE.MathUtils.lerp(frontalY,insideY,insideProgress);
+          cameraZ=THREE.MathUtils.lerp(frontalZ,insideZ,insideProgress);
+        }
+        cameraLookX=THREE.MathUtils.lerp(0,approachFocusX,surfaceProgress);
+        cameraLookY=THREE.MathUtils.lerp(cameraAimY,approachFocusY,surfaceProgress);
+        cameraLookZ=THREE.MathUtils.lerp(0,approachFocusZ,surfaceProgress);
+        if(insideProgress>0){
+          cameraLookY=THREE.MathUtils.lerp(approachFocusY,approachFocusY+.02,insideProgress);
+          cameraLookZ=THREE.MathUtils.lerp(approachFocusZ,approachFocusZ-1.2,insideProgress);
+        }
+        var surfaceFov=THREE.MathUtils.lerp(targetFov,isMobile?47.5:44.5,surfaceProgress);
+        targetFov=THREE.MathUtils.lerp(surfaceFov,isMobile?66:62,insideProgress);
       }
       if(Math.abs(targetFov-lastCameraFov)>.015){
         camera.fov=targetFov;

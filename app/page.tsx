@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from 'react';
 import {
   Bot, BarChart3, Workflow, FolderKanban,
   GraduationCap, Globe, Lightbulb,
@@ -953,21 +953,101 @@ function ReferencesWorld({ lang }: { lang: 'de' | 'en' }) {
 }
 
 function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
+  const copy = lang === 'de'
+    ? {
+        kicker: 'PERSÖNLICH · UNVERBINDLICH · AUF AUGENHÖHE',
+        title: 'DEINE BERATUNG.',
+        text: 'Erzähl mir kurz, was du aufbauen, verbessern oder digitalisieren möchtest. Ich melde mich persönlich bei dir.',
+        name: 'Name',
+        email: 'E-Mail',
+        message: 'Worum geht es?',
+        placeholder: 'Beschreibe dein Vorhaben in wenigen Sätzen …',
+        submit: 'Beratung anfragen',
+        sending: 'Wird gesendet …',
+        successTitle: 'Vielen Dank.',
+        successText: 'Deine Anfrage ist angekommen. Ich melde mich innerhalb von zwei Arbeitstagen persönlich bei dir.',
+        error: 'Das Senden hat nicht funktioniert. Bitte versuche es erneut oder schreibe an kontakt@marcelspahr.ch.',
+        detailed: 'Ausführliche Projektanfrage',
+      }
+    : {
+        kicker: 'PERSONAL · NO OBLIGATION · EYE TO EYE',
+        title: 'YOUR CONSULTATION.',
+        text: 'Tell me briefly what you want to build, improve or digitize. I will get back to you personally.',
+        name: 'Name',
+        email: 'Email',
+        message: 'What would you like to discuss?',
+        placeholder: 'Describe your project in a few sentences …',
+        submit: 'Request a consultation',
+        sending: 'Sending …',
+        successTitle: 'Thank you.',
+        successText: 'Your request has arrived. I will contact you personally within two working days.',
+        error: 'The message could not be sent. Please try again or email kontakt@marcelspahr.ch.',
+        detailed: 'Detailed project enquiry',
+      };
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSubmitting(true);
+    setError('');
+    try {
+      const response = await fetch('/api/kontakt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, message }),
+      });
+      if (!response.ok) throw new Error('submit failed');
+      setSubmitted(true);
+    } catch {
+      setError(copy.error);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   return (
     <div className={`project-cta-content ${chakraPetch.className}`}>
       <p className="project-cta-kicker">
-        {lang === 'de' ? 'DIGITALSTUDIO MARCEL SPAHR' : 'MARCEL SPAHR DIGITAL STUDIO'}
+        {copy.kicker}
       </p>
-      <h2>{lang === 'de' ? 'DEINE IDEE.' : 'YOUR IDEA.'}</h2>
-      <p className="project-cta-copy">
-        {lang === 'de'
-          ? 'Bereit, daraus ein digitales System zu machen?'
-          : 'Ready to turn it into a digital system?'}
-      </p>
-      <a href="/anfrage" className="project-cta-button">
-        <span>{lang === 'de' ? 'Projekt besprechen' : 'Discuss your project'}</span>
-        <ChevronRight size={18} strokeWidth={2.2} aria-hidden="true" />
-      </a>
+      <h2>{copy.title}</h2>
+      {submitted ? (
+        <div className="project-consultation-success" role="status">
+          <CheckCircle size={24} strokeWidth={1.8} aria-hidden="true" />
+          <div><strong>{copy.successTitle}</strong><p>{copy.successText}</p></div>
+        </div>
+      ) : (
+        <>
+          <p className="project-cta-copy">{copy.text}</p>
+          <form className="project-consultation-form" onSubmit={handleSubmit}>
+            <label>
+              <span>{copy.name}</span>
+              <input value={name} onChange={(event) => setName(event.target.value)} autoComplete="name" required />
+            </label>
+            <label>
+              <span>{copy.email}</span>
+              <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" required />
+            </label>
+            <label className="project-consultation-message">
+              <span>{copy.message}</span>
+              <textarea value={message} onChange={(event) => setMessage(event.target.value)} placeholder={copy.placeholder} rows={3} required />
+            </label>
+            {error && <p className="project-consultation-error" role="alert">{error}</p>}
+            <div className="project-consultation-actions">
+              <button type="submit" className="project-cta-button" disabled={submitting}>
+                <span>{submitting ? copy.sending : copy.submit}</span>
+                <ChevronRight size={18} strokeWidth={2.2} aria-hidden="true" />
+              </button>
+              <a href="/anfrage" className="project-consultation-detailed">{copy.detailed}</a>
+            </div>
+          </form>
+        </>
+      )}
     </div>
   );
 }
@@ -1083,7 +1163,7 @@ function ProjectCtaWorld({ lang }: { lang: 'de' | 'en' }) {
       if (!cameraState) return;
 
       const approachProgress = Math.max(0, Math.min(1, cameraState.approachProgress || 0));
-      const revealRaw = Math.max(0, Math.min(1, (approachProgress - 0.56) / 0.3));
+      const revealRaw = Math.max(0, Math.min(1, (approachProgress - 0.86) / 0.12));
       const reveal = revealRaw * revealRaw * (3 - 2 * revealRaw);
       const translateY = (1 - reveal) * 28;
       const scale = 0.965 + reveal * 0.035;
