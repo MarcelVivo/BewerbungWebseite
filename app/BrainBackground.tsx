@@ -1620,7 +1620,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         // Der zeitliche Alpha-Schimmer wird im Shader exakt wie beim Ring
         // berechnet; die Basis bleibt deshalb unskaliert.
         uOpacity:{value:1},
-        uBrightness:{value:.5},
+        uBrightness:{value:.54},
         uReveal:{value:0},
         uBrainPulses:{value:new THREE.Vector4()},
         uStrandRadius:{value:strandCollisionRadius},
@@ -1630,6 +1630,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         uOceanDepthMid:{value:(oceanDepthAhead-oceanNearDepthBehind)*.5},
         uOceanDepthHalf:{value:(oceanDepthAhead+oceanNearDepthBehind)*.5},
         uOceanBackStart:{value:oceanNearDepthBehind},
+        uOceanFrontDepth:{value:oceanDepthAhead},
+        uOceanTotalDepth:{value:oceanDepthAhead+oceanFarDepthBehind},
         uOceanFarFadeStart:{value:(oceanFarDepthBehind-oceanNearDepthBehind)*.08},
         uOceanFarFadeEnd:{value:(oceanFarDepthBehind-oceanNearDepthBehind)*.92},
         uSourceWaveControls:{value:sourceWaveControls},
@@ -1646,6 +1648,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         'uniform float uOceanDepthMid;',
         'uniform float uOceanDepthHalf;',
         'uniform float uOceanBackStart;',
+        'uniform float uOceanFrontDepth;',
+        'uniform float uOceanTotalDepth;',
         'uniform float uOceanFarFadeStart;',
         'uniform float uOceanFarFadeEnd;',
         'uniform vec4 uSourceWaveControls[13];',
@@ -1658,6 +1662,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         'varying float vCrest;',
         'varying float vImpact;',
         'varying float vHorizonFade;',
+        'varying float vDepthLight;',
         'void main(){',
         '  float side=aOcean.x;',
         '  float depth=aOcean.y;',
@@ -1680,40 +1685,48 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         '    sourceHeight+=tiltedHeight*controlWeight;',
         '    sourceWeight+=controlWeight;',
         '  }',
-        // Die GLB-Bewegung liefert nur noch eine dezente, organische Unruhe.
-        // Der Hauptwellengang besteht aus 5,5 langsamen, leicht diagonalen
-        // Kämmen über die gesamte Breite. So hebt sich nicht mehr die komplette
-        // Fläche gleichzeitig, sondern jeder Kamm läuft einzeln durch das Meer.
-        '  float glbWave=sourceHeight/max(.0001,sourceWeight)*.22;',
+        // Die GLB-Bewegung liefert eine dezente organische Unruhe unter dem
+        // regelmaessigen, langsam nach hinten fliessenden Hauptwellengang.
+        '  float glbWave=sourceHeight/max(.0001,sourceWeight)*.13;',
         '  float normalizedSide=side/max(.001,uOceanHalfWidth);',
-        // Die höhere Zeitphase verschiebt die Kämme gut erkennbar seitlich,
-        // ohne die vertikale Bewegung hektischer werden zu lassen.
-        '  float ridgePhase=normalizedSide*17.2788+depth*.19-uTime*.52;',
-        '  float ridgeWave=sin(ridgePhase)*.09;',
-        '  ridgeWave+=sin(ridgePhase*2.0-.62)*.015;',
-        '  ridgeWave+=sin(depth*.31-normalizedSide*2.4+uTime*.041)*.018;',
+        // Breite Hauptwellen, ein langer Schwell und eine sehr feine
+        // Querbewegung erzeugen sichtbare, aber weich gerundete Akzente.
+        '  float ridgePhase=depth*.315+normalizedSide*5.8-uTime*.29;',
+        '  float ridgeWave=sin(ridgePhase)*.18;',
+        '  ridgeWave+=sin(depth*.118-normalizedSide*2.15-uTime*.105+1.1)*.065;',
+        '  ridgeWave+=sin(depth*.205+normalizedSide*8.4+uTime*.072-.45)*.028;',
+        '  float organicEnvelope=.88+.12*sin(depth*.052+normalizedSide*3.6+uTime*.04);',
+        '  ridgeWave*=organicEnvelope;',
         '  float impact=exp(-max(0.0,radius-uStrandRadius)*.31);',
         '  float reflected=sin((radius-uStrandRadius)*.62+uTime*.15+phase*.006)*.13*impact;',
-        // Hinter dem Eintauchbereich verlieren die Wellen kontinuierlich an
-        // Hoehe. So entstehen in der perspektivischen Verdichtung keine
-        // hellen, linienartigen Kammbaender am Horizont.
+        // Die Wellen bleiben bis in die Tiefe lesbar, verlieren dort aber
+        // gleichmaessig an Hoehe, damit keine harte Horizontlinie entsteht.
         '  float backDistance=max(0.0,-depth-uOceanBackStart);',
-        '  float distantWaveFade=1.0-smoothstep(0.0,uOceanFarFadeStart,backDistance);',
+        '  float distantWaveFade=mix(1.0,.18,smoothstep(0.0,uOceanFarFadeEnd,backDistance));',
         '  float wave=(glbWave+ridgeWave)*distantWaveFade+reflected;',
-        '  vec3 displaced=position+vec3(0.0,wave,0.0);',
+        // Sehr langsames individuelles Driften verhindert einen mechanischen
+        // Rastereindruck, ohne die ruhige Wasseroberflaeche aufzubrechen.
+        '  float flowDrift=sin(uTime*.16+depth*.045+phase)*.022;',
+        '  vec3 displaced=position;',
+        '  displaced.y+=wave;',
+        '  displaced.x+=flowDrift;',
+        '  displaced.z+=cos(uTime*.12+side*.035+phase)*.014;',
         '  vec4 mvPosition=modelViewMatrix*vec4(displaced,1.0);',
         '  gl_Position=projectionMatrix*mvPosition;',
-        '  vCrest=smoothstep(.34,1.18,wave);',
+        '  vCrest=smoothstep(.035,.205,wave);',
         '  vImpact=impact;',
         '  gl_PointSize=aOcean.w*(1.0+impact*.05)*uPixelRatio*(31.0/max(6.0,-mvPosition.z));',
         '  vColor=aColor;',
-        // Langer, gleichmaessiger Helligkeitsabfall ab Beginn der Fernflaeche.
-        // Ein zusaetzlicher weicher Abschluss liegt noch vor der Geometriekante.
+        // Durchgehender Helligkeitsverlauf ueber Vorder- und Fernflaeche. Er
+        // bleibt an deren technischer Naht mathematisch vollstaendig stetig.
+        '  float depthProgress=clamp((uOceanFrontDepth-depth)/max(.001,uOceanTotalDepth),0.0,1.0);',
+        '  vDepthLight=mix(1.0,.2,smoothstep(0.0,1.0,depthProgress));',
         '  float horizonProgress=clamp(backDistance/max(.001,uOceanFarFadeEnd),0.0,1.0);',
         '  float horizonDissolve=1.0-smoothstep(.82,1.0,horizonProgress);',
-        '  vHorizonFade=exp(-horizonProgress*5.2)*horizonDissolve;',
-        // Dieselbe individuelle Funkelphase wie bei den Ringpartikeln.
-        '  vShimmer=.72+.28*sin(uTime*(.48+aOcean.w*.16)+phase);',
+        '  vHorizonFade=exp(-horizonProgress*3.35)*horizonDissolve;',
+        // Ruhiger Goldschimmer: individuell, aber deutlich langsamer als der
+        // eigentliche Wellengang.
+        '  vShimmer=.82+.18*sin(uTime*(.28+aOcean.w*.1)+phase);',
         '}'
       ].join('\n'),
       fragmentShader:[
@@ -1727,6 +1740,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         'varying float vCrest;',
         'varying float vImpact;',
         'varying float vHorizonFade;',
+        'varying float vDepthLight;',
         'void main(){',
         '  float radial=length(gl_PointCoord-vec2(.5))*2.0;',
         // Exakt derselbe kompakte Leuchtkern wie beim unteren Goldring.
@@ -1734,10 +1748,14 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         // Wie beim Goldring reagiert der Ozean nur auf den goldenen Puls und
         // bleibt dadurch dauerhaft in derselben Goldfarbe.
         '  float pulseEnergy=clamp(uBrainPulses.x,0.0,1.0);',
-        '  float alpha=glow*uOpacity*uReveal*vHorizonFade*(.58+vShimmer*.34)*(1.0+pulseEnergy*.9);',
+        '  float crestAccent=.84+vCrest*.32;',
+        '  float depthAlpha=.4+vDepthLight*.6;',
+        '  float alpha=glow*uOpacity*uReveal*vHorizonFade*depthAlpha*crestAccent*(.66+vShimmer*.28)*(1.0+pulseEnergy*.9);',
         '  if(alpha<.015) discard;',
         '  vec3 litColor=mix(vColor,vec3(1.0),.22+pulseEnergy*.28);',
-        '  gl_FragColor=vec4(litColor*(1.0+pulseEnergy*.72)*uBrightness,alpha);',
+        '  float depthBrightness=.48+vDepthLight*.52;',
+        '  float crestBrightness=1.0+vCrest*.24;',
+        '  gl_FragColor=vec4(litColor*depthBrightness*crestBrightness*(1.0+pulseEnergy*.72)*uBrightness,alpha);',
         '}'
       ].join('\n'),
       transparent:true,
