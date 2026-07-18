@@ -483,6 +483,17 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
            curve:0, twist:5.2, jitter:0, ptSize:0.044, spacing:0.06,
            ringSpread:0.1, offX:0, offY:0, offZ:0,
            droop:1.5, frayStart:0.98, fraySpread:0.12 };
+  // Gemeinsame Kaugummi-Verformung aller vier Faserfarben. Der obere Strang
+  // bleibt fest; ab pullStart wird die verflochtene Zone zunehmend nach unten
+  // gezogen. waveStart liegt bewusst erst im letzten Strangdrittel, damit die
+  // frühere Wulst verschwindet und direkt am unteren Faserende neu entsteht.
+  var WULST_TUNING={
+    pullStart:.54,
+    waveStart:.73,
+    stretch:1.72,
+    liquify:1.52,
+    redBlueDrop:4.46
+  };
   // Anteil (0..1) des Bündels, ab dem Fasern seitlich/nach vorne ausbrechen
   // dürfen. Niedrig gesetzt, damit die Verdrehung/Verwebung (der "Wulst"-
   // Look aus der Rot/Blau-Assimilation) über die gesamte sichtbare Länge
@@ -568,6 +579,19 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     // wächst die lokale Wellenlänge wirklich stufenlos statt abschnittsweise.
     var inverseSmoothIntegral=u-u*u*u+.5*u*u*u*u;
     return Math.PI*2*(endCycles*u+(startCycles-endCycles)*inverseSmoothIntegral);
+  }
+  function wulstPullEnvelope(progress){
+    return smoother((progress-WULST_TUNING.pullStart)/(1-WULST_TUNING.pullStart));
+  }
+  function wulstVerticalPull(progress){
+    return WULST_TUNING.redBlueDrop*wulstPullEnvelope(progress);
+  }
+  function wulstWaveProgress(progress){
+    return THREE.MathUtils.clamp(
+      (progress-WULST_TUNING.waveStart)/(1-WULST_TUNING.waveStart),
+      0,
+      1
+    );
   }
   var STRAND_ON = !(typeof window!=='undefined' && new URLSearchParams(window.location.search).get('nostrand')==='1');
   var sBase=[], sMeta=[], sFibers=[], vc=0;
@@ -1385,11 +1409,17 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     return target;
   }
 
+  function sampleDeformedGoldCenterline(progress,target){
+    sampleGoldCenterline(progress,target);
+    target.addScaledVector(worldVerticalInStrandLocal,-wulstVerticalPull(progress));
+    return target;
+  }
+
   function sampleGoldStrandFrame(progress){
     var frameStep=1/(GOLD_CENTERLINE_SAMPLES-1);
-    sampleGoldCenterline(progress,goldFrameCenterLocal);
-    sampleGoldCenterline(Math.max(0,progress-frameStep),goldFrameSampleBefore);
-    sampleGoldCenterline(Math.min(1,progress+frameStep),goldFrameSampleAfter);
+    sampleDeformedGoldCenterline(progress,goldFrameCenterLocal);
+    sampleDeformedGoldCenterline(Math.max(0,progress-frameStep),goldFrameSampleBefore);
+    sampleDeformedGoldCenterline(Math.min(1,progress+frameStep),goldFrameSampleAfter);
     goldFrameTangentLocal.copy(goldFrameSampleAfter).sub(goldFrameSampleBefore).normalize();
     goldFrameNormalLocal.copy(worldVerticalInStrandLocal).cross(goldFrameTangentLocal);
     if(goldFrameNormalLocal.lengthSq()<.00001) goldFrameNormalLocal.set(1,0,0);
@@ -1488,6 +1518,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       SBASE_X+(sBase[sourceOffset]-SBASE_X)+worldVerticalInStrandLocal.x*strandDeltaY+wobbleX[vertexIndex],
       SBASE_Y+worldVerticalInStrandLocal.y*strandDeltaY,
       SBASE_Z+(sBase[sourceOffset+2]-SBASE_Z)+worldVerticalInStrandLocal.z*strandDeltaY+wobbleZ[vertexIndex]
+    );
+    out.addScaledVector(
+      worldVerticalInStrandLocal,
+      -wulstVerticalPull(sMeta[vertexIndex*2])
     );
     if(includeEndOffset&&strandEndTargetWorld){
       out.addScaledVector(strandEndOffsetLocal,goldStrandBendWeight(sMeta[vertexIndex*2]));
@@ -1975,6 +2009,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     if(organismVertexMeta.static){
       var staticParentOffset=organismVertexMeta.parentVertex*3;
       out.set(sBase[staticParentOffset],sBase[staticParentOffset+1],sBase[staticParentOffset+2]);
+      out.addScaledVector(
+        worldVerticalInStrandLocal,
+        -wulstVerticalPull(sMeta[organismVertexMeta.parentVertex*2])
+      );
     } else {
       goldStrandVertexLocal(organismVertexMeta.parentVertex,out,true);
     }
@@ -2007,12 +2045,19 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         +Math.sin(time*WIND.speed*1.31+strandPhase)*WIND.sway*.08*strandProgress*strandProgress;
       wobbleZ[strandVertexIndex]=Math.cos(time*WIND.speed*2.43+strandProgress*WIND.waveFrequency*.78+strandPhase)*WIND.wave*.82*strandProgress*strandProgress
         +Math.cos(time*WIND.speed*1.07+strandPhase)*WIND.sway*.06*strandProgress*strandProgress;
-      var goldGumProgress=THREE.MathUtils.clamp((strandProgress-.52)/.48,0,1);
+      var goldGumProgress=wulstWaveProgress(strandProgress);
       if(goldGumProgress>0){
-        var goldGumEnvelope=smoother(goldGumProgress/.16);
-        var goldGumTravel=stretchedWavePhase(goldGumProgress,8,1.35);
-        var goldGumAmplitude=THREE.MathUtils.lerp(.028,.17,smoother(goldGumProgress))
-          *goldGumEnvelope;
+        var goldGumEnvelope=smoother(goldGumProgress/.2);
+        // Die Frequenz fällt nach unten stark ab. Zusammen mit der vertikalen
+        // Dehnung werden die Wellen dadurch sichtbar länger, je näher sie dem
+        // unteren Ende kommen.
+        var goldGumTravel=stretchedWavePhase(
+          goldGumProgress,
+          5.4/WULST_TUNING.stretch,
+          .62/WULST_TUNING.stretch
+        );
+        var goldGumAmplitude=THREE.MathUtils.lerp(.035,.2,smoother(goldGumProgress))
+          *goldGumEnvelope*WULST_TUNING.liquify;
         wobbleX[strandVertexIndex]+=Math.sin(
           strandPhase+goldGumTravel+time*WIND.speed*.42
         )*goldGumAmplitude;
@@ -2490,7 +2535,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var RED_STRAND=createSecondaryStrandParams();
   var BLUE_STRAND=createSecondaryStrandParams();
   var GREEN_STRAND=createSecondaryStrandParams();
-  var WULST_TUNING={stretch:.54,liquify:1.52,redBlueDrop:4.46};
   RED_STRAND.baseBrightness=.95;
   RED_STRAND.pulseStrength=.14;
   BLUE_STRAND.baseBrightness=.95;
@@ -2749,11 +2793,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     }
     for(var fiberIndex=0;fiberIndex<strand.fibers.length;fiberIndex++){
       var fiber=strand.fibers[fiberIndex], fiberShape=fiber.shape;
-      var funnelEnd=THREE.MathUtils.clamp(
-        fiberShape.funnelEnd*WULST_TUNING.stretch,
-        .08,
-        .9
-      );
+      var funnelEnd=THREE.MathUtils.clamp(fiberShape.funnelEnd,.08,.9);
       var sourceScale=strand.satellite.scale.x*params.topFunnel;
       var anchorLocal=strand.lowerAnchors[(fiberIndex*37)%strand.lowerAnchors.length];
       var anchorWorld=anchorLocal.clone();
@@ -2793,9 +2833,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         // Jede bestehende Faser besitzt einen eigenen, langen und C2-stetigen
         // Eintritt in die gemeinsame Struktur. Dadurch gibt es keine
         // gemeinsame Schnittlinie und keine Bündel-Kompression als Block.
-        var wulstDownShift=(WULST_TUNING.stretch-1)*.22;
-        var assimilationCenter=(fiber.assimilationStart+fiber.assimilationEnd)*.5
-          +wulstDownShift*.68;
+        var assimilationCenter=(fiber.assimilationStart+fiber.assimilationEnd)*.5;
         var assimilationSpan=(fiber.assimilationEnd-fiber.assimilationStart)
           *WULST_TUNING.liquify;
         var stretchedAssimilationStart=THREE.MathUtils.clamp(
@@ -2804,7 +2842,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           .9
         );
         var stretchedAssimilationEnd=THREE.MathUtils.clamp(
-          assimilationCenter+assimilationSpan*.5+wulstDownShift*.32,
+          assimilationCenter+assimilationSpan*.5,
           stretchedAssimilationStart+.04,
           .985
         );
@@ -2895,9 +2933,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           var sharedGoldProgress=fiber.goldEntryProgress
             +(fiber.goldExitProgress-fiber.goldEntryProgress)*assimilationTravel;
           sampleGoldStrandFrame(sharedGoldProgress);
-          var gumProgress=THREE.MathUtils.clamp((sharedGoldProgress-.52)/.48,0,1);
-          var gumTravel=stretchedWavePhase(gumProgress,8,1.35);
-          var gumEnvelope=smoother(gumProgress/.16);
+          var gumProgress=wulstWaveProgress(sharedGoldProgress);
+          var gumTravel=stretchedWavePhase(
+            gumProgress,
+            5.4/WULST_TUNING.stretch,
+            .62/WULST_TUNING.stretch
+          );
+          var gumEnvelope=smoother(gumProgress/.2);
           var assimilationWave=gumTravel+flowTime*.31+fiber.branchPhase+fiber.assimilationPhase;
           var assimilationAngle=fiber.assimilationAngle+Math.sin(assimilationWave)*.35
             +Math.sin(assimilationWave*1.71+fiberShape.phaseOffset)*.12;
@@ -2905,7 +2947,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
             fiber.assimilationRadius+fiber.assimilationRadiusDrift*Math.sin(assimilationWave*1.23),
             .035,.98
           );
-          var gumThickness=THREE.MathUtils.lerp(2.6,2.2,smoother(gumProgress));
+          // Kein dicker Ring mehr oberhalb der Endfasern: Der Radius wächst
+          // erst innerhalb der nach unten gezogenen Endzone kaugummiartig an.
+          var gumThickness=THREE.MathUtils.lerp(1,2.32,smoother(gumProgress));
           var organicRadius=SP.rStr*(.08+.92*assimilationRadius)
             *(1+Math.sin(assimilationWave*1.37+fiber.assimilationPhase)*.09)
             *thicknessScale*gumThickness;
@@ -2933,7 +2977,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
             +secondaryFrameNormalWorld.y*liveSide+secondaryFrameBinormalWorld.y*liveDepth;
           var assimilatedZ=secondaryMergedTargetWorld.z
             +secondaryFrameNormalWorld.z*liveSide+secondaryFrameBinormalWorld.z*liveDepth;
-          var gumAmplitude=THREE.MathUtils.lerp(.025,.16,smoother(gumProgress))*gumEnvelope;
+          var gumAmplitude=THREE.MathUtils.lerp(.035,.19,smoother(gumProgress))
+            *gumEnvelope*WULST_TUNING.liquify;
           var gumSide=Math.sin(
             gumTravel+fiber.branchPhase+fiber.assimilationPhase+flowTime*WIND.speed*.42
           )*gumAmplitude;
@@ -2947,13 +2992,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           y+=(assimilatedY-y)*assimilationBlend;
           z+=(assimilatedZ-z)*assimilationBlend;
         }
-        // Rot, Blau und Grün erhalten eine eigene vertikale Dehnung, die erst nach
-        // der Einordnung auf der Goldbahn angewandt wird. Dadurch bleibt ihr
-        // oberer Ursprung fest, während sich die sichtbare Unterkante real in
-        // Welt-Y nach unten ziehen lässt. Der Goldstrang und seine Ankerpunkte
-        // werden von diesem Wert nicht verändert.
-        var redBluePullEnvelope=smoother((progress-.03)/.78);
-        y-=WULST_TUNING.redBlueDrop*redBluePullEnvelope;
+        // Die Absenkung steckt bereits in der gemeinsam deformierten
+        // Gold-Mittelbahn. Ein zweiter Y-Versatz würde die Farbfasern vom Gold
+        // und vom anschliessenden Tal trennen.
         var pulse=Math.max(0,Math.sin(flowTime*params.pulseSpeed*strand.flowDirection-progress*20*strand.flowDirection+fiberShape.phaseOffset));
         var verticalBrightness=params.topBrightness+(params.bottomBrightness-params.topBrightness)*pathProgress;
         var brightness=(params.baseBrightness+pulse*params.pulseStrength)
@@ -3695,16 +3736,18 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       function(){ refreshGoldStrand(true); }
     );
     addSlider(
-      ['stretch','Wulst nach unten ziehen',.5,2.4,.01],
+      ['stretch','Wellen nach unten strecken',.7,3,.01],
       WULST_TUNING,
       function(){
+        refreshGoldStrand(false);
         for(var strandIndex=0;strandIndex<satelliteStrands.length;strandIndex++) refreshSecondaryStrand(satelliteStrands[strandIndex],false);
       }
     );
     addSlider(
-      ['redBlueDrop','Farbstränge nach unten',0,5,.02],
+      ['redBlueDrop','Gesamte Wulst nach unten',0,6,.02],
       WULST_TUNING,
       function(){
+        refreshGoldStrand(false);
         for(var strandIndex=0;strandIndex<satelliteStrands.length;strandIndex++) refreshSecondaryStrand(satelliteStrands[strandIndex],false);
       }
     );
@@ -3712,6 +3755,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       ['liquify','Kante verflüssigen',.6,3,.01],
       WULST_TUNING,
       function(){
+        refreshGoldStrand(false);
         for(var strandIndex=0;strandIndex<satelliteStrands.length;strandIndex++) refreshSecondaryStrand(satelliteStrands[strandIndex],false);
       }
     );
@@ -4151,36 +4195,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           floatingObject.rotation.z=Math.sin(floatingTime*1.31+1.6)*.022;
         }
       }
-      if (!reduced && SCENE_MOTION) {
-        if (vc > 0 && now - lastWobbleUpdate > 32) {
-          lastWobbleUpdate = now;
-          var linePosArr = linesObj.geometry.attributes.position.array;
-          var ptsPosArr = wptsObj.geometry.attributes.position.array;
-          for (var v = 0; v < vc; v++) {
-            var tv = sMeta[v * 2], ph = sMeta[v * 2 + 1];
-            wobbleX[v] = Math.sin(t*WIND.speed*2.95+tv*WIND.waveFrequency+ph)*WIND.wave*tv*tv
-              +Math.sin(t*WIND.speed*1.31+ph)*WIND.sway*.08*tv*tv;
-            wobbleZ[v] = Math.cos(t*WIND.speed*2.43+tv*WIND.waveFrequency*.78+ph)*WIND.wave*.82*tv*tv
-              +Math.cos(t*WIND.speed*1.07+ph)*WIND.sway*.06*tv*tv;
-          }
-          for (var wr = 0; wr < wobbleLineRefs.length; wr++) {
-            var refL = wobbleLineRefs[wr], svL = refL.srcV, oL = refL.off;
-            var strandDyL=sBase[svL*3+1]-SBASE_Y;
-            linePosArr[oL]     = SBASE_X+(sBase[svL*3]-SBASE_X)+worldVerticalInStrandLocal.x*strandDyL+wobbleX[svL];
-            linePosArr[oL + 1] = SBASE_Y+worldVerticalInStrandLocal.y*strandDyL;
-            linePosArr[oL + 2] = SBASE_Z+(sBase[svL*3+2]-SBASE_Z)+worldVerticalInStrandLocal.z*strandDyL+wobbleZ[svL];
-          }
-          linesObj.geometry.attributes.position.needsUpdate = true;
-          for (var wp = 0; wp < wobblePtsRefs.length; wp++) {
-            var refP = wobblePtsRefs[wp], svP = refP.srcV, oP = refP.off;
-            var strandDyP=sBase[svP*3+1]-SBASE_Y;
-            ptsPosArr[oP]     = SBASE_X+(sBase[svP*3]-SBASE_X)+worldVerticalInStrandLocal.x*strandDyP+wobbleX[svP];
-            ptsPosArr[oP + 1] = SBASE_Y+worldVerticalInStrandLocal.y*strandDyP;
-            ptsPosArr[oP + 2] = SBASE_Z+(sBase[svP*3+2]-SBASE_Z)+worldVerticalInStrandLocal.z*strandDyP+wobbleZ[svP];
-          }
-          wptsObj.geometry.attributes.position.needsUpdate = true;
-        }
-      }
+      // Die vollständige Aktualisierung unten berechnet Bewegung, gedehnte
+      // Endwellen und den gemeinsamen vertikalen Zug in einem Durchlauf.
+      // Der frühere zweite Wobble-Pfad überschrieb diese Verformung zwischen
+      // zwei Updates und liess die Wulst sichtbar zurückspringen.
       if(STRAND_ON&&vc>0){
         var goldUpdateInterval=goldDragActive?16:40;
         if(now-lastGoldStrandUpdate>goldUpdateInterval){
