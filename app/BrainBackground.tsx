@@ -1510,7 +1510,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
 
   function buildNeuralParticleOcean(){
     if(!sFibers.length) return null;
-    var particleCount=isMobile?150000:520000;
+    // Die bisherige dichte Nahflaeche bleibt unveraendert. Ein separater,
+    // leichterer Fernbereich verlaengert sie hinter dem Strang bis weit ueber
+    // den sichtbaren Horizont hinaus, ohne die Dichte im Vordergrund zu senken.
+    var nearParticleCount=isMobile?150000:520000;
+    var farParticleCount=isMobile?55000:180000;
+    var particleCount=nearParticleCount+farParticleCount;
     var oceanPositions=new Float32Array(particleCount*3);
     var oceanColors=new Float32Array(particleCount*3);
     var oceanData=new Float32Array(particleCount*4);
@@ -1519,7 +1524,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     // Tal. Die Ebene sitzt fest unter den Karten und kann deshalb nicht mehr
     // zusammen mit einem lokalen Faserendpunkt aus dem Kamerabild rutschen.
     var oceanHalfWidth=isMobile?12.5:22.5;
-    var oceanDepthBehind=isMobile?3.4:5.2;
+    var oceanNearDepthBehind=isMobile?3.4:5.2;
+    var oceanFarDepthBehind=isMobile?72:105;
     var oceanDepthAhead=isMobile?11.5:18.5;
     var oceanCorridor=isMobile?4.2:7.4;
     var oceanWorldY=NEURAL_OCEAN_WORLD_Y;
@@ -1538,18 +1544,41 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     for(var oceanIndex=0;oceanIndex<particleCount;oceanIndex++){
       // Quasi-rasterartige Grundverteilung plus starker Jitter: lückenlos wie
       // eine Oberfläche, aus der Nähe aber bewusst wild und nicht geordnet.
-      var oceanU=(oceanIndex+.5)/particleCount;
-      var oceanSide=((oceanU*1.618033988749895)%1*2-1)*oceanHalfWidth;
-      oceanSide+=(oceanRandom()-.5)*oceanHalfWidth*.035;
-      // Ein kleiner Anteil liegt hinter dem Andockpunkt. So beginnt das Meer
-      // sichtbar unter dem Strang und nicht erst ausserhalb des Bildrandes.
-      var oceanForward=-oceanDepthBehind
-        +Math.pow(oceanRandom(),.9)*(oceanDepthBehind+oceanDepthAhead);
-      var oceanBankDistance=Math.max(Math.abs(oceanSide)-oceanCorridor,0);
+      var oceanSide;
+      var oceanForward;
+      var oceanWidthScale=1;
+      var oceanHorizonProgress=0;
+      if(oceanIndex<nearParticleCount){
+        var oceanU=(oceanIndex+.5)/nearParticleCount;
+        oceanSide=((oceanU*1.618033988749895)%1*2-1)*oceanHalfWidth;
+        oceanSide+=(oceanRandom()-.5)*oceanHalfWidth*.035;
+        // Ein kleiner Anteil liegt hinter dem Andockpunkt. So beginnt das Meer
+        // sichtbar unter dem Strang und nicht erst ausserhalb des Bildrandes.
+        oceanForward=-oceanNearDepthBehind
+          +Math.pow(oceanRandom(),.9)*(oceanNearDepthBehind+oceanDepthAhead);
+      }else{
+        // Der Fernbereich setzt exakt an der bisherigen Rueckkante an. Seine
+        // Tiefe wird zum Horizont hin zunehmend duenn besetzt und seine Breite
+        // waechst mit dem Sichtkegel, sodass seitlich keine Kante auftaucht.
+        var farIndex=oceanIndex-nearParticleCount;
+        var farU=(farIndex+oceanRandom())/farParticleCount;
+        oceanHorizonProgress=Math.pow(farU,1.72);
+        oceanForward=-THREE.MathUtils.lerp(
+          oceanNearDepthBehind,
+          oceanFarDepthBehind,
+          oceanHorizonProgress
+        );
+        oceanWidthScale=1+oceanHorizonProgress*(isMobile?3.3:2.65);
+        oceanSide=((((farIndex+.5)*1.618033988749895)%1)*2-1)
+          *oceanHalfWidth*oceanWidthScale;
+        oceanSide+=(oceanRandom()-.5)*oceanHalfWidth*oceanWidthScale*.045;
+      }
+      var scaledOceanCorridor=oceanCorridor*oceanWidthScale;
+      var oceanBankDistance=Math.max(Math.abs(oceanSide)-scaledOceanCorridor,0);
       var oceanBank=Math.pow(
-        oceanBankDistance/Math.max(.001,oceanHalfWidth-oceanCorridor),
+        oceanBankDistance/Math.max(.001,(oceanHalfWidth-oceanCorridor)*oceanWidthScale),
         1.58
-      )*(isMobile?1.8:3.15);
+      )*(isMobile?1.8:3.15)*(1-oceanHorizonProgress*.72);
       var oceanX=oceanWorldRightX*oceanSide+oceanWorldForwardX*oceanForward;
       var oceanZ=oceanWorldRightZ*oceanSide+oceanWorldForwardZ*oceanForward;
       var collisionDistance=Math.sqrt(oceanX*oceanX+oceanZ*oceanZ);
@@ -1590,8 +1619,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         uBrainPulses:{value:new THREE.Vector4()},
         uStrandRadius:{value:strandCollisionRadius},
         uOceanHalfWidth:{value:oceanHalfWidth},
-        uOceanDepthMid:{value:(oceanDepthAhead-oceanDepthBehind)*.5},
-        uOceanDepthHalf:{value:(oceanDepthAhead+oceanDepthBehind)*.5},
+        // Die GLB-Wellenprojektion behaelt ihren bisherigen Nahbereich; nur
+        // die neue Fernflaeche laeuft anschliessend frei bis zum Horizont.
+        uOceanDepthMid:{value:(oceanDepthAhead-oceanNearDepthBehind)*.5},
+        uOceanDepthHalf:{value:(oceanDepthAhead+oceanNearDepthBehind)*.5},
+        uOceanBackStart:{value:oceanNearDepthBehind},
+        uOceanFarFadeStart:{value:(oceanFarDepthBehind-oceanNearDepthBehind)*.56},
+        uOceanFarFadeEnd:{value:(oceanFarDepthBehind-oceanNearDepthBehind)*.92},
         uSourceWaveControls:{value:sourceWaveControls},
         uSourceWaveTilts:{value:sourceWaveTilts}
       },
@@ -1605,6 +1639,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         'uniform float uOceanHalfWidth;',
         'uniform float uOceanDepthMid;',
         'uniform float uOceanDepthHalf;',
+        'uniform float uOceanBackStart;',
+        'uniform float uOceanFarFadeStart;',
+        'uniform float uOceanFarFadeEnd;',
         'uniform vec4 uSourceWaveControls[13];',
         'uniform vec2 uSourceWaveTilts[13];',
         'attribute vec3 position;',
@@ -1614,6 +1651,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         'varying float vShimmer;',
         'varying float vCrest;',
         'varying float vImpact;',
+        'varying float vHorizonFade;',
         'void main(){',
         '  float side=aOcean.x;',
         '  float depth=aOcean.y;',
@@ -1658,6 +1696,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         '  vImpact=impact;',
         '  gl_PointSize=aOcean.w*(1.0+vCrest*.28+impact*.16)*uPixelRatio*(31.0/max(6.0,-mvPosition.z));',
         '  vColor=aColor;',
+        // Weiches perspektivisches Ausblenden vor der echten Geometriekante:
+        // Der Ozean verschmilzt am Horizont mit dem schwarzen Raum.
+        '  float backDistance=max(0.0,-depth-uOceanBackStart);',
+        '  vHorizonFade=1.0-smoothstep(uOceanFarFadeStart,uOceanFarFadeEnd,backDistance);',
         // Dieselbe individuelle Funkelphase wie bei den Ringpartikeln.
         '  vShimmer=.72+.28*sin(uTime*(.48+aOcean.w*.16)+phase);',
         '}'
@@ -1672,6 +1714,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         'varying float vShimmer;',
         'varying float vCrest;',
         'varying float vImpact;',
+        'varying float vHorizonFade;',
         'void main(){',
         '  float radial=length(gl_PointCoord-vec2(.5))*2.0;',
         // Exakt derselbe kompakte Leuchtkern wie beim unteren Goldring.
@@ -1679,7 +1722,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         // Wie beim Goldring reagiert der Ozean nur auf den goldenen Puls und
         // bleibt dadurch dauerhaft in derselben Goldfarbe.
         '  float pulseEnergy=clamp(uBrainPulses.x,0.0,1.0);',
-        '  float alpha=glow*uOpacity*uReveal*(.58+vShimmer*.34)*(1.0+pulseEnergy*.9);',
+        '  float alpha=glow*uOpacity*uReveal*vHorizonFade*(.58+vShimmer*.34)*(1.0+pulseEnergy*.9);',
         '  if(alpha<.015) discard;',
         '  vec3 litColor=mix(vColor,vec3(1.0),.22+pulseEnergy*.28);',
         '  gl_FragColor=vec4(litColor*(1.0+pulseEnergy*.72)*uBrightness,alpha);',
