@@ -10,6 +10,9 @@ import {
 } from 'lucide-react';
 import JourneyNavigator from './JourneyNavigator';
 import BrainBackground from './BrainBackground';
+import ProjectInquiryPage from './anfrage/page';
+import KiCheckPage from './ki-check/page';
+import { EmbeddedForm } from './EmbeddedFormContext';
 import { buildFlapWord, setFlapWordMode, type FlapLetter } from './lib/splitFlap';
 import { useLanguage } from './LanguageContext';
 import { T } from '../lib/translations';
@@ -953,6 +956,7 @@ function ReferencesWorld({ lang }: { lang: 'de' | 'en' }) {
 }
 
 function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
+  const [activeForm, setActiveForm] = useState<'consultation' | 'project' | 'ki'>('consultation');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
@@ -969,6 +973,9 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
         message: 'Worum geht es?',
         placeholder: 'Beschreibe dein Vorhaben in wenigen Sätzen …',
         submit: 'Beratung anfragen',
+        send: 'Anfrage senden',
+        project: 'Projektanfrage',
+        kiCheck: 'Kostenloser KI-Check',
         sending: 'Wird gesendet …',
         successTitle: 'Vielen Dank.',
         successText: 'Deine Anfrage ist angekommen. Ich melde mich innerhalb von zwei Arbeitstagen persönlich bei dir.',
@@ -977,7 +984,6 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
         requiredEmail: 'Bitte gib deine E-Mail-Adresse ein.',
         invalidEmail: 'Bitte gib eine gültige E-Mail-Adresse ein.',
         requiredMessage: 'Bitte beschreibe kurz dein Vorhaben.',
-        detailed: 'Ausführliche Projektanfrage',
       }
     : {
         kicker: 'PERSONAL · NO OBLIGATION · EYE TO EYE',
@@ -988,6 +994,9 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
         message: 'What would you like to discuss?',
         placeholder: 'Describe your project in a few sentences …',
         submit: 'Request a consultation',
+        send: 'Send request',
+        project: 'Project inquiry',
+        kiCheck: 'Free AI check',
         sending: 'Sending …',
         successTitle: 'Thank you.',
         successText: 'Your request has arrived. I will contact you personally within two working days.',
@@ -996,7 +1005,6 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
         requiredEmail: 'Please enter your email address.',
         invalidEmail: 'Please enter a valid email address.',
         requiredMessage: 'Please briefly describe your project.',
-        detailed: 'Detailed project enquiry',
       };
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -1036,42 +1044,90 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
 
   return (
     <div className={`project-cta-content ${chakraPetch.className}`}>
-      <p className="project-cta-kicker">
-        {copy.kicker}
-      </p>
-      <h2>{copy.title}</h2>
-      {submitted ? (
-        <div className="project-consultation-success" role="status">
-          <CheckCircle size={24} strokeWidth={1.8} aria-hidden="true" />
-          <div><strong>{copy.successTitle}</strong><p>{copy.successText}</p></div>
-        </div>
-      ) : (
-        <>
-          <p className="project-cta-copy">{copy.text}</p>
-          <form className="project-consultation-form" onSubmit={handleSubmit} noValidate>
-            <label>
-              <span>{copy.name}</span>
-              <input value={name} onChange={(event) => { setName(event.target.value); setError(''); }} autoComplete="name" required />
-            </label>
-            <label>
-              <span>{copy.email}</span>
-              <input type="email" value={email} onChange={(event) => { setEmail(event.target.value); setError(''); }} autoComplete="email" required />
-            </label>
-            <label className="project-consultation-message">
-              <span>{copy.message}</span>
-              <textarea value={message} onChange={(event) => { setMessage(event.target.value); setError(''); }} placeholder={copy.placeholder} rows={3} required />
-            </label>
-            {error && <p className="project-consultation-error" role="alert">{error}</p>}
-            <div className="project-consultation-actions">
-              <button type="submit" className="project-cta-button" disabled={submitting}>
-                <span>{submitting ? copy.sending : copy.submit}</span>
-                <ChevronRight size={18} strokeWidth={2.2} aria-hidden="true" />
-              </button>
-              <a href="/anfrage" className="project-consultation-detailed">{copy.detailed}</a>
+      <div className="project-cta-stage">
+        <section
+          className="project-cta-panel project-cta-consultation"
+          hidden={activeForm !== 'consultation'}
+          role="tabpanel"
+          aria-labelledby="project-form-tab-consultation"
+        >
+          <p className="project-cta-kicker">{copy.kicker}</p>
+          <h2>{copy.title}</h2>
+          {submitted ? (
+            <div className="project-consultation-success" role="status">
+              <CheckCircle size={24} strokeWidth={1.8} aria-hidden="true" />
+              <div><strong>{copy.successTitle}</strong><p>{copy.successText}</p></div>
             </div>
-          </form>
-        </>
-      )}
+          ) : (
+            <>
+              <p className="project-cta-copy">{copy.text}</p>
+              <form className="project-consultation-form" onSubmit={handleSubmit} noValidate>
+                <label>
+                  <span>{copy.name}</span>
+                  <input value={name} onChange={(event) => { setName(event.target.value); setError(''); }} autoComplete="name" required />
+                </label>
+                <label>
+                  <span>{copy.email}</span>
+                  <input type="email" value={email} onChange={(event) => { setEmail(event.target.value); setError(''); }} autoComplete="email" required />
+                </label>
+                <label className="project-consultation-message">
+                  <span>{copy.message}</span>
+                  <textarea value={message} onChange={(event) => { setMessage(event.target.value); setError(''); }} placeholder={copy.placeholder} rows={3} required />
+                </label>
+                {error && <p className="project-consultation-error" role="alert">{error}</p>}
+                <div className="project-consultation-actions">
+                  <button type="submit" className="project-cta-button" disabled={submitting}>
+                    <span>{submitting ? copy.sending : copy.send}</span>
+                    <ChevronRight size={18} strokeWidth={2.2} aria-hidden="true" />
+                  </button>
+                </div>
+              </form>
+            </>
+          )}
+        </section>
+
+        <section
+          className="project-cta-panel project-cta-embedded"
+          hidden={activeForm !== 'project'}
+          role="tabpanel"
+          aria-labelledby="project-form-tab-project"
+        >
+          <EmbeddedForm>
+            <ProjectInquiryPage />
+          </EmbeddedForm>
+        </section>
+
+        <section
+          className="project-cta-panel project-cta-embedded"
+          hidden={activeForm !== 'ki'}
+          role="tabpanel"
+          aria-labelledby="project-form-tab-ki"
+        >
+          <EmbeddedForm>
+            <KiCheckPage />
+          </EmbeddedForm>
+        </section>
+      </div>
+
+      <div className="project-form-tabs" role="tablist" aria-label={lang === 'de' ? 'Formular wählen' : 'Choose a form'}>
+        {([
+          ['consultation', copy.submit],
+          ['project', copy.project],
+          ['ki', copy.kiCheck],
+        ] as const).map(([id, label]) => (
+          <button
+            key={id}
+            id={`project-form-tab-${id}`}
+            type="button"
+            role="tab"
+            aria-selected={activeForm === id}
+            className={activeForm === id ? 'is-active' : ''}
+            onClick={() => setActiveForm(id)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

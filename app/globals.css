@@ -810,7 +810,7 @@ body {
   bottom: clamp(1rem, 2.8vh, 2.5rem);
   left: 50%;
   z-index: 1310;
-  width: min(92vw, 50rem);
+  width: min(94vw, 70rem);
   opacity: 0;
   transform-origin: 50% 100%;
   will-change: transform, opacity;
@@ -822,7 +822,10 @@ body {
   flex-direction: column;
   align-items: center;
   width: 100%;
-  padding: clamp(1rem, 2vw, 1.55rem);
+  height: min(88vh, 46rem);
+  min-height: min(32rem, calc(100vh - 2rem));
+  padding: clamp(0.7rem, 1.25vw, 1rem);
+  overflow: hidden;
   border: 1px solid rgba(77,191,127,0.28);
   border-radius: 0.85rem;
   color: #fff;
@@ -942,7 +945,7 @@ body {
   letter-spacing: 0.2em;
 }
 
-.project-cta-content h2 {
+.project-cta-consultation > h2 {
   margin: 0;
   color: #fff;
   font-size: clamp(1.9rem, 3.3vw, 3.7rem);
@@ -3687,7 +3690,7 @@ body {
     font-size: clamp(0.52rem, 2.4vw, 0.62rem);
   }
 
-  .mobile-project-cta .project-cta-content h2 {
+  .mobile-project-cta .project-cta-consultation > h2 {
     font-size: clamp(2.6rem, 14vw, 4.6rem);
   }
 
@@ -4474,5 +4477,196 @@ body {
 
   .inquiry-card {
     padding: 1.15rem;
+  }
+}
+
+/* ── Drei Formulare in der Abschlusskarte des grünen Gehirns ── */
+.project-cta-stage {
+  width: 100%;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(126,239,176,0.32) transparent;
+}
+
+.project-cta-stage::-webkit-scrollbar {
+  width: 0.35rem;
+}
+
+.project-cta-stage::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(126,239,176,0.28);
+}
+
+.project-cta-panel {
+  width: 100%;
+  min-height: 100%;
+}
+
+.project-cta-panel[hidden] {
+  display: none !important;
+}
+
+.project-cta-consultation {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(0.6rem, 1.5vw, 1.25rem);
+}
+
+.project-form-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  flex: 0 0 auto;
+  gap: 0.65rem;
+  width: 100%;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(126,239,176,0.14);
+}
+
+.project-form-tabs button {
+  min-width: 0;
+  min-height: 2.9rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid rgba(77,191,127,0.3);
+  border-radius: 999px;
+  color: rgba(212,225,216,0.58);
+  background: rgba(0,0,0,0.38);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+  font: inherit;
+  font-size: clamp(0.58rem, 0.72vw, 0.72rem);
+  font-weight: 700;
+  letter-spacing: 0.035em;
+  cursor: pointer;
+  transition: color 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.project-form-tabs button:hover,
+.project-form-tabs button:focus-visible {
+  color: #effff5;
+  border-color: rgba(126,239,176,0.68);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.project-form-tabs button.is-active {
+  color: #effff5;
+  border-color: rgba(126,239,176,0.9);
+  background: linear-gradient(135deg, rgba(77,191,127,0.28), rgba(77,191,127,0.1));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 0 24px rgba(77,191,127,0.18);
+}
+
+/* Die eigenständigen Seiten bleiben unverändert erreichbar. Nur innerhalb
+   der Gehirn-Karte werden ihre äusseren Seitenelemente kompakt dargestellt. */
+.project-cta-embedded .inquiry-page--embedded,
+.project-cta-embedded .ki-check-embedded {
+  min-height: 0 !important;
+  color: #f4edd8;
+  background: transparent !important;
+}
+
+.project-cta-embedded .inquiry-page--embedded {
+  overflow: visible;
+  isolation: auto;
+}
+
+.project-cta-embedded .inquiry-page--embedded .inquiry-shell {
+  width: 100%;
+  padding: 0.25rem 0.35rem 0.5rem;
+}
+
+.project-cta-embedded .inquiry-page--embedded .inquiry-intro {
+  display: none;
+}
+
+.project-cta-embedded .inquiry-page--embedded .inquiry-stepper {
+  margin-bottom: 0.8rem;
+}
+
+.project-cta-embedded .inquiry-page--embedded .inquiry-card {
+  margin-bottom: 0.65rem;
+  padding: clamp(0.8rem, 1.4vw, 1.15rem);
+  background: rgba(0,0,0,0.34);
+  box-shadow: none;
+}
+
+.project-cta-embedded .inquiry-page--embedded .inquiry-navigation {
+  padding-inline: 0.25rem;
+}
+
+.project-cta-embedded .inquiry-page--embedded.inquiry-display {
+  min-height: 100% !important;
+  padding: 1rem !important;
+}
+
+.project-cta-embedded .ki-check-embedded {
+  padding: 0.4rem 0.8rem !important;
+}
+
+.project-cta-embedded .ki-check-embedded > .h-1 {
+  display: none;
+}
+
+.project-cta-embedded .ki-check-embedded > .flex-1 {
+  min-height: 0;
+  padding-top: 0.5rem !important;
+  padding-bottom: 0.5rem !important;
+}
+
+.project-cta-embedded .ki-check-embedded h1 {
+  font-size: clamp(2rem, 4.5vw, 3.5rem);
+}
+
+.project-cta-embedded .ki-check-embedded h2 {
+  font-size: clamp(1.5rem, 3vw, 2.4rem);
+}
+
+.project-cta-embedded .ki-check-embedded .mb-10 {
+  margin-bottom: 1.25rem;
+}
+
+.project-cta-embedded .ki-check-embedded .mb-8 {
+  margin-bottom: 1rem;
+}
+
+.project-cta-embedded .ki-check-embedded .py-16 {
+  padding-top: 1rem !important;
+  padding-bottom: 1rem !important;
+}
+
+@media (max-width: 699px) {
+  .mobile-project-cta .project-cta-content {
+    height: min(82vh, 45rem);
+    min-height: 34rem;
+    padding: 0.65rem;
+  }
+
+  .project-form-tabs {
+    gap: 0.35rem;
+    padding-top: 0.55rem;
+  }
+
+  .project-form-tabs button {
+    min-height: 3rem;
+    padding: 0.55rem 0.3rem;
+    border-radius: 0.65rem;
+    font-size: clamp(0.48rem, 2.35vw, 0.62rem);
+    line-height: 1.2;
+  }
+
+  .project-cta-consultation {
+    justify-content: flex-start;
+    padding: 0.75rem 0.2rem;
+  }
+
+  .project-cta-embedded .inquiry-page--embedded .inquiry-shell {
+    padding-inline: 0.1rem;
+  }
+
+  .project-cta-embedded .ki-check-embedded {
+    padding-inline: 0.2rem !important;
   }
 }

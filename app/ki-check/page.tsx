@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Check, ChevronLeft, ChevronRight, Bot, Lock, ArrowRight } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
+import { useEmbeddedForm } from '../EmbeddedFormContext';
 
 // ─── Types & Data ────────────────────────────────────────────────────────────
 
@@ -247,6 +248,7 @@ function KiLanguageToggle() {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function KiCheckPage() {
+  const embedded = useEmbeddedForm();
   const { lang } = useLanguage();
   const copy = KI_UI[lang];
   const tr = (text: string) => lang === 'en' ? (KI_EN[text] ?? text) : text;
@@ -257,8 +259,9 @@ export default function KiCheckPage() {
   const [error, setError]     = useState<string | null>(null);
 
   useEffect(() => {
+    if (embedded) return;
     document.title = copy.title;
-  }, [copy.title]);
+  }, [copy.title, embedded]);
 
   function setSingle(id: string, val: string) {
     setAnswers(prev => ({ ...prev, [id]: val }));
@@ -312,8 +315,8 @@ export default function KiCheckPage() {
   // ── Intro ──────────────────────────────────────────────────────────────────
   if (step === 0) {
     return (
-      <div className="min-h-screen bg-[#0c0a06] flex flex-col">
-        <KiLanguageToggle />
+      <div className={`min-h-screen bg-[#0c0a06] flex flex-col ${embedded ? 'ki-check-embedded' : ''}`}>
+        {!embedded && <KiLanguageToggle />}
         <div className="flex-1 flex items-center justify-center px-4 py-16">
           <div className="max-w-xl w-full text-center">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#c9a84c]/40 bg-[#c9a84c]/10 text-[#d4b86a] text-sm font-medium mb-8">
@@ -353,11 +356,11 @@ export default function KiCheckPage() {
             </div>
           </div>
         </div>
-        <div className="py-6 text-center">
+        {!embedded && <div className="py-6 text-center">
           <Link href="/" className="text-[#7a6d5a] hover:text-[#a89880] text-sm transition-colors">
             ← {copy.home}
           </Link>
-        </div>
+        </div>}
       </div>
     );
   }
@@ -365,8 +368,8 @@ export default function KiCheckPage() {
   // ── Success ────────────────────────────────────────────────────────────────
   if (step === 12) {
     return (
-      <div className="min-h-screen bg-[#0c0a06] flex flex-col items-center justify-center px-4 py-16 text-center">
-        <KiLanguageToggle />
+      <div className={`min-h-screen bg-[#0c0a06] flex flex-col items-center justify-center px-4 py-16 text-center ${embedded ? 'ki-check-embedded' : ''}`}>
+        {!embedded && <KiLanguageToggle />}
         <div className="max-w-lg w-full">
           <div className="w-20 h-20 rounded-full bg-[#c9a84c]/10 border border-[#c9a84c]/30 flex items-center justify-center mx-auto mb-8">
             <Check size={36} className="text-[#c9a84c]" />
@@ -380,12 +383,12 @@ export default function KiCheckPage() {
           <p className="text-[#7a6d5a] text-sm mb-10">
             {copy.spam}
           </p>
-          <Link
+          {!embedded && <Link
             href="/"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#c9a84c] hover:bg-[#b8943a] text-[#0c0a06] font-bold transition-all"
           >
             {copy.toHome} <ChevronRight size={16} />
-          </Link>
+          </Link>}
         </div>
       </div>
     );
@@ -394,8 +397,8 @@ export default function KiCheckPage() {
   // ── Contact Form ───────────────────────────────────────────────────────────
   if (step === 11) {
     return (
-      <div className="min-h-screen bg-[#0c0a06] flex flex-col">
-        <KiLanguageToggle />
+      <div className={`min-h-screen bg-[#0c0a06] flex flex-col ${embedded ? 'ki-check-embedded' : ''}`}>
+        {!embedded && <KiLanguageToggle />}
         <div className="h-1 bg-[#1c1912]">
           <div className="h-full bg-[#c9a84c] transition-all duration-500" style={{ width: '100%' }} />
         </div>
@@ -483,8 +486,8 @@ export default function KiCheckPage() {
   const canContinue  = isMulti && multiSel.length > 0;
 
   return (
-    <div className="min-h-screen bg-[#0c0a06] flex flex-col">
-      <KiLanguageToggle />
+    <div className={`min-h-screen bg-[#0c0a06] flex flex-col ${embedded ? 'ki-check-embedded' : ''}`}>
+      {!embedded && <KiLanguageToggle />}
       {/* Progress bar */}
       <div className="h-1 bg-[#1c1912]">
         <div

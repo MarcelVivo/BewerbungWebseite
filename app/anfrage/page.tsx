@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
+import { useEmbeddedForm } from '../EmbeddedFormContext';
 
 // ── Data ─────────────────────────────────────────────────────
 
@@ -201,6 +202,7 @@ const UI = {
 // ── Component ─────────────────────────────────────────────────
 
 export default function AnfragePage() {
+  const embedded = useEmbeddedForm();
   const { lang, setLang } = useLanguage();
   const copy = UI[lang];
   const tr = (text: string) => lang === 'en' ? (EN_TEXT[text] ?? text) : text;
@@ -213,8 +215,9 @@ export default function AnfragePage() {
   const [error, setError]         = useState('');
 
   useEffect(() => {
+    if (embedded) return;
     document.title = copy.pageTitle;
-  }, [copy.pageTitle]);
+  }, [copy.pageTitle, embedded]);
 
   function set<K extends keyof Form>(k: K, v: Form[K]) {
     setForm(p => ({ ...p, [k]: v }));
@@ -298,8 +301,8 @@ export default function AnfragePage() {
 
   if (submitted) {
     return (
-      <div className="inquiry-page inquiry-display min-h-screen flex items-center justify-center p-6">
-        <div className="inquiry-space" aria-hidden="true"><span /><span /><span /></div>
+      <div className={`inquiry-page inquiry-display min-h-screen flex items-center justify-center p-6 ${embedded ? 'inquiry-page--embedded' : ''}`}>
+        {!embedded && <div className="inquiry-space" aria-hidden="true"><span /><span /><span /></div>}
         <div className="inquiry-success-card max-w-md w-full text-center space-y-6">
           <div className="w-20 h-20 mx-auto rounded-full bg-[#c9a84c]/20 border-2 border-[#c9a84c]/40 flex items-center justify-center">
             <CheckCircle2 size={40} className="text-[#c9a84c]" />
@@ -319,19 +322,21 @@ export default function AnfragePage() {
               </div>
             ))}
           </div>
-          <Link href="/" className="inline-flex items-center gap-2 text-sm text-[#c9a84c] hover:underline">
-            ← {copy.backHome}
-          </Link>
+          {!embedded && (
+            <Link href="/" className="inline-flex items-center gap-2 text-sm text-[#c9a84c] hover:underline">
+              ← {copy.backHome}
+            </Link>
+          )}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="inquiry-page min-h-screen text-[#f4edd8]">
-      <div className="inquiry-space" aria-hidden="true"><span /><span /><span /></div>
+    <div className={`inquiry-page min-h-screen text-[#f4edd8] ${embedded ? 'inquiry-page--embedded' : ''}`}>
+      {!embedded && <div className="inquiry-space" aria-hidden="true"><span /><span /><span /></div>}
 
-      <nav className="journey-navigator inquiry-journey-navigator inquiry-display" aria-label={lang === 'de' ? 'Schritte der Projektanfrage' : 'Project inquiry steps'}>
+      {!embedded && <nav className="journey-navigator inquiry-journey-navigator inquiry-display" aria-label={lang === 'de' ? 'Schritte der Projektanfrage' : 'Project inquiry steps'}>
         <span className="inquiry-side-language" aria-label="Language selection">
           <button type="button" className={lang === 'de' ? 'is-active' : ''} onClick={() => setLang('de')}>DE</button>
           <button type="button" className={lang === 'en' ? 'is-active' : ''} onClick={() => setLang('en')}>EN</button>
@@ -377,7 +382,7 @@ export default function AnfragePage() {
         <span className="journey-count" aria-hidden="true">
           {String(step + 1).padStart(2, '0')} / {String(STEPS.length).padStart(2, '0')}
         </span>
-      </nav>
+      </nav>}
 
       <main className="inquiry-shell mx-auto px-6 py-10">
         {/* Title */}
