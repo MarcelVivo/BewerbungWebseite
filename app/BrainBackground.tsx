@@ -1812,7 +1812,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       haloData[haloDataOffset+3]=.52+haloRandom()*.74;
       // Jeder Punkt besitzt seinen eigenen, bewusst langsamen Aufstiegszyklus.
       // Die zufällige Startphase verhindert sichtbare Gruppen/Partikelringe.
-      haloRiseData[haloDataOffset]=.075+haloRandom()*.095;
+      // Halbe Aufstiegsgeschwindigkeit fuer den unteren Ring; Hoehe,
+      // Aufloesung und Kopplung an die Ozeanwelle bleiben identisch.
+      haloRiseData[haloDataOffset]=.0375+haloRandom()*.0475;
       haloRiseData[haloDataOffset+1]=(isMobile?3.8:6.8)+Math.pow(haloRandom(),.72)*(isMobile?3.6:6.4);
       haloRiseData[haloDataOffset+2]=.035+haloRandom()*.12;
       haloRiseData[haloDataOffset+3]=haloRandom();
