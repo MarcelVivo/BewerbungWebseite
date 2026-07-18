@@ -1636,10 +1636,15 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         '    sourceHeight+=tiltedHeight*controlWeight;',
         '    sourceWeight+=controlWeight;',
         '  }',
-        '  float glbWave=sourceHeight/max(.0001,sourceWeight)*1.82;',
+        // Die GLB-Bewegung bleibt die organische Grundform. Zwei räumlich
+        // kürzere Wellenzüge erhöhen die Anzahl sichtbarer Kämme, bewegen sich
+        // zeitlich aber extrem langsam und bewahren den ruhigen Charakter.
+        '  float glbWave=sourceHeight/max(.0001,sourceWeight)*1.35;',
+        '  float calmShortWave=sin(depth*.78+side*.10-uTime*.08+phase*.004)*.26;',
+        '  calmShortWave+=sin(side*.48-depth*.14+uTime*.052)*.14;',
         '  float impact=exp(-max(0.0,radius-uStrandRadius)*.31);',
         '  float reflected=sin((radius-uStrandRadius)*.62+uTime*.15+phase*.006)*.42*impact;',
-        '  float wave=glbWave+reflected;',
+        '  float wave=glbWave+calmShortWave+reflected;',
         '  vec3 displaced=position+vec3(0.0,wave,0.0);',
         '  vec4 mvPosition=modelViewMatrix*vec4(displaced,1.0);',
         '  gl_Position=projectionMatrix*mvPosition;',
