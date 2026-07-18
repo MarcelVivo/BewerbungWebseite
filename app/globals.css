@@ -4647,8 +4647,13 @@ body {
 }
 
 .project-form-tabs button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.18rem;
   min-width: 0;
-  min-height: 2.9rem;
+  min-height: 3.9rem;
   padding: 0.65rem 0.75rem;
   border: 1px solid rgba(77,191,127,0.3);
   border-radius: 999px;
@@ -4661,6 +4666,24 @@ body {
   letter-spacing: 0.035em;
   cursor: pointer;
   transition: color 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.project-form-tabs button strong {
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.project-form-tabs button small {
+  max-width: 18rem;
+  color: rgba(212,225,216,0.42);
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: clamp(0.48rem, 0.55vw, 0.58rem);
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.25;
+  transition: color 180ms ease;
 }
 
 .project-form-tabs button:hover,
@@ -4676,6 +4699,12 @@ body {
   border-color: rgba(126,239,176,0.9);
   background: linear-gradient(135deg, rgba(77,191,127,0.28), rgba(77,191,127,0.1));
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 0 24px rgba(77,191,127,0.18);
+}
+
+.project-form-tabs button:hover small,
+.project-form-tabs button:focus-visible small,
+.project-form-tabs button.is-active small {
+  color: rgba(223,245,231,0.72);
 }
 
 /* Die eigenständigen Seiten bleiben unverändert erreichbar. Nur innerhalb
@@ -4769,11 +4798,16 @@ body {
   }
 
   .project-form-tabs button {
-    min-height: 3rem;
+    min-height: 4.35rem;
     padding: 0.55rem 0.3rem;
     border-radius: 0.65rem;
     font-size: clamp(0.48rem, 2.35vw, 0.62rem);
     line-height: 1.2;
+  }
+
+  .project-form-tabs button small {
+    font-size: clamp(0.43rem, 1.8vw, 0.52rem);
+    line-height: 1.16;
   }
 
   .project-cta-consultation {

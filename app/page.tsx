@@ -1007,6 +1007,9 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
         send: 'Anfrage senden',
         project: 'Projektanfrage',
         kiCheck: 'Kostenloser KI-Check',
+        consultationHint: 'Für eine erste persönliche Einschätzung.',
+        projectHint: 'Für ein bereits konkretes Vorhaben.',
+        kiCheckHint: 'Um dein KI-Potenzial schnell einzuordnen.',
         sending: 'Wird gesendet …',
         successTitle: 'Vielen Dank.',
         successText: 'Deine Anfrage ist angekommen. Ich melde mich innerhalb von zwei Arbeitstagen persönlich bei dir.',
@@ -1028,6 +1031,9 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
         send: 'Send request',
         project: 'Project inquiry',
         kiCheck: 'Free AI check',
+        consultationHint: 'For an initial personal assessment.',
+        projectHint: 'For a project that is already concrete.',
+        kiCheckHint: 'To quickly assess your AI potential.',
         sending: 'Sending …',
         successTitle: 'Thank you.',
         successText: 'Your request has arrived. I will contact you personally within two working days.',
@@ -1142,10 +1148,10 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
 
       <div className="project-form-tabs" role="tablist" aria-label={lang === 'de' ? 'Formular wählen' : 'Choose a form'}>
         {([
-          ['consultation', copy.submit],
-          ['project', copy.project],
-          ['ki', copy.kiCheck],
-        ] as const).map(([id, label]) => (
+          ['consultation', copy.submit, copy.consultationHint],
+          ['project', copy.project, copy.projectHint],
+          ['ki', copy.kiCheck, copy.kiCheckHint],
+        ] as const).map(([id, label, hint]) => (
           <button
             key={id}
             id={`project-form-tab-${id}`}
@@ -1155,7 +1161,8 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
             className={activeForm === id ? 'is-active' : ''}
             onClick={() => setActiveForm(id)}
           >
-            {label}
+            <strong>{label}</strong>
+            <small>{hint}</small>
           </button>
         ))}
       </div>
