@@ -3635,6 +3635,14 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
               );
             secondaryMergedTargetWorld.copy(secondaryMergedTargetLocal);
             brain.localToWorld(secondaryMergedTargetWorld);
+            // Rot und Blau entfernen an dieser Stelle den seitlichen
+            // Weltversatz der wandernden Gold-Mittelkurve und tauchen um die
+            // gemeinsame Szenenachse ein. Gruen muss exakt dieselbe
+            // Zentrierung verwenden, sonst laeuft es rechts am Buendel vorbei.
+            secondarySharedCenterWorld.copy(goldFrameCenterLocal);
+            brain.localToWorld(secondarySharedCenterWorld);
+            secondaryMergedTargetWorld.x-=secondarySharedCenterWorld.x;
+            secondaryMergedTargetWorld.z-=secondarySharedCenterWorld.z;
             x=THREE.MathUtils.lerp(x,secondaryMergedTargetWorld.x,greenOceanBundle);
             z=THREE.MathUtils.lerp(z,secondaryMergedTargetWorld.z,greenOceanBundle);
           }
