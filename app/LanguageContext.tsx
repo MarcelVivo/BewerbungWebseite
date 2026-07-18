@@ -21,8 +21,13 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   function setLang(l: Lang) {
     setLangState(l);
+    document.documentElement.lang = l;
     try { localStorage.setItem('ms-lang', l); } catch {}
   }
+
+  useEffect(() => {
+    document.documentElement.lang = lang;
+  }, [lang]);
 
   return <Ctx.Provider value={{ lang, setLang }}>{children}</Ctx.Provider>;
 }

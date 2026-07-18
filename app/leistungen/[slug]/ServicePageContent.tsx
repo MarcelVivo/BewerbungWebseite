@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import Link from 'next/link';
 import {
   Bot, BarChart3, Workflow, Megaphone, Video, FolderKanban,
@@ -427,6 +428,10 @@ export default function ServicePageContent({ slug }: { slug: string }) {
   const s   = getServiceTranslation(service, lang);
   const pl  = PL[lang];
   const Icon = ICON_MAP[service.iconKey] || Lightbulb;
+
+  useEffect(() => {
+    document.title = `${s.title} | Digitalstudio Marcel Spahr`;
+  }, [s.title]);
 
   return (
     <div className="min-h-screen bg-[#0c0a06] text-[#f4edd8]">

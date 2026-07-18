@@ -2307,6 +2307,11 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
 export default function HomePage() {
   const { lang } = useLanguage();
   const t = T[lang];
+  useEffect(() => {
+    document.title = lang === 'de'
+      ? 'Digitalstudio Marcel Spahr – Weblösungen, CRM & ERP für KMU'
+      : 'Marcel Spahr Digital Studio – Web Solutions, CRM & ERP for SMEs';
+  }, [lang]);
   // Auf schmalen Bildschirmen (<900px, dieselbe Schwelle wie
   // getEffectiveViewport()) wird die komplette Hero-Komposition (Gehirne +
   // Überschrift + Buttons) exakt wie am Desktop aufgebaut und danach

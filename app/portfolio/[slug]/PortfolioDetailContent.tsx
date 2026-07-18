@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { ChevronRight, ExternalLink, FileText } from 'lucide-react';
 import { useLanguage } from '../../LanguageContext';
@@ -46,9 +47,13 @@ const PL = {
 
 export default function PortfolioDetailContent({ slug }: { slug: string }) {
   const project = getProject(slug)!;
-  const { lang } = useLanguage();
+  const { lang, setLang } = useLanguage();
   const p = project[lang];
   const pl = PL[lang];
+
+  useEffect(() => {
+    document.title = `${p.title} | Digitalstudio Marcel Spahr`;
+  }, [p.title]);
 
   return (
     <div
@@ -60,7 +65,13 @@ export default function PortfolioDetailContent({ slug }: { slug: string }) {
           <Link href="/#journey-references" className="text-sm text-[#a89880] hover:text-white transition-colors">
             {pl.back}
           </Link>
-          <Link href="/" className="font-bold text-white text-sm tracking-wide">Digitalstudio Marcel Spahr</Link>
+          <div className="flex items-center gap-3">
+            <div className="flex overflow-hidden rounded-md border border-white/15">
+              <button onClick={() => setLang('de')} className={`px-2.5 py-1 text-xs font-semibold ${lang === 'de' ? 'text-[#07090b]' : 'text-[#a89880]'}`} style={lang === 'de' ? { background: project.color } : undefined}>DE</button>
+              <button onClick={() => setLang('en')} className={`px-2.5 py-1 text-xs font-semibold ${lang === 'en' ? 'text-[#07090b]' : 'text-[#a89880]'}`} style={lang === 'en' ? { background: project.color } : undefined}>EN</button>
+            </div>
+            <Link href="/" className="font-bold text-white text-sm tracking-wide">Digitalstudio Marcel Spahr</Link>
+          </div>
         </div>
       </header>
 

@@ -4181,6 +4181,38 @@ body {
   cursor: not-allowed;
 }
 
+.inquiry-journey-navigator .journey-rail {
+  top: 3.9rem;
+}
+
+.inquiry-side-language {
+  display: flex;
+  align-items: center;
+  margin: 0 0.05rem 0.15rem 0;
+  overflow: hidden;
+  border: 1px solid rgba(231,197,106,0.22);
+  border-radius: 0.28rem;
+  background: rgba(0,0,0,0.42);
+  pointer-events: auto;
+}
+
+.inquiry-side-language button {
+  min-width: 1.75rem;
+  padding: 0.32rem 0.38rem;
+  color: rgba(212,196,168,0.46);
+  background: transparent;
+  border: 0;
+  font: inherit;
+  font-size: 0.5rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.inquiry-side-language button.is-active {
+  color: #0c0a06;
+  background: #c9a84c;
+}
+
 .inquiry-journey-navigator a.journey-station {
   text-decoration: none;
 }

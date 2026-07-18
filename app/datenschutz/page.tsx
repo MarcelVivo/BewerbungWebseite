@@ -3,6 +3,7 @@
 export const dynamic = 'force-static';
 
 import Link from 'next/link';
+import { useEffect } from 'react';
 import { useLanguage } from '../LanguageContext';
 
 type Section = {
@@ -221,6 +222,10 @@ const C: Record<'de' | 'en', { title: string; subtitle: string; back: string; up
 export default function DatenschutzPage() {
   const { lang, setLang } = useLanguage();
   const c = C[lang];
+
+  useEffect(() => {
+    document.title = `${c.title} | Digitalstudio Marcel Spahr`;
+  }, [c.title]);
 
   return (
     <div className="min-h-screen bg-[#0c0a06] text-[#f4edd8]">

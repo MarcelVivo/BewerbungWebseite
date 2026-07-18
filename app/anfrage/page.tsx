@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import {
   ChevronRight, ChevronLeft, Check, Plus, X,
@@ -11,6 +11,7 @@ import {
   ShoppingCart, GraduationCap, Wrench,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { useLanguage } from '../LanguageContext';
 
 // ── Data ─────────────────────────────────────────────────────
 
@@ -33,10 +34,10 @@ const PROJEKTTYPEN: { label: string; icon: LucideIcon; desc: string }[] = [
   { label: 'Website Redesign',    icon: RefreshCw,     desc: 'Bestehende Website modernisieren' },
   { label: 'Prozessoptimierung',  icon: Zap,           desc: 'Abläufe digitalisieren & automatisieren' },
   { label: 'Marketing Strategie', icon: TrendingUp,    desc: 'Mehr Sichtbarkeit & qualifizierte Leads' },
-  { label: 'KI-Integration',      icon: Bot,           desc: 'KI-Tools in Ihr Unternehmen integrieren' },
+  { label: 'KI-Integration',      icon: Bot,           desc: 'KI-Tools in dein Unternehmen integrieren' },
   { label: 'App / Plattform',     icon: Smartphone,    desc: 'Massgeschneiderte Software-Lösung' },
   { label: 'E-Commerce Shop',     icon: ShoppingCart,  desc: 'Online verkaufen & Zahlungen abwickeln' },
-  { label: 'Workshop / Training', icon: GraduationCap, desc: 'Schulung für Ihr Team' },
+  { label: 'Workshop / Training', icon: GraduationCap, desc: 'Schulung für dein Team' },
   { label: 'Sonstiges',           icon: Wrench,        desc: 'Anderes Projekt' },
 ];
 
@@ -97,11 +98,112 @@ const EMPTY: Form = {
 
 // ── Step indicators ───────────────────────────────────────────
 
-const STEPS = ['Über Sie', 'Ihr Projekt', 'Anforderungen', 'Absenden'];
+const STEPS = ['Über dich', 'Dein Projekt', 'Anforderungen', 'Absenden'];
+
+const EN_TEXT: Record<string, string> = {
+  'Über dich': 'About You', 'Dein Projekt': 'Your Project', 'Anforderungen': 'Requirements', 'Absenden': 'Submit',
+  'Beauty & Wellness': 'Beauty & Wellness', 'Immobilien': 'Real Estate', 'IT & Software': 'IT & Software',
+  'Finanzwesen': 'Finance', 'Baubranche': 'Construction', 'Gesundheit & Medizin': 'Health & Medicine',
+  'Gastronomie & Food': 'Hospitality & Food', 'E-Commerce & Retail': 'E-Commerce & Retail',
+  'NGO & Verein': 'NGO & Association', 'Bildung & Training': 'Education & Training', 'Sonstiges': 'Other',
+  'Neue Website': 'New Website', 'Professioneller Online-Auftritt von Grund auf': 'A professional online presence built from scratch',
+  'Website Redesign': 'Website Redesign', 'Bestehende Website modernisieren': 'Modernize an existing website',
+  'Prozessoptimierung': 'Process Optimization', 'Abläufe digitalisieren & automatisieren': 'Digitize and automate workflows',
+  'Marketing Strategie': 'Marketing Strategy', 'Mehr Sichtbarkeit & qualifizierte Leads': 'More visibility and qualified leads',
+  'KI-Integration': 'AI Integration', 'KI-Tools in dein Unternehmen integrieren': 'Integrate AI tools into your business',
+  'App / Plattform': 'App / Platform', 'Massgeschneiderte Software-Lösung': 'Custom software solution',
+  'E-Commerce Shop': 'E-Commerce Store', 'Online verkaufen & Zahlungen abwickeln': 'Sell online and process payments',
+  'Workshop / Training': 'Workshop / Training', 'Schulung für dein Team': 'Training for your team',
+  'Anderes Projekt': 'Another type of project',
+  'Online-Buchungssystem': 'Online booking system', 'Vorher/Nachher Galerie': 'Before/after gallery',
+  'Preisliste': 'Price list', 'Team-Präsentation': 'Team presentation', 'Kundenbewertungen': 'Customer reviews',
+  'Online-Shop': 'Online store', 'Gutscheine': 'Vouchers', 'Newsletter': 'Newsletter',
+  'Objektsuche / Filter': 'Property search / filters', 'Exposé-Ansicht': 'Property detail view',
+  'Kontaktformular': 'Contact form', '360° Rundgang': '360° tour', 'Grundriss-Upload': 'Floor plan upload',
+  'Karten-Integration': 'Map integration', 'Interessentenanfragen': 'Prospect inquiries',
+  'Demo / Trial Anfrage': 'Demo / trial request', 'Kundenportal': 'Customer portal',
+  'Support & Ticketing': 'Support & ticketing', 'Preistabelle': 'Pricing table',
+  'Integrationen & APIs': 'Integrations & APIs', 'Dokumentation': 'Documentation',
+  'Beratungsanfrage': 'Consultation request', 'Rechner-Tool': 'Calculator tool', 'FAQ-Bereich': 'FAQ section',
+  'Terminbuchung': 'Appointment booking', 'Formulare & Downloads': 'Forms & downloads', 'Mehrsprachigkeit': 'Multilingual support',
+  'Referenzprojekte': 'Reference projects', 'Leistungsübersicht': 'Service overview', 'Angebotsanfrage': 'Quote request',
+  'Team & Kontakt': 'Team & contact', 'Jobs / Karriere': 'Jobs / careers', 'Zertifikate & Nachweise': 'Certificates & credentials',
+  'Online-Terminbuchung': 'Online appointment booking', 'Leistungen & Fachgebiete': 'Services & specialties',
+  'Team / Ärzte': 'Team / doctors', 'Patienteninformationen': 'Patient information', 'Notfallinfos': 'Emergency information',
+  'Anfahrt & Lageplan': 'Directions & map', 'Online-Reservierung': 'Online reservation', 'Speisekarte': 'Menu',
+  'Bestellsystem': 'Ordering system', 'Catering & Events': 'Catering & events', 'Lieferservice': 'Delivery service',
+  'Produktkatalog': 'Product catalog', 'Warenkorb & Checkout': 'Cart & checkout', 'Filterfunktion': 'Filter function',
+  'Kundenkonto': 'Customer account', 'Lagerverwaltung': 'Inventory management', 'Rabattcodes': 'Discount codes',
+  'Spendenformular': 'Donation form', 'Mitgliedschaft': 'Membership', 'Projektberichte': 'Project reports',
+  'Veranstaltungen': 'Events', 'Blog / News': 'Blog / news', 'Ehrenamt-Verwaltung': 'Volunteer management',
+  'Kursübersicht': 'Course overview', 'Online-Anmeldung': 'Online registration', 'Lernplattform': 'Learning platform',
+  'Dozenten-Profile': 'Instructor profiles', 'Zertifikate': 'Certificates', 'Testimonials': 'Testimonials',
+  'Über uns': 'About us', 'Leistungen': 'Services', 'Portfolio': 'Portfolio', 'Blog': 'Blog', 'Social Media': 'Social media',
+  'Responsive Design': 'Responsive design', 'Einfach pflegbar (CMS)': 'Easy to maintain (CMS)',
+  'SEO-Optimierung': 'SEO optimization', 'DSGVO-konform': 'GDPR compliant', 'Cookie-Banner': 'Cookie banner', 'Analytics': 'Analytics',
+  'Inhalte übernehmen': 'Migrate existing content', 'Neues Design / CI': 'New design / visual identity',
+  'SEO erhalten': 'Preserve SEO', 'Mobile verbessern': 'Improve mobile experience', 'Ladezeit optimieren': 'Optimize loading speed',
+  'Automatisierung': 'Automation', 'Weniger manuelle Arbeit': 'Less manual work', 'Reporting / Dashboard': 'Reporting / dashboard',
+  'Systemintegration': 'System integration', 'Fehlerreduktion': 'Error reduction', 'Zielgruppen-Definition': 'Target audience definition',
+  'Content-Plan': 'Content plan', 'E-Mail Marketing': 'Email marketing', 'Google Ads': 'Google Ads', 'KPI-Tracking': 'KPI tracking',
+  'KI-Chatbot': 'AI chatbot', 'Automatische Auswertungen': 'Automated analysis', 'KI-gestützte Suche': 'AI-assisted search',
+  'Datenschutz / DSGVO': 'Privacy / GDPR', 'Training auf eigene Daten': 'Training on your own data',
+  'Login / Registrierung': 'Login / registration', 'Mobile App': 'Mobile app', 'Admin-Dashboard': 'Admin dashboard',
+  'Benachrichtigungen': 'Notifications', 'Rollen & Rechte': 'Roles & permissions', 'Zahlungsintegration': 'Payment integration',
+  'Produktverwaltung': 'Product management', 'Zahlungsanbieter': 'Payment provider', 'Versand-Integration': 'Shipping integration',
+  'Bewertungen': 'Reviews', 'Lernziele festlegen': 'Define learning objectives', 'Schulungsunterlagen': 'Training materials',
+  'Hands-on Übungen': 'Hands-on exercises', 'Online / Präsenz': 'Online / on-site', 'Zertifikat': 'Certificate', 'Feedback': 'Feedback',
+  'Anforderungen individuell': 'Individual requirements', 'Budget klären': 'Clarify budget', 'Machbarkeit prüfen': 'Assess feasibility',
+  "Unter CHF 2'000": "Under CHF 2,000", "CHF 2'000 – 5'000": 'CHF 2,000–5,000',
+  "CHF 5'000 – 15'000": 'CHF 5,000–15,000', "CHF 15'000 – 30'000": 'CHF 15,000–30,000',
+  "Über CHF 30'000": 'Over CHF 30,000', 'Noch nicht definiert': 'Not defined yet',
+  'So bald wie möglich': 'As soon as possible', '1 – 2 Monate': '1–2 months', '3 – 6 Monate': '3–6 months',
+  '6 – 12 Monate': '6–12 months', 'Noch offen': 'Still open',
+};
+
+const UI = {
+  de: {
+    pageTitle: 'Projektanfrage | Digitalstudio Marcel Spahr', kicker: 'PERSÖNLICH · STRUKTURIERT · UNVERBINDLICH',
+    title: 'Erzähl mir von deinem Projekt', intro: 'Beantworte ein paar Fragen – ich melde mich innerhalb von zwei Arbeitstagen persönlich bei dir.',
+    start: 'Start', backHome: 'Zurück zur Hauptseite', aboutTitle: 'Über dich', name: 'Dein Name *', email: 'E-Mail *',
+    company: 'Firma (optional)', phone: 'Telefon (optional)', industry: 'In welcher Branche bist du tätig? *',
+    planning: 'Was planst du? *', capabilities: 'Was soll dein Projekt können?', selectHint: 'Wähle aus, was wichtig ist.',
+    must: '1× Klick = Muss dabei sein', nice: '2× Klick = Wäre schön', remove: '3× = entfernen', custom: 'Eigene Anforderung hinzufügen …',
+    selection: 'Deine Auswahl:', budget: 'Budget (optional)', deadline: 'Wann soll es fertig sein? (optional)', almost: 'Fast geschafft!',
+    industryLabel: 'Branche', projectLabel: 'Projekt', budgetLabel: 'Budget', timeframe: 'Zeitrahmen', mustHave: 'Must-have Anforderungen',
+    more: 'Weitere Informationen (optional)', morePlaceholder: 'Besonderheiten, offene Fragen, spezielle Wünsche …',
+    promiseLead: 'Mein Versprechen:', promise: 'Ich melde mich innerhalb von zwei Arbeitstagen persönlich bei dir. Kein automatisches Angebot, keine generische Antwort – sondern ein echtes Gespräch über dein Projekt.',
+    back: 'Zurück', next: 'Weiter', send: 'Anfrage absenden', sending: 'Wird gesendet …',
+    thanks: 'Vielen Dank', received: 'Deine Projektanfrage ist bei mir eingegangen.', confirmation: 'Du erhältst eine Bestätigung an',
+    response: 'und ich melde mich innerhalb von zwei Arbeitstagen persönlich bei dir.', nextTitle: 'Was als Nächstes passiert',
+    nextItems: ['Ich sichte deine Anforderungen sorgfältig', 'Ich melde mich innerhalb von zwei Arbeitstagen bei dir', 'Wir besprechen dein Projekt und die nächsten Schritte'],
+    error: 'Etwas ist schiefgelaufen. Bitte versuche es erneut oder schreibe mir direkt.', stepAria: 'Zu Schritt',
+  },
+  en: {
+    pageTitle: 'Project Inquiry | Marcel Spahr Digital Studio', kicker: 'PERSONAL · STRUCTURED · NO OBLIGATION',
+    title: 'Tell me about your project', intro: 'Answer a few questions – I will get back to you personally within two business days.',
+    start: 'Start', backHome: 'Back to homepage', aboutTitle: 'About you', name: 'Your name *', email: 'Email *',
+    company: 'Company (optional)', phone: 'Phone (optional)', industry: 'What industry are you in? *',
+    planning: 'What are you planning? *', capabilities: 'What should your project be able to do?', selectHint: 'Select what matters to you.',
+    must: '1× click = Must-have', nice: '2× click = Nice-to-have', remove: '3× = remove', custom: 'Add your own requirement …',
+    selection: 'Your selection:', budget: 'Budget (optional)', deadline: 'When should it be completed? (optional)', almost: 'Almost done!',
+    industryLabel: 'Industry', projectLabel: 'Project', budgetLabel: 'Budget', timeframe: 'Timeframe', mustHave: 'Must-have requirements',
+    more: 'Additional information (optional)', morePlaceholder: 'Special considerations, open questions or requests …',
+    promiseLead: 'My promise:', promise: 'I will get back to you personally within two business days. No automated quote, no generic reply – a real conversation about your project.',
+    back: 'Back', next: 'Next', send: 'Submit inquiry', sending: 'Sending …',
+    thanks: 'Thank you', received: 'I have received your project inquiry.', confirmation: 'A confirmation will be sent to',
+    response: 'and I will contact you personally within two business days.', nextTitle: 'What happens next',
+    nextItems: ['I carefully review your requirements', 'I contact you within two business days', 'We discuss your project and the next steps'],
+    error: 'Something went wrong. Please try again or contact me directly.', stepAria: 'Go to step',
+  },
+};
 
 // ── Component ─────────────────────────────────────────────────
 
 export default function AnfragePage() {
+  const { lang, setLang } = useLanguage();
+  const copy = UI[lang];
+  const tr = (text: string) => lang === 'en' ? (EN_TEXT[text] ?? text) : text;
   const [step, setStep]           = useState(0);
   const [furthestStep, setFurthestStep] = useState(0);
   const [form, setForm]           = useState<Form>(EMPTY);
@@ -109,6 +211,10 @@ export default function AnfragePage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError]         = useState('');
+
+  useEffect(() => {
+    document.title = copy.pageTitle;
+  }, [copy.pageTitle]);
 
   function set<K extends keyof Form>(k: K, v: Form[K]) {
     setForm(p => ({ ...p, [k]: v }));
@@ -176,7 +282,7 @@ export default function AnfragePage() {
       if (!res.ok) throw new Error('Fehler beim Senden');
       setSubmitted(true);
     } catch {
-      setError('Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut oder schreiben Sie mir direkt.');
+      setError(copy.error);
     } finally {
       setSubmitting(false);
     }
@@ -198,15 +304,15 @@ export default function AnfragePage() {
           <div className="w-20 h-20 mx-auto rounded-full bg-[#c9a84c]/20 border-2 border-[#c9a84c]/40 flex items-center justify-center">
             <CheckCircle2 size={40} className="text-[#c9a84c]" />
           </div>
-          <h1 className="text-2xl font-bold text-white">Vielen Dank, {form.name.split(' ')[0]}!</h1>
+          <h1 className="text-2xl font-bold text-white">{copy.thanks}, {form.name.split(' ')[0]}!</h1>
           <p className="text-[#a89880] leading-relaxed">
-            Ihre Projektanfrage ist bei mir eingegangen. Ich habe Ihnen eine Bestätigung
-            an <span className="text-[#c9a84c] font-medium">{form.email}</span> gesendet
-            und melde mich <strong className="text-white">innerhalb von 24 Stunden</strong> persönlich bei Ihnen.
+            {copy.received} {copy.confirmation}{' '}
+            <span className="text-[#c9a84c] font-medium">{form.email}</span>{' '}
+            {copy.response}
           </p>
           <div className="rounded-xl border border-[#2d2820] bg-[#1c1912] p-5 text-left space-y-2">
-            <p className="text-xs text-[#7a6d5a] font-bold uppercase tracking-widest">Was als Nächstes passiert</p>
-            {['Ich sichte Ihre Anforderungen sorgfältig', 'Ich melde mich innerhalb 24h bei Ihnen', 'Wir besprechen Ihr Projekt & die nächsten Schritte'].map((s, i) => (
+            <p className="text-xs text-[#7a6d5a] font-bold uppercase tracking-widest">{copy.nextTitle}</p>
+            {copy.nextItems.map((s, i) => (
               <div key={i} className="flex items-center gap-3 text-sm text-[#a89880]">
                 <span className="w-5 h-5 rounded-full bg-[#c9a84c]/20 text-[#c9a84c] text-xs font-bold flex items-center justify-center flex-shrink-0">{i + 1}</span>
                 {s}
@@ -214,7 +320,7 @@ export default function AnfragePage() {
             ))}
           </div>
           <Link href="/" className="inline-flex items-center gap-2 text-sm text-[#c9a84c] hover:underline">
-            ← Zurück zur Startseite
+            ← {copy.backHome}
           </Link>
         </div>
       </div>
@@ -225,7 +331,11 @@ export default function AnfragePage() {
     <div className="inquiry-page min-h-screen text-[#f4edd8]">
       <div className="inquiry-space" aria-hidden="true"><span /><span /><span /></div>
 
-      <nav className="journey-navigator inquiry-journey-navigator inquiry-display" aria-label="Schritte der Projektanfrage">
+      <nav className="journey-navigator inquiry-journey-navigator inquiry-display" aria-label={lang === 'de' ? 'Schritte der Projektanfrage' : 'Project inquiry steps'}>
+        <span className="inquiry-side-language" aria-label="Language selection">
+          <button type="button" className={lang === 'de' ? 'is-active' : ''} onClick={() => setLang('de')}>DE</button>
+          <button type="button" className={lang === 'en' ? 'is-active' : ''} onClick={() => setLang('en')}>EN</button>
+        </span>
         <span className="journey-rail" aria-hidden="true">
           <span
             className="journey-rail-progress"
@@ -235,14 +345,15 @@ export default function AnfragePage() {
         <Link
           href="/"
           className="journey-station is-visited"
-          aria-label="Zurück zur Hauptseite"
+          aria-label={copy.backHome}
         >
-          <span className="journey-label">Start</span>
+          <span className="journey-label">{copy.start}</span>
           <span className="journey-node" aria-hidden="true">
             <span className="journey-node-core" />
           </span>
         </Link>
-        {STEPS.map((label, index) => {
+        {STEPS.map((sourceLabel, index) => {
+          const label = tr(sourceLabel);
           const isActive = index === step;
           const isVisited = index <= furthestStep && !isActive;
           const isReachable = index <= furthestStep || (index === step + 1 && canNext);
@@ -252,7 +363,7 @@ export default function AnfragePage() {
               type="button"
               className={`journey-station ${isActive ? 'is-active' : ''} ${isVisited ? 'is-visited' : ''}`}
               aria-current={isActive ? 'step' : undefined}
-              aria-label={`Zu Schritt ${index + 1}: ${label}`}
+              aria-label={`${copy.stepAria} ${index + 1}: ${label}`}
               disabled={!isReachable}
               onClick={() => goToStep(index)}
             >
@@ -271,10 +382,10 @@ export default function AnfragePage() {
       <main className="inquiry-shell mx-auto px-6 py-10">
         {/* Title */}
         <div className="inquiry-intro text-center mb-10">
-          <p className="inquiry-kicker inquiry-display">PERSÖNLICH · STRUKTURIERT · UNVERBINDLICH</p>
-          <h1 className="inquiry-display font-bold text-white mb-3">Erzählen Sie mir von Ihrem Projekt</h1>
+          <p className="inquiry-kicker inquiry-display">{copy.kicker}</p>
+          <h1 className="inquiry-display font-bold text-white mb-3">{copy.title}</h1>
           <p className="text-[#a89880] leading-relaxed">
-            Beantworten Sie ein paar Fragen – ich melde mich innerhalb von 24 Stunden persönlich bei Ihnen.
+            {copy.intro}
           </p>
         </div>
 
@@ -288,7 +399,7 @@ export default function AnfragePage() {
                 : 'is-upcoming'
               }`}>
                 {i < step ? <Check size={10} /> : <span>{i + 1}</span>}
-                <span className="hidden sm:block">{s}</span>
+                <span className="hidden sm:block">{tr(s)}</span>
               </div>
               {i < STEPS.length - 1 && <div className={`inquiry-step-line w-6 h-px ${i < step ? 'is-complete' : ''}`} />}
             </div>
@@ -304,28 +415,28 @@ export default function AnfragePage() {
           {step === 0 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-lg font-bold text-white mb-5">Über Sie</h2>
+                <h2 className="text-lg font-bold text-white mb-5">{copy.aboutTitle}</h2>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs text-[#7a6d5a] mb-1.5 flex items-center gap-1.5"><User size={11} /> Ihr Name *</label>
+                    <label className="block text-xs text-[#7a6d5a] mb-1.5 flex items-center gap-1.5"><User size={11} /> {copy.name}</label>
                     <input value={form.name} onChange={e => set('name', e.target.value)} className={inp} placeholder="Max Müller" />
                   </div>
                   <div>
-                    <label className="block text-xs text-[#7a6d5a] mb-1.5 flex items-center gap-1.5"><Mail size={11} /> E-Mail *</label>
+                    <label className="block text-xs text-[#7a6d5a] mb-1.5 flex items-center gap-1.5"><Mail size={11} /> {copy.email}</label>
                     <input type="email" value={form.email} onChange={e => set('email', e.target.value)} className={inp} placeholder="max@firma.ch" />
                   </div>
                   <div>
-                    <label className="block text-xs text-[#7a6d5a] mb-1.5 flex items-center gap-1.5"><Building2 size={11} /> Firma (optional)</label>
+                    <label className="block text-xs text-[#7a6d5a] mb-1.5 flex items-center gap-1.5"><Building2 size={11} /> {copy.company}</label>
                     <input value={form.firma} onChange={e => set('firma', e.target.value)} className={inp} placeholder="Müller AG" />
                   </div>
                   <div>
-                    <label className="block text-xs text-[#7a6d5a] mb-1.5 flex items-center gap-1.5"><Phone size={11} /> Telefon (optional)</label>
+                    <label className="block text-xs text-[#7a6d5a] mb-1.5 flex items-center gap-1.5"><Phone size={11} /> {copy.phone}</label>
                     <input value={form.telefon} onChange={e => set('telefon', e.target.value)} className={inp} placeholder="+41 79 000 00 00" />
                   </div>
                 </div>
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-white mb-3">In welcher Branche sind Sie tätig? *</h3>
+                <h3 className="text-sm font-semibold text-white mb-3">{copy.industry}</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {BRANCHEN.map(b => {
                     const selected = form.branche === b.label;
@@ -345,7 +456,7 @@ export default function AnfragePage() {
                         }`}>
                           <b.icon size={14} />
                         </div>
-                        <span className="leading-tight text-xs">{b.label}</span>
+                        <span className="leading-tight text-xs">{tr(b.label)}</span>
                       </button>
                     );
                   })}
@@ -357,7 +468,7 @@ export default function AnfragePage() {
           {/* Step 1: Projekttyp */}
           {step === 1 && (
             <div className="space-y-4">
-              <h2 className="text-lg font-bold text-white mb-5">Was planen Sie? *</h2>
+              <h2 className="text-lg font-bold text-white mb-5">{copy.planning}</h2>
               <div className="grid sm:grid-cols-2 gap-3">
                 {PROJEKTTYPEN.map(p => {
                   const selected = form.projekttyp === p.label;
@@ -378,8 +489,8 @@ export default function AnfragePage() {
                         <p.icon size={18} />
                       </div>
                       <div>
-                        <p className="font-semibold text-sm">{p.label}</p>
-                        <p className="text-xs opacity-70 mt-0.5 leading-relaxed">{p.desc}</p>
+                        <p className="font-semibold text-sm">{tr(p.label)}</p>
+                        <p className="text-xs opacity-70 mt-0.5 leading-relaxed">{tr(p.desc)}</p>
                       </div>
                     </button>
                   );
@@ -392,12 +503,12 @@ export default function AnfragePage() {
           {step === 2 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-lg font-bold text-white mb-2">Was soll Ihr Projekt können?</h2>
+                <h2 className="text-lg font-bold text-white mb-2">{copy.capabilities}</h2>
                 <p className="text-sm text-[#7a6d5a] mb-5">
-                  Wählen Sie an, was wichtig ist.&nbsp;
-                  <span className="text-[#c9a84c]">1× Klick = Muss dabei sein</span> &nbsp;·&nbsp;
-                  <span className="text-[#d4b86a]">2× Klick = Wäre schön</span> &nbsp;·&nbsp;
-                  <span className="text-[#7a6d5a]">3× = entfernen</span>
+                  {copy.selectHint}&nbsp;
+                  <span className="text-[#c9a84c]">{copy.must}</span> &nbsp;·&nbsp;
+                  <span className="text-[#d4b86a]">{copy.nice}</span> &nbsp;·&nbsp;
+                  <span className="text-[#7a6d5a]">{copy.remove}</span>
                 </p>
                 <div className="flex flex-wrap gap-2 mb-4">
                   {anfChips.map(c => {
@@ -416,7 +527,7 @@ export default function AnfragePage() {
                       >
                         {prio === 'must' && <span className="mr-1">★</span>}
                         {prio === 'nice' && <span className="mr-1">◇</span>}
-                        {c}
+                        {tr(c)}
                       </button>
                     );
                   })}
@@ -427,7 +538,7 @@ export default function AnfragePage() {
                     onChange={e => setCustomInput(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addCustom())}
                     className={inp + ' flex-1'}
-                    placeholder="Eigene Anforderung hinzufügen…"
+                    placeholder={copy.custom}
                   />
                   <button type="button" onClick={addCustom} className="px-3 py-2.5 rounded-xl bg-[#c9a84c]/20 border border-[#c9a84c]/30 text-[#c9a84c] hover:bg-[#c9a84c]/30 transition-colors">
                     <Plus size={16} />
@@ -435,13 +546,13 @@ export default function AnfragePage() {
                 </div>
                 {form.anforderungen.length > 0 && (
                   <div className="mt-4 p-3 rounded-xl bg-[#100d09] border border-[#2d2820]">
-                    <p className="text-xs text-[#5a5040] mb-2">Ihre Auswahl:</p>
+                    <p className="text-xs text-[#5a5040] mb-2">{copy.selection}</p>
                     <div className="flex flex-wrap gap-1.5">
                       {form.anforderungen.map(a => (
                         <span key={a.text} className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border ${
                           a.prio === 'must' ? 'bg-[#c9a84c]/15 border-[#c9a84c]/30 text-[#c9a84c]' : 'bg-[#d4b86a]/10 border-[#d4b86a]/20 text-[#d4b86a]'
                         }`}>
-                          {a.prio === 'must' ? '★' : '◇'} {a.text}
+                          {a.prio === 'must' ? '★' : '◇'} {tr(a.text)}
                           <button onClick={() => setForm(p => ({ ...p, anforderungen: p.anforderungen.filter(x => x.text !== a.text) }))} className="ml-1 opacity-60 hover:opacity-100">
                             <X size={10} />
                           </button>
@@ -454,27 +565,27 @@ export default function AnfragePage() {
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs text-[#7a6d5a] mb-2">Budget (optional)</label>
+                  <label className="block text-xs text-[#7a6d5a] mb-2">{copy.budget}</label>
                   <div className="space-y-1.5">
                     {BUDGET_OPTIONS.map(b => (
                       <button key={b} type="button" onClick={() => set('budget', b)}
                         className={`w-full text-left px-3 py-2 rounded-lg border text-xs font-medium transition-all ${
                           form.budget === b ? 'bg-[#c9a84c]/15 border-[#c9a84c]/50 text-[#f4edd8]' : 'bg-[#100d09] border-[#2d2820] text-[#7a6d5a] hover:border-[#c9a84c]/20'
                         }`}>
-                        {b}
+                        {tr(b)}
                       </button>
                     ))}
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs text-[#7a6d5a] mb-2">Wann soll es fertig sein? (optional)</label>
+                  <label className="block text-xs text-[#7a6d5a] mb-2">{copy.deadline}</label>
                   <div className="space-y-1.5">
                     {ZEIT_OPTIONS.map(z => (
                       <button key={z} type="button" onClick={() => set('zeitrahmen', z)}
                         className={`w-full text-left px-3 py-2 rounded-lg border text-xs font-medium transition-all ${
                           form.zeitrahmen === z ? 'bg-[#c9a84c]/15 border-[#c9a84c]/50 text-[#f4edd8]' : 'bg-[#100d09] border-[#2d2820] text-[#7a6d5a] hover:border-[#c9a84c]/20'
                         }`}>
-                        {z}
+                        {tr(z)}
                       </button>
                     ))}
                   </div>
@@ -486,22 +597,22 @@ export default function AnfragePage() {
           {/* Step 3: Zusammenfassung + Absenden */}
           {step === 3 && (
             <div className="space-y-5">
-              <h2 className="text-lg font-bold text-white mb-5">Fast geschafft!</h2>
+              <h2 className="text-lg font-bold text-white mb-5">{copy.almost}</h2>
 
               {/* Summary */}
               <div className="rounded-xl border border-[#2d2820] bg-[#100d09] p-4 space-y-3 text-sm">
                 <div className="grid grid-cols-2 gap-2">
-                  <div><span className="text-[#5a5040] text-xs">Branche</span><p className="text-white font-medium">{form.branche}</p></div>
-                  <div><span className="text-[#5a5040] text-xs">Projekt</span><p className="text-white font-medium">{form.projekttyp}</p></div>
-                  {form.budget && <div><span className="text-[#5a5040] text-xs">Budget</span><p className="text-white font-medium">{form.budget}</p></div>}
-                  {form.zeitrahmen && <div><span className="text-[#5a5040] text-xs">Zeitrahmen</span><p className="text-white font-medium">{form.zeitrahmen}</p></div>}
+                  <div><span className="text-[#5a5040] text-xs">{copy.industryLabel}</span><p className="text-white font-medium">{tr(form.branche)}</p></div>
+                  <div><span className="text-[#5a5040] text-xs">{copy.projectLabel}</span><p className="text-white font-medium">{tr(form.projekttyp)}</p></div>
+                  {form.budget && <div><span className="text-[#5a5040] text-xs">{copy.budgetLabel}</span><p className="text-white font-medium">{tr(form.budget)}</p></div>}
+                  {form.zeitrahmen && <div><span className="text-[#5a5040] text-xs">{copy.timeframe}</span><p className="text-white font-medium">{tr(form.zeitrahmen)}</p></div>}
                 </div>
                 {form.anforderungen.filter(a => a.prio === 'must').length > 0 && (
                   <div>
-                    <p className="text-xs text-[#5a5040] mb-1.5">Must-have Anforderungen</p>
+                    <p className="text-xs text-[#5a5040] mb-1.5">{copy.mustHave}</p>
                     <div className="flex flex-wrap gap-1.5">
                       {form.anforderungen.filter(a => a.prio === 'must').map(a => (
-                        <span key={a.text} className="text-xs px-2 py-0.5 rounded-full bg-[#c9a84c]/15 border border-[#c9a84c]/20 text-[#c9a84c]">★ {a.text}</span>
+                        <span key={a.text} className="text-xs px-2 py-0.5 rounded-full bg-[#c9a84c]/15 border border-[#c9a84c]/20 text-[#c9a84c]">★ {tr(a.text)}</span>
                       ))}
                     </div>
                   </div>
@@ -510,20 +621,19 @@ export default function AnfragePage() {
 
               {/* Notizen */}
               <div>
-                <label className="block text-xs text-[#7a6d5a] mb-1.5">Weitere Informationen (optional)</label>
+                <label className="block text-xs text-[#7a6d5a] mb-1.5">{copy.more}</label>
                 <textarea
                   value={form.notizen}
                   onChange={e => set('notizen', e.target.value)}
                   rows={3}
                   className={inp + ' resize-none'}
-                  placeholder="Besonderheiten, offene Fragen, spezielle Wünsche…"
+                  placeholder={copy.morePlaceholder}
                 />
               </div>
 
               {/* Versprechen */}
               <div className="rounded-xl border border-[#c9a84c]/20 bg-[#c9a84c]/5 p-4 text-sm text-[#a89880] leading-relaxed">
-                <strong className="text-[#c9a84c]">Mein Versprechen:</strong> Ich melde mich innerhalb von 24 Stunden persönlich bei Ihnen.
-                Kein automatisches Angebot, keine generische Antwort – sondern ein echtes Gespräch über Ihr Projekt.
+                <strong className="text-[#c9a84c]">{copy.promiseLead}</strong> {copy.promise}
               </div>
 
               {error && (
@@ -540,7 +650,7 @@ export default function AnfragePage() {
             disabled={step === 0}
             className={outlineBtn}
           >
-            <ChevronLeft size={16} /> Zurück
+            <ChevronLeft size={16} /> {copy.back}
           </button>
 
           <span className="text-xs text-[#5a5040]">{step + 1} / {STEPS.length}</span>
@@ -551,7 +661,7 @@ export default function AnfragePage() {
               disabled={!canNext}
               className={goldBtn}
             >
-              Weiter <ChevronRight size={16} />
+              {copy.next} <ChevronRight size={16} />
             </button>
           ) : (
             <button
@@ -559,7 +669,7 @@ export default function AnfragePage() {
               disabled={submitting}
               className={goldBtn}
             >
-              {submitting ? 'Wird gesendet…' : <><Check size={16} /> Anfrage absenden</>}
+              {submitting ? copy.sending : <><Check size={16} /> {copy.send}</>}
             </button>
           )}
         </div>
