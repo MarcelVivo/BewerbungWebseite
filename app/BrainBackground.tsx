@@ -1687,14 +1687,14 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         '  }',
         // Die GLB-Bewegung liefert eine dezente organische Unruhe unter dem
         // regelmaessigen, langsam nach hinten fliessenden Hauptwellengang.
-        '  float glbWave=sourceHeight/max(.0001,sourceWeight)*.13;',
+        '  float glbWave=sourceHeight/max(.0001,sourceWeight)*.16;',
         '  float normalizedSide=side/max(.001,uOceanHalfWidth);',
         // Breite Hauptwellen, ein langer Schwell und eine sehr feine
         // Querbewegung erzeugen sichtbare, aber weich gerundete Akzente.
-        '  float ridgePhase=depth*.315+normalizedSide*5.8-uTime*.29;',
-        '  float ridgeWave=sin(ridgePhase)*.18;',
-        '  ridgeWave+=sin(depth*.118-normalizedSide*2.15-uTime*.105+1.1)*.065;',
-        '  ridgeWave+=sin(depth*.205+normalizedSide*8.4+uTime*.072-.45)*.028;',
+        '  float ridgePhase=depth*.315+normalizedSide*5.8-uTime*.36;',
+        '  float ridgeWave=sin(ridgePhase)*.32;',
+        '  ridgeWave+=sin(depth*.118-normalizedSide*2.15-uTime*.13+1.1)*.09;',
+        '  ridgeWave+=sin(depth*.205+normalizedSide*8.4+uTime*.082-.45)*.035;',
         '  float organicEnvelope=.88+.12*sin(depth*.052+normalizedSide*3.6+uTime*.04);',
         '  ridgeWave*=organicEnvelope;',
         '  float impact=exp(-max(0.0,radius-uStrandRadius)*.31);',
@@ -1713,7 +1713,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         '  displaced.z+=cos(uTime*.12+side*.035+phase)*.014;',
         '  vec4 mvPosition=modelViewMatrix*vec4(displaced,1.0);',
         '  gl_Position=projectionMatrix*mvPosition;',
-        '  vCrest=smoothstep(.035,.205,wave);',
+        // Breiter Lichtbereich statt einer duennen Kante: Auch die Schulter
+        // jeder Welle wird sichtbar, waehrend das Tal bewusst dunkler bleibt.
+        '  vCrest=smoothstep(-.035,.265,wave);',
         '  vImpact=impact;',
         '  gl_PointSize=aOcean.w*(1.0+impact*.05)*uPixelRatio*(31.0/max(6.0,-mvPosition.z));',
         '  vColor=aColor;',
@@ -1748,13 +1750,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         // Wie beim Goldring reagiert der Ozean nur auf den goldenen Puls und
         // bleibt dadurch dauerhaft in derselben Goldfarbe.
         '  float pulseEnergy=clamp(uBrainPulses.x,0.0,1.0);',
-        '  float crestAccent=.84+vCrest*.32;',
+        '  float crestAccent=.7+vCrest*.68;',
         '  float depthAlpha=.4+vDepthLight*.6;',
         '  float alpha=glow*uOpacity*uReveal*vHorizonFade*depthAlpha*crestAccent*(.66+vShimmer*.28)*(1.0+pulseEnergy*.9);',
         '  if(alpha<.015) discard;',
         '  vec3 litColor=mix(vColor,vec3(1.0),.22+pulseEnergy*.28);',
         '  float depthBrightness=.48+vDepthLight*.52;',
-        '  float crestBrightness=1.0+vCrest*.24;',
+        '  float crestBrightness=.86+vCrest*.56;',
         '  gl_FragColor=vec4(litColor*depthBrightness*crestBrightness*(1.0+pulseEnergy*.72)*uBrightness,alpha);',
         '}'
       ].join('\n'),
