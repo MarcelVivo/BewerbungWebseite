@@ -774,6 +774,110 @@ body {
   text-shadow: 0 4px 24px rgba(0,0,0,0.92);
 }
 
+/* ── Persönliche Studio-Positionierung vor dem Schlussanflug ── */
+.studio-profile-world {
+  position: absolute;
+  top: clamp(4.5rem, 9vh, 8rem);
+  left: 50%;
+  z-index: 1305;
+  width: min(88vw, 76rem);
+  opacity: 0;
+  pointer-events: none;
+  transform-origin: 50% 0;
+  will-change: transform, opacity;
+}
+
+.studio-profile-content {
+  display: grid;
+  grid-template-columns: minmax(0, 0.86fr) minmax(0, 1.14fr);
+  gap: clamp(1.5rem, 4vw, 4.5rem);
+  padding: clamp(1.25rem, 2.1vw, 2rem);
+  border: 1px solid rgba(77,191,127,0.24);
+  border-radius: 0.8rem;
+  color: #fff;
+  background: linear-gradient(135deg, rgba(77,191,127,0.08), transparent 44%), rgba(3,8,6,0.72);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 28px 80px rgba(0,0,0,0.36);
+  text-shadow: 0 3px 18px rgba(0,0,0,0.9);
+  backdrop-filter: blur(10px);
+}
+
+.studio-profile-kicker {
+  margin: 0 0 0.7rem;
+  color: rgba(126,239,176,0.84);
+  font-size: clamp(0.52rem, 0.66vw, 0.68rem);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+}
+
+.studio-profile-intro h2 {
+  margin: 0;
+  max-width: 28rem;
+  color: #fff;
+  font-size: clamp(1.6rem, 2.8vw, 3rem);
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+
+.studio-profile-intro > p:last-child {
+  margin: 1rem 0 0;
+  color: rgba(235,229,217,0.8);
+  font-size: clamp(0.7rem, 0.84vw, 0.88rem);
+  line-height: 1.6;
+}
+
+.studio-profile-details {
+  display: grid;
+  gap: 1.2rem;
+}
+
+.studio-profile-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.studio-profile-fact {
+  min-width: 0;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid rgba(255,255,255,0.09);
+  border-top-color: rgba(126,239,176,0.3);
+  background: rgba(255,255,255,0.025);
+}
+
+.studio-profile-fact strong,
+.studio-profile-fact span {
+  display: block;
+}
+
+.studio-profile-fact strong {
+  color: #fff;
+  font-size: clamp(0.82rem, 1vw, 1rem);
+}
+
+.studio-profile-fact span {
+  margin-top: 0.25rem;
+  color: rgba(168,152,128,0.9);
+  font-size: clamp(0.56rem, 0.66vw, 0.7rem);
+  line-height: 1.4;
+}
+
+.studio-profile-principles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.studio-profile-principles p {
+  margin: 0;
+  color: rgba(212,196,168,0.84);
+  font-size: clamp(0.58rem, 0.7vw, 0.74rem);
+  line-height: 1.55;
+}
+
+.mobile-studio-profile {
+  display: none;
+}
+
 .project-cta-kicker {
   margin: 0 0 0.55rem;
   color: rgba(142,190,242,0.82);
@@ -3253,6 +3357,10 @@ body {
     display: none;
   }
 
+  .studio-profile-world {
+    display: none;
+  }
+
   .references-world {
     display: none;
   }
@@ -3270,6 +3378,40 @@ body {
     margin: clamp(4rem, 14vh, 8rem) 0 1rem;
     padding: clamp(3.5rem, 12vw, 6rem) 1rem;
     scroll-margin-top: 5rem;
+  }
+
+  .mobile-studio-profile {
+    display: block;
+    margin-top: clamp(5rem, 16vh, 9rem);
+    scroll-margin-top: 5rem;
+  }
+
+  .mobile-studio-profile .studio-profile-content {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding: 1.25rem;
+  }
+
+  .mobile-studio-profile .studio-profile-intro h2 {
+    font-size: clamp(1.8rem, 9vw, 2.7rem);
+  }
+
+  .mobile-studio-profile .studio-profile-intro > p:last-child {
+    font-size: 0.9rem;
+  }
+
+  .mobile-studio-profile .studio-profile-facts,
+  .mobile-studio-profile .studio-profile-principles {
+    grid-template-columns: 1fr;
+  }
+
+  .mobile-studio-profile .studio-profile-fact strong {
+    font-size: 1rem;
+  }
+
+  .mobile-studio-profile .studio-profile-fact span,
+  .mobile-studio-profile .studio-profile-principles p {
+    font-size: 0.78rem;
   }
 
   .mobile-references {

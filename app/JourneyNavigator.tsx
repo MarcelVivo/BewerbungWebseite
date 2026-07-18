@@ -10,7 +10,7 @@ const STATIONS = [
   { label: 'Lösungen', target: 'journey-solutions', mobileTarget: 'mobile-solutions' },
   { label: 'Dein Mehrwert', target: 'journey-value', mobileTarget: 'mobile-journey-value' },
   { label: 'Meine Referenzen', target: 'journey-references', mobileTarget: 'mobile-journey-references' },
-  { label: 'Über mich', target: 'journey-about' },
+  { label: 'Über mich', target: 'journey-about', mobileTarget: 'mobile-journey-about' },
   { label: 'Kontakt', target: 'journey-contact', mobileTarget: 'mobile-journey-contact' },
 ];
 

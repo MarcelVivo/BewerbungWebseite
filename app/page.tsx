@@ -972,6 +972,99 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
   );
 }
 
+function StudioProfileContent({ lang }: { lang: 'de' | 'en' }) {
+  const copy = lang === 'de'
+    ? {
+        kicker: 'DIGITALSTUDIO MARCEL SPAHR · BERN',
+        title: 'Persönlich geführt. Ganzheitlich umgesetzt.',
+        intro: 'Ich begleite Schweizer KMUs und Startups persönlich – von der ersten Idee bis zu einer Lösung, die im Alltag funktioniert und mit dem Unternehmen wachsen kann.',
+        collaboration: 'Ich arbeite eigenverantwortlich und setze KI als leistungsfähiges Werkzeug ein. Strategie, Entscheidungen, Qualität und die persönliche Zusammenarbeit bleiben dabei immer in meiner Hand.',
+        values: 'Empathie bedeutet für mich, zwischen den Zeilen zu lesen, unterschiedliche Stakeholder zu verstehen und komplexe Vorhaben so lange zu begleiten, bis sie wirklich abgeschlossen sind.',
+        facts: [
+          ['15+ Jahre', 'IT, Projektmanagement, Digitalisierung, Marketing & Verkauf'],
+          ['Diplom', 'Werbetechnik · Marketing, Design & Grafik'],
+          ['A–Z', 'Konzeption, Umsetzung, Skalierbarkeit & Begleitung'],
+          ['Bern', 'Schweizweit und international tätig'],
+        ],
+      }
+    : {
+        kicker: 'MARCEL SPAHR DIGITAL STUDIO · BERN',
+        title: 'Personally led. Comprehensively delivered.',
+        intro: 'I personally support Swiss SMEs and startups from the first idea to a solution that works in daily operations and can scale with the business.',
+        collaboration: 'I work independently and use AI as a powerful tool. Strategy, decisions, quality and the personal working relationship always remain in my hands.',
+        values: 'To me, empathy means reading between the lines, understanding different stakeholders and staying with complex initiatives until they are genuinely complete.',
+        facts: [
+          ['15+ years', 'IT, project management, digitalization, marketing & sales'],
+          ['Diploma', 'Advertising technology · marketing, design & graphics'],
+          ['A–Z', 'Concept, delivery, scalability & ongoing guidance'],
+          ['Bern', 'Working across Switzerland and internationally'],
+        ],
+      };
+
+  return (
+    <div className={`studio-profile-content ${chakraPetch.className}`}>
+      <div className="studio-profile-intro">
+        <p className="studio-profile-kicker">{copy.kicker}</p>
+        <h2>{copy.title}</h2>
+        <p>{copy.intro}</p>
+      </div>
+      <div className="studio-profile-details">
+        <div className="studio-profile-facts">
+          {copy.facts.map(([value, label]) => (
+            <div key={value} className="studio-profile-fact">
+              <strong>{value}</strong>
+              <span>{label}</span>
+            </div>
+          ))}
+        </div>
+        <div className="studio-profile-principles">
+          <p>{copy.collaboration}</p>
+          <p>{copy.values}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StudioProfileWorld({ lang }: { lang: 'de' | 'en' }) {
+  const worldRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const world = worldRef.current;
+    if (!world) return;
+    let rafId = 0;
+
+    const frame = () => {
+      rafId = requestAnimationFrame(frame);
+      const cameraState = (window as any).__cardsCameraState;
+      if (!cameraState) return;
+
+      const approachProgress = Math.max(0, Math.min(1, cameraState.approachProgress || 0));
+      const revealRaw = Math.max(0, Math.min(1, (approachProgress - 0.12) / 0.18));
+      const fadeRaw = Math.max(0, Math.min(1, (approachProgress - 0.46) / 0.16));
+      const reveal = revealRaw * revealRaw * (3 - 2 * revealRaw);
+      const fade = fadeRaw * fadeRaw * (3 - 2 * fadeRaw);
+      const opacity = reveal * (1 - fade);
+      const translateY = (1 - reveal) * 36 - fade * 20;
+      const scale = 0.975 + reveal * 0.025;
+
+      world.style.opacity = opacity.toFixed(3);
+      world.style.transform = `translate3d(-50%, ${translateY.toFixed(2)}px, 0) scale(${scale.toFixed(4)})`;
+      world.style.pointerEvents = opacity > 0.92 ? 'auto' : 'none';
+      world.setAttribute('aria-hidden', opacity > 0.65 ? 'false' : 'true');
+    };
+
+    rafId = requestAnimationFrame(frame);
+    return () => cancelAnimationFrame(rafId);
+  }, []);
+
+  return (
+    <div ref={worldRef} className="studio-profile-world" aria-hidden="true">
+      <StudioProfileContent lang={lang} />
+    </div>
+  );
+}
+
 function ProjectCtaWorld({ lang }: { lang: 'de' | 'en' }) {
   const worldRef = useRef<HTMLDivElement | null>(null);
 
@@ -1855,6 +1948,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
 
         <ValueImpactWorld lang={lang} />
         <ReferencesWorld lang={lang} />
+        <StudioProfileWorld lang={lang} />
         <ProjectCtaWorld lang={lang} />
 
         <div ref={cardsWorldRef} className="spiral-cards-world">
@@ -2122,6 +2216,9 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
           <MobileValueImpact lang={lang} />
           <div id="mobile-journey-references" className="mobile-references">
             <ReferenceCardsContent lang={lang} />
+          </div>
+          <div id="mobile-journey-about" className="mobile-studio-profile">
+            <StudioProfileContent lang={lang} />
           </div>
           <div id="mobile-journey-contact" className="mobile-project-cta">
             <ProjectCtaContent lang={lang} />
