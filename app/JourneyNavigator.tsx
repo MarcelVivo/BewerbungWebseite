@@ -2,23 +2,54 @@
 
 import { useEffect, useState } from 'react';
 import { Chakra_Petch } from 'next/font/google';
+import { useLanguage } from './LanguageContext';
 
 const chakraPetch = Chakra_Petch({ subsets: ['latin'], weight: '700', display: 'swap' });
 
 const STATIONS = [
-  { label: 'Start', target: 'journey-start' },
-  { label: 'Lösungen', target: 'journey-solutions', mobileTarget: 'mobile-solutions' },
-  { label: 'Dein Mehrwert', target: 'journey-value', mobileTarget: 'mobile-journey-value' },
-  { label: 'Meine Referenzen', target: 'journey-references', mobileTarget: 'mobile-journey-references' },
-  { label: 'Über mich', target: 'journey-about', mobileTarget: 'mobile-journey-about' },
-  { label: 'Deine Beratung', target: 'journey-contact', mobileTarget: 'mobile-journey-contact' },
+  { label: { de: 'Start', en: 'Start' }, target: 'journey-start' },
+  { label: { de: 'Lösungen', en: 'Solutions' }, target: 'journey-solutions', mobileTarget: 'mobile-solutions' },
+  { label: { de: 'Dein Mehrwert', en: 'Your Value' }, target: 'journey-value', mobileTarget: 'mobile-journey-value' },
+  { label: { de: 'Meine Referenzen', en: 'My References' }, target: 'journey-references', mobileTarget: 'mobile-journey-references' },
+  { label: { de: 'Über mich', en: 'About Me' }, target: 'journey-about', mobileTarget: 'mobile-journey-about' },
+  { label: { de: 'Deine Beratung', en: 'Your Consultation' }, target: 'journey-contact', mobileTarget: 'mobile-journey-contact' },
 ];
+
+// Dieselben normierten Positionen, an denen die Desktop-Kamera ihre sechs
+// inhaltlichen Stationen zeigt. So stimmen Klickziel, sichtbarer Inhalt und
+// aktive Beschriftung der rechten Navigation immer miteinander überein.
+const DESKTOP_STATION_PROGRESS = [0, 26 / 55.5, 0.56, 0.7, 0.93, 1];
+const DESKTOP_ACTIVE_THRESHOLDS = [26 / 55.5, 0.56, 0.7, 0.91, 0.9748];
 
 export default function JourneyNavigator() {
   const [activeIndex, setActiveIndex] = useState(0);
+  const { lang } = useLanguage();
 
   useEffect(() => {
+    let rafId = 0;
+
     const update = () => {
+      if (window.innerWidth > 699) {
+        const journey = document.getElementById('solution-spiral');
+        if (!journey) return;
+
+        const cameraState = (window as any).__cardsCameraState;
+        const scrollStart = journey.offsetTop - window.innerHeight;
+        const rawProgress = (window.scrollY - scrollStart) / Math.max(1, journey.offsetHeight);
+        const progress = Math.max(0, Math.min(1,
+          typeof cameraState?.cameraProgress === 'number'
+            ? cameraState.cameraProgress
+            : rawProgress,
+        ));
+
+        let current = 0;
+        DESKTOP_ACTIVE_THRESHOLDS.forEach((threshold, index) => {
+          if (progress >= threshold) current = index + 1;
+        });
+        setActiveIndex(previous => previous === current ? previous : current);
+        return;
+      }
+
       const probe = window.scrollY + window.innerHeight * 0.46;
       let current = 0;
       STATIONS.forEach((station, index) => {
@@ -28,48 +59,27 @@ export default function JourneyNavigator() {
         const element = document.getElementById(targetId);
         if (element && element.getBoundingClientRect().top + window.scrollY <= probe) current = index;
       });
-      setActiveIndex(current);
+      setActiveIndex(previous => previous === current ? previous : current);
     };
 
-    update();
-    window.addEventListener('scroll', update, { passive: true });
-    window.addEventListener('resize', update);
+    const frame = () => {
+      update();
+      rafId = window.requestAnimationFrame(frame);
+    };
+
+    frame();
     return () => {
-      window.removeEventListener('scroll', update);
-      window.removeEventListener('resize', update);
+      window.cancelAnimationFrame(rafId);
     };
   }, []);
 
   function goToStation(index: number) {
     const station = STATIONS[index];
-    if (station.target === 'journey-solutions' && window.innerWidth > 699) {
-      const journey = document.getElementById('solution-spiral');
-      if (journey) {
-        // Exakter Weltstopp der gemeinsamen Vier-Karten-Gruppe:
-        // (0 - (-5 - 5 × 4.2)) / 55.5 = 0.468468…
-        const cardStationProgress = 26 / 55.5;
-        window.scrollTo({
-          top: journey.offsetTop - window.innerHeight + journey.offsetHeight * cardStationProgress,
-          behavior: 'smooth',
-        });
-        return;
-      }
-    }
-    if (station.target === 'journey-about' && window.innerWidth > 699) {
+    if (window.innerWidth > 699 && index > 0) {
       const journey = document.getElementById('solution-spiral');
       if (journey) {
         window.scrollTo({
-          top: journey.offsetTop - window.innerHeight + journey.offsetHeight * 0.93,
-          behavior: 'smooth',
-        });
-        return;
-      }
-    }
-    if (station.target === 'journey-contact' && window.innerWidth > 699) {
-      const journey = document.getElementById('solution-spiral');
-      if (journey) {
-        window.scrollTo({
-          top: journey.offsetTop - window.innerHeight + journey.offsetHeight,
+          top: journey.offsetTop - window.innerHeight + journey.offsetHeight * DESKTOP_STATION_PROGRESS[index],
           behavior: 'smooth',
         });
         return;
@@ -92,16 +102,17 @@ export default function JourneyNavigator() {
       {STATIONS.map((station, index) => {
         const isActive = index === activeIndex;
         const isVisited = index < activeIndex;
+        const label = station.label[lang];
         return (
           <button
-            key={station.label}
+            key={station.target}
             type="button"
             className={`journey-station ${isActive ? 'is-active' : ''} ${isVisited ? 'is-visited' : ''}`}
             aria-current={isActive ? 'location' : undefined}
-            aria-label={`Zu ${station.label}`}
+            aria-label={lang === 'de' ? `Zu ${label}` : `Go to ${label}`}
             onClick={() => goToStation(index)}
           >
-            <span className="journey-label">{station.label}</span>
+            <span className="journey-label">{label}</span>
             <span className="journey-node" aria-hidden="true">
               <span className="journey-node-core" />
             </span>
