@@ -1508,10 +1508,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       return new THREE.Vector2();
     });
     var oceanPalettes=[
-      [GOLD.deep,GOLD.primary,GOLD.light],
-      [SATELLITE_METALS.red.deep,SATELLITE_METALS.red.primary,SATELLITE_METALS.red.light],
-      [SATELLITE_METALS.blue.deep,SATELLITE_METALS.blue.primary,SATELLITE_METALS.blue.light],
-      [SATELLITE_METALS.green.deep,SATELLITE_METALS.green.primary,SATELLITE_METALS.green.light]
+      SATELLITE_METALS.red,
+      SATELLITE_METALS.blue,
+      SATELLITE_METALS.green
     ];
     var oceanColor=new THREE.Color();
     for(var oceanIndex=0;oceanIndex<particleCount;oceanIndex++){
@@ -1549,10 +1548,23 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       oceanPositions[oceanPositionOffset+1]=oceanWorldY+oceanBank+collisionCollar+oceanMicroHeight;
       oceanPositions[oceanPositionOffset+2]=oceanZ;
       var paletteRoll=oceanRandom();
-      var oceanPaletteIndex=paletteRoll<.4?0:(paletteRoll<.6?1:(paletteRoll<.8?2:3));
-      var oceanPalette=oceanPalettes[oceanPaletteIndex];
-      oceanColor.copy(oceanPalette[Math.floor(oceanRandom()*oceanPalette.length)]);
-      oceanColor.multiplyScalar(.3+oceanRandom()*.42);
+      // Verhältnis entsprechend der tatsächlichen Faseranzahl am Eintritt:
+      // Gold 220, Rot ca. 209, Blau ca. 209, Grün ca. 180.
+      if(paletteRoll<.269){
+        // Exakt dieselbe gewichtete Goldpalette wie der Hauptstrang.
+        oceanColor.copy(golds[Math.floor(oceanRandom()*golds.length)]);
+      } else {
+        var oceanPaletteIndex=paletteRoll<.524?0:(paletteRoll<.779?1:2);
+        var oceanPalette=oceanPalettes[oceanPaletteIndex];
+        // Exakt derselbe kontinuierliche Metallic-Verlauf wie bei den
+        // Sekundärfasern: deep -> primary -> light.
+        var oceanMetallic=oceanRandom();
+        if(oceanMetallic<.5){
+          oceanColor.copy(oceanPalette.deep).lerp(oceanPalette.primary,oceanMetallic*2);
+        } else {
+          oceanColor.copy(oceanPalette.primary).lerp(oceanPalette.light,(oceanMetallic-.5)*2);
+        }
+      }
       oceanColors[oceanPositionOffset]=oceanColor.r;
       oceanColors[oceanPositionOffset+1]=oceanColor.g;
       oceanColors[oceanPositionOffset+2]=oceanColor.b;
@@ -1570,7 +1582,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       uniforms:{
         uTime:{value:0},
         uPixelRatio:{value:Math.min(window.devicePixelRatio||1,2)},
-        uOpacity:{value:isMobile?.42:.36},
+        uOpacity:{value:GOLD_RENDER.pointOpacity},
         uReveal:{value:0},
         uStrandRadius:{value:strandCollisionRadius},
         uOceanHalfWidth:{value:oceanHalfWidth},
@@ -1603,7 +1615,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         '  float depth=aOcean.y;',
         '  float phase=aOcean.z;',
         '  float radius=length(position.xz);',
-        // Originalbewegung aus dem GLB: Die 16 animierten Steuerknochen
+        // Originalbewegung aus dem GLB: Die 13 animierten Steuerknochen
         // werden als weiches Höhenfeld über die Partikeloberfläche gelegt.
         '  vec2 sourcePosition=vec2(',
         '    side/max(.001,uOceanHalfWidth)*12.72,',
@@ -1631,11 +1643,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         '  vImpact=impact;',
         '  gl_PointSize=aOcean.w*(1.0+vCrest*.28+impact*.16)*uPixelRatio*(31.0/max(6.0,-mvPosition.z));',
         '  vColor=aColor;',
-        '  vShimmer=.78+.22*sin(phase+uTime*.32+side*.11);',
+        '  vShimmer=1.0;',
         '}'
       ].join('\n'),
       fragmentShader:[
         'precision highp float;',
+        '#include <tonemapping_pars_fragment>',
+        '#include <colorspace_pars_fragment>',
         'uniform float uOpacity;',
         'uniform float uReveal;',
         'varying vec3 vColor;',
@@ -1643,18 +1657,25 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         'varying float vCrest;',
         'varying float vImpact;',
         'void main(){',
-        '  float d=length(gl_PointCoord-vec2(.5));',
-        '  float alpha=smoothstep(.5,.1,d)*uOpacity*uReveal;',
+        '  float radial=length(gl_PointCoord-vec2(.5))*2.0;',
+        // Gleicher radialer Alpha-Verlauf wie die softSprite-Textur der
+        // Strangpunkte: 1.0 im Kern, .45 bei 35 %, 0.0 am Rand.
+        '  float spriteAlpha=radial<.35',
+        '    ?mix(1.0,.45,radial/.35)',
+        '    :.45*(1.0-(radial-.35)/.65);',
+        '  float alpha=max(0.0,spriteAlpha)*uOpacity*uReveal;',
         '  if(alpha<.015) discard;',
-        '  vec3 litColor=vColor*vShimmer*(1.0+vCrest*.48+vImpact*.18);',
+        '  vec3 litColor=vColor;',
         '  gl_FragColor=vec4(litColor,alpha);',
+        '  #include <tonemapping_fragment>',
+        '  #include <colorspace_fragment>',
         '}'
       ].join('\n'),
       transparent:true,
       depthWrite:false,
       depthTest:true,
       blending:THREE.NormalBlending,
-      toneMapped:false
+      toneMapped:true
     });
     var oceanPoints=new THREE.Points(oceanGeometry,oceanMaterial);
     oceanPoints.name='neural-particle-ocean';
