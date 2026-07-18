@@ -305,18 +305,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   // stark verdichteten Hirnstamm. In diesem Bereich soll ausschliesslich der
   // prozedurale Goldtrichter sichtbar sein.
   var ORIGINAL_STUMP_CUTOFF=-.62;
-  var ambientStarLayers=[];
-
-  function registerAmbientStarLayer(object,fadeStart,fadeEnd){
-    if(!object||!object.material) return object;
-    ambientStarLayers.push({
-      object:object,
-      baseOpacity:object.material.opacity,
-      fadeStart:fadeStart,
-      fadeEnd:fadeEnd
-    });
-    return object;
-  }
 
   function pointsObj(arr,cols,size,op,blending){
     var g2=new THREE.BufferGeometry();
@@ -344,12 +332,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   }
 
   // Fünf feste räumliche Ebenen: Die Partikel bewegen sich nicht selbst,
-  // erzeugen durch die vorbeifliegende Kamera aber permanenten Vorder- und Hintergrund-Flow.
-  registerAmbientStarLayer(addDepthLayer(isMobile?24:52,1.4,3.6,.055,.16,0xe7c56a,0xf6e3a1),.02,.38);
-  registerAmbientStarLayer(addDepthLayer(isMobile?34:72,3.7,6.8,.075,.11,0xc89a3d,0xf6e3a1),.07,.44);
-  registerAmbientStarLayer(addDepthLayer(isMobile?42:92,6.9,10.5,.11,.075,0xb8862b,0xe7c56a),.12,.5);
-  registerAmbientStarLayer(addDepthLayer(isMobile?34:76,10.6,16.5,.16,.045,0x7c5a1a,0xc89a3d),.17,.56);
-  registerAmbientStarLayer(addDepthLayer(isMobile?16:36,16.6,23,.42,.02,0x7c5a1a,0xb8862b),.22,.62);
+  // erzeugen durch die vorbeifliegende Kamera aber permanenten Vorder- und
+  // Hintergrund-Flow. Sie bleiben ueber die komplette Kamerafahrt sichtbar.
+  addDepthLayer(isMobile?24:52,1.4,3.6,.055,.16,0xe7c56a,0xf6e3a1);
+  addDepthLayer(isMobile?34:72,3.7,6.8,.075,.11,0xc89a3d,0xf6e3a1);
+  addDepthLayer(isMobile?42:92,6.9,10.5,.11,.075,0xb8862b,0xe7c56a);
+  addDepthLayer(isMobile?34:76,10.6,16.5,.16,.045,0x7c5a1a,0xc89a3d);
+  addDepthLayer(isMobile?16:36,16.6,23,.42,.02,0x7c5a1a,0xb8862b);
 
   // --- Staubfeld: tausende feine, leuchtende Partikel, frei über alle drei
   // Achsen im gesamten Raum verteilt (nicht nur in schmalen Radius-Ringen wie
@@ -371,9 +360,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     world.add(stardust);
     return stardust;
   }
-  registerAmbientStarLayer(addStardustField(isMobile?1300:4200,.09,.85),.08,.58);
+  addStardustField(isMobile?1300:4200,.09,.85);
 
-  // --- Farbige Leuchtorbs: rote & blaue Partikel, dreimal so gross wie das
+  // --- Farbige Leuchtorbs: rote, blaue & gruene Partikel, dreimal so gross wie das
   // Gold-Staubfeld, in halber Stückzahl, über einen deutlich grösseren Raum
   // verteilt und ortsfest. Jede Position bekommt zusätzlich zum hellen Kern
   // eine grosse, weiche additive Glow-Hülle — das ist die einzig sinnvolle
@@ -403,13 +392,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   }
   var BLUE_ORB_SHADES=[new THREE.Color(0x4d7fbf),new THREE.Color(0x8ebef2),new THREE.Color(0xc4e3ff),new THREE.Color(0x244d82)];
   var RED_ORB_SHADES=[new THREE.Color(0xa6425c),new THREE.Color(0xd9788a),new THREE.Color(0xf3b0b9),new THREE.Color(0x6a263b)];
+  var GREEN_ORB_SHADES=[new THREE.Color(0x269466),new THREE.Color(0x75e0aa),new THREE.Color(0xc7ffe1),new THREE.Color(0x176b48)];
   var coloredOrbCount=isMobile?325:1050;
-  var blueAmbientOrbs=addColoredOrbField(coloredOrbCount,.27,1.35,.8,.13,BLUE_ORB_SHADES,2,55,14);
-  var redAmbientOrbs=addColoredOrbField(coloredOrbCount,.27,1.35,.8,.13,RED_ORB_SHADES,2,55,14);
-  registerAmbientStarLayer(blueAmbientOrbs[0],.18,.64);
-  registerAmbientStarLayer(blueAmbientOrbs[1],.2,.66);
-  registerAmbientStarLayer(redAmbientOrbs[0],.24,.68);
-  registerAmbientStarLayer(redAmbientOrbs[1],.26,.7);
+  addColoredOrbField(coloredOrbCount,.27,1.35,.8,.13,BLUE_ORB_SHADES,2,55,14);
+  addColoredOrbField(coloredOrbCount,.27,1.35,.8,.13,RED_ORB_SHADES,2,55,14);
+  addColoredOrbField(coloredOrbCount,.27,1.35,.8,.13,GREEN_ORB_SHADES,2,55,14);
 
   // Kapitel 2 ist eine bereits existierende, statische Weltgeometrie. Sie
   // wird nicht aus der Kameraposition berechnet: die feste Ausrichtung folgt
@@ -4890,20 +4877,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       // Kein visibility-Schalter: Durch seine tiefe feste Weltposition kommt
       // das gruene Gehirn beim Scrollen natuerlich in den Kamerafrustum.
       greenSatelliteBrain.visible=true;
-      var valleyRevealProgress=THREE.MathUtils.clamp(
-        (chapterTransitionProgress-.1)/.9,
-        0,
-        1
-      );
-      for(var ambientLayerIndex=0;ambientLayerIndex<ambientStarLayers.length;ambientLayerIndex++){
-        var ambientLayer=ambientStarLayers[ambientLayerIndex];
-        var ambientFade=smooth(
-          (valleyRevealProgress-ambientLayer.fadeStart)/
-          Math.max(.0001,ambientLayer.fadeEnd-ambientLayer.fadeStart)
-        );
-        ambientLayer.object.material.opacity=ambientLayer.baseOpacity*(1-ambientFade);
-        ambientLayer.object.visible=ambientFade<.999;
-      }
       var railSf=sf;
       var dollyPullback=0;
       if(sf>cameraHelixExitStart){
