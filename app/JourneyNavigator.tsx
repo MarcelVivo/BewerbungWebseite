@@ -23,7 +23,7 @@ const DESKTOP_ACTIVE_THRESHOLDS = [26 / 55.5, 0.56, 0.7, 0.91, 0.9748];
 
 export default function JourneyNavigator() {
   const [activeIndex, setActiveIndex] = useState(0);
-  const { lang } = useLanguage();
+  const { lang, setLang } = useLanguage();
 
   useEffect(() => {
     let rafId = 0;
@@ -92,7 +92,29 @@ export default function JourneyNavigator() {
   }
 
   return (
-    <nav className={`journey-navigator ${chakraPetch.className}`} aria-label="Seitennavigation">
+    <nav
+      className={`journey-navigator ${chakraPetch.className}`}
+      aria-label={lang === 'de' ? 'Seitennavigation' : 'Page navigation'}
+    >
+      <div className="journey-language" aria-label={lang === 'de' ? 'Sprache wählen' : 'Choose language'}>
+        <button
+          type="button"
+          className={lang === 'de' ? 'is-active' : ''}
+          aria-pressed={lang === 'de'}
+          onClick={() => setLang('de')}
+        >
+          DE
+        </button>
+        <span aria-hidden="true">/</span>
+        <button
+          type="button"
+          className={lang === 'en' ? 'is-active' : ''}
+          aria-pressed={lang === 'en'}
+          onClick={() => setLang('en')}
+        >
+          EN
+        </button>
+      </div>
       <span className="journey-rail" aria-hidden="true">
         <span
           className="journey-rail-progress"

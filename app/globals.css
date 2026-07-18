@@ -543,9 +543,43 @@ body {
   pointer-events: none;
 }
 
+.journey-language {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 1.35rem;
+  margin-right: 0.42rem;
+  color: rgba(216,204,179,0.25);
+  font-size: 0.54rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  pointer-events: auto;
+}
+
+.journey-language button {
+  padding: 0.1rem 0.3rem;
+  color: rgba(216,204,179,0.38);
+  background: transparent;
+  border: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+  transition: color 180ms ease, text-shadow 180ms ease;
+}
+
+.journey-language button:hover,
+.journey-language button:focus-visible {
+  color: #d4c4a8;
+}
+
+.journey-language button.is-active {
+  color: #f6e3a1;
+  text-shadow: 0 0 10px rgba(231,197,106,0.5);
+}
+
 .journey-rail {
   position: absolute;
-  top: 1.55rem;
+  top: 3.62rem;
   right: 1.07rem;
   bottom: 2.1rem;
   width: 1px;
@@ -3489,7 +3523,7 @@ body {
   }
 
   .journey-rail {
-    top: 1.45rem;
+    top: 3.15rem;
     right: 0.83rem;
     bottom: 1.45rem;
   }
