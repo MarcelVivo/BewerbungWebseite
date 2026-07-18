@@ -1534,11 +1534,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var sourceWaveTilts=Array.from({length:13},function(){
       return new THREE.Vector2();
     });
-    var oceanPalettes=[
-      SATELLITE_METALS.red,
-      SATELLITE_METALS.blue,
-      SATELLITE_METALS.green
-    ];
     var oceanColor=new THREE.Color();
     for(var oceanIndex=0;oceanIndex<particleCount;oceanIndex++){
       // Quasi-rasterartige Grundverteilung plus starker Jitter: lückenlos wie
@@ -1567,35 +1562,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       oceanPositions[oceanPositionOffset]=oceanX;
       oceanPositions[oceanPositionOffset+1]=oceanWorldY+oceanBank+collisionCollar+oceanMicroHeight;
       oceanPositions[oceanPositionOffset+2]=oceanZ;
-      var paletteRoll=oceanRandom();
-      var entryColorWeight=Math.exp(-collisionDistance*.42);
-      var oceanPaletteCode;
-      if(oceanRandom()<entryColorWeight){
-        // Direkte farbliche Fortsetzung der sichtbaren Stranglagen in der
-        // Bildschirm-/Talbreite. Direkt unter dem Hauptstrang wird bewusst
-        // kein kompaktes Goldfeld mehr erzeugt; dort übernimmt der räumliche
-        // weiss-goldene Schwebehalo die optische Verbindung.
-        oceanPaletteCode=oceanSide<-.92?3:(oceanSide<-.18?2:(oceanSide<.34?(paletteRoll<.5?2:1):1));
-      } else {
-        // In der Fläche Verhältnis entsprechend der tatsächlichen Faseranzahl:
-        // Gold 220, Rot ca. 209, Blau ca. 209, Grün ca. 180.
-        oceanPaletteCode=paletteRoll<.269?0:(paletteRoll<.524?1:(paletteRoll<.779?2:3));
-      }
-      if(oceanPaletteCode===0){
-        // Exakt dieselbe gewichtete Goldpalette wie der Hauptstrang.
-        oceanColor.copy(golds[Math.floor(oceanRandom()*golds.length)]);
-      } else {
-        var oceanPaletteIndex=oceanPaletteCode-1;
-        var oceanPalette=oceanPalettes[oceanPaletteIndex];
-        // Exakt derselbe kontinuierliche Metallic-Verlauf wie bei den
-        // Sekundärfasern: deep -> primary -> light.
-        var oceanMetallic=oceanRandom();
-        if(oceanMetallic<.5){
-          oceanColor.copy(oceanPalette.deep).lerp(oceanPalette.primary,oceanMetallic*2);
-        } else {
-          oceanColor.copy(oceanPalette.primary).lerp(oceanPalette.light,(oceanMetallic-.5)*2);
-        }
-      }
+      // Der gesamte Ozean verwendet exakt dieselbe zufällige Goldspanne wie
+      // die aufsteigenden Partikel des unteren Rings.
+      oceanColor.copy(GOLD.light).lerp(GOLD.highlight,.46+oceanRandom()*.54);
       oceanColors[oceanPositionOffset]=oceanColor.r;
       oceanColors[oceanPositionOffset+1]=oceanColor.g;
       oceanColors[oceanPositionOffset+2]=oceanColor.b;
@@ -1613,14 +1582,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       uniforms:{
         uTime:{value:0},
         uPixelRatio:{value:Math.min(window.devicePixelRatio||1,2)},
-        uOpacity:{value:GOLD_RENDER.pointOpacity},
-        uToneMappingExposure:{value:renderer.toneMappingExposure},
+        // Durchschnittliche Ring-Deckkraft (.58 + .72 * .34 = .8248).
+        uOpacity:{value:.825},
+        uBrightness:{value:.5},
         uReveal:{value:0},
         uBrainPulses:{value:new THREE.Vector4()},
-        uPulseGold:{value:GOLD.light.clone()},
-        uPulseRed:{value:SATELLITE_METALS.red.light.clone()},
-        uPulseBlue:{value:SATELLITE_METALS.blue.light.clone()},
-        uPulseGreen:{value:SATELLITE_METALS.green.light.clone()},
         uStrandRadius:{value:strandCollisionRadius},
         uOceanHalfWidth:{value:oceanHalfWidth},
         uOceanDepthMid:{value:(oceanDepthAhead-oceanDepthBehind)*.5},
@@ -1697,46 +1663,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       fragmentShader:[
         'precision highp float;',
         'uniform float uOpacity;',
+        'uniform float uBrightness;',
         'uniform float uReveal;',
-        'uniform float uToneMappingExposure;',
         'uniform vec4 uBrainPulses;',
-        'uniform vec3 uPulseGold;',
-        'uniform vec3 uPulseRed;',
-        'uniform vec3 uPulseBlue;',
-        'uniform vec3 uPulseGreen;',
         'varying vec3 vColor;',
         'varying float vShimmer;',
         'varying float vCrest;',
         'varying float vImpact;',
-        'vec3 oceanRRTAndODTFit(vec3 value){',
-        '  vec3 numerator=value*(value+.0245786)-.000090537;',
-        '  vec3 denominator=value*(.983729*value+.432951)+.238081;',
-        '  return numerator/denominator;',
-        '}',
-        'vec3 oceanACES(vec3 color){',
-        '  const mat3 inputMatrix=mat3(',
-        '    vec3(.59719,.07600,.02840),',
-        '    vec3(.35458,.90834,.13383),',
-        '    vec3(.04823,.01566,.83777)',
-        '  );',
-        '  const mat3 outputMatrix=mat3(',
-        '    vec3(1.60475,-.10208,-.00327),',
-        '    vec3(-.53108,1.10813,-.07276),',
-        '    vec3(-.07367,-.00605,1.07602)',
-        '  );',
-        '  color*=uToneMappingExposure/.6;',
-        '  color=inputMatrix*color;',
-        '  color=oceanRRTAndODTFit(color);',
-        '  color=outputMatrix*color;',
-        '  return clamp(color,0.0,1.0);',
-        '}',
-        'vec4 oceanSRGB(vec4 value){',
-        '  return vec4(mix(',
-        '    pow(value.rgb,vec3(.41666))*1.055-vec3(.055),',
-        '    value.rgb*12.92,',
-        '    vec3(lessThanEqual(value.rgb,vec3(.0031308)))',
-        '  ),value.a);',
-        '}',
         'void main(){',
         '  float radial=length(gl_PointCoord-vec2(.5))*2.0;',
         // Gleicher radialer Alpha-Verlauf wie die softSprite-Textur der
@@ -1744,22 +1677,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         '  float spriteAlpha=radial<.35',
         '    ?mix(1.0,.45,radial/.35)',
         '    :.45*(1.0-(radial-.35)/.65);',
-        // Jeder Gehirnimpuls wird farbgleich und im selben Frame auf das Meer
-        // übertragen. Das bindet die Oberfläche optisch an die vier Stränge.
-        '  float pulseEnergy=dot(uBrainPulses,vec4(1.0));',
-        '  vec3 pulseColor=uPulseGold*uBrainPulses.x',
-        '    +uPulseRed*uBrainPulses.y',
-        '    +uPulseBlue*uBrainPulses.z',
-        '    +uPulseGreen*uBrainPulses.w;',
-        '  pulseColor/=max(.0001,pulseEnergy);',
-        '  pulseEnergy=clamp(pulseEnergy,0.0,1.0);',
-        '  float alpha=max(0.0,spriteAlpha)*uOpacity*uReveal*(1.0+pulseEnergy*.82);',
+        // Wie beim Goldring reagiert der Ozean nur auf den goldenen Puls und
+        // bleibt dadurch dauerhaft in derselben Goldfarbe.
+        '  float pulseEnergy=clamp(uBrainPulses.x,0.0,1.0);',
+        '  float alpha=max(0.0,spriteAlpha)*uOpacity*uReveal*(1.0+pulseEnergy*.9);',
         '  if(alpha<.015) discard;',
-        '  vec3 litColor=mix(vColor,pulseColor,pulseEnergy*.52);',
-        '  litColor*=1.0+pulseEnergy*1.35;',
-        '  gl_FragColor=vec4(litColor,alpha);',
-        '  gl_FragColor.rgb=oceanACES(gl_FragColor.rgb);',
-        '  gl_FragColor=oceanSRGB(gl_FragColor);',
+        '  vec3 litColor=mix(vColor,vec3(1.0),.22+pulseEnergy*.28);',
+        '  gl_FragColor=vec4(litColor*(1.0+pulseEnergy*.72)*uBrightness,alpha);',
         '}'
       ].join('\n'),
       transparent:true,
