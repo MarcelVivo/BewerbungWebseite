@@ -1478,6 +1478,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   // Ruhiges, grosswelliges Partikelmeer am unteren Bildrand. Die Punkte
   // werden einmal auf der CPU verteilt; sämtlicher Wellengang läuft danach
   // im Vertex-Shader und belastet den JavaScript-Thread nicht pro Partikel.
+  var oceanWaveAnimationData=null;
+  var oceanWaveAnimationDisposed=false;
+
   function buildNeuralParticleOcean(){
     if(!sFibers.length) return null;
     var particleCount=isMobile?150000:520000;
@@ -1498,6 +1501,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var oceanWorldForwardX=Math.sin(organismStationAngle);
     var oceanWorldForwardZ=Math.cos(organismStationAngle);
     var strandCollisionRadius=isMobile?.4:.56;
+    var sourceWaveControls=Array.from({length:13},function(){
+      return new THREE.Vector4();
+    });
+    var sourceWaveTilts=Array.from({length:13},function(){
+      return new THREE.Vector2();
+    });
     var oceanPalettes=[
       [GOLD.deep,GOLD.primary,GOLD.light],
       [SATELLITE_METALS.red.deep,SATELLITE_METALS.red.primary,SATELLITE_METALS.red.light],
@@ -1563,7 +1572,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         uPixelRatio:{value:Math.min(window.devicePixelRatio||1,2)},
         uOpacity:{value:isMobile?.42:.36},
         uReveal:{value:0},
-        uStrandRadius:{value:strandCollisionRadius}
+        uStrandRadius:{value:strandCollisionRadius},
+        uOceanHalfWidth:{value:oceanHalfWidth},
+        uOceanDepthMid:{value:(oceanDepthAhead-oceanDepthBehind)*.5},
+        uOceanDepthHalf:{value:(oceanDepthAhead+oceanDepthBehind)*.5},
+        uSourceWaveControls:{value:sourceWaveControls},
+        uSourceWaveTilts:{value:sourceWaveTilts}
       },
       vertexShader:[
         'precision highp float;',
@@ -1572,6 +1586,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         'uniform float uTime;',
         'uniform float uPixelRatio;',
         'uniform float uStrandRadius;',
+        'uniform float uOceanHalfWidth;',
+        'uniform float uOceanDepthMid;',
+        'uniform float uOceanDepthHalf;',
+        'uniform vec4 uSourceWaveControls[13];',
+        'uniform vec2 uSourceWaveTilts[13];',
         'attribute vec3 position;',
         'attribute vec3 aColor;',
         'attribute vec4 aOcean;',
@@ -1584,13 +1603,27 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         '  float depth=aOcean.y;',
         '  float phase=aOcean.z;',
         '  float radius=length(position.xz);',
-        // Lange ankommende Wellen und eine radial nach aussen laufende
-        // Gegenwelle am Strang. Beide Bewegungsrichtungen bleiben ruhig.
-        '  float incoming=sin(depth*.17+side*.035-uTime*.12+phase*.009)*.92;',
-        '  incoming+=sin(side*.095+depth*.07-uTime*.065)*.42;',
+        // Originalbewegung aus dem GLB: Die 16 animierten Steuerknochen
+        // werden als weiches Höhenfeld über die Partikeloberfläche gelegt.
+        '  vec2 sourcePosition=vec2(',
+        '    side/max(.001,uOceanHalfWidth)*12.72,',
+        '    (depth-uOceanDepthMid)/max(.001,uOceanDepthHalf)*12.72',
+        '  );',
+        '  float sourceHeight=0.0;',
+        '  float sourceWeight=0.0;',
+        '  for(int controlIndex=0;controlIndex<13;controlIndex++){',
+        '    vec4 control=uSourceWaveControls[controlIndex];',
+        '    vec2 controlDelta=sourcePosition-control.xy;',
+        '    float controlWeight=exp(-dot(controlDelta,controlDelta)*.072);',
+        '    vec2 controlTilt=uSourceWaveTilts[controlIndex];',
+        '    float tiltedHeight=control.z+dot(controlTilt,controlDelta)*.26;',
+        '    sourceHeight+=tiltedHeight*controlWeight;',
+        '    sourceWeight+=controlWeight;',
+        '  }',
+        '  float glbWave=sourceHeight/max(.0001,sourceWeight)*1.82;',
         '  float impact=exp(-max(0.0,radius-uStrandRadius)*.31);',
-        '  float reflected=sin((radius-uStrandRadius)*.62+uTime*.15+phase*.006)*.58*impact;',
-        '  float wave=incoming+reflected;',
+        '  float reflected=sin((radius-uStrandRadius)*.62+uTime*.15+phase*.006)*.42*impact;',
+        '  float wave=glbWave+reflected;',
         '  vec3 displaced=position+vec3(0.0,wave,0.0);',
         '  vec4 mvPosition=modelViewMatrix*vec4(displaced,1.0);',
         '  gl_Position=projectionMatrix*mvPosition;',
@@ -1628,9 +1661,55 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     oceanPoints.frustumCulled=false;
     oceanPoints.renderOrder=3;
     world.add(oceanPoints);
-    return {points:oceanPoints,material:oceanMaterial};
+    return {
+      points:oceanPoints,
+      material:oceanMaterial,
+      sourceWaveControls:sourceWaveControls,
+      sourceWaveTilts:sourceWaveTilts
+    };
   }
   var neuralParticleOcean=buildNeuralParticleOcean();
+
+  function updateNeuralParticleOceanWave(time){
+    if(!neuralParticleOcean||!oceanWaveAnimationData) return;
+    var animationDuration=oceanWaveAnimationData.duration;
+    var animationFps=oceanWaveAnimationData.fps;
+    var animationFrames=oceanWaveAnimationData.frames;
+    var sourceTime=((time%animationDuration)+animationDuration)%animationDuration;
+    var sourceFrame=sourceTime*animationFps;
+    var sourceFrameA=Math.floor(sourceFrame)%animationFrames.length;
+    var sourceFrameB=(sourceFrameA+1)%animationFrames.length;
+    var sourceBlend=sourceFrame-Math.floor(sourceFrame);
+    var frameA=animationFrames[sourceFrameA];
+    var frameB=animationFrames[sourceFrameB];
+    for(var controlIndex=0;controlIndex<neuralParticleOcean.sourceWaveControls.length;controlIndex++){
+      var controlOffset=controlIndex*5;
+      var sourceMeanZ=oceanWaveAnimationData.controls[controlIndex].meanZ;
+      neuralParticleOcean.sourceWaveControls[controlIndex].set(
+        frameA[controlOffset]+(frameB[controlOffset]-frameA[controlOffset])*sourceBlend,
+        frameA[controlOffset+1]+(frameB[controlOffset+1]-frameA[controlOffset+1])*sourceBlend,
+        frameA[controlOffset+2]+(frameB[controlOffset+2]-frameA[controlOffset+2])*sourceBlend-sourceMeanZ,
+        1
+      );
+      neuralParticleOcean.sourceWaveTilts[controlIndex].set(
+        frameA[controlOffset+3]+(frameB[controlOffset+3]-frameA[controlOffset+3])*sourceBlend,
+        frameA[controlOffset+4]+(frameB[controlOffset+4]-frameA[controlOffset+4])*sourceBlend
+      );
+    }
+  }
+  fetch('/oceanWaveAnimation.json')
+    .then(function(response){
+      if(!response.ok) throw new Error('Ocean wave animation could not be loaded');
+      return response.json();
+    })
+    .then(function(animationData){
+      if(oceanWaveAnimationDisposed) return;
+      oceanWaveAnimationData=animationData;
+      updateNeuralParticleOceanWave(0);
+    })
+    .catch(function(error){
+      console.warn(error);
+    });
 
   function applyGoldRendering(){
     linesObj.material.opacity=Math.min(1,GOLD_RENDER.lineOpacity*GOLD_RENDER.intensity);
@@ -4318,6 +4397,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       worldVerticalInStrandLocal.set(0,1,0).applyQuaternion(strandInverseRotation);
       if(neuralParticleOcean){
         neuralParticleOcean.material.uniforms.uTime.value=reduced?0:t;
+        updateNeuralParticleOceanWave(reduced?0:t);
       }
       for (var satelliteIndex=0;satelliteIndex<satelliteBrains.length;satelliteIndex++) {
         var satelliteBrain=satelliteBrains[satelliteIndex];
@@ -4635,6 +4715,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     rafId = requestAnimationFrame(tick);
 
     return () => {
+      oceanWaveAnimationDisposed=true;
       cancelAnimationFrame(rafId);
       window.removeEventListener('mousemove', onMouse);
       window.removeEventListener('pointerdown', onGoldPointerDown, true);
