@@ -3113,34 +3113,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   BLUE_STRAND.bottomThickness=1.04;
   BLUE_STRAND.escapeAmplitude=1.35;
   BLUE_STRAND.escapeWavelength=1;
-  GREEN_STRAND.baseBrightness=.94;
-  GREEN_STRAND.pulseStrength=.12;
-  GREEN_STRAND.fiberAmount=.5;
-  GREEN_STRAND.topThickness=.72;
-  // Der frei haengende gruene Zulauf bleibt schlank. Der gemeinsame Umfang
-  // an der Wasserlinie wird unten explizit aus dem Goldrahmen berechnet.
-  GREEN_STRAND.bottomThickness=.74;
-  GREEN_STRAND.topFunnel=.82;
-  GREEN_STRAND.funnelSpread=.48;
-  GREEN_STRAND.funnelLength=.58;
-  GREEN_STRAND.funnelTopRadius=.22;
-  GREEN_STRAND.funnelOutletRadius=.038;
-  GREEN_STRAND.firstDroop=.78;
-  GREEN_STRAND.secondDroop=.88;
-  // Vollständige Wellenreferenz des roten Strangs. Insbesondere muss auch der
-  // Anteil bewegter Randfasern übernommen werden; mit dem früheren Wert .12
-  // blieb die Laufwelle im kompakten grünen Bündel praktisch unsichtbar.
-  GREEN_STRAND.sway=RED_STRAND.sway;
-  GREEN_STRAND.escapeAmount=RED_STRAND.escapeAmount;
-  GREEN_STRAND.escapeAmplitude=RED_STRAND.escapeAmplitude;
-  GREEN_STRAND.escapeFrequency=RED_STRAND.escapeFrequency;
-  GREEN_STRAND.escapeWavelength=RED_STRAND.escapeWavelength;
-  GREEN_STRAND.escapeSpeed=RED_STRAND.escapeSpeed;
-  // Der grüne Ursprung liegt bereits auf halber Stranghöhe. Seine Fasern
-  // steigen deshalb erst etwas tiefer in die Goldbahn ein und knicken nicht
-  // sichtbar nach oben zurück.
-  GREEN_STRAND.goldEntryProgressStart=.52;
-  GREEN_STRAND.goldEntryProgressRange=.18;
+  // Gruen verwendet eine eigene Parameterinstanz, aber exakt dieselben
+  // Geometrie-, Buendel-, Trichter-, Wellen- und Ausfaserungswerte wie der
+  // rote Referenzstrang. Nur die Metallpalette wird separat uebergeben.
+  Object.assign(GREEN_STRAND,RED_STRAND);
   // Die Assimilation beginnt erst auf der vorhandenen Gold-Mittelbahn und
   // verwendet deren lokalen 3D-Rahmen als organischen Bezug.
   var ASSIMILATION_GOLD_PROGRESS=.55;
