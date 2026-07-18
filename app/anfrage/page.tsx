@@ -175,16 +175,17 @@ export default function AnfragePage() {
 
   // ── Styles ────────────────────────────────────────────────
 
-  const goldBtn = 'flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#c9a84c] hover:bg-[#b8943a] text-[#0c0a06] font-bold text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed';
-  const outlineBtn = 'flex items-center gap-2 px-5 py-2.5 rounded-xl border border-[#2d2820] text-[#a89880] hover:text-[#f4edd8] hover:border-[#a89880] text-sm transition-colors disabled:opacity-30';
-  const inp = 'w-full rounded-xl bg-[#1c1912] border border-[#2d2820] focus:border-[#c9a84c] focus:ring-1 focus:ring-[#c9a84c] outline-none px-4 py-3 text-[#f4edd8] text-sm placeholder-[#5a5040] transition-colors';
+  const goldBtn = 'inquiry-primary-button flex items-center justify-center gap-2 px-6 py-3 font-bold text-sm disabled:opacity-40 disabled:cursor-not-allowed';
+  const outlineBtn = 'inquiry-secondary-button flex items-center gap-2 px-5 py-2.5 text-sm disabled:opacity-30';
+  const inp = 'inquiry-input w-full outline-none px-4 py-3 text-sm transition-colors';
 
   // ── Render ────────────────────────────────────────────────
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-[#0c0a06] flex items-center justify-center p-6">
-        <div className="max-w-md w-full text-center space-y-6">
+      <div className="inquiry-page inquiry-display min-h-screen flex items-center justify-center p-6">
+        <div className="inquiry-space" aria-hidden="true"><span /><span /><span /></div>
+        <div className="inquiry-success-card max-w-md w-full text-center space-y-6">
           <div className="w-20 h-20 mx-auto rounded-full bg-[#c9a84c]/20 border-2 border-[#c9a84c]/40 flex items-center justify-center">
             <CheckCircle2 size={40} className="text-[#c9a84c]" />
           </div>
@@ -212,45 +213,50 @@ export default function AnfragePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0c0a06] text-[#f4edd8]">
+    <div className="inquiry-page min-h-screen text-[#f4edd8]">
+      <div className="inquiry-space" aria-hidden="true"><span /><span /><span /></div>
       {/* Header */}
-      <div className="border-b border-[#2d2820] bg-[#0c0a06]/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="text-[#c9a84c] font-bold text-lg tracking-tight">
-            Marcel Spahr
+      <div className="inquiry-header sticky top-0 z-10">
+        <div className="inquiry-header-inner mx-auto px-6 flex items-center justify-between">
+          <Link href="/" className="inquiry-brand" aria-label="Zurück zur Startseite">
+            <img src="/MSLogo/MSLogoGehirn.png" alt="Marcel Spahr" />
+            <span className="inquiry-display">DIGITALSTUDIO MARCEL SPAHR</span>
           </Link>
-          <span className="text-xs text-[#7a6d5a]">Projektanfrage</span>
+          <span className="inquiry-header-status inquiry-display">PROJEKTANFRAGE · {String(step + 1).padStart(2, '0')} / 04</span>
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-6 py-10">
+      <main className="inquiry-shell mx-auto px-6 py-10">
         {/* Title */}
-        <div className="text-center mb-10">
-          <h1 className="text-3xl font-bold text-white mb-3">Erzählen Sie mir von Ihrem Projekt</h1>
+        <div className="inquiry-intro text-center mb-10">
+          <p className="inquiry-kicker inquiry-display">PERSÖNLICH · STRUKTURIERT · UNVERBINDLICH</p>
+          <h1 className="inquiry-display font-bold text-white mb-3">Erzählen Sie mir von Ihrem Projekt</h1>
           <p className="text-[#a89880] leading-relaxed">
             Beantworten Sie ein paar Fragen – ich melde mich innerhalb von 24 Stunden persönlich bei Ihnen.
           </p>
         </div>
 
         {/* Stepper */}
-        <div className="flex items-center justify-center gap-2 mb-10">
+        <div className="inquiry-stepper inquiry-display flex items-center justify-center gap-2 mb-10">
           {STEPS.map((s, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                i < step  ? 'bg-[#c9a84c]/20 text-[#c9a84c]'
-                : i === step ? 'bg-[#c9a84c] text-[#0c0a06]'
-                : 'bg-[#1c1912] text-[#5a5040]'
+            <div key={i} className="inquiry-step-wrap flex items-center gap-2">
+              <div className={`inquiry-step flex items-center gap-2 px-3 py-1.5 text-xs font-semibold transition-all ${
+                i < step  ? 'is-complete'
+                : i === step ? 'is-active'
+                : 'is-upcoming'
               }`}>
                 {i < step ? <Check size={10} /> : <span>{i + 1}</span>}
                 <span className="hidden sm:block">{s}</span>
               </div>
-              {i < STEPS.length - 1 && <div className={`w-6 h-px ${i < step ? 'bg-[#c9a84c]/40' : 'bg-[#2d2820]'}`} />}
+              {i < STEPS.length - 1 && <div className={`inquiry-step-line w-6 h-px ${i < step ? 'is-complete' : ''}`} />}
             </div>
           ))}
         </div>
 
         {/* Card */}
-        <div className="rounded-2xl border border-[#2d2820] bg-[#1c1912] p-6 sm:p-8 mb-6">
+        <div className="inquiry-card inquiry-display p-6 sm:p-8 mb-6">
+          <span className="inquiry-card-corner inquiry-card-corner--tl" aria-hidden="true" />
+          <span className="inquiry-card-corner inquiry-card-corner--br" aria-hidden="true" />
 
           {/* Step 0: Kontaktdaten + Branche */}
           {step === 0 && (
@@ -286,10 +292,10 @@ export default function AnfragePage() {
                         key={b.label}
                         type="button"
                         onClick={() => set('branche', b.label)}
-                        className={`flex items-center gap-2.5 px-3 py-3 rounded-xl border text-sm font-medium transition-all text-left ${
+                        className={`inquiry-choice flex items-center gap-2.5 px-3 py-3 text-sm font-medium transition-all text-left ${
                           selected
-                            ? 'bg-[#c9a84c]/20 border-[#c9a84c] text-white'
-                            : 'bg-[#100d09] border-[#2d2820] text-[#a89880] hover:border-[#c9a84c]/40 hover:text-[#f4edd8]'
+                            ? 'is-selected text-white'
+                            : 'text-[#a89880]'
                         }`}
                       >
                         <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
@@ -318,10 +324,10 @@ export default function AnfragePage() {
                       key={p.label}
                       type="button"
                       onClick={() => set('projekttyp', p.label)}
-                      className={`flex items-start gap-3 px-4 py-4 rounded-xl border text-left transition-all ${
+                        className={`inquiry-choice flex items-start gap-3 px-4 py-4 text-left transition-all ${
                         selected
-                          ? 'bg-[#c9a84c]/20 border-[#c9a84c] text-white'
-                          : 'bg-[#100d09] border-[#2d2820] text-[#a89880] hover:border-[#c9a84c]/40 hover:text-[#f4edd8]'
+                          ? 'is-selected text-white'
+                          : 'text-[#a89880]'
                       }`}
                     >
                       <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
@@ -486,7 +492,7 @@ export default function AnfragePage() {
         </div>
 
         {/* Navigation */}
-        <div className="flex items-center justify-between">
+        <div className="inquiry-navigation inquiry-display flex items-center justify-between">
           <button
             onClick={() => setStep(s => Math.max(0, s - 1))}
             disabled={step === 0}
@@ -515,7 +521,7 @@ export default function AnfragePage() {
             </button>
           )}
         </div>
-      </div>
+      </main>
     </div>
   );
 }
