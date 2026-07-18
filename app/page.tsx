@@ -2179,7 +2179,7 @@ export default function HomePage() {
                   </span>
                 </p>
               </div>
-              <div style={{ animationDelay: '0.18s' }} className="hero-action-row ms-anim mt-7 flex items-center justify-center gap-7">
+              <div style={{ animationDelay: '0.18s' }} className="hero-action-row ms-anim mt-7 flex flex-col items-center justify-center gap-3">
                 <a href="/anfrage" className={`hero-project-cta ${chakraPetch.className}`}>
                   <span>{lang === 'de' ? 'Projekt besprechen' : 'Discuss your project'}</span>
                   <ChevronRight size={16} strokeWidth={2.2} aria-hidden="true" />
