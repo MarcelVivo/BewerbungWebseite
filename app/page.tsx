@@ -22,6 +22,26 @@ import { PROJECTS } from './portfolio/data';
 import { Chakra_Petch } from 'next/font/google';
 
 const chakraPetch = Chakra_Petch({ subsets: ['latin'], weight: '700', display: 'swap' });
+const OPEN_LEAD_FORM_EVENT = 'ms:open-lead-form';
+type LeadFormId = 'consultation' | 'project' | 'ki';
+
+function scrollToContactPoint() {
+  if (window.innerWidth <= 699) {
+    document.getElementById('mobile-journey-contact')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  const journey = document.getElementById('solution-spiral');
+  if (!journey) return;
+  window.scrollTo({
+    top: journey.offsetTop - window.innerHeight + journey.offsetHeight,
+    behavior: 'smooth',
+  });
+}
+
+function openLeadForm(form: LeadFormId) {
+  window.dispatchEvent(new CustomEvent<LeadFormId>(OPEN_LEAD_FORM_EVENT, { detail: form }));
+  scrollToContactPoint();
+}
 
 // Radius, den die reale 3D-Leistungskarte ("Karte 01") in BrainBackground.tsx
 // hatte, bevor sie durch dieses DOM-Kartenpanel ersetzt wurde — dieselbe
@@ -956,13 +976,24 @@ function ReferencesWorld({ lang }: { lang: 'de' | 'en' }) {
 }
 
 function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
-  const [activeForm, setActiveForm] = useState<'consultation' | 'project' | 'ki'>('consultation');
+  const [activeForm, setActiveForm] = useState<LeadFormId>('consultation');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const handleOpenForm = (event: Event) => {
+      const requestedForm = (event as CustomEvent<LeadFormId>).detail;
+      if (requestedForm === 'consultation' || requestedForm === 'project' || requestedForm === 'ki') {
+        setActiveForm(requestedForm);
+      }
+    };
+    window.addEventListener(OPEN_LEAD_FORM_EVENT, handleOpenForm);
+    return () => window.removeEventListener(OPEN_LEAD_FORM_EVENT, handleOpenForm);
+  }, []);
   const copy = lang === 'de'
     ? {
         kicker: 'PERSÖNLICH · UNVERBINDLICH · AUF AUGENHÖHE',
@@ -2204,6 +2235,21 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
                   </ul>
                 </div>
               </div>
+              {detailService.slug === 'ki-automation-prozesse' && (
+                <button
+                  type="button"
+                  className="value-info-cta"
+                  tabIndex={activeService ? 0 : -1}
+                  onClick={() => {
+                    setActiveServiceSlug(null);
+                    openLeadForm('ki');
+                  }}
+                >
+                  <Bot size={15} strokeWidth={2} aria-hidden="true" />
+                  <span>{lang === 'de' ? 'Kostenloser KI-Check' : 'Free AI check'}</span>
+                  <ChevronRight size={14} strokeWidth={2.2} aria-hidden="true" />
+                </button>
+              )}
             </div>
 
             <div className="value-info-visual">
@@ -2348,6 +2394,21 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
                     </ul>
                   </div>
                 </div>
+                {detailService.slug === 'ki-automation-prozesse' && (
+                  <button
+                    type="button"
+                    className="value-info-cta"
+                    tabIndex={activeService ? 0 : -1}
+                    onClick={() => {
+                      setActiveServiceSlug(null);
+                      openLeadForm('ki');
+                    }}
+                  >
+                    <Bot size={15} strokeWidth={2} aria-hidden="true" />
+                    <span>{lang === 'de' ? 'Kostenloser KI-Check' : 'Free AI check'}</span>
+                    <ChevronRight size={14} strokeWidth={2.2} aria-hidden="true" />
+                  </button>
+                )}
               </div>
               <div className="value-info-visual">
                 <ValueInfoGraphic index={detailServiceIndex} />
@@ -2404,16 +2465,7 @@ export default function HomePage() {
 
   function scrollToContact(event: ReactMouseEvent<HTMLAnchorElement>) {
     event.preventDefault();
-    if (window.innerWidth <= 699) {
-      document.getElementById('mobile-journey-contact')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      return;
-    }
-    const journey = document.getElementById('solution-spiral');
-    if (!journey) return;
-    window.scrollTo({
-      top: journey.offsetTop - window.innerHeight + journey.offsetHeight,
-      behavior: 'smooth',
-    });
+    scrollToContactPoint();
   }
   useEffect(() => {
     const updateHeroScale = () => {
