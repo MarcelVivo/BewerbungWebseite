@@ -3133,7 +3133,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   GREEN_STRAND.pulseStrength=.12;
   GREEN_STRAND.fiberAmount=.5;
   GREEN_STRAND.topThickness=.72;
-  GREEN_STRAND.bottomThickness=.74;
+  // Am Ozean besitzt Gruen denselben Querschnitt wie das gemeinsame
+  // Rot-/Blau-/Gold-Buendel. Nur der obere, eigene Zulauf bleibt schlanker.
+  GREEN_STRAND.bottomThickness=1;
   GREEN_STRAND.topFunnel=.82;
   GREEN_STRAND.funnelSpread=.48;
   GREEN_STRAND.funnelLength=.58;
@@ -3526,6 +3528,14 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           var sharedGoldProgress=fiber.goldEntryProgress
             +(fiber.goldExitProgress-fiber.goldEntryProgress)*assimilationTravel;
           sampleGoldStrandFrame(sharedGoldProgress);
+          // Der gruene Strang lief bisher mit seinen vollen Ausreissern bis an
+          // die Wasserlinie weiter und bildete dadurch links ein eigenes
+          // Faserfeld. In der unteren Merge-Zone wird er nun weich auf den
+          // gemeinsamen Goldrahmen gebuendelt; oberhalb davon bleibt seine
+          // bisherige organische Bewegung vollstaendig erhalten.
+          var greenTerminalCohesion=params===GREEN_STRAND
+            ?smoother((sharedGoldProgress-.78)/.18)
+            :0;
           var gumProgress=wulstWaveProgress(sharedGoldProgress);
           var gumTravel=stretchedWavePhase(
             gumProgress,
@@ -3543,11 +3553,17 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           // Kein dicker Ring mehr oberhalb der Endfasern: Der Radius wächst
           // erst innerhalb der nach unten gezogenen Endzone kaugummiartig an.
           var gumThickness=THREE.MathUtils.lerp(1,2.32,smoother(gumProgress));
+          var terminalThickness=THREE.MathUtils.lerp(
+            thicknessScale,
+            1,
+            greenTerminalCohesion
+          );
           var organicRadius=SP.rStr*(.08+.92*assimilationRadius)
             *(1+Math.sin(assimilationWave*1.37+fiber.assimilationPhase)*.09)
-            *thicknessScale*gumThickness;
+            *terminalThickness*gumThickness;
           var terminalFrayEnvelope=smoother((sharedGoldProgress-SP.frayStart)/Math.max(.001,1-SP.frayStart));
-          var terminalFray=terminalFrayEnvelope*SP.fraySpread*fiber.terminalFrayJitter*thicknessScale;
+          var terminalFray=terminalFrayEnvelope*SP.fraySpread*fiber.terminalFrayJitter*terminalThickness
+            *(1-greenTerminalCohesion);
           secondaryMergedTargetLocal.copy(goldFrameCenterLocal)
             .addScaledVector(goldFrameNormalLocal,Math.cos(assimilationAngle)*organicRadius+Math.cos(fiber.terminalFrayAngle)*terminalFray)
             .addScaledVector(goldFrameBinormalLocal,Math.sin(assimilationAngle)*organicRadius+Math.sin(fiber.terminalFrayAngle)*terminalFray)
@@ -3564,12 +3580,16 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           brain.localToWorld(secondaryMergedTargetWorld);
           secondaryMergedTargetWorld.x-=secondarySharedCenterWorld.x;
           secondaryMergedTargetWorld.z-=secondarySharedCenterWorld.z;
+          var terminalLiveScale=1-greenTerminalCohesion;
           var assimilatedX=secondaryMergedTargetWorld.x
-            +secondaryFrameNormalWorld.x*liveSide+secondaryFrameBinormalWorld.x*liveDepth;
+            +secondaryFrameNormalWorld.x*liveSide*terminalLiveScale
+            +secondaryFrameBinormalWorld.x*liveDepth*terminalLiveScale;
           var assimilatedY=secondaryMergedTargetWorld.y
-            +secondaryFrameNormalWorld.y*liveSide+secondaryFrameBinormalWorld.y*liveDepth;
+            +secondaryFrameNormalWorld.y*liveSide*terminalLiveScale
+            +secondaryFrameBinormalWorld.y*liveDepth*terminalLiveScale;
           var assimilatedZ=secondaryMergedTargetWorld.z
-            +secondaryFrameNormalWorld.z*liveSide+secondaryFrameBinormalWorld.z*liveDepth;
+            +secondaryFrameNormalWorld.z*liveSide*terminalLiveScale
+            +secondaryFrameBinormalWorld.z*liveDepth*terminalLiveScale;
           var gumAmplitude=THREE.MathUtils.lerp(.035,.19,smoother(gumProgress))
             *gumEnvelope*WULST_TUNING.liquify;
           var gumSide=Math.sin(
@@ -3578,9 +3598,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           var gumDepth=Math.cos(
             gumTravel*.91+fiber.branchPhase*.83+fiberShape.windPhase+flowTime*WIND.speed*.34
           )*gumAmplitude*.78;
-          assimilatedX+=secondaryFrameNormalWorld.x*gumSide+secondaryFrameBinormalWorld.x*gumDepth;
-          assimilatedY+=secondaryFrameNormalWorld.y*gumSide+secondaryFrameBinormalWorld.y*gumDepth;
-          assimilatedZ+=secondaryFrameNormalWorld.z*gumSide+secondaryFrameBinormalWorld.z*gumDepth;
+          assimilatedX+=(secondaryFrameNormalWorld.x*gumSide+secondaryFrameBinormalWorld.x*gumDepth)*terminalLiveScale;
+          assimilatedY+=(secondaryFrameNormalWorld.y*gumSide+secondaryFrameBinormalWorld.y*gumDepth)*terminalLiveScale;
+          assimilatedZ+=(secondaryFrameNormalWorld.z*gumSide+secondaryFrameBinormalWorld.z*gumDepth)*terminalLiveScale;
           x+=(assimilatedX-x)*assimilationBlend;
           y+=(assimilatedY-y)*assimilationBlend;
           z+=(assimilatedZ-z)*assimilationBlend;
