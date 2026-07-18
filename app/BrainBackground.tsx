@@ -1346,10 +1346,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         vc++;
       }
     }
-    // Jede einzelne bestehende Faser ab ihrem echten Endvertex im selben
-    // Linien-/Punktebuffer fortsetzen: kompakter Stamm -> organisches Delta ->
-    // breite neuronale Landschaft. Kein zweites THREE.Object3D.
-    appendReferenceNeuralLandscape(outPos,outCol,outPtsPos,outPtsCol);
+    // Die frühere linienbasierte neuronale Tallandschaft wird nicht mehr
+    // angehängt. Unter dem Strang übernimmt eine eigenständige, dichte
+    // Partikelozean-Oberfläche den räumlichen Abschluss.
   }
 
   function resetWobbleBuffers(){
@@ -1463,6 +1462,144 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   brain.add(dbgHide('wpts',wptsObj));
   var goldLineBaseColors=linesObj.geometry.attributes.color.array.slice();
   var goldPointBaseColors=wptsObj.geometry.attributes.color.array.slice();
+
+  // Ruhiges, grosswelliges Partikelmeer am unteren Bildrand. Die Punkte
+  // werden einmal auf der CPU verteilt; sämtlicher Wellengang läuft danach
+  // im Vertex-Shader und belastet den JavaScript-Thread nicht pro Partikel.
+  function buildNeuralParticleOcean(){
+    if(!sFibers.length) return null;
+    var particleCount=isMobile?120000:480000;
+    var oceanPositions=new Float32Array(particleCount*3);
+    var oceanColors=new Float32Array(particleCount*3);
+    var oceanData=new Float32Array(particleCount*4);
+    var oceanRandom=createSeededRandom(0x4f434541);
+    var oceanHalfWidth=isMobile?5.2:8.4;
+    var oceanDepth=isMobile?5.8:8.6;
+    var oceanCorridor=isMobile?1.45:2.25;
+    var oceanAnchor=new THREE.Vector3();
+    var oceanAnchorCount=0;
+    // Bewusst der ursprüngliche Endring: Er liegt aus der Endkamera sichtbar
+    // am unteren Rand. Die verlängerten Fasern tauchen dadurch optisch in die
+    // Oberfläche ein, statt den Ozean ausserhalb des Bildes mitzuziehen.
+    for(var oceanFiberIndex=0;oceanFiberIndex<sFibers.length;oceanFiberIndex++){
+      var oceanFiber=sFibers[oceanFiberIndex];
+      var oceanTipOffset=(oceanFiber.start+oceanFiber.len-1)*3;
+      oceanAnchor.x+=sBase[oceanTipOffset];
+      oceanAnchor.y+=sBase[oceanTipOffset+1];
+      oceanAnchor.z+=sBase[oceanTipOffset+2];
+      oceanAnchorCount++;
+    }
+    oceanAnchor.multiplyScalar(1/Math.max(1,oceanAnchorCount));
+    var oceanPalettes=[
+      [GOLD.deep,GOLD.primary,GOLD.light],
+      [SATELLITE_METALS.red.deep,SATELLITE_METALS.red.primary,SATELLITE_METALS.red.light],
+      [SATELLITE_METALS.blue.deep,SATELLITE_METALS.blue.primary,SATELLITE_METALS.blue.light],
+      [SATELLITE_METALS.green.deep,SATELLITE_METALS.green.primary,SATELLITE_METALS.green.light]
+    ];
+    var oceanColor=new THREE.Color();
+    for(var oceanIndex=0;oceanIndex<particleCount;oceanIndex++){
+      // Quasi-rasterartige Grundverteilung plus starker Jitter: lückenlos wie
+      // eine Oberfläche, aus der Nähe aber bewusst wild und nicht geordnet.
+      var oceanU=(oceanIndex+.5)/particleCount;
+      var oceanSide=((oceanU*1.618033988749895)%1*2-1)*oceanHalfWidth;
+      oceanSide+=(oceanRandom()-.5)*oceanHalfWidth*.035;
+      var oceanForward=Math.pow(oceanRandom(),.9)*oceanDepth;
+      var oceanBankDistance=Math.max(Math.abs(oceanSide)-oceanCorridor,0);
+      var oceanBank=Math.pow(
+        oceanBankDistance/Math.max(.001,oceanHalfWidth-oceanCorridor),
+        1.58
+      )*(isMobile?1.02:1.46);
+      var oceanFloorDrop=.16+oceanForward*.026-oceanBank;
+      var oceanMicroHeight=(oceanRandom()-.5)*.055;
+      var oceanPositionOffset=oceanIndex*3;
+      oceanPositions[oceanPositionOffset]=oceanAnchor.x
+        +organismRightX*oceanSide
+        +organismForwardX*oceanForward
+        +organismDownX*(oceanFloorDrop+oceanMicroHeight);
+      oceanPositions[oceanPositionOffset+1]=oceanAnchor.y
+        +organismRightY*oceanSide
+        +organismForwardY*oceanForward
+        +organismDownY*(oceanFloorDrop+oceanMicroHeight);
+      oceanPositions[oceanPositionOffset+2]=oceanAnchor.z
+        +organismRightZ*oceanSide
+        +organismForwardZ*oceanForward
+        +organismDownZ*(oceanFloorDrop+oceanMicroHeight);
+      var paletteRoll=oceanRandom();
+      var oceanPaletteIndex=paletteRoll<.4?0:(paletteRoll<.6?1:(paletteRoll<.8?2:3));
+      var oceanPalette=oceanPalettes[oceanPaletteIndex];
+      oceanColor.copy(oceanPalette[Math.floor(oceanRandom()*oceanPalette.length)]);
+      oceanColor.multiplyScalar(.48+oceanRandom()*.52);
+      oceanColors[oceanPositionOffset]=oceanColor.r;
+      oceanColors[oceanPositionOffset+1]=oceanColor.g;
+      oceanColors[oceanPositionOffset+2]=oceanColor.b;
+      var oceanDataOffset=oceanIndex*4;
+      oceanData[oceanDataOffset]=oceanSide;
+      oceanData[oceanDataOffset+1]=oceanForward;
+      oceanData[oceanDataOffset+2]=oceanRandom()*Math.PI*2;
+      oceanData[oceanDataOffset+3]=.68+oceanRandom()*.72;
+    }
+    var oceanGeometry=new THREE.BufferGeometry();
+    oceanGeometry.setAttribute('position',new THREE.BufferAttribute(oceanPositions,3));
+    oceanGeometry.setAttribute('color',new THREE.BufferAttribute(oceanColors,3));
+    oceanGeometry.setAttribute('aOcean',new THREE.BufferAttribute(oceanData,4));
+    var oceanMaterial=new THREE.ShaderMaterial({
+      uniforms:{
+        uTime:{value:0},
+        uPixelRatio:{value:Math.min(window.devicePixelRatio||1,2)},
+        uDown:{value:new THREE.Vector3(organismDownX,organismDownY,organismDownZ)},
+        uOpacity:{value:isMobile?.62:.72}
+      },
+      vertexShader:[
+        'uniform float uTime;',
+        'uniform float uPixelRatio;',
+        'uniform vec3 uDown;',
+        'attribute vec3 color;',
+        'attribute vec4 aOcean;',
+        'varying vec3 vColor;',
+        'varying float vShimmer;',
+        'void main(){',
+        '  float side=aOcean.x;',
+        '  float depth=aOcean.y;',
+        '  float phase=aOcean.z;',
+        // Drei sehr lange, langsam gegeneinander laufende Wellenfelder. Die
+        // kleine Phasenbeimischung verhindert starre parallele Wellenlinien.
+        '  float wave=sin(side*.48+depth*.17+uTime*.20+phase*.035)*.105;',
+        '  wave+=sin(depth*.39-side*.13-uTime*.15+phase*.022)*.082;',
+        '  wave+=sin((side+depth)*.205+uTime*.105)*.052;',
+        '  vec3 displaced=position+uDown*wave;',
+        '  vec4 mvPosition=modelViewMatrix*vec4(displaced,1.0);',
+        '  gl_Position=projectionMatrix*mvPosition;',
+        '  gl_PointSize=aOcean.w*uPixelRatio*(24.0/max(5.0,-mvPosition.z));',
+        '  vColor=color;',
+        '  vShimmer=.78+.22*sin(phase+uTime*.32+side*.11);',
+        '}'
+      ].join('\n'),
+      fragmentShader:[
+        'uniform float uOpacity;',
+        'varying vec3 vColor;',
+        'varying float vShimmer;',
+        'void main(){',
+        '  float d=length(gl_PointCoord-vec2(.5));',
+        '  float alpha=smoothstep(.5,.12,d)*uOpacity;',
+        '  if(alpha<.015) discard;',
+        '  gl_FragColor=vec4(vColor*vShimmer,alpha);',
+        '}'
+      ].join('\n'),
+      vertexColors:true,
+      transparent:true,
+      depthWrite:false,
+      depthTest:true,
+      blending:THREE.AdditiveBlending,
+      toneMapped:false
+    });
+    var oceanPoints=new THREE.Points(oceanGeometry,oceanMaterial);
+    oceanPoints.name='neural-particle-ocean';
+    oceanPoints.frustumCulled=false;
+    oceanPoints.renderOrder=2;
+    brain.add(oceanPoints);
+    return {points:oceanPoints,material:oceanMaterial};
+  }
+  var neuralParticleOcean=buildNeuralParticleOcean();
 
   function applyGoldRendering(){
     linesObj.material.opacity=Math.min(1,GOLD_RENDER.lineOpacity*GOLD_RENDER.intensity);
@@ -3959,6 +4096,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       renderer.setSize(innerWidth, innerHeight, false);
       camera.aspect = innerWidth / innerHeight;
       camera.updateProjectionMatrix();
+      if(neuralParticleOcean){
+        neuralParticleOcean.material.uniforms.uPixelRatio.value=Math.min(window.devicePixelRatio||1,2);
+      }
     };
     // Scroll setzt nur das gewünschte Ziel auf der Schiene. Die tatsächliche
     // Fahrt wird darunter als gedämpfte Masse integriert: Beschleunigung,
@@ -4143,6 +4283,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       brain.position.y = BRAIN_BASE_Y+Math.sin(t*.38)*.11-smoothMouseY*.08;
       strandInverseRotation.setFromEuler(brain.rotation).invert();
       worldVerticalInStrandLocal.set(0,1,0).applyQuaternion(strandInverseRotation);
+      if(neuralParticleOcean){
+        neuralParticleOcean.material.uniforms.uTime.value=reduced?0:t;
+        neuralParticleOcean.material.uniforms.uDown.value.copy(worldVerticalInStrandLocal).negate();
+      }
       for (var satelliteIndex=0;satelliteIndex<satelliteBrains.length;satelliteIndex++) {
         var satelliteBrain=satelliteBrains[satelliteIndex];
         var satelliteData=satelliteBrain.userData;
@@ -4467,6 +4611,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       neuralGlassMaterial.dispose();
       neuralGlassGlowGeometry.dispose();
       neuralGlassGlowMaterial.dispose();
+      if(neuralParticleOcean){
+        neuralParticleOcean.points.geometry.dispose();
+        neuralParticleOcean.material.dispose();
+      }
       renderer.dispose();
       renderer.forceContextLoss();
       document.body.style.cursor='';
