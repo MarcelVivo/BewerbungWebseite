@@ -77,11 +77,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     .92
   );
   var cameraExitPullback=isMobile?11.4:16.4;
-  // Die bisherige Mehrwert-Totalen wird vor dem neuen Schlussanflug bereits
-  // vollständig erreicht und kurz gehalten. Der restliche Scrollweg gehört
-  // ausschliesslich dem diagonalen Flug zum grünen Satellitengehirn.
+  // Nach Erreichen der Mehrwert-Totalen gehoert der gesamte restliche
+  // Scrollweg einer einzigen langsamen Liftfahrt zum gruenen Gehirn.
   var CAMERA_OVERVIEW_ARRIVAL=.82;
-  var CAMERA_BRAIN_APPROACH_START=.88;
+  var CAMERA_BRAIN_APPROACH_START=CAMERA_OVERVIEW_ARRIVAL;
   var SCENE_MOTION=false;
   var OBJECT_FLOATING=true;
   // Feine, entlang des echten Knotennetzes laufende Nervenimpulse.
@@ -565,13 +564,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   function smoother(x){
     x=x<0?0:x>1?1:x;
     return x*x*x*(x*(x*6-15)+10);
-  }
-  function cubicBezierValue(start,controlA,controlB,end,progress){
-    var inverse=1-progress;
-    return inverse*inverse*inverse*start
-      +3*inverse*inverse*progress*controlA
-      +3*inverse*progress*progress*controlB
-      +progress*progress*progress*end;
   }
   function stretchedWavePhase(progress,startCycles,endCycles){
     var u=THREE.MathUtils.clamp(progress,0,1);
@@ -4606,8 +4598,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var scrollP = 0, targetScrollP = 0;
     var cameraProgress = 0, cameraVelocity = 0, cameraAimY = cameraTargetStart;
     var CAMERA_MASS = 1.48;
-    var CAMERA_SPRING = 15.5;
-    var CAMERA_DAMPING = 7.25;
+    var CAMERA_SPRING = 12;
+    var CAMERA_DAMPING = 8.6;
     var textWorldPosition = new THREE.Vector3();
     var documentVisible = document.visibilityState === 'visible';
     const onScroll = () => {
@@ -4947,96 +4939,35 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var cameraLookY=cameraAimY;
       var cameraLookZ=0;
       if(brainApproachProgress>0){
-        // Phase 1: Über die gelbe 01-Karte hinweg in den noch leeren Raum.
-        // Der Blick bleibt zunächst auf der Kartenebene; das Gehirn wird in
-        // dieser Phase absichtlich noch nicht anvisiert oder eingeblendet.
+        // Eine einzige gerade, C2-geglaettete Liftfahrt ersetzt die frueheren
+        // drei Anflugphasen. Dadurch gibt es weder Zwischenziele noch abrupte
+        // Richtungs-, Geschwindigkeits- oder Blickwechsel.
         var approachStartX=cameraX;
         var approachStartY=cameraY;
         var approachStartZ=cameraZ;
         var approachFocusX=greenSatelliteBrain.position.x;
         var approachFocusY=greenSatelliteBrain.position.y;
         var approachFocusZ=greenSatelliteBrain.position.z;
-        var cameraLeftX=-Math.cos(orbit);
-        var cameraLeftZ=Math.sin(orbit);
-        var emptySpaceX=approachStartX+cameraLeftX*(isMobile?2.1:4.2)+(0-approachStartX)*.22;
-        var emptySpaceY=approachStartY+(isMobile?1.7:3.4);
-        var emptySpaceZ=approachStartZ+cameraLeftZ*(isMobile?2.1:4.2)+(0-approachStartZ)*.22;
-        var overflightRaw=THREE.MathUtils.clamp(brainApproachProgress/.32,0,1);
-        var overflightEase=smoother(overflightRaw);
-        var overflightControlX=approachStartX+cameraLeftX*(isMobile?1.25:2.7);
-        var overflightControlY=approachStartY+(isMobile?.45:.85);
-        var overflightControlZ=approachStartZ+cameraLeftZ*(isMobile?1.25:2.7);
-        cameraX=cubicBezierValue(approachStartX,overflightControlX,emptySpaceX,emptySpaceX,overflightEase);
-        cameraY=cubicBezierValue(approachStartY,overflightControlY,emptySpaceY,emptySpaceY,overflightEase);
-        cameraZ=cubicBezierValue(approachStartZ,overflightControlZ,emptySpaceZ,emptySpaceZ,overflightEase);
-
-        // Phase 2: Erst hinter der Karte kippt die Optik nach oben. Die
-        // Kamera nähert sich langsam aus einer tieferen, seitlichen Position,
-        // ohne bereits frontal auf dem Gehirn zu stehen.
-        var riseRaw=THREE.MathUtils.clamp((brainApproachProgress-.32)/.46,0,1);
-        var riseEase=smoother(riseRaw);
-        var emptyFromBrainX=emptySpaceX-approachFocusX;
-        var emptyFromBrainY=emptySpaceY-approachFocusY;
-        var emptyFromBrainZ=emptySpaceZ-approachFocusZ;
-        var emptyFromBrainLength=Math.sqrt(
-          emptyFromBrainX*emptyFromBrainX
-          +emptyFromBrainY*emptyFromBrainY
-          +emptyFromBrainZ*emptyFromBrainZ
-        )||1;
-        emptyFromBrainX/=emptyFromBrainLength;
-        emptyFromBrainY/=emptyFromBrainLength;
-        emptyFromBrainZ/=emptyFromBrainLength;
-        var preFrontDistance=isMobile?6.4:7.8;
-        var preFrontX=approachFocusX+emptyFromBrainX*preFrontDistance;
-        var preFrontY=Math.min(
-          approachFocusY-(isMobile?.9:1.45),
-          approachFocusY+emptyFromBrainY*preFrontDistance
-        );
-        var preFrontZ=approachFocusZ+emptyFromBrainZ*preFrontDistance;
-        var riseControlAX=emptySpaceX+cameraLeftX*(isMobile?.6:1.2);
-        var riseControlAY=emptySpaceY+(isMobile?1.1:2.1);
-        var riseControlAZ=emptySpaceZ+cameraLeftZ*(isMobile?.6:1.2);
-        var riseControlBX=preFrontX+emptyFromBrainX*(isMobile?.8:1.5);
-        var riseControlBY=preFrontY-1;
-        var riseControlBZ=preFrontZ+emptyFromBrainZ*(isMobile?.8:1.5);
-        if(riseRaw>0){
-          cameraX=cubicBezierValue(emptySpaceX,riseControlAX,riseControlBX,preFrontX,riseEase);
-          cameraY=cubicBezierValue(emptySpaceY,riseControlAY,riseControlBY,preFrontY,riseEase);
-          cameraZ=cubicBezierValue(emptySpaceZ,riseControlAZ,riseControlBZ,preFrontZ,riseEase);
-        }
-        var upwardLookRaw=THREE.MathUtils.clamp((riseRaw-.08)/.72,0,1);
-        var upwardLookEase=smoother(upwardLookRaw);
-        cameraLookX=approachFocusX*upwardLookEase;
-        cameraLookY=cameraAimY+(approachFocusY-cameraAimY)*upwardLookEase;
-        cameraLookZ=approachFocusZ*upwardLookEase;
-
-        // Phase 3: Vor dem Gehirn schwenkt die Kamera auf die Welt-Z-Achse.
-        // Diese Endachse zeigt das identisch ausgerichtete Satellitengehirn
-        // frontal; die leicht tiefere Y-Position bewahrt den Blick von unten.
-        var frontalRaw=THREE.MathUtils.clamp((brainApproachProgress-.78)/.22,0,1);
-        var frontalEase=smoother(frontalRaw);
-        var frontalDistance=isMobile?5.3:6.4;
+        var liftEase=smoother(brainApproachProgress);
+        var frontalDistance=isMobile?4.9:5.8;
         var frontalX=approachFocusX;
-        var frontalY=approachFocusY-(isMobile?.32:.48);
+        var frontalY=approachFocusY;
         var frontalZ=approachFocusZ+frontalDistance;
-        var frontalControlAX=preFrontX+(frontalX-preFrontX)*.28;
-        var frontalControlAY=preFrontY+(frontalY-preFrontY)*.18;
-        var frontalControlAZ=preFrontZ+(frontalZ-preFrontZ)*.12;
-        var frontalControlBX=frontalX-(isMobile?.8:1.35);
-        var frontalControlBY=frontalY-.12;
-        var frontalControlBZ=frontalZ+(isMobile?.7:1.15);
-        if(frontalRaw>0){
-          cameraX=cubicBezierValue(preFrontX,frontalControlAX,frontalControlBX,frontalX,frontalEase);
-          cameraY=cubicBezierValue(preFrontY,frontalControlAY,frontalControlBY,frontalY,frontalEase);
-          cameraZ=cubicBezierValue(preFrontZ,frontalControlAZ,frontalControlBZ,frontalZ,frontalEase);
-          cameraLookX=approachFocusX;
-          cameraLookY=approachFocusY;
-          cameraLookZ=approachFocusZ;
-        }
+        // Positionsfahrt: langsam gerade nach oben und in der aktuellen
+        // Bildschirmorientierung leicht nach links bis direkt vor das Gehirn.
+        cameraX=THREE.MathUtils.lerp(approachStartX,frontalX,liftEase);
+        cameraY=THREE.MathUtils.lerp(approachStartY,frontalY,liftEase);
+        cameraZ=THREE.MathUtils.lerp(approachStartZ,frontalZ,liftEase);
+        // Linsenschwenk und Lift benutzen exakt denselben Fortschritt. Das
+        // Gehirn wandert dadurch proportional in die Bildmitte und liegt am
+        // Ende frontal auf der optischen Achse.
+        cameraLookX=THREE.MathUtils.lerp(0,approachFocusX,liftEase);
+        cameraLookY=THREE.MathUtils.lerp(cameraAimY,approachFocusY,liftEase);
+        cameraLookZ=THREE.MathUtils.lerp(0,approachFocusZ,liftEase);
         targetFov=THREE.MathUtils.lerp(
           targetFov,
           isMobile?47.5:44.5,
-          smoother(THREE.MathUtils.clamp((brainApproachProgress-.3)/.7,0,1))
+          liftEase
         );
       }
       if(Math.abs(targetFov-lastCameraFov)>.015){
