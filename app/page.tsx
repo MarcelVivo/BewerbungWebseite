@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent, type MouseEvent as ReactMouseEvent } from 'react';
 import {
   Bot, BarChart3, Workflow, FolderKanban,
   GraduationCap, Globe, Lightbulb,
@@ -2401,6 +2401,20 @@ export default function HomePage() {
   const [heroScale, setHeroScale] = useState(1);
   const heroFlapLineRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const heroBottomFlapLineRefs = useRef<(HTMLSpanElement | null)[]>([]);
+
+  function scrollToContact(event: ReactMouseEvent<HTMLAnchorElement>) {
+    event.preventDefault();
+    if (window.innerWidth <= 699) {
+      document.getElementById('mobile-journey-contact')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    const journey = document.getElementById('solution-spiral');
+    if (!journey) return;
+    window.scrollTo({
+      top: journey.offsetTop - window.innerHeight + journey.offsetHeight,
+      behavior: 'smooth',
+    });
+  }
   useEffect(() => {
     const updateHeroScale = () => {
       setHeroScale(getEffectiveViewport(window.innerWidth, window.innerHeight).scale);
@@ -2564,14 +2578,19 @@ export default function HomePage() {
 
       <SpiralShowcase t={t} lang={lang} />
 
-      {/* ── Footer ── */}
-      <footer className="border-t border-[#2d2820] bg-[#100d09] py-8 px-4">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <span className="text-sm text-[#7a6d5a]">{t.footer.copy}</span>
-          <div className="flex items-center gap-6">
-            <a href="/impressum"  className="text-sm text-[#7a6d5a] hover:text-[#d4c4a8] transition-colors">{t.footer.imprint}</a>
-            <a href="/datenschutz" className="text-sm text-[#7a6d5a] hover:text-[#d4c4a8] transition-colors">{t.footer.privacy}</a>
-          </div>
+      {/* ── Diskreter rechtlicher Abschluss ── */}
+      <footer className={`home-legal-footer ${chakraPetch.className}`}>
+        <div className="home-legal-footer-inner">
+          <a href="/datenschutz" className="home-legal-link home-legal-link--left">
+            {t.footer.privacy}
+          </a>
+          <a href="#journey-contact" onClick={scrollToContact} className="home-footer-contact">
+            <span>{lang === 'de' ? 'Kontakt aufnehmen' : 'Get in touch'}</span>
+            <ChevronRight size={12} strokeWidth={2} aria-hidden="true" />
+          </a>
+          <a href="/impressum" className="home-legal-link home-legal-link--right">
+            {t.footer.imprint}
+          </a>
         </div>
       </footer>
     </div>
