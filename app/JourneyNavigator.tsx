@@ -55,6 +55,16 @@ export default function JourneyNavigator() {
         return;
       }
     }
+    if (station.target === 'journey-about' && window.innerWidth > 699) {
+      const journey = document.getElementById('solution-spiral');
+      if (journey) {
+        window.scrollTo({
+          top: journey.offsetTop - window.innerHeight + journey.offsetHeight * 0.885,
+          behavior: 'smooth',
+        });
+        return;
+      }
+    }
     const targetId = window.innerWidth <= 699 && station.mobileTarget
       ? station.mobileTarget
       : station.target;

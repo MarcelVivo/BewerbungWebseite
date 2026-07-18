@@ -54,11 +54,34 @@ export default function HomeNavBar() {
     { href: '#portfolio', label: t.portfolio },
   ];
 
+  function scrollToAbout(behavior: ScrollBehavior = 'smooth') {
+    if (window.innerWidth <= 699) {
+      document.getElementById('mobile-journey-about')?.scrollIntoView({ behavior, block: 'center' });
+      return;
+    }
+
+    const journey = document.getElementById('solution-spiral');
+    if (!journey) return;
+    // Exakter Kamerastand: approachProgress ≈ 0.36. Hier ist das Profil
+    // vollständig sichtbar, während das abschliessende Kontakt-CTA noch
+    // nicht eingeblendet wird.
+    const profileCameraProgress = 0.885;
+    window.scrollTo({
+      top: journey.offsetTop - window.innerHeight + journey.offsetHeight * profileCameraProgress,
+      behavior,
+    });
+  }
+
+  useEffect(() => {
+    if (window.location.hash !== '#journey-about') return;
+    const timer = window.setTimeout(() => scrollToAbout('auto'), 120);
+    return () => window.clearTimeout(timer);
+  }, []);
+
   function handleNavClick(event: ReactMouseEvent<HTMLAnchorElement>, href: string) {
     if (href !== '#journey-about') return;
     event.preventDefault();
-    const targetId = window.innerWidth <= 699 ? 'mobile-journey-about' : 'journey-about';
-    document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    scrollToAbout();
     setOpen(false);
   }
 
