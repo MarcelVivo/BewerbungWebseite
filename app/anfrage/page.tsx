@@ -229,9 +229,19 @@ export default function AnfragePage() {
         <span className="journey-rail" aria-hidden="true">
           <span
             className="journey-rail-progress"
-            style={{ height: `${(step / (STEPS.length - 1)) * 100}%` }}
+            style={{ height: `${((step + 1) / STEPS.length) * 100}%` }}
           />
         </span>
+        <Link
+          href="/"
+          className="journey-station is-visited"
+          aria-label="Zurück zur Hauptseite"
+        >
+          <span className="journey-label">Start</span>
+          <span className="journey-node" aria-hidden="true">
+            <span className="journey-node-core" />
+          </span>
+        </Link>
         {STEPS.map((label, index) => {
           const isActive = index === step;
           const isVisited = index <= furthestStep && !isActive;

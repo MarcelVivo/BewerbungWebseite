@@ -4181,6 +4181,10 @@ body {
   cursor: not-allowed;
 }
 
+.inquiry-journey-navigator a.journey-station {
+  text-decoration: none;
+}
+
 .inquiry-journey-navigator .journey-station:disabled .journey-label {
   opacity: 0.16;
 }
