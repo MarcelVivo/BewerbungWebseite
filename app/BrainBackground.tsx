@@ -2938,11 +2938,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     addSatelliteBrain(-5.7,-.62+DESKTOP_HERO_BRAIN_LIFT,-.7,.35,SATELLITE_METALS.red);
     addSatelliteBrain(5.7,-.44+DESKTOP_HERO_BRAIN_LIFT,-.9,2.7,SATELLITE_METALS.blue);
   }
-  // Das gruene Gehirn ist ein festes Element der Helixwelt: zu Beginn liegt
-  // es weit unterhalb des sichtbaren Ausschnitts und rechts hinter dem blauen
-  // Gehirn. Die gemeinsame Kamerarotation traegt es beim Herunterscrollen
-  // ohne eigene Flugbahn bis auf die linke Seite der Mehrwert-Totalen.
-  var greenSatelliteY=cardGroupWorldY+(isMobile?2.1:3.2);
+  // Das gruene Gehirn bleibt ein festes Element der Helixwelt und liegt auf
+  // halber Hoehe zwischen den drei Startgehirnen und der unteren Kartenebene.
+  // Radius, Rotation und das gemeinsame Kameraverhalten bleiben unveraendert.
+  var greenSatelliteY=(BRAIN_BASE_Y+cardGroupWorldY)/2;
   var greenSatelliteAngle=cameraHelixExitStart*Math.PI*2;
   var greenSatelliteRadius=isMobile?3.05:8.6;
   var greenSatelliteBrain=addSatelliteBrain(
