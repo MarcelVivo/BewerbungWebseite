@@ -3439,6 +3439,25 @@ body {
 }
 
 @media (min-width: 700px) and (max-width: 1100px) {
+  .journey-navigator {
+    right: 0.55rem;
+    gap: 0.7rem;
+    padding: 0.9rem 0.55rem 0.65rem;
+  }
+
+  .journey-label {
+    display: none;
+  }
+
+  .journey-rail {
+    right: 0.92rem;
+  }
+
+  .journey-count {
+    margin-right: 0;
+    padding-top: 0.15rem;
+  }
+
   .value-impact-world {
     width: min(88vw, 54rem);
   }
