@@ -621,6 +621,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var organismDownX=organismDownVector.x, organismDownY=organismDownVector.y, organismDownZ=organismDownVector.z;
   var wobbleX=new Float32Array(0), wobbleZ=new Float32Array(0);
   var goldEscapeWeights=[], goldEscapePhases=[], goldEscapeFrequencies=[], goldEscapeSpeeds=[];
+  var goldParticleRiseActive=new Uint8Array(0);
+  var goldParticleRisePhases=new Float32Array(0);
+  var goldParticleRiseSpeeds=new Float32Array(0);
+  var goldParticleRiseRadii=new Float32Array(0);
+  var goldParticleRiseAngles=new Float32Array(0);
   var GOLD_STRAND_END_KEY='ms-gold-strand-end-v1';
   var strandEndTargetWorld=null;
   var strandEndOffsetWorld=new THREE.Vector3();
@@ -1359,6 +1364,27 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     goldEscapePhases=new Float32Array(goldEscapePhases);
     goldEscapeFrequencies=new Float32Array(goldEscapeFrequencies);
     goldEscapeSpeeds=new Float32Array(goldEscapeSpeeds);
+    goldParticleRiseActive=new Uint8Array(vc);
+    goldParticleRisePhases=new Float32Array(vc);
+    goldParticleRiseSpeeds=new Float32Array(vc);
+    goldParticleRiseRadii=new Float32Array(vc);
+    goldParticleRiseAngles=new Float32Array(vc);
+    for(var goldRiseIndex=0;goldRiseIndex<vc;goldRiseIndex++){
+      // Schneller deterministischer Integer-Hash: Die Auswahl bleibt auch bei
+      // einem Rebuild stabil und erzeugt keine sichtbaren Faser-Gruppen.
+      var goldRiseHash=Math.imul(goldRiseIndex+1,0x9e3779b1)^0x48414c4f;
+      goldRiseHash=Math.imul(goldRiseHash^(goldRiseHash>>>16),0x85ebca6b);
+      goldRiseHash=Math.imul(goldRiseHash^(goldRiseHash>>>13),0xc2b2ae35);
+      var goldRiseRandom=((goldRiseHash^(goldRiseHash>>>16))>>>0)/4294967296;
+      // Die komplette sichtbare Goldwolke bewegt sich. Jeder Punkt besitzt
+      // trotzdem eine eigene Phase, Geschwindigkeit, Distanz und Umlaufbahn,
+      // damit keine geschlossene Schicht gemeinsam nach oben rutscht.
+      goldParticleRiseActive[goldRiseIndex]=1;
+      goldParticleRisePhases[goldRiseIndex]=((goldRiseRandom*7.193)%1);
+      goldParticleRiseSpeeds[goldRiseIndex]=.055+((goldRiseRandom*13.71)%1)*.085;
+      goldParticleRiseRadii[goldRiseIndex]=.045+((goldRiseRandom*23.37)%1)*.18;
+      goldParticleRiseAngles[goldRiseIndex]=((goldRiseRandom*31.91)%1)*Math.PI*2;
+    }
   }
 
   // Die zentrale Goldbahn wird einmal aus den bereits vorhandenen Goldfasern
@@ -1759,22 +1785,21 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var neuralParticleOcean=buildNeuralParticleOcean();
 
   function buildOceanImmersionHalo(){
+    if(!neuralParticleOcean) return null;
     var haloCount=isMobile?520:1800;
     var haloPositions=new Float32Array(haloCount*3);
     var haloColors=new Float32Array(haloCount*3);
     var haloData=new Float32Array(haloCount*4);
+    var haloRiseData=new Float32Array(haloCount*4);
+    var haloWaveData=new Float32Array(haloCount*2);
     var haloRandom=createSeededRandom(0x48414c4f);
     var haloColor=new THREE.Color();
     for(var haloIndex=0;haloIndex<haloCount;haloIndex++){
       var haloAngle=haloRandom()*Math.PI*2;
       var haloRadius=(isMobile?.16:.22)+Math.pow(haloRandom(),.72)*(isMobile?1.18:1.92);
-      var surfaceParticle=haloRandom()<.38;
-      var haloHeight=surfaceParticle
-        ?haloRandom()*(isMobile?.1:.16)
-        :(isMobile?.12:.18)+Math.pow(haloRandom(),1.72)*(isMobile?1.25:2.15);
       var haloOffset=haloIndex*3;
       haloPositions[haloOffset]=Math.cos(haloAngle)*haloRadius;
-      haloPositions[haloOffset+1]=NEURAL_OCEAN_WORLD_Y+haloHeight;
+      haloPositions[haloOffset+1]=NEURAL_OCEAN_WORLD_Y;
       haloPositions[haloOffset+2]=Math.sin(haloAngle)*haloRadius;
       haloColor.copy(GOLD.light).lerp(GOLD.highlight,.46+haloRandom()*.54);
       haloColors[haloOffset]=haloColor.r;
@@ -1785,17 +1810,41 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       haloData[haloDataOffset+1]=haloRadius;
       haloData[haloDataOffset+2]=haloRandom()*Math.PI*2;
       haloData[haloDataOffset+3]=.52+haloRandom()*.74;
+      // Jeder Punkt besitzt seinen eigenen, bewusst langsamen Aufstiegszyklus.
+      // Die zufällige Startphase verhindert sichtbare Gruppen/Partikelringe.
+      haloRiseData[haloDataOffset]=.075+haloRandom()*.095;
+      haloRiseData[haloDataOffset+1]=(isMobile?3.8:6.8)+Math.pow(haloRandom(),.72)*(isMobile?3.6:6.4);
+      haloRiseData[haloDataOffset+2]=.035+haloRandom()*.12;
+      haloRiseData[haloDataOffset+3]=haloRandom();
+      var waveDataOffset=haloIndex*2;
+      haloWaveData[waveDataOffset]=Math.cos(organismStationAngle)*haloPositions[haloOffset]
+        -Math.sin(organismStationAngle)*haloPositions[haloOffset+2];
+      haloWaveData[waveDataOffset+1]=Math.sin(organismStationAngle)*haloPositions[haloOffset]
+        +Math.cos(organismStationAngle)*haloPositions[haloOffset+2];
     }
     var haloGeometry=new THREE.BufferGeometry();
     haloGeometry.setAttribute('position',new THREE.BufferAttribute(haloPositions,3));
     haloGeometry.setAttribute('aColor',new THREE.BufferAttribute(haloColors,3));
     haloGeometry.setAttribute('aHalo',new THREE.BufferAttribute(haloData,4));
+    haloGeometry.setAttribute('aRise',new THREE.BufferAttribute(haloRiseData,4));
+    haloGeometry.setAttribute('aWave',new THREE.BufferAttribute(haloWaveData,2));
     var haloMaterial=new THREE.RawShaderMaterial({
       uniforms:{
         uTime:{value:0},
         uPixelRatio:{value:Math.min(window.devicePixelRatio||1,2)},
         uReveal:{value:0},
-        uPulse:{value:0}
+        uPulse:{value:0},
+        // 50 % der bisherigen Leuchtkraft, ohne Dichte oder Goldton zu
+        // veraendern. Die Pulsanimation bleibt relativ dazu erhalten.
+        uBrightness:{value:.5},
+        // Dieselben Steuerdaten wie im Partikelmeer: Die aufsteigenden Punkte
+        // werden am Ursprung von exakt derselben unteren Welle angehoben.
+        uStrandRadius:{value:neuralParticleOcean.material.uniforms.uStrandRadius.value},
+        uOceanHalfWidth:{value:neuralParticleOcean.material.uniforms.uOceanHalfWidth.value},
+        uOceanDepthMid:{value:neuralParticleOcean.material.uniforms.uOceanDepthMid.value},
+        uOceanDepthHalf:{value:neuralParticleOcean.material.uniforms.uOceanDepthHalf.value},
+        uSourceWaveControls:{value:neuralParticleOcean.sourceWaveControls},
+        uSourceWaveTilts:{value:neuralParticleOcean.sourceWaveTilts}
       },
       vertexShader:[
         'precision highp float;',
@@ -1803,22 +1852,68 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         'uniform mat4 projectionMatrix;',
         'uniform float uTime;',
         'uniform float uPixelRatio;',
+        'uniform float uStrandRadius;',
+        'uniform float uOceanHalfWidth;',
+        'uniform float uOceanDepthMid;',
+        'uniform float uOceanDepthHalf;',
+        'uniform vec4 uSourceWaveControls[13];',
+        'uniform vec2 uSourceWaveTilts[13];',
         'attribute vec3 position;',
         'attribute vec3 aColor;',
         'attribute vec4 aHalo;',
+        'attribute vec4 aRise;',
+        'attribute vec2 aWave;',
         'varying vec3 vColor;',
         'varying float vTwinkle;',
+        'varying float vDissolve;',
         'void main(){',
+        // Untere Welle identisch zum Meer auswerten. Ihr Einfluss nimmt beim
+        // Aufstieg ab, als wuerde sie den Partikel einzeln aus der Flaeche
+        // herausheben und anschliessend an die Luft uebergeben.
+        '  vec2 sourcePosition=vec2(',
+        '    aWave.x/max(.001,uOceanHalfWidth)*12.72,',
+        '    (aWave.y-uOceanDepthMid)/max(.001,uOceanDepthHalf)*12.72',
+        '  );',
+        '  float sourceHeight=0.0;',
+        '  float sourceWeight=0.0;',
+        '  for(int controlIndex=0;controlIndex<13;controlIndex++){',
+        '    vec4 control=uSourceWaveControls[controlIndex];',
+        '    vec2 controlDelta=sourcePosition-control.xy;',
+        '    float controlWeight=exp(-dot(controlDelta,controlDelta)*.072);',
+        '    float tiltedHeight=control.z+dot(uSourceWaveTilts[controlIndex],controlDelta)*.26;',
+        '    sourceHeight+=tiltedHeight*controlWeight;',
+        '    sourceWeight+=controlWeight;',
+        '  }',
+        '  float glbWave=sourceHeight/max(.0001,sourceWeight)*.52;',
+        '  float normalizedSide=aWave.x/max(.001,uOceanHalfWidth);',
+        '  float ridgePhase=normalizedSide*17.2788+aWave.y*.19-uTime*.52;',
+        '  float ridgeWave=sin(ridgePhase)*.38;',
+        '  ridgeWave+=sin(ridgePhase*2.0-.62)*.075;',
+        '  ridgeWave+=sin(aWave.y*.31-normalizedSide*2.4+uTime*.041)*.09;',
+        '  float impact=exp(-max(0.0,aHalo.y-uStrandRadius)*.31);',
+        '  float reflected=sin((aHalo.y-uStrandRadius)*.62+uTime*.15+aHalo.z*.006)*.42*impact;',
+        '  float baseWave=glbWave+ridgeWave+reflected;',
+        // 18 % Ruhezeit am unteren Rand, danach ein weicher individueller
+        // Aufstieg. Am Zyklusende ist der Punkt bereits vollstaendig geloest.
+        '  float cycle=fract(uTime*aRise.x+aRise.w);',
+        '  float riseProgress=smoothstep(.18,1.0,cycle);',
+        '  float waveCarry=1.0-smoothstep(.0,.46,riseProgress);',
+        '  float radialScale=mix(1.0,.24,riseProgress);',
+        '  float orbit=uTime*(.055+aHalo.w*.026)+riseProgress*(.7+aRise.z*2.2);',
         '  vec3 drifted=position;',
-        '  float orbit=uTime*(.075+aHalo.w*.035);',
-        '  float driftRadius=.025+aHalo.y*.045;',
-        '  drifted.x+=cos(aHalo.x+orbit+aHalo.z)*driftRadius;',
-        '  drifted.z+=sin(aHalo.x+orbit+aHalo.z)*driftRadius;',
-        '  drifted.y+=sin(uTime*(.22+aHalo.w*.08)+aHalo.z)*(.045+aHalo.y*.035);',
+        '  drifted.x=cos(aHalo.x+orbit)*aHalo.y*radialScale;',
+        '  drifted.z=sin(aHalo.x+orbit)*aHalo.y*radialScale;',
+        '  float airDrift=sin(uTime*(.17+aRise.x*1.7)+aHalo.z)*aRise.z*riseProgress;',
+        '  drifted.x+=cos(aHalo.x+aHalo.z)*airDrift;',
+        '  drifted.z+=sin(aHalo.x+aHalo.z)*airDrift;',
+        '  drifted.x+=cos(ridgePhase)*.08*waveCarry;',
+        '  drifted.z+=sin(ridgePhase)*.055*waveCarry;',
+        '  drifted.y+=baseWave*waveCarry+riseProgress*aRise.y;',
         '  vec4 mvPosition=modelViewMatrix*vec4(drifted,1.0);',
         '  gl_Position=projectionMatrix*mvPosition;',
+        '  vDissolve=1.0-smoothstep(.08,1.0,riseProgress);',
         '  vTwinkle=.72+.28*sin(uTime*(.48+aHalo.w*.16)+aHalo.z);',
-        '  gl_PointSize=(1.15+aHalo.w*.95)*uPixelRatio*(31.0/max(6.0,-mvPosition.z));',
+        '  gl_PointSize=(1.15+aHalo.w*.95)*mix(1.0,.34,riseProgress)*uPixelRatio*(31.0/max(6.0,-mvPosition.z));',
         '  vColor=aColor;',
         '}'
       ].join('\n'),
@@ -1826,15 +1921,17 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         'precision highp float;',
         'uniform float uReveal;',
         'uniform float uPulse;',
+        'uniform float uBrightness;',
         'varying vec3 vColor;',
         'varying float vTwinkle;',
+        'varying float vDissolve;',
         'void main(){',
         '  float radial=length(gl_PointCoord-vec2(.5))*2.0;',
         '  float glow=pow(max(0.0,1.0-radial),1.7);',
-        '  float alpha=glow*uReveal*(.58+vTwinkle*.34)*(1.0+uPulse*.9);',
+        '  float alpha=glow*uReveal*vDissolve*(.58+vTwinkle*.34)*(1.0+uPulse*.9);',
         '  if(alpha<.012) discard;',
         '  vec3 color=mix(vColor,vec3(1.0),.22+uPulse*.28);',
-        '  gl_FragColor=vec4(color*(1.0+uPulse*.72),alpha);',
+        '  gl_FragColor=vec4(color*(1.0+uPulse*.72)*uBrightness,alpha);',
         '}'
       ].join('\n'),
       transparent:true,
@@ -1956,6 +2053,55 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       out.addScaledVector(strandEndOffsetLocal,goldStrandBendWeight(sMeta[vertexIndex*2]));
     }
     return out;
+  }
+
+  var goldRiseAxisNormal=new THREE.Vector3();
+  var goldRiseAxisBinormal=new THREE.Vector3();
+  function goldRisingParticleLocal(vertexIndex,time,out){
+    var risePhase=goldParticleRisePhases[vertexIndex];
+    var riseCycle=(time*goldParticleRiseSpeeds[vertexIndex]+risePhase)%1;
+    // Kurze Pause unter der Oberflaeche, dann ein langsamer Aufstieg vom
+    // unteren Strangende bis ueber die sichtbare Mitte des Hauptstrangs.
+    var riseProgress=smoother((riseCycle-.12)/.88);
+    var pathProgress=1-riseProgress*.72;
+    sampleGoldCenterline(pathProgress,out);
+    var centerDeltaY=out.y-SBASE_Y;
+    out.set(
+      SBASE_X+(out.x-SBASE_X)+worldVerticalInStrandLocal.x*centerDeltaY,
+      SBASE_Y+worldVerticalInStrandLocal.y*centerDeltaY,
+      SBASE_Z+(out.z-SBASE_Z)+worldVerticalInStrandLocal.z*centerDeltaY
+    );
+    out.addScaledVector(worldVerticalInStrandLocal,-wulstVerticalPull(pathProgress));
+    if(strandEndTargetWorld){
+      out.addScaledVector(strandEndOffsetLocal,goldStrandBendWeight(pathProgress));
+    }
+
+    // Ein kleiner Orbit haelt jeden Partikel sichtbar neben den Fasern. Der
+    // Radius wird oben enger, sodass der Strom dem Mittelstrang folgt.
+    goldRiseAxisNormal.set(1,0,0).addScaledVector(
+      worldVerticalInStrandLocal,
+      -worldVerticalInStrandLocal.x
+    );
+    if(goldRiseAxisNormal.lengthSq()<.0001) goldRiseAxisNormal.set(0,0,1);
+    else goldRiseAxisNormal.normalize();
+    goldRiseAxisBinormal.copy(worldVerticalInStrandLocal).cross(goldRiseAxisNormal).normalize();
+    var riseAngle=goldParticleRiseAngles[vertexIndex]+time*(.13+goldParticleRiseSpeeds[vertexIndex]);
+    var riseRadius=goldParticleRiseRadii[vertexIndex]*(1-riseProgress*.58);
+    out.addScaledVector(goldRiseAxisNormal,Math.cos(riseAngle)*riseRadius);
+    out.addScaledVector(goldRiseAxisBinormal,Math.sin(riseAngle)*riseRadius);
+
+    // Die untere Welle gibt den Startimpuls. Sobald der Punkt aufsteigt,
+    // verliert er diese gebundene Bewegung und driftet frei entlang der Achse.
+    var waveCarry=1-smoother(riseProgress/.34);
+    var lowerWave=(
+      Math.sin(time*.52+risePhase*Math.PI*2)*.13
+      +Math.sin(time*.19+risePhase*Math.PI*5.3)*.045
+    )*waveCarry;
+    out.addScaledVector(worldVerticalInStrandLocal,lowerWave);
+
+    // Hoehenabhaengige Aufloesung: ab dem mittleren Aufstieg wird die Farbe
+    // zunehmend gegen Schwarz gefahren; beim Zykluswechsel ist sie unsichtbar.
+    return 1-smoother((riseProgress-.28)/.72);
   }
 
   function goldStrandTipLocal(out,includeEndOffset){
@@ -2537,11 +2683,23 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var pointColorArray=wptsObj.geometry.attributes.color.array;
     for(var pointReferenceIndex=0;pointReferenceIndex<wobblePtsRefs.length;pointReferenceIndex++){
       var pointReference=wobblePtsRefs[pointReferenceIndex];
-      goldStrandVertexLocal(pointReference.srcV,goldDragScratch,true);
+      var goldPointDissolve=1;
+      if(goldParticleRiseActive[pointReference.srcV]){
+        goldPointDissolve=goldRisingParticleLocal(pointReference.srcV,time,goldDragScratch);
+      } else {
+        goldStrandVertexLocal(pointReference.srcV,goldDragScratch,true);
+      }
       pointPositionArray[pointReference.off]=goldDragScratch.x;
       pointPositionArray[pointReference.off+1]=goldDragScratch.y;
       pointPositionArray[pointReference.off+2]=goldDragScratch.z;
       updateGoldFusionColor(pointColorArray,goldPointBaseColors,pointReference.off,pointReference.srcV);
+      // Das ist der tatsaechlich sichtbare Punkt-Buffer am Mittelstrang.
+      // Nur seine Goldpartikel werden halbiert; Linien und Gehirn behalten
+      // ihre bisherige Leuchtkraft. Aufsteiger blenden zusaetzlich nach oben aus.
+      var goldPointBrightness=.5*goldPointDissolve;
+      pointColorArray[pointReference.off]*=goldPointBrightness;
+      pointColorArray[pointReference.off+1]*=goldPointBrightness;
+      pointColorArray[pointReference.off+2]*=goldPointBrightness;
     }
     for(var organismPointReferenceIndex=0;organismPointReferenceIndex<organismPointRefs.length;organismPointReferenceIndex++){
       var organismPointReference=organismPointRefs[organismPointReferenceIndex];
