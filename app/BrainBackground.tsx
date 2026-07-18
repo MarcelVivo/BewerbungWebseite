@@ -2887,11 +2887,16 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   GREEN_STRAND.funnelOutletRadius=.038;
   GREEN_STRAND.firstDroop=.78;
   GREEN_STRAND.secondDroop=.88;
-  GREEN_STRAND.sway=.34;
+  // Der grüne Strang übernimmt exakt den Bewegungscharakter des blauen:
+  // identische Windwelle, Auslenkung, Frequenz, Wellenlänge und Tempo. Seine
+  // kompaktere Geometrie und die bewusst wenigen losen Randfasern bleiben
+  // erhalten, damit er trotz gleicher Animation nicht wieder ausfranst.
+  GREEN_STRAND.sway=BLUE_STRAND.sway;
   GREEN_STRAND.escapeAmount=.12;
-  GREEN_STRAND.escapeAmplitude=.3;
-  GREEN_STRAND.escapeFrequency=1.15;
-  GREEN_STRAND.escapeWavelength=1.25;
+  GREEN_STRAND.escapeAmplitude=BLUE_STRAND.escapeAmplitude;
+  GREEN_STRAND.escapeFrequency=BLUE_STRAND.escapeFrequency;
+  GREEN_STRAND.escapeWavelength=BLUE_STRAND.escapeWavelength;
+  GREEN_STRAND.escapeSpeed=BLUE_STRAND.escapeSpeed;
   // Der grüne Ursprung liegt bereits auf halber Stranghöhe. Seine Fasern
   // steigen deshalb erst etwas tiefer in die Goldbahn ein und knicken nicht
   // sichtbar nach oben zurück.
