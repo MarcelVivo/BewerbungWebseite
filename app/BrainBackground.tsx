@@ -3133,9 +3133,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   GREEN_STRAND.pulseStrength=.12;
   GREEN_STRAND.fiberAmount=.5;
   GREEN_STRAND.topThickness=.72;
-  // Am Ozean besitzt Gruen denselben Querschnitt wie das gemeinsame
-  // Rot-/Blau-/Gold-Buendel. Nur der obere, eigene Zulauf bleibt schlanker.
-  GREEN_STRAND.bottomThickness=1;
+  // Der frei haengende gruene Zulauf bleibt schlank. Der gemeinsame Umfang
+  // an der Wasserlinie wird unten explizit aus dem Goldrahmen berechnet.
+  GREEN_STRAND.bottomThickness=.74;
   GREEN_STRAND.topFunnel=.82;
   GREEN_STRAND.funnelSpread=.48;
   GREEN_STRAND.funnelLength=.58;
@@ -3604,6 +3604,34 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           x+=(assimilatedX-x)*assimilationBlend;
           y+=(assimilatedY-y)*assimilationBlend;
           z+=(assimilatedZ-z)*assimilationBlend;
+        }
+        if(params===GREEN_STRAND){
+          // Unabhaengig davon, wie weit die zufaellig gestaffelte Assimilation
+          // dieser Faser bereits ist: Im letzten Strangviertel muss Gruen auf
+          // die gemeinsame Mittelachse zulaufen. Das verhindert, dass eine
+          // links liegende Catenary-Bahn bis in den Ozean fortgeschrieben wird.
+          var greenOceanBundle=smoother((pathProgress-.72)/.22);
+          if(greenOceanBundle>0){
+            var greenTargetProgress=.86+greenOceanBundle*.14;
+            sampleGoldStrandFrame(greenTargetProgress);
+            // Derselbe Endradius wie im Rot-/Blau-/Gold-Buendel, aber ohne
+            // terminales Fray, Wind oder einseitigen Live-Versatz.
+            var greenCommonRadius=SP.rStr*(.08+.92*fiber.assimilationRadius)
+              *THREE.MathUtils.lerp(1.72,2.32,greenOceanBundle);
+            secondaryMergedTargetLocal.copy(goldFrameCenterLocal)
+              .addScaledVector(
+                goldFrameNormalLocal,
+                Math.cos(fiber.assimilationAngle)*greenCommonRadius
+              )
+              .addScaledVector(
+                goldFrameBinormalLocal,
+                Math.sin(fiber.assimilationAngle)*greenCommonRadius
+              );
+            secondaryMergedTargetWorld.copy(secondaryMergedTargetLocal);
+            brain.localToWorld(secondaryMergedTargetWorld);
+            x=THREE.MathUtils.lerp(x,secondaryMergedTargetWorld.x,greenOceanBundle);
+            z=THREE.MathUtils.lerp(z,secondaryMergedTargetWorld.z,greenOceanBundle);
+          }
         }
         // Die Absenkung steckt bereits in der gemeinsam deformierten
         // Gold-Mittelbahn. Ein zweiter Y-Versatz würde die Farbfasern vom Gold
