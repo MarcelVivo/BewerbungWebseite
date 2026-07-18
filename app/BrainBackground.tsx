@@ -1534,6 +1534,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var oceanWorldForwardX=Math.sin(organismStationAngle);
     var oceanWorldForwardZ=Math.cos(organismStationAngle);
     var strandCollisionRadius=isMobile?.4:.56;
+    // Exponentielle Fernverteilung mit endlicher Anfangsdichte. Der Wert ist
+    // so gewaehlt, dass sie an der Naht dieselbe Punktdichte wie die
+    // Vorderflaeche besitzt und danach kontinuierlich ausduennt.
+    var oceanFarDistributionCurve=4.55;
+    var oceanFarDistributionDenominator=Math.exp(oceanFarDistributionCurve)-1;
     var sourceWaveControls=Array.from({length:13},function(){
       return new THREE.Vector4();
     });
@@ -1555,14 +1560,15 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         // Ein kleiner Anteil liegt hinter dem Andockpunkt. So beginnt das Meer
         // sichtbar unter dem Strang und nicht erst ausserhalb des Bildrandes.
         oceanForward=-oceanNearDepthBehind
-          +Math.pow(oceanRandom(),.9)*(oceanNearDepthBehind+oceanDepthAhead);
+          +oceanRandom()*(oceanNearDepthBehind+oceanDepthAhead);
       }else{
         // Der Fernbereich setzt exakt an der bisherigen Rueckkante an. Seine
         // Tiefe wird zum Horizont hin zunehmend duenn besetzt und seine Breite
         // waechst mit dem Sichtkegel, sodass seitlich keine Kante auftaucht.
         var farIndex=oceanIndex-nearParticleCount;
         var farU=(farIndex+oceanRandom())/farParticleCount;
-        oceanHorizonProgress=Math.pow(farU,1.72);
+        oceanHorizonProgress=(Math.exp(oceanFarDistributionCurve*farU)-1)
+          /oceanFarDistributionDenominator;
         oceanForward=-THREE.MathUtils.lerp(
           oceanNearDepthBehind,
           oceanFarDepthBehind,
