@@ -211,6 +211,7 @@ const KI_UI = {
     name: 'Dein Name', company: 'Firmenname', phone: 'Telefon (optional)', sending: 'Wird gesendet …', submit: 'Meinen KI-Fahrplan erhalten →',
     privacy: 'Deine Daten werden ausschliesslich für die Erstellung und Zustellung deines KI-Fahrplans genutzt. Kein Verkauf, keine Weitergabe an Dritte.',
     privacyLink: 'Datenschutz', back: 'Zurück', continue: 'Weiter', homepage: 'Startseite', error: 'Es ist ein Fehler aufgetreten. Bitte versuche es erneut.', connection: 'Verbindungsfehler. Bitte prüfe deine Internetverbindung.',
+    requiredName: 'Bitte gib deinen Namen ein.', requiredEmail: 'Bitte gib deine E-Mail-Adresse ein.', invalidEmail: 'Bitte gib eine gültige E-Mail-Adresse ein.', requiredCompany: 'Bitte gib deinen Firmennamen ein.',
   },
   en: {
     title: 'AI Readiness Check | Marcel Spahr Digital Studio', badge: 'Free self-check · 100% personal · No sales call',
@@ -224,6 +225,7 @@ const KI_UI = {
     name: 'Your name', company: 'Company name', phone: 'Phone (optional)', sending: 'Sending …', submit: 'Receive my AI roadmap →',
     privacy: 'Your data is used exclusively to create and deliver your AI roadmap. No sales and no sharing with third parties.',
     privacyLink: 'Privacy policy', back: 'Back', continue: 'Continue', homepage: 'Homepage', error: 'An error occurred. Please try again.', connection: 'Connection error. Please check your internet connection.',
+    requiredName: 'Please enter your name.', requiredEmail: 'Please enter your email address.', invalidEmail: 'Please enter a valid email address.', requiredCompany: 'Please enter your company name.',
   },
 };
 
@@ -274,8 +276,24 @@ export default function KiCheckPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setSubmitting(true);
     setError(null);
+    if (!form.name.trim()) {
+      setError(copy.requiredName);
+      return;
+    }
+    if (!form.email.trim()) {
+      setError(copy.requiredEmail);
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+      setError(copy.invalidEmail);
+      return;
+    }
+    if (!form.firma.trim()) {
+      setError(copy.requiredCompany);
+      return;
+    }
+    setSubmitting(true);
     try {
       const res = await fetch('/api/ki-check', {
         method: 'POST',
@@ -394,29 +412,29 @@ export default function KiCheckPage() {
             <p className="text-[#a89880] text-sm mb-8 leading-relaxed">
               {copy.formIntro}
             </p>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
               <input
                 required type="text" placeholder={copy.name}
                 value={form.name}
-                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                onChange={e => { setForm(f => ({ ...f, name: e.target.value })); setError(null); }}
                 className={INPUT}
               />
               <input
                 required type="email" placeholder="name@firma.ch"
                 value={form.email}
-                onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                onChange={e => { setForm(f => ({ ...f, email: e.target.value })); setError(null); }}
                 className={INPUT}
               />
               <input
                 required type="text" placeholder={copy.company}
                 value={form.firma}
-                onChange={e => setForm(f => ({ ...f, firma: e.target.value }))}
+                onChange={e => { setForm(f => ({ ...f, firma: e.target.value })); setError(null); }}
                 className={INPUT}
               />
               <input
                 type="tel" placeholder={copy.phone}
                 value={form.telefon}
-                onChange={e => setForm(f => ({ ...f, telefon: e.target.value }))}
+                onChange={e => { setForm(f => ({ ...f, telefon: e.target.value })); setError(null); }}
                 className={INPUT}
               />
               {error && (
@@ -424,7 +442,7 @@ export default function KiCheckPage() {
               )}
               <button
                 type="submit"
-                disabled={submitting || !form.name || !form.email || !form.firma}
+                disabled={submitting}
                 className="w-full py-4 rounded-xl bg-[#c9a84c] hover:bg-[#b8943a] disabled:opacity-40 disabled:cursor-not-allowed text-[#0c0a06] font-bold transition-all shadow-lg shadow-[#c9a84c]/20 mt-2"
               >
                 {submitting ? copy.sending : copy.submit}

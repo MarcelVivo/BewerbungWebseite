@@ -973,6 +973,10 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
         successTitle: 'Vielen Dank.',
         successText: 'Deine Anfrage ist angekommen. Ich melde mich innerhalb von zwei Arbeitstagen persönlich bei dir.',
         error: 'Das Senden hat nicht funktioniert. Bitte versuche es erneut oder schreibe an kontakt@marcelspahr.ch.',
+        requiredName: 'Bitte gib deinen Namen ein.',
+        requiredEmail: 'Bitte gib deine E-Mail-Adresse ein.',
+        invalidEmail: 'Bitte gib eine gültige E-Mail-Adresse ein.',
+        requiredMessage: 'Bitte beschreibe kurz dein Vorhaben.',
         detailed: 'Ausführliche Projektanfrage',
       }
     : {
@@ -988,13 +992,33 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
         successTitle: 'Thank you.',
         successText: 'Your request has arrived. I will contact you personally within two working days.',
         error: 'The message could not be sent. Please try again or email kontakt@marcelspahr.ch.',
+        requiredName: 'Please enter your name.',
+        requiredEmail: 'Please enter your email address.',
+        invalidEmail: 'Please enter a valid email address.',
+        requiredMessage: 'Please briefly describe your project.',
         detailed: 'Detailed project enquiry',
       };
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setSubmitting(true);
     setError('');
+    if (!name.trim()) {
+      setError(copy.requiredName);
+      return;
+    }
+    if (!email.trim()) {
+      setError(copy.requiredEmail);
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError(copy.invalidEmail);
+      return;
+    }
+    if (!message.trim()) {
+      setError(copy.requiredMessage);
+      return;
+    }
+    setSubmitting(true);
     try {
       const response = await fetch('/api/kontakt', {
         method: 'POST',
@@ -1024,18 +1048,18 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
       ) : (
         <>
           <p className="project-cta-copy">{copy.text}</p>
-          <form className="project-consultation-form" onSubmit={handleSubmit}>
+          <form className="project-consultation-form" onSubmit={handleSubmit} noValidate>
             <label>
               <span>{copy.name}</span>
-              <input value={name} onChange={(event) => setName(event.target.value)} autoComplete="name" required />
+              <input value={name} onChange={(event) => { setName(event.target.value); setError(''); }} autoComplete="name" required />
             </label>
             <label>
               <span>{copy.email}</span>
-              <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" required />
+              <input type="email" value={email} onChange={(event) => { setEmail(event.target.value); setError(''); }} autoComplete="email" required />
             </label>
             <label className="project-consultation-message">
               <span>{copy.message}</span>
-              <textarea value={message} onChange={(event) => setMessage(event.target.value)} placeholder={copy.placeholder} rows={3} required />
+              <textarea value={message} onChange={(event) => { setMessage(event.target.value); setError(''); }} placeholder={copy.placeholder} rows={3} required />
             </label>
             {error && <p className="project-consultation-error" role="alert">{error}</p>}
             <div className="project-consultation-actions">
