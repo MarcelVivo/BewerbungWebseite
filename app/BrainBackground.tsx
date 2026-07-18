@@ -1546,8 +1546,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var oceanPaletteCode;
       if(oceanRandom()<entryColorWeight){
         // Direkte farbliche Fortsetzung der sichtbaren Stranglagen in der
-        // Bildschirm-/Talbreite: Grün, Blau, Gold, Rot.
-        oceanPaletteCode=oceanSide<-.92?3:(oceanSide<-.18?2:(oceanSide<.34?0:1));
+        // Bildschirm-/Talbreite. Direkt unter dem Hauptstrang wird bewusst
+        // kein kompaktes Goldfeld mehr erzeugt; dort übernimmt der räumliche
+        // weiss-goldene Schwebehalo die optische Verbindung.
+        oceanPaletteCode=oceanSide<-.92?3:(oceanSide<-.18?2:(oceanSide<.34?(paletteRoll<.5?2:1):1));
       } else {
         // In der Fläche Verhältnis entsprechend der tatsächlichen Faseranzahl:
         // Gold 220, Rot ca. 209, Blau ca. 209, Grün ca. 180.
@@ -1755,6 +1757,100 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     };
   }
   var neuralParticleOcean=buildNeuralParticleOcean();
+
+  function buildOceanImmersionHalo(){
+    var haloCount=isMobile?520:1800;
+    var haloPositions=new Float32Array(haloCount*3);
+    var haloColors=new Float32Array(haloCount*3);
+    var haloData=new Float32Array(haloCount*4);
+    var haloRandom=createSeededRandom(0x48414c4f);
+    var haloColor=new THREE.Color();
+    for(var haloIndex=0;haloIndex<haloCount;haloIndex++){
+      var haloAngle=haloRandom()*Math.PI*2;
+      var haloRadius=(isMobile?.16:.22)+Math.pow(haloRandom(),.72)*(isMobile?1.18:1.92);
+      var surfaceParticle=haloRandom()<.38;
+      var haloHeight=surfaceParticle
+        ?haloRandom()*(isMobile?.1:.16)
+        :(isMobile?.12:.18)+Math.pow(haloRandom(),1.72)*(isMobile?1.25:2.15);
+      var haloOffset=haloIndex*3;
+      haloPositions[haloOffset]=Math.cos(haloAngle)*haloRadius;
+      haloPositions[haloOffset+1]=NEURAL_OCEAN_WORLD_Y+haloHeight;
+      haloPositions[haloOffset+2]=Math.sin(haloAngle)*haloRadius;
+      haloColor.copy(GOLD.light).lerp(GOLD.highlight,.46+haloRandom()*.54);
+      haloColors[haloOffset]=haloColor.r;
+      haloColors[haloOffset+1]=haloColor.g;
+      haloColors[haloOffset+2]=haloColor.b;
+      var haloDataOffset=haloIndex*4;
+      haloData[haloDataOffset]=haloAngle;
+      haloData[haloDataOffset+1]=haloRadius;
+      haloData[haloDataOffset+2]=haloRandom()*Math.PI*2;
+      haloData[haloDataOffset+3]=.52+haloRandom()*.74;
+    }
+    var haloGeometry=new THREE.BufferGeometry();
+    haloGeometry.setAttribute('position',new THREE.BufferAttribute(haloPositions,3));
+    haloGeometry.setAttribute('aColor',new THREE.BufferAttribute(haloColors,3));
+    haloGeometry.setAttribute('aHalo',new THREE.BufferAttribute(haloData,4));
+    var haloMaterial=new THREE.RawShaderMaterial({
+      uniforms:{
+        uTime:{value:0},
+        uPixelRatio:{value:Math.min(window.devicePixelRatio||1,2)},
+        uReveal:{value:0},
+        uPulse:{value:0}
+      },
+      vertexShader:[
+        'precision highp float;',
+        'uniform mat4 modelViewMatrix;',
+        'uniform mat4 projectionMatrix;',
+        'uniform float uTime;',
+        'uniform float uPixelRatio;',
+        'attribute vec3 position;',
+        'attribute vec3 aColor;',
+        'attribute vec4 aHalo;',
+        'varying vec3 vColor;',
+        'varying float vTwinkle;',
+        'void main(){',
+        '  vec3 drifted=position;',
+        '  float orbit=uTime*(.075+aHalo.w*.035);',
+        '  float driftRadius=.025+aHalo.y*.045;',
+        '  drifted.x+=cos(aHalo.x+orbit+aHalo.z)*driftRadius;',
+        '  drifted.z+=sin(aHalo.x+orbit+aHalo.z)*driftRadius;',
+        '  drifted.y+=sin(uTime*(.22+aHalo.w*.08)+aHalo.z)*(.045+aHalo.y*.035);',
+        '  vec4 mvPosition=modelViewMatrix*vec4(drifted,1.0);',
+        '  gl_Position=projectionMatrix*mvPosition;',
+        '  vTwinkle=.72+.28*sin(uTime*(.48+aHalo.w*.16)+aHalo.z);',
+        '  gl_PointSize=(1.15+aHalo.w*.95)*uPixelRatio*(31.0/max(6.0,-mvPosition.z));',
+        '  vColor=aColor;',
+        '}'
+      ].join('\n'),
+      fragmentShader:[
+        'precision highp float;',
+        'uniform float uReveal;',
+        'uniform float uPulse;',
+        'varying vec3 vColor;',
+        'varying float vTwinkle;',
+        'void main(){',
+        '  float radial=length(gl_PointCoord-vec2(.5))*2.0;',
+        '  float glow=pow(max(0.0,1.0-radial),1.7);',
+        '  float alpha=glow*uReveal*(.58+vTwinkle*.34)*(1.0+uPulse*.9);',
+        '  if(alpha<.012) discard;',
+        '  vec3 color=mix(vColor,vec3(1.0),.22+uPulse*.28);',
+        '  gl_FragColor=vec4(color*(1.0+uPulse*.72),alpha);',
+        '}'
+      ].join('\n'),
+      transparent:true,
+      depthWrite:false,
+      depthTest:true,
+      blending:THREE.AdditiveBlending,
+      toneMapped:false
+    });
+    var haloPoints=new THREE.Points(haloGeometry,haloMaterial);
+    haloPoints.name='ocean-immersion-halo';
+    haloPoints.frustumCulled=false;
+    haloPoints.renderOrder=9;
+    world.add(haloPoints);
+    return {points:haloPoints,material:haloMaterial};
+  }
+  var oceanImmersionHalo=buildOceanImmersionHalo();
 
   function updateNeuralParticleOceanWave(time){
     if(!neuralParticleOcean||!oceanWaveAnimationData) return;
@@ -4301,6 +4397,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       if(neuralParticleOcean){
         neuralParticleOcean.material.uniforms.uPixelRatio.value=Math.min(window.devicePixelRatio||1,2);
       }
+      if(oceanImmersionHalo){
+        oceanImmersionHalo.material.uniforms.uPixelRatio.value=Math.min(window.devicePixelRatio||1,2);
+      }
     };
     // Scroll setzt nur das gewünschte Ziel auf der Schiene. Die tatsächliche
     // Fahrt wird darunter als gedämpfte Masse integriert: Beschleunigung,
@@ -4494,6 +4593,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         neuralParticleOcean.material.uniforms.uTime.value=reduced?0:t;
         updateNeuralParticleOceanWave(reduced?0:t);
       }
+      if(oceanImmersionHalo){
+        oceanImmersionHalo.material.uniforms.uTime.value=reduced?0:t;
+      }
       for (var satelliteIndex=0;satelliteIndex<satelliteBrains.length;satelliteIndex++) {
         var satelliteBrain=satelliteBrains[satelliteIndex];
         var satelliteData=satelliteBrain.userData;
@@ -4573,6 +4675,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           satellitePulseStates[2].strength
         );
       }
+      if(oceanImmersionHalo){
+        oceanImmersionHalo.material.uniforms.uPulse.value=goldPulseStrength;
+      }
       var railSlowdown=cameraProgress<=cameraHelixExitStart?cameraRailSlowdown(cameraProgress):1;
       var cameraAcceleration=((targetScrollP-cameraProgress)*CAMERA_SPRING*railSlowdown-cameraVelocity*CAMERA_DAMPING)/CAMERA_MASS;
       cameraVelocity+=cameraAcceleration*dt;
@@ -4590,10 +4695,14 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         0,
         1
       );
+      var oceanReveal=smoother(
+        THREE.MathUtils.clamp((chapterTransitionProgress-.06)/.32,0,1)
+      );
       if(neuralParticleOcean){
-        neuralParticleOcean.material.uniforms.uReveal.value=smoother(
-          THREE.MathUtils.clamp((chapterTransitionProgress-.06)/.32,0,1)
-        );
+        neuralParticleOcean.material.uniforms.uReveal.value=oceanReveal;
+      }
+      if(oceanImmersionHalo){
+        oceanImmersionHalo.material.uniforms.uReveal.value=oceanReveal;
       }
       var brainApproachProgress=THREE.MathUtils.clamp(
         (sf-CAMERA_BRAIN_APPROACH_START)/Math.max(.0001,1-CAMERA_BRAIN_APPROACH_START),
@@ -4835,6 +4944,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       if(neuralParticleOcean){
         neuralParticleOcean.points.geometry.dispose();
         neuralParticleOcean.material.dispose();
+      }
+      if(oceanImmersionHalo){
+        oceanImmersionHalo.points.geometry.dispose();
+        oceanImmersionHalo.material.dispose();
       }
       renderer.dispose();
       renderer.forceContextLoss();
