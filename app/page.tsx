@@ -982,8 +982,10 @@ function StudioProfileContent({ lang }: { lang: 'de' | 'en' }) {
         values: 'Empathie bedeutet für mich, zwischen den Zeilen zu lesen, unterschiedliche Stakeholder zu verstehen und komplexe Vorhaben so lange zu begleiten, bis sie wirklich abgeschlossen sind.',
         facts: [
           ['15+ Jahre', 'IT, Projektmanagement, Digitalisierung, Marketing & Verkauf'],
-          ['Diplom', 'Werbetechnik · Marketing, Design & Grafik'],
+          ['Wirtschaftsinformatik HF', 'HF Schule Bern · 2023–2026 · Diplom folgt in Kürze'],
+          ['Werbetechniker-Diplom', 'Marketing, Design & Grafik'],
           ['A–Z', 'Konzeption, Umsetzung, Skalierbarkeit & Begleitung'],
+          ['KI als Werkzeug', 'Persönliche Verantwortung, Entscheidungen & Qualität'],
           ['Bern', 'Schweizweit und international tätig'],
         ],
       }
@@ -995,8 +997,10 @@ function StudioProfileContent({ lang }: { lang: 'de' | 'en' }) {
         values: 'To me, empathy means reading between the lines, understanding different stakeholders and staying with complex initiatives until they are genuinely complete.',
         facts: [
           ['15+ years', 'IT, project management, digitalization, marketing & sales'],
-          ['Diploma', 'Advertising technology · marketing, design & graphics'],
+          ['Business Information Systems', 'HF School Bern · 2023–2026 · diploma to follow shortly'],
+          ['Advertising Technology Diploma', 'Marketing, design & graphics'],
           ['A–Z', 'Concept, delivery, scalability & ongoing guidance'],
+          ['AI as a tool', 'Personal responsibility, decisions & quality'],
           ['Bern', 'Working across Switzerland and internationally'],
         ],
       };
