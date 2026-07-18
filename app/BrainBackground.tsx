@@ -3474,6 +3474,24 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           +lowerFlowCarry*((rawWindDepth-windDepth)+(rawEdgeWaveDepth-edgeWaveDepth)+(rawEscapeDepth-escapeDepth));
         x+=sideX*(staticSide+liveSide)+depthX*(staticDepth+liveDepth);
         z+=sideZ*(staticSide+liveSide)+depthZ*(staticDepth+liveDepth);
+        if(params===GREEN_STRAND){
+          // Dieselbe kompakte Zentrierung, die bisher erst unmittelbar vor
+          // dem Ozean griff, gilt jetzt fuer die gesamte freie Strandlaenge.
+          // Nur direkt an den echten Gehirnankern bleibt ein kurzer weicher
+          // Uebergang, damit die Fasern ohne sichtbaren Knick austreten.
+          var greenLengthCohesion=smoother((funnelProgress-.12)/.58);
+          var greenLengthRadius=SP.rStr*(.08+.92*fiber.assimilationRadius)*1.72;
+          var greenLengthCos=Math.cos(fiber.assimilationAngle);
+          var greenLengthSin=Math.sin(fiber.assimilationAngle);
+          var greenCenteredX=(pathX+(funnelX-pathX)*funnelRelease)
+            +sideX*greenLengthCos*greenLengthRadius
+            +depthX*greenLengthSin*greenLengthRadius;
+          var greenCenteredZ=(pathZ+(funnelZ-pathZ)*funnelRelease)
+            +sideZ*greenLengthCos*greenLengthRadius
+            +depthZ*greenLengthSin*greenLengthRadius;
+          x=THREE.MathUtils.lerp(x,greenCenteredX,greenLengthCohesion);
+          z=THREE.MathUtils.lerp(z,greenCenteredZ,greenLengthCohesion);
+        }
         if(assimilationBlend>0){
           // Die Mittelbahn wird schrittweise in den vorhandenen Goldrahmen
           // überführt. Die Wellen, Windreaktionen und Ausreisser werden dabei
@@ -3488,14 +3506,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           var sharedGoldProgress=fiber.goldEntryProgress
             +(fiber.goldExitProgress-fiber.goldEntryProgress)*assimilationTravel;
           sampleGoldStrandFrame(sharedGoldProgress);
-          // Der gruene Strang lief bisher mit seinen vollen Ausreissern bis an
-          // die Wasserlinie weiter und bildete dadurch links ein eigenes
-          // Faserfeld. In der unteren Merge-Zone wird er nun weich auf den
-          // gemeinsamen Goldrahmen gebuendelt; oberhalb davon bleibt seine
-          // bisherige organische Bewegung vollstaendig erhalten.
-          var greenTerminalCohesion=params===GREEN_STRAND
-            ?smoother((sharedGoldProgress-.78)/.18)
-            :0;
+          // Gruen bleibt auch waehrend der gesamten Assimilation vollstaendig
+          // zentriert. Rot und Blau behalten ihre organischen Randbewegungen.
+          var greenTerminalCohesion=params===GREEN_STRAND?1:0;
           var gumProgress=wulstWaveProgress(sharedGoldProgress);
           var gumTravel=stretchedWavePhase(
             gumProgress,
@@ -3504,12 +3517,16 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           );
           var gumEnvelope=smoother(gumProgress/.2);
           var assimilationWave=gumTravel+flowTime*.31+fiber.branchPhase+fiber.assimilationPhase;
-          var assimilationAngle=fiber.assimilationAngle+Math.sin(assimilationWave)*.35
-            +Math.sin(assimilationWave*1.71+fiberShape.phaseOffset)*.12;
-          var assimilationRadius=THREE.MathUtils.clamp(
-            fiber.assimilationRadius+fiber.assimilationRadiusDrift*Math.sin(assimilationWave*1.23),
-            .035,.98
-          );
+          var assimilationAngle=params===GREEN_STRAND
+            ?fiber.assimilationAngle
+            :fiber.assimilationAngle+Math.sin(assimilationWave)*.35
+              +Math.sin(assimilationWave*1.71+fiberShape.phaseOffset)*.12;
+          var assimilationRadius=params===GREEN_STRAND
+            ?fiber.assimilationRadius
+            :THREE.MathUtils.clamp(
+              fiber.assimilationRadius+fiber.assimilationRadiusDrift*Math.sin(assimilationWave*1.23),
+              .035,.98
+            );
           // Kein dicker Ring mehr oberhalb der Endfasern: Der Radius wächst
           // erst innerhalb der nach unten gezogenen Endzone kaugummiartig an.
           var gumThickness=THREE.MathUtils.lerp(1,2.32,smoother(gumProgress));
@@ -3518,9 +3535,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
             1,
             greenTerminalCohesion
           );
-          var organicRadius=SP.rStr*(.08+.92*assimilationRadius)
-            *(1+Math.sin(assimilationWave*1.37+fiber.assimilationPhase)*.09)
-            *terminalThickness*gumThickness;
+          var organicRadius=params===GREEN_STRAND
+            ?SP.rStr*(.08+.92*assimilationRadius)
+              *THREE.MathUtils.lerp(1.72,2.32,smoother(gumProgress))
+            :SP.rStr*(.08+.92*assimilationRadius)
+              *(1+Math.sin(assimilationWave*1.37+fiber.assimilationPhase)*.09)
+              *terminalThickness*gumThickness;
           var terminalFrayEnvelope=smoother((sharedGoldProgress-SP.frayStart)/Math.max(.001,1-SP.frayStart));
           var terminalFray=terminalFrayEnvelope*SP.fraySpread*fiber.terminalFrayJitter*terminalThickness
             *(1-greenTerminalCohesion);
