@@ -757,7 +757,7 @@ body {
   justify-content: center;
   width: 100%;
   margin: 0 0 clamp(1.25rem, 2.2vh, 2rem);
-  font-size: clamp(1.07rem, 2.36vw, 2.17rem);
+  font-size: clamp(0.535rem, 1.18vw, 1.085rem);
   letter-spacing: 0.035em;
   line-height: 1;
   text-align: center;
@@ -2284,7 +2284,7 @@ body {
   bottom: calc(100% + clamp(1rem, 2.2vw, 1.75rem));
   z-index: 6;
   justify-content: center;
-  font-size: clamp(1.07rem, 2.36vw, 2.17rem);
+  font-size: clamp(0.535rem, 1.18vw, 1.085rem);
   letter-spacing: 0.035em;
   text-align: center;
   pointer-events: none;
@@ -2337,6 +2337,17 @@ body {
 
 .spiral-detail-panel::after {
   display: none;
+}
+
+/* Die Lösungen-Detailkarten verwenden vollständig dieselbe Chakra-Petch-
+   Typografie wie ihre Split-Flap-Überschrift. Die allgemeinen Mehrwert-
+   Regeln setzen Fliesstext bewusst auf Arial; innerhalb dieser Karten wird
+   das deshalb gezielt wieder auf die geerbte Überschriftenschrift gesetzt. */
+.spiral-detail-panel.value-info-card .value-info-copy > p,
+.spiral-detail-panel.value-info-card .value-info-columns li,
+.mobile-solution-info.value-info-card .value-info-copy > p,
+.mobile-solution-info.value-info-card .value-info-columns li {
+  font-family: inherit;
 }
 
 .spiral-intro-statement {
@@ -2872,7 +2883,7 @@ body {
 
   .mobile-value-impact .value-impact-flap {
     margin-bottom: 1.25rem;
-    font-size: clamp(1.8rem, 8vw, 2.75rem);
+    font-size: clamp(0.9rem, 4vw, 1.375rem);
   }
 
   .mobile-value-impact .value-diagram-grid {

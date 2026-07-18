@@ -1712,7 +1712,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
                 type="button"
                 data-service-card
                 data-service-slug={card.slug}
-                className="spiral-service-card ngp-panel"
+                className={`spiral-service-card ngp-panel ${chakraPetch.className}`}
                 aria-label={`${card.title}: ${lang === 'de' ? 'Details öffnen' : 'Open details'}`}
                 style={{
                   '--service-accent': card.accent,
@@ -1748,7 +1748,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
             );
           })}
           <section
-            className={`spiral-detail-panel value-info-card ${activeService ? 'is-open' : ''}`}
+            className={`spiral-detail-panel value-info-card ${chakraPetch.className} ${activeService ? 'is-open' : ''}`}
             aria-hidden={!activeService}
             aria-label={`${detailValueDiagram.eyebrow}: ${detailService.detailTitle}`}
             style={{
@@ -1869,7 +1869,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
                 <button
                   key={`${card.code}-mobile-service-${i}`}
                   type="button"
-                  className="spiral-service-card ngp-panel ngp-panel-static is-materialized"
+                  className={`spiral-service-card ngp-panel ngp-panel-static is-materialized ${chakraPetch.className}`}
                   aria-expanded={activeServiceSlug === card.slug}
                   aria-label={`${card.title}: ${lang === 'de' ? 'Details öffnen' : 'Open details'}`}
                   style={{
@@ -1896,7 +1896,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
             </div>
 
             <section
-              className={`mobile-solution-info value-info-card ${activeService ? 'is-open' : ''}`}
+              className={`mobile-solution-info value-info-card ${chakraPetch.className} ${activeService ? 'is-open' : ''}`}
               aria-hidden={!activeService}
               aria-label={`${detailValueDiagram.eyebrow}: ${detailService.detailTitle}`}
               style={{
