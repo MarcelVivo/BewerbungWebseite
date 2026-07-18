@@ -845,6 +845,217 @@ body {
   display: none;
 }
 
+/* ── Referenzen: reale Cases zwischen Mehrwert und Schlussflug ── */
+.references-world {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1300;
+  width: min(88vw, 92rem);
+  opacity: 0;
+  pointer-events: none;
+  transform-origin: 50% 50%;
+  will-change: transform, opacity;
+}
+
+.references-content {
+  width: 100%;
+  color: #fff;
+  text-shadow: 0 3px 20px rgba(0,0,0,0.9);
+}
+
+.references-heading {
+  margin-bottom: clamp(0.8rem, 1.8vh, 1.4rem);
+  text-align: center;
+}
+
+.references-heading > p {
+  margin: 0 0 0.35rem;
+  color: rgba(231,197,106,0.7);
+  font-size: clamp(0.5rem, 0.58vw, 0.66rem);
+  font-weight: 700;
+  letter-spacing: 0.22em;
+}
+
+.references-heading h2 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(1.05rem, 1.7vw, 1.75rem);
+  letter-spacing: -0.025em;
+}
+
+.references-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(1rem, 1.5vw, 1.65rem);
+}
+
+.reference-card {
+  --reference-accent: #c89a3d;
+  --reference-accent-rgb: 200,154,61;
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(var(--reference-accent-rgb),0.3);
+  border-radius: 0.7rem;
+  background: linear-gradient(160deg, rgba(var(--reference-accent-rgb),0.075), rgba(0,0,0,0.48) 34%), rgba(4,5,6,0.68);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 24px 64px rgba(0,0,0,0.28);
+  backdrop-filter: blur(8px);
+  transform: translateY(1rem);
+  opacity: 0;
+  transition: border-color 220ms ease, box-shadow 220ms ease, transform 500ms cubic-bezier(.2,.72,.28,1), opacity 420ms ease;
+  transition-delay: calc(var(--reference-index) * 90ms);
+}
+
+.references-world.is-revealed .reference-card,
+.mobile-references .reference-card {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.reference-card:hover,
+.reference-card:focus-within {
+  border-color: rgba(var(--reference-accent-rgb),0.62);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 25px 70px rgba(0,0,0,0.34), 0 0 28px rgba(var(--reference-accent-rgb),0.1);
+}
+
+.reference-card-image {
+  position: relative;
+  height: clamp(9.5rem, 21vh, 13.5rem);
+  overflow: hidden;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  background: #080a0c;
+}
+
+.reference-card-image::after {
+  position: absolute;
+  inset: 0;
+  content: '';
+  background: linear-gradient(to top, rgba(0,0,0,0.42), transparent 48%);
+  pointer-events: none;
+}
+
+.reference-card-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  transition: transform 700ms cubic-bezier(.2,.72,.28,1);
+}
+
+.reference-card:hover .reference-card-image img {
+  transform: scale(1.025);
+}
+
+.reference-card-status {
+  position: absolute;
+  right: 0.7rem;
+  bottom: 0.65rem;
+  z-index: 2;
+  max-width: calc(100% - 1.4rem);
+  padding: 0.3rem 0.55rem;
+  border: 1px solid rgba(var(--reference-accent-rgb),0.4);
+  border-radius: 999px;
+  color: #fff;
+  background: rgba(0,0,0,0.68);
+  font-size: clamp(0.45rem, 0.52vw, 0.58rem);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-shadow: none;
+  backdrop-filter: blur(8px);
+}
+
+.reference-card-copy {
+  display: flex;
+  flex-direction: column;
+  min-height: clamp(13.5rem, 28vh, 17rem);
+  padding: clamp(0.85rem, 1.15vw, 1.2rem);
+}
+
+.reference-card-tag {
+  margin: 0 0 0.55rem;
+  color: var(--reference-accent);
+  font-size: clamp(0.48rem, 0.55vw, 0.62rem);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.reference-card-copy h3 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(1rem, 1.42vw, 1.5rem);
+  letter-spacing: -0.035em;
+  line-height: 1;
+}
+
+.reference-card-tagline {
+  display: -webkit-box;
+  margin: 0.65rem 0 0;
+  overflow: hidden;
+  color: rgba(235,229,217,0.78);
+  font-size: clamp(0.62rem, 0.72vw, 0.78rem);
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.reference-card-role {
+  display: -webkit-box;
+  margin: 0.65rem 0 0;
+  overflow: hidden;
+  color: rgba(168,152,128,0.78);
+  font-size: clamp(0.54rem, 0.62vw, 0.68rem);
+  line-height: 1.4;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.reference-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: auto;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.reference-card-case-link,
+.reference-card-external {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--reference-accent);
+  text-decoration: none;
+}
+
+.reference-card-case-link {
+  gap: 0.35rem;
+  font-size: clamp(0.58rem, 0.66vw, 0.72rem);
+  font-weight: 700;
+}
+
+.reference-card-external {
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid rgba(var(--reference-accent-rgb),0.35);
+  border-radius: 999px;
+}
+
+.reference-card-case-link:hover,
+.reference-card-case-link:focus-visible,
+.reference-card-external:hover,
+.reference-card-external:focus-visible {
+  color: #fff;
+  outline: none;
+}
+
+.mobile-references {
+  display: none;
+}
+
 .value-impact-flap {
   position: relative;
   z-index: 6;
@@ -3042,6 +3253,10 @@ body {
     display: none;
   }
 
+  .references-world {
+    display: none;
+  }
+
   .mobile-value-impact {
     display: block;
     width: 100%;
@@ -3055,6 +3270,62 @@ body {
     margin: clamp(4rem, 14vh, 8rem) 0 1rem;
     padding: clamp(3.5rem, 12vw, 6rem) 1rem;
     scroll-margin-top: 5rem;
+  }
+
+  .mobile-references {
+    display: block;
+    margin-top: clamp(5rem, 16vh, 9rem);
+    scroll-margin-top: 5rem;
+  }
+
+  .mobile-references .references-heading {
+    margin-bottom: 1.5rem;
+  }
+
+  .mobile-references .references-heading > p {
+    font-size: 0.62rem;
+  }
+
+  .mobile-references .references-heading h2 {
+    font-size: clamp(1.35rem, 7vw, 2rem);
+  }
+
+  .mobile-references .references-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .mobile-references .reference-card-image {
+    height: auto;
+    aspect-ratio: 8 / 5;
+  }
+
+  .mobile-references .reference-card-copy {
+    min-height: 0;
+    padding: 1.15rem;
+  }
+
+  .mobile-references .reference-card-copy h3 {
+    font-size: clamp(1.35rem, 7vw, 1.8rem);
+  }
+
+  .mobile-references .reference-card-tagline {
+    display: block;
+    overflow: visible;
+    font-size: 0.86rem;
+    -webkit-line-clamp: unset;
+  }
+
+  .mobile-references .reference-card-role {
+    display: block;
+    overflow: visible;
+    margin-bottom: 1rem;
+    font-size: 0.72rem;
+    -webkit-line-clamp: unset;
+  }
+
+  .mobile-references .reference-card-case-link {
+    font-size: 0.76rem;
   }
 
   .mobile-project-cta .project-cta-content h2 {

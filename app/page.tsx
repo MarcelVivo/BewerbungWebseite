@@ -15,6 +15,7 @@ import { useLanguage } from './LanguageContext';
 import { T } from '../lib/translations';
 import { HELIX_STEP, computeCameraTravel, helixAngleForWorldIndex, helixPositionForWorldIndex } from './lib/helixGeometry';
 import { getEffectiveViewport, REF_WIDTH, REF_HEIGHT } from './lib/viewport';
+import { PROJECTS } from './portfolio/data';
 import { Chakra_Petch } from 'next/font/google';
 
 const chakraPetch = Chakra_Petch({ subsets: ['latin'], weight: '700', display: 'swap' });
@@ -43,13 +44,6 @@ const SERVICE_META = [
   { icon: BarChart3,     slug: 'analyse-konzept' },
   { icon: FolderKanban,  slug: 'go-live-umsetzung' },
   { icon: GraduationCap, slug: 'wartung-weiterentwicklung' },
-];
-
-const PORTFOLIO_META = [
-  { slug: 'covid-certificate',         color: '#4d7fbf' },
-  { slug: 'digitalisierung-swisscom',  color: '#244d82' },
-  { slug: 'olivias-olivenpaste',       color: '#a6425c' },
-  { slug: 'requirements-engineering',  color: '#8ebef2' },
 ];
 
 const USP_ICONS = [Zap, Users, CheckCircle, Award];
@@ -811,7 +805,12 @@ function ValueImpactWorld({ lang }: { lang: 'de' | 'en' }) {
       const approachY = cardFlightEase * 36;
       const approachFadeRaw = Math.max(0, Math.min(1, (approachProgress - 0.2) / 0.22));
       const approachFade = 1 - approachFadeRaw * approachFadeRaw * (3 - 2 * approachFadeRaw);
-      const opacity = Math.max(0, Math.min(1, (revealRaw - 0.08) / 0.44)) * approachFade;
+      // Die Referenzen übernehmen die Bühne noch während der ruhigen
+      // Ozean-Totalen. Dadurch verschwinden die Mehrwertkarten vollständig,
+      // bevor die drei echten Projekte einfahren.
+      const referenceTakeoverRaw = Math.max(0, Math.min(1, (exitProgress - 0.38) / 0.16));
+      const referenceTakeover = referenceTakeoverRaw * referenceTakeoverRaw * (3 - 2 * referenceTakeoverRaw);
+      const opacity = Math.max(0, Math.min(1, (revealRaw - 0.08) / 0.44)) * approachFade * (1 - referenceTakeover);
 
       world.style.opacity = opacity.toFixed(3);
       world.style.transform = `translate3d(calc(-50% + ${approachX.toFixed(2)}vw), calc(-50% + ${(translateY + approachY).toFixed(2)}vh), 0) perspective(1400px) rotateX(${rotateX.toFixed(2)}deg) scale(${approachScale.toFixed(4)})`;
@@ -843,6 +842,112 @@ function ValueImpactWorld({ lang }: { lang: 'de' | 'en' }) {
         lang={lang}
         titleRef={(element) => { valueTitleRef.current = element; }}
       />
+    </div>
+  );
+}
+
+function ReferenceCardsContent({ lang }: { lang: 'de' | 'en' }) {
+  return (
+    <div className={`references-content ${chakraPetch.className}`}>
+      <div className="references-heading">
+        <p>{lang === 'de' ? 'AUSGEWÄHLTE ARBEITEN' : 'SELECTED WORK'}</p>
+        <h2>{lang === 'de' ? 'MEINE REFERENZEN' : 'MY REFERENCES'}</h2>
+      </div>
+      <div className="references-grid">
+        {PROJECTS.map((project, index) => {
+          const copy = project[lang];
+          return (
+            <article
+              key={project.slug}
+              className="reference-card"
+              style={{
+                '--reference-accent': project.color,
+                '--reference-accent-rgb': project.colorRgb,
+                '--reference-index': index,
+              } as CSSProperties}
+            >
+              <div className="reference-card-image">
+                <img src={project.image} alt={`${copy.title} – ${copy.tag}`} />
+                <span className="reference-card-status">{copy.status}</span>
+              </div>
+              <div className="reference-card-copy">
+                <p className="reference-card-tag">{copy.tag}</p>
+                <h3>{copy.title}</h3>
+                <p className="reference-card-tagline">{copy.tagline}</p>
+                <p className="reference-card-role">{copy.role}</p>
+                <div className="reference-card-actions">
+                  <a href={`/portfolio/${project.slug}`} className="reference-card-case-link">
+                    {lang === 'de' ? 'Case ansehen' : 'View case'}
+                    <ChevronRight size={15} strokeWidth={2.2} aria-hidden="true" />
+                  </a>
+                  {project.externalUrl ? (
+                    <a
+                      href={project.externalUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="reference-card-external"
+                      aria-label={`${copy.title}: ${lang === 'de' ? 'Live-Projekt öffnen' : 'Open live project'}`}
+                    >
+                      <ExternalLink size={15} strokeWidth={2} aria-hidden="true" />
+                    </a>
+                  ) : project.documentUrl ? (
+                    <a
+                      href={project.documentUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="reference-card-external"
+                      aria-label={`${copy.title}: ${lang === 'de' ? 'Businessplan öffnen' : 'Open business plan'}`}
+                    >
+                      <ExternalLink size={15} strokeWidth={2} aria-hidden="true" />
+                    </a>
+                  ) : null}
+                </div>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ReferencesWorld({ lang }: { lang: 'de' | 'en' }) {
+  const worldRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const world = worldRef.current;
+    if (!world) return;
+    let rafId = 0;
+
+    const frame = () => {
+      rafId = requestAnimationFrame(frame);
+      const cameraState = (window as any).__cardsCameraState;
+      if (!cameraState) return;
+
+      const exitProgress = Math.max(0, Math.min(1, cameraState.exitProgress || 0));
+      const approachProgress = Math.max(0, Math.min(1, cameraState.approachProgress || 0));
+      const revealRaw = Math.max(0, Math.min(1, (exitProgress - 0.42) / 0.18));
+      const reveal = revealRaw * revealRaw * (3 - 2 * revealRaw);
+      const departureRaw = Math.max(0, Math.min(1, approachProgress / 0.22));
+      const departure = departureRaw * departureRaw * (3 - 2 * departureRaw);
+      const opacity = reveal * (1 - departure);
+      const translateY = (1 - reveal) * 70 - departure * 34;
+      const scale = 0.96 + reveal * 0.04 + departure * 0.035;
+
+      world.style.opacity = opacity.toFixed(3);
+      world.style.transform = `translate3d(-50%, calc(-50% + ${translateY.toFixed(2)}px), 0) scale(${scale.toFixed(4)})`;
+      world.style.pointerEvents = opacity > 0.9 ? 'auto' : 'none';
+      world.setAttribute('aria-hidden', opacity > 0.65 ? 'false' : 'true');
+      world.classList.toggle('is-revealed', opacity > 0.68);
+    };
+
+    rafId = requestAnimationFrame(frame);
+    return () => cancelAnimationFrame(rafId);
+  }, []);
+
+  return (
+    <div ref={worldRef} className="references-world" aria-hidden="true">
+      <ReferenceCardsContent lang={lang} />
     </div>
   );
 }
@@ -1630,7 +1735,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       <div id="prozess-spiral" className="spiral-anchor top-[82%]" />
       <div id="journey-solutions" className="spiral-anchor top-[47%]" />
       <div id="journey-value" className="spiral-anchor top-[56%]" />
-      <div id="journey-references" className="spiral-anchor top-[62%]" />
+      <div id="journey-references" className="spiral-anchor top-[70%]" />
       <div id="journey-about" className="spiral-anchor top-[94%]" />
       <div id="journey-contact" className="spiral-anchor top-[99%]" />
 
@@ -1749,6 +1854,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
         </div>
 
         <ValueImpactWorld lang={lang} />
+        <ReferencesWorld lang={lang} />
         <ProjectCtaWorld lang={lang} />
 
         <div ref={cardsWorldRef} className="spiral-cards-world">
@@ -2014,6 +2120,9 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
             </section>
           </div>
           <MobileValueImpact lang={lang} />
+          <div id="mobile-journey-references" className="mobile-references">
+            <ReferenceCardsContent lang={lang} />
+          </div>
           <div id="mobile-journey-contact" className="mobile-project-cta">
             <ProjectCtaContent lang={lang} />
           </div>

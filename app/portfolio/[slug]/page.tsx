@@ -14,6 +14,14 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   return {
     title: `${project.de.title} | Marcel Spahr`,
     description: project.de.metaDesc,
+    alternates: { canonical: `https://www.marcelspahr.ch/portfolio/${project.slug}` },
+    openGraph: {
+      title: `${project.de.title} | Digitalstudio Marcel Spahr`,
+      description: project.de.metaDesc,
+      url: `https://www.marcelspahr.ch/portfolio/${project.slug}`,
+      type: 'article',
+      images: [{ url: `https://www.marcelspahr.ch${project.image}` }],
+    },
   };
 }
 
