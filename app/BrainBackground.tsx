@@ -1578,7 +1578,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var oceanBank=Math.pow(
         oceanBankDistance/Math.max(.001,(oceanHalfWidth-oceanCorridor)*oceanWidthScale),
         1.58
-      )*(isMobile?1.8:3.15)*(1-oceanHorizonProgress*.72);
+      )*(isMobile?1.8:3.15)*Math.pow(1-oceanHorizonProgress,2.35);
       var oceanX=oceanWorldRightX*oceanSide+oceanWorldForwardX*oceanForward;
       var oceanZ=oceanWorldRightZ*oceanSide+oceanWorldForwardZ*oceanForward;
       var collisionDistance=Math.sqrt(oceanX*oceanX+oceanZ*oceanZ);
@@ -1624,7 +1624,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         uOceanDepthMid:{value:(oceanDepthAhead-oceanNearDepthBehind)*.5},
         uOceanDepthHalf:{value:(oceanDepthAhead+oceanNearDepthBehind)*.5},
         uOceanBackStart:{value:oceanNearDepthBehind},
-        uOceanFarFadeStart:{value:(oceanFarDepthBehind-oceanNearDepthBehind)*.56},
+        uOceanFarFadeStart:{value:(oceanFarDepthBehind-oceanNearDepthBehind)*.24},
         uOceanFarFadeEnd:{value:(oceanFarDepthBehind-oceanNearDepthBehind)*.92},
         uSourceWaveControls:{value:sourceWaveControls},
         uSourceWaveTilts:{value:sourceWaveTilts}
@@ -1688,7 +1688,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         '  ridgeWave+=sin(depth*.31-normalizedSide*2.4+uTime*.041)*.09;',
         '  float impact=exp(-max(0.0,radius-uStrandRadius)*.31);',
         '  float reflected=sin((radius-uStrandRadius)*.62+uTime*.15+phase*.006)*.42*impact;',
-        '  float wave=glbWave+ridgeWave+reflected;',
+        // Hinter dem Eintauchbereich verlieren die Wellen kontinuierlich an
+        // Hoehe. So entstehen in der perspektivischen Verdichtung keine
+        // hellen, linienartigen Kammbaender am Horizont.
+        '  float backDistance=max(0.0,-depth-uOceanBackStart);',
+        '  float distantWaveFade=1.0-smoothstep(0.0,uOceanFarFadeStart,backDistance);',
+        '  float wave=(glbWave+ridgeWave)*distantWaveFade+reflected;',
         '  vec3 displaced=position+vec3(0.0,wave,0.0);',
         '  vec4 mvPosition=modelViewMatrix*vec4(displaced,1.0);',
         '  gl_Position=projectionMatrix*mvPosition;',
@@ -1696,10 +1701,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         '  vImpact=impact;',
         '  gl_PointSize=aOcean.w*(1.0+vCrest*.28+impact*.16)*uPixelRatio*(31.0/max(6.0,-mvPosition.z));',
         '  vColor=aColor;',
-        // Weiches perspektivisches Ausblenden vor der echten Geometriekante:
-        // Der Ozean verschmilzt am Horizont mit dem schwarzen Raum.
-        '  float backDistance=max(0.0,-depth-uOceanBackStart);',
-        '  vHorizonFade=1.0-smoothstep(uOceanFarFadeStart,uOceanFarFadeEnd,backDistance);',
+        // Langer, gleichmaessiger Helligkeitsabfall ab Beginn der Fernflaeche.
+        // Ein zusaetzlicher weicher Abschluss liegt noch vor der Geometriekante.
+        '  float horizonProgress=clamp(backDistance/max(.001,uOceanFarFadeEnd),0.0,1.0);',
+        '  float horizonDissolve=1.0-smoothstep(.82,1.0,horizonProgress);',
+        '  vHorizonFade=exp(-horizonProgress*2.65)*horizonDissolve;',
         // Dieselbe individuelle Funkelphase wie bei den Ringpartikeln.
         '  vShimmer=.72+.28*sin(uTime*(.48+aOcean.w*.16)+phase);',
         '}'
