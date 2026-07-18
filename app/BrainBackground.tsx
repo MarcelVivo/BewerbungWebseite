@@ -1514,7 +1514,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     // leichterer Fernbereich verlaengert sie hinter dem Strang bis weit ueber
     // den sichtbaren Horizont hinaus, ohne die Dichte im Vordergrund zu senken.
     var nearParticleCount=isMobile?150000:520000;
-    var farParticleCount=isMobile?55000:180000;
+    var farParticleCount=isMobile?38000:105000;
     var particleCount=nearParticleCount+farParticleCount;
     var oceanPositions=new Float32Array(particleCount*3);
     var oceanColors=new Float32Array(particleCount*3);
@@ -1578,7 +1578,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var oceanBank=Math.pow(
         oceanBankDistance/Math.max(.001,(oceanHalfWidth-oceanCorridor)*oceanWidthScale),
         1.58
-      )*(isMobile?1.8:3.15)*Math.pow(1-oceanHorizonProgress,2.35);
+      )*(isMobile?1.8:3.15)*Math.pow(1-oceanHorizonProgress,3.5);
       var oceanX=oceanWorldRightX*oceanSide+oceanWorldForwardX*oceanForward;
       var oceanZ=oceanWorldRightZ*oceanSide+oceanWorldForwardZ*oceanForward;
       var collisionDistance=Math.sqrt(oceanX*oceanX+oceanZ*oceanZ);
@@ -1624,7 +1624,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         uOceanDepthMid:{value:(oceanDepthAhead-oceanNearDepthBehind)*.5},
         uOceanDepthHalf:{value:(oceanDepthAhead+oceanNearDepthBehind)*.5},
         uOceanBackStart:{value:oceanNearDepthBehind},
-        uOceanFarFadeStart:{value:(oceanFarDepthBehind-oceanNearDepthBehind)*.24},
+        uOceanFarFadeStart:{value:(oceanFarDepthBehind-oceanNearDepthBehind)*.08},
         uOceanFarFadeEnd:{value:(oceanFarDepthBehind-oceanNearDepthBehind)*.92},
         uSourceWaveControls:{value:sourceWaveControls},
         uSourceWaveTilts:{value:sourceWaveTilts}
@@ -1678,16 +1678,16 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         // Der Hauptwellengang besteht aus 5,5 langsamen, leicht diagonalen
         // Kämmen über die gesamte Breite. So hebt sich nicht mehr die komplette
         // Fläche gleichzeitig, sondern jeder Kamm läuft einzeln durch das Meer.
-        '  float glbWave=sourceHeight/max(.0001,sourceWeight)*.52;',
+        '  float glbWave=sourceHeight/max(.0001,sourceWeight)*.22;',
         '  float normalizedSide=side/max(.001,uOceanHalfWidth);',
         // Die höhere Zeitphase verschiebt die Kämme gut erkennbar seitlich,
         // ohne die vertikale Bewegung hektischer werden zu lassen.
         '  float ridgePhase=normalizedSide*17.2788+depth*.19-uTime*.52;',
-        '  float ridgeWave=sin(ridgePhase)*.38;',
-        '  ridgeWave+=sin(ridgePhase*2.0-.62)*.075;',
-        '  ridgeWave+=sin(depth*.31-normalizedSide*2.4+uTime*.041)*.09;',
+        '  float ridgeWave=sin(ridgePhase)*.09;',
+        '  ridgeWave+=sin(ridgePhase*2.0-.62)*.015;',
+        '  ridgeWave+=sin(depth*.31-normalizedSide*2.4+uTime*.041)*.018;',
         '  float impact=exp(-max(0.0,radius-uStrandRadius)*.31);',
-        '  float reflected=sin((radius-uStrandRadius)*.62+uTime*.15+phase*.006)*.42*impact;',
+        '  float reflected=sin((radius-uStrandRadius)*.62+uTime*.15+phase*.006)*.13*impact;',
         // Hinter dem Eintauchbereich verlieren die Wellen kontinuierlich an
         // Hoehe. So entstehen in der perspektivischen Verdichtung keine
         // hellen, linienartigen Kammbaender am Horizont.
@@ -1699,13 +1699,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         '  gl_Position=projectionMatrix*mvPosition;',
         '  vCrest=smoothstep(.34,1.18,wave);',
         '  vImpact=impact;',
-        '  gl_PointSize=aOcean.w*(1.0+vCrest*.28+impact*.16)*uPixelRatio*(31.0/max(6.0,-mvPosition.z));',
+        '  gl_PointSize=aOcean.w*(1.0+impact*.05)*uPixelRatio*(31.0/max(6.0,-mvPosition.z));',
         '  vColor=aColor;',
         // Langer, gleichmaessiger Helligkeitsabfall ab Beginn der Fernflaeche.
         // Ein zusaetzlicher weicher Abschluss liegt noch vor der Geometriekante.
         '  float horizonProgress=clamp(backDistance/max(.001,uOceanFarFadeEnd),0.0,1.0);',
         '  float horizonDissolve=1.0-smoothstep(.82,1.0,horizonProgress);',
-        '  vHorizonFade=exp(-horizonProgress*2.65)*horizonDissolve;',
+        '  vHorizonFade=exp(-horizonProgress*5.2)*horizonDissolve;',
         // Dieselbe individuelle Funkelphase wie bei den Ringpartikeln.
         '  vShimmer=.72+.28*sin(uTime*(.48+aOcean.w*.16)+phase);',
         '}'
