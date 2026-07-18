@@ -3608,13 +3608,17 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           z+=(assimilatedZ-z)*assimilationBlend;
         }
         if(params===GREEN_STRAND){
-          // Unabhaengig davon, wie weit die zufaellig gestaffelte Assimilation
-          // dieser Faser bereits ist: Im letzten Strangviertel muss Gruen auf
-          // die gemeinsame Mittelachse zulaufen. Das verhindert, dass eine
-          // links liegende Catenary-Bahn bis in den Ozean fortgeschrieben wird.
-          var greenOceanBundle=smoother((pathProgress-.72)/.22);
+          // Die fruehere Fortschrittsgrenze lag bei dieser kuerzeren Bahn erst
+          // unterhalb der Clipping-Ebene. Jetzt beginnt die Buendelung in einem
+          // festen, sichtbaren Weltbereich oberhalb der echten Wasserlinie und
+          // erreicht dort garantiert 100 Prozent.
+          var greenOceanApproachHeight=isMobile?4.8:7.8;
+          var greenOceanBundle=smoother(
+            (NEURAL_OCEAN_CLIP_Y+greenOceanApproachHeight-y)
+            /greenOceanApproachHeight
+          );
           if(greenOceanBundle>0){
-            var greenTargetProgress=.86+greenOceanBundle*.14;
+            var greenTargetProgress=.82+greenOceanBundle*.14;
             sampleGoldStrandFrame(greenTargetProgress);
             // Derselbe Endradius wie im Rot-/Blau-/Gold-Buendel, aber ohne
             // terminales Fray, Wind oder einseitigen Live-Versatz.
