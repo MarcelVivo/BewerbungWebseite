@@ -1872,7 +1872,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     world.add(haloPoints);
     return {points:haloPoints,material:haloMaterial};
   }
-  var oceanImmersionHalo=buildOceanImmersionHalo();
+  // Der goldene Ozean bleibt erhalten; der zuvor darueber aufsteigende
+  // Partikelring wird nicht mehr erzeugt.
+  var oceanImmersionHalo=null;
 
   function updateNeuralParticleOceanWave(time){
     if(!neuralParticleOcean||!oceanWaveAnimationData) return;
