@@ -439,7 +439,7 @@ export default function ServicePageContent({ slug }: { slug: string }) {
           <nav className="hidden md:flex items-center gap-6">
             <Link href="/#services"  className="text-sm text-[#a89880] hover:text-white transition-colors">{pl.navServices}</Link>
             <Link href="/#portfolio" className="text-sm text-[#a89880] hover:text-white transition-colors">{pl.navPortfolio}</Link>
-            <Link href="/#about"     className="text-sm text-[#a89880] hover:text-white transition-colors">{pl.navAbout}</Link>
+            <Link href="/#journey-about" className="text-sm text-[#a89880] hover:text-white transition-colors">{pl.navAbout}</Link>
             <div className="flex items-center gap-0.5 rounded-lg border border-[#2d2820] overflow-hidden">
               <button onClick={() => setLang('de')} className={`px-2.5 py-1 text-xs font-semibold transition-colors ${lang === 'de' ? 'bg-[#c9a84c] text-[#0c0a06]' : 'text-[#a89880] hover:text-[#f4edd8]'}`}>DE</button>
               <button onClick={() => setLang('en')} className={`px-2.5 py-1 text-xs font-semibold transition-colors ${lang === 'en' ? 'bg-[#c9a84c] text-[#0c0a06]' : 'text-[#a89880] hover:text-[#f4edd8]'}`}>EN</button>

@@ -1833,7 +1833,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       <div id="journey-solutions" className="spiral-anchor top-[47%]" />
       <div id="journey-value" className="spiral-anchor top-[56%]" />
       <div id="journey-references" className="spiral-anchor top-[70%]" />
-      <div id="journey-about" className="spiral-anchor top-[94%]" />
+      <div id="journey-about" className="spiral-anchor top-[83.5%]" />
       <div id="journey-contact" className="spiral-anchor top-[99%]" />
 
       <div className="spiral-sticky">

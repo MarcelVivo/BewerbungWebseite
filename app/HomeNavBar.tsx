@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react';
 import { Menu, X } from 'lucide-react';
 import { Chakra_Petch } from 'next/font/google';
 import { useLanguage } from './LanguageContext';
@@ -49,10 +49,18 @@ export default function HomeNavBar() {
   const t = T[lang].nav;
 
   const NAV_LINKS = [
-    { href: '#about',     label: t.about },
+    { href: '#journey-about', label: t.about },
     { href: '#services',  label: t.services },
     { href: '#portfolio', label: t.portfolio },
   ];
+
+  function handleNavClick(event: ReactMouseEvent<HTMLAnchorElement>, href: string) {
+    if (href !== '#journey-about') return;
+    event.preventDefault();
+    const targetId = window.innerWidth <= 699 ? 'mobile-journey-about' : 'journey-about';
+    document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setOpen(false);
+  }
 
   return (
     <header className="home-navbar fixed top-0 inset-x-0 z-50 pointer-events-none">
@@ -67,7 +75,7 @@ export default function HomeNavBar() {
         </a>
         <nav className={`hidden lg:flex items-center gap-6 ${chakraPetch.className}`}>
           {NAV_LINKS.map(l => (
-            <a key={l.href} href={l.href} className="text-sm text-[#a89880] hover:text-[#f4edd8] transition-colors"><NavbarFlapLabel label={l.label} /></a>
+            <a key={l.href} href={l.href} onClick={(event) => handleNavClick(event, l.href)} className="text-sm text-[#a89880] hover:text-[#f4edd8] transition-colors"><NavbarFlapLabel label={l.label} /></a>
           ))}
           {/* Language toggle */}
           <div className="flex items-center gap-1 ml-1 rounded-lg border border-[#2d2820] overflow-hidden">
@@ -99,7 +107,7 @@ export default function HomeNavBar() {
       {open && (
         <div className={`home-navbar-mobile-menu lg:hidden px-4 py-4 space-y-3 ms-anim pointer-events-auto ${chakraPetch.className}`}>
           {NAV_LINKS.map(l => (
-            <a key={l.href} href={l.href} className="block text-sm text-[#d4c4a8] hover:text-[#f4edd8]" onClick={() => setOpen(false)}><NavbarFlapLabel label={l.label} /></a>
+            <a key={l.href} href={l.href} className="block text-sm text-[#d4c4a8] hover:text-[#f4edd8]" onClick={(event) => { handleNavClick(event, l.href); if (l.href !== '#journey-about') setOpen(false); }}><NavbarFlapLabel label={l.label} /></a>
           ))}
           <a href="mailto:kontakt@marcelspahr.ch?subject=Termin%20buchen" className="block text-sm font-semibold text-[#c9a84c]" onClick={() => setOpen(false)}><NavbarFlapLabel label={t.book} /></a>
         </div>
