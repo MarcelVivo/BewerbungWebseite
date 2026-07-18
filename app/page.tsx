@@ -968,6 +968,7 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
+  const [consent, setConsent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
@@ -1009,6 +1010,10 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
         requiredEmail: 'Bitte gib deine E-Mail-Adresse ein.',
         invalidEmail: 'Bitte gib eine gültige E-Mail-Adresse ein.',
         requiredMessage: 'Bitte beschreibe kurz dein Vorhaben.',
+        consentLead: 'Ich habe die ',
+        privacyLink: 'Datenschutzerklärung',
+        consentTail: ' gelesen und stimme der Verarbeitung meiner Angaben zur Bearbeitung meiner Anfrage zu.',
+        requiredConsent: 'Bitte bestätige die Datenschutzerklärung.',
       }
     : {
         kicker: 'PERSONAL · NO OBLIGATION · EYE TO EYE',
@@ -1036,6 +1041,10 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
         requiredEmail: 'Please enter your email address.',
         invalidEmail: 'Please enter a valid email address.',
         requiredMessage: 'Please briefly describe your project.',
+        consentLead: 'I have read the ',
+        privacyLink: 'privacy policy',
+        consentTail: ' and agree to the processing of my information for handling my inquiry.',
+        requiredConsent: 'Please confirm the privacy policy.',
       };
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -1057,12 +1066,16 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
       setError(copy.requiredMessage);
       return;
     }
+    if (!consent) {
+      setError(copy.requiredConsent);
+      return;
+    }
     setSubmitting(true);
     try {
       const response = await fetch('/api/kontakt', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, message }),
+        body: JSON.stringify({ name, email, message, consent }),
       });
       if (!response.ok) throw new Error('submit failed');
       setSubmitted(true);
@@ -1116,6 +1129,17 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
                 <label className="project-consultation-message">
                   <span>{copy.message}</span>
                   <textarea value={message} onChange={(event) => { setMessage(event.target.value); setError(''); }} placeholder={copy.placeholder} rows={3} required />
+                </label>
+                <label className="project-consent">
+                  <input
+                    type="checkbox"
+                    checked={consent}
+                    onChange={(event) => { setConsent(event.target.checked); setError(''); }}
+                    required
+                  />
+                  <span>
+                    {copy.consentLead}<a href="/datenschutz" target="_blank" rel="noreferrer">{copy.privacyLink}</a>{copy.consentTail}
+                  </span>
                 </label>
                 {error && <p className="project-consultation-error" role="alert">{error}</p>}
                 <div className="project-consultation-actions">

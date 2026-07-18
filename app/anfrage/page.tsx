@@ -89,6 +89,7 @@ interface Form {
   branche: string; projekttyp: string;
   anforderungen: Anforderung[];
   budget: string; zeitrahmen: string; notizen: string;
+  consent: boolean;
 }
 
 const EMPTY: Form = {
@@ -96,6 +97,7 @@ const EMPTY: Form = {
   branche: '', projekttyp: '',
   anforderungen: [],
   budget: '', zeitrahmen: '', notizen: '',
+  consent: false,
 };
 
 // ── Step indicators ───────────────────────────────────────────
@@ -175,6 +177,8 @@ const UI = {
     industryLabel: 'Branche', projectLabel: 'Projekt', budgetLabel: 'Budget', timeframe: 'Zeitrahmen', mustHave: 'Must-have Anforderungen',
     more: 'Weitere Informationen (optional)', morePlaceholder: 'Besonderheiten, offene Fragen, spezielle Wünsche …',
     promiseLead: 'Mein Versprechen:', promise: 'Ich melde mich innerhalb von zwei Arbeitstagen persönlich bei dir. Kein automatisches Angebot, keine generische Antwort – sondern ein echtes Gespräch über dein Projekt.',
+    consentLead: 'Ich habe die ', privacyLink: 'Datenschutzerklärung', consentTail: ' gelesen und stimme der Verarbeitung meiner Angaben zur Bearbeitung meiner Anfrage zu.',
+    requiredConsent: 'Bitte bestätige die Datenschutzerklärung.',
     back: 'Zurück', next: 'Weiter', send: 'Anfrage absenden', sending: 'Wird gesendet …',
     thanks: 'Vielen Dank', received: 'Deine Projektanfrage ist bei mir eingegangen.', confirmation: 'Du erhältst eine Bestätigung an',
     response: 'und ich melde mich innerhalb von zwei Arbeitstagen persönlich bei dir.', nextTitle: 'Was als Nächstes passiert',
@@ -193,6 +197,8 @@ const UI = {
     industryLabel: 'Industry', projectLabel: 'Project', budgetLabel: 'Budget', timeframe: 'Timeframe', mustHave: 'Must-have requirements',
     more: 'Additional information (optional)', morePlaceholder: 'Special considerations, open questions or requests …',
     promiseLead: 'My promise:', promise: 'I will get back to you personally within two business days. No automated quote, no generic reply – a real conversation about your project.',
+    consentLead: 'I have read the ', privacyLink: 'privacy policy', consentTail: ' and agree to the processing of my information for handling my inquiry.',
+    requiredConsent: 'Please confirm the privacy policy.',
     back: 'Back', next: 'Next', send: 'Submit inquiry', sending: 'Sending …',
     thanks: 'Thank you', received: 'I have received your project inquiry.', confirmation: 'A confirmation will be sent to',
     response: 'and I will contact you personally within two business days.', nextTitle: 'What happens next',
@@ -263,8 +269,12 @@ export default function AnfragePage() {
   }
 
   async function handleSubmit() {
-    setSubmitting(true);
     setError('');
+    if (!form.consent) {
+      setError(copy.requiredConsent);
+      return;
+    }
+    setSubmitting(true);
     try {
       const res = await fetch('/api/re-anfrage', {
         method: 'POST',
@@ -283,6 +293,7 @@ export default function AnfragePage() {
           budget:          form.budget,
           zeitrahmen:      form.zeitrahmen,
           notizen:         form.notizen,
+          consent:         form.consent,
         }),
       });
       if (!res.ok) throw new Error('Fehler beim Senden');
@@ -652,6 +663,18 @@ export default function AnfragePage() {
               <div className="rounded-xl border border-[#c9a84c]/20 bg-[#c9a84c]/5 p-4 text-sm text-[#a89880] leading-relaxed">
                 <strong className="text-[#c9a84c]">{copy.promiseLead}</strong> {copy.promise}
               </div>
+
+              <label className="inquiry-consent">
+                <input
+                  type="checkbox"
+                  checked={form.consent}
+                  onChange={e => { set('consent', e.target.checked); setError(''); }}
+                  required
+                />
+                <span>
+                  {copy.consentLead}<Link href="/datenschutz" target="_blank" rel="noreferrer">{copy.privacyLink}</Link>{copy.consentTail}
+                </span>
+              </label>
 
               {error && (
                 <p className="text-sm text-red-400 bg-red-400/10 rounded-lg px-4 py-3">{error}</p>

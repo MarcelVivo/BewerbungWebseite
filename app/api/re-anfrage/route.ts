@@ -18,6 +18,7 @@ type Payload = {
   budget: string;
   zeitrahmen: string;
   notizen: string;
+  consent: boolean;
 };
 
 function pill(items: string[], color = '#1e2235', text = '#e2e8f0') {
@@ -31,9 +32,9 @@ export async function POST(req: Request) {
     const body = (await req.json()) as Payload;
     const { name, email, firma, telefon, branche, projekttyp,
             istSituation, schmerzpunkte, anforderungen, nfAnforderungen,
-            budget, zeitrahmen, notizen } = body;
+            budget, zeitrahmen, notizen, consent } = body;
 
-    if (!name?.trim() || !email?.trim() || !branche || !projekttyp) {
+    if (!name?.trim() || !email?.trim() || !branche || !projekttyp || consent !== true) {
       return NextResponse.json({ error: 'Fehlende Pflichtfelder' }, { status: 400 });
     }
 

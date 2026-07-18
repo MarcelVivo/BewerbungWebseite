@@ -8,6 +8,7 @@ type CheckPayload = {
   email: string;
   firma: string;
   telefon?: string;
+  consent: boolean;
 };
 
 function label(v: string | string[] | undefined): string {
@@ -121,9 +122,9 @@ function generateReport(answers: Record<string, string | string[]>) {
 
 export async function POST(req: Request) {
   try {
-    const { answers, name, email, firma, telefon } = (await req.json()) as CheckPayload;
+    const { answers, name, email, firma, telefon, consent } = (await req.json()) as CheckPayload;
 
-    if (!name?.trim() || !email?.trim() || !firma?.trim()) {
+    if (!name?.trim() || !email?.trim() || !firma?.trim() || consent !== true) {
       return NextResponse.json({ error: 'Fehlende Felder' }, { status: 400 });
     }
 

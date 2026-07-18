@@ -213,7 +213,8 @@ const KI_UI = {
     formIntro: 'Ich werte deine Antworten persönlich aus und sende dir konkrete Empfehlungen – zugeschnitten auf dein Unternehmen.',
     name: 'Dein Name', company: 'Firmenname', phone: 'Telefon (optional)', sending: 'Wird gesendet …', submit: 'Meinen KI-Fahrplan erhalten →',
     privacy: 'Deine Daten werden ausschliesslich für die Erstellung und Zustellung deines KI-Fahrplans genutzt. Kein Verkauf, keine Weitergabe an Dritte.',
-    privacyLink: 'Datenschutz', back: 'Zurück', continue: 'Weiter', homepage: 'Startseite', error: 'Es ist ein Fehler aufgetreten. Bitte versuche es erneut.', connection: 'Verbindungsfehler. Bitte prüfe deine Internetverbindung.',
+    privacyLink: 'Datenschutzerklärung', consentLead: 'Ich habe die ', consentTail: ' gelesen und stimme der Verarbeitung meiner Angaben zur Erstellung meines KI-Fahrplans zu.',
+    requiredConsent: 'Bitte bestätige die Datenschutzerklärung.', back: 'Zurück', continue: 'Weiter', homepage: 'Startseite', error: 'Es ist ein Fehler aufgetreten. Bitte versuche es erneut.', connection: 'Verbindungsfehler. Bitte prüfe deine Internetverbindung.',
     requiredName: 'Bitte gib deinen Namen ein.', requiredEmail: 'Bitte gib deine E-Mail-Adresse ein.', invalidEmail: 'Bitte gib eine gültige E-Mail-Adresse ein.', requiredCompany: 'Bitte gib deinen Firmennamen ein.',
   },
   en: {
@@ -228,7 +229,8 @@ const KI_UI = {
     formIntro: 'I personally review your answers and send you concrete recommendations tailored to your business.',
     name: 'Your name', company: 'Company name', phone: 'Phone (optional)', sending: 'Sending …', submit: 'Receive my AI roadmap →',
     privacy: 'Your data is used exclusively to create and deliver your AI roadmap. No sales and no sharing with third parties.',
-    privacyLink: 'Privacy policy', back: 'Back', continue: 'Continue', homepage: 'Homepage', error: 'An error occurred. Please try again.', connection: 'Connection error. Please check your internet connection.',
+    privacyLink: 'privacy policy', consentLead: 'I have read the ', consentTail: ' and agree to the processing of my information to create my AI roadmap.',
+    requiredConsent: 'Please confirm the privacy policy.', back: 'Back', continue: 'Continue', homepage: 'Homepage', error: 'An error occurred. Please try again.', connection: 'Connection error. Please check your internet connection.',
     requiredName: 'Please enter your name.', requiredEmail: 'Please enter your email address.', invalidEmail: 'Please enter a valid email address.', requiredCompany: 'Please enter your company name.',
   },
 };
@@ -258,6 +260,7 @@ export default function KiCheckPage() {
   const [step, setStep]       = useState(0); // 0=intro, 1-10=questions, 11=form, 12=success
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [form, setForm]       = useState({ name: '', email: '', firma: '', telefon: '' });
+  const [consent, setConsent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError]     = useState<string | null>(null);
 
@@ -299,12 +302,16 @@ export default function KiCheckPage() {
       setError(copy.requiredCompany);
       return;
     }
+    if (!consent) {
+      setError(copy.requiredConsent);
+      return;
+    }
     setSubmitting(true);
     try {
       const res = await fetch('/api/ki-check', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ answers, ...form }),
+        body: JSON.stringify({ answers, ...form, consent }),
       });
       if (res.ok) setStep(12);
       else setError(copy.error);
@@ -461,6 +468,18 @@ export default function KiCheckPage() {
                 onChange={e => { setForm(f => ({ ...f, telefon: e.target.value })); setError(null); }}
                 className={INPUT}
               />
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#2d2820] bg-[#100d09] px-4 py-3 text-xs leading-relaxed text-[#a89880]">
+                <input
+                  type="checkbox"
+                  checked={consent}
+                  onChange={e => { setConsent(e.target.checked); setError(null); }}
+                  required
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-[#c9a84c]"
+                />
+                <span>
+                  {copy.consentLead}<Link href="/datenschutz" target="_blank" rel="noreferrer" className="text-[#d4b86a] underline underline-offset-2 transition-colors hover:text-[#f4edd8]">{copy.privacyLink}</Link>{copy.consentTail}
+                </span>
+              </label>
               {error && (
                 <p className="text-sm text-[#d9788a] bg-[#a6425c]/10 rounded-xl px-4 py-3">{error}</p>
               )}

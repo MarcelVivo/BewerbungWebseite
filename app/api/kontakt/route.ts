@@ -4,9 +4,9 @@ import { Resend } from 'resend';
 
 export async function POST(request: Request) {
   try {
-    const { name, email, message } = await request.json();
+    const { name, email, message, consent } = await request.json();
 
-    if (!name || !email || !message) {
+    if (!name || !email || !message || consent !== true) {
       return NextResponse.json({ error: 'Fehlende Felder' }, { status: 400 });
     }
 
