@@ -4170,45 +4170,23 @@ body {
 .inquiry-space > span:nth-child(2) { top: 46%; right: 9%; background: #4dbf7f; box-shadow: 0 0 20px 6px rgba(77,191,127,0.18); }
 .inquiry-space > span:nth-child(3) { top: 78%; left: 17%; opacity: 0.32; }
 
-.inquiry-header {
-  border-bottom: 1px solid rgba(231,197,106,0.12);
-  background: rgba(3,3,2,0.72);
-  backdrop-filter: blur(18px);
-}
-
-.inquiry-header-inner {
-  width: min(100%, 82rem);
-  min-height: 4.75rem;
-}
-
-.inquiry-brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-  color: rgba(244,237,216,0.84);
-  font-size: 0.64rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-}
-
-.inquiry-brand img {
-  width: auto;
-  height: 3.35rem;
-  object-fit: contain;
-}
-
-.inquiry-header-status {
-  color: rgba(231,197,106,0.64);
-  font-size: 0.58rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-}
-
 .inquiry-shell {
   position: relative;
   width: min(100%, 70rem);
   padding-top: clamp(3.2rem, 7vh, 6rem);
   padding-bottom: 5rem;
+}
+
+.inquiry-journey-navigator .journey-station:disabled {
+  cursor: not-allowed;
+}
+
+.inquiry-journey-navigator .journey-station:disabled .journey-label {
+  opacity: 0.16;
+}
+
+.inquiry-journey-navigator .journey-station:disabled .journey-node {
+  border-color: rgba(200,154,61,0.22);
 }
 
 .inquiry-intro {
@@ -4397,23 +4375,6 @@ body {
 }
 
 @media (max-width: 699px) {
-  .inquiry-header-inner {
-    min-height: 4.15rem;
-    padding-inline: 1rem;
-  }
-
-  .inquiry-brand img {
-    height: 2.8rem;
-  }
-
-  .inquiry-brand span {
-    display: none;
-  }
-
-  .inquiry-header-status {
-    font-size: 0.5rem;
-  }
-
   .inquiry-shell {
     padding-inline: 1rem;
     padding-top: 2.8rem;

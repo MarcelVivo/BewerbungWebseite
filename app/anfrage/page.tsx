@@ -103,6 +103,7 @@ const STEPS = ['Über Sie', 'Ihr Projekt', 'Anforderungen', 'Absenden'];
 
 export default function AnfragePage() {
   const [step, setStep]           = useState(0);
+  const [furthestStep, setFurthestStep] = useState(0);
   const [form, setForm]           = useState<Form>(EMPTY);
   const [customInput, setCustomInput] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -140,6 +141,14 @@ export default function AnfragePage() {
     if (step === 1) return form.projekttyp !== '';
     return true;
   }, [step, form]);
+
+  function goToStep(nextStep: number) {
+    const boundedStep = Math.max(0, Math.min(STEPS.length - 1, nextStep));
+    const canAdvance = boundedStep <= furthestStep || (boundedStep === step + 1 && canNext);
+    if (!canAdvance) return;
+    setStep(boundedStep);
+    setFurthestStep(previous => Math.max(previous, boundedStep));
+  }
 
   async function handleSubmit() {
     setSubmitting(true);
@@ -215,16 +224,39 @@ export default function AnfragePage() {
   return (
     <div className="inquiry-page min-h-screen text-[#f4edd8]">
       <div className="inquiry-space" aria-hidden="true"><span /><span /><span /></div>
-      {/* Header */}
-      <div className="inquiry-header sticky top-0 z-10">
-        <div className="inquiry-header-inner mx-auto px-6 flex items-center justify-between">
-          <Link href="/" className="inquiry-brand" aria-label="Zurück zur Startseite">
-            <img src="/MSLogo/MSLogoGehirn.png" alt="Marcel Spahr" />
-            <span className="inquiry-display">DIGITALSTUDIO MARCEL SPAHR</span>
-          </Link>
-          <span className="inquiry-header-status inquiry-display">PROJEKTANFRAGE · {String(step + 1).padStart(2, '0')} / 04</span>
-        </div>
-      </div>
+
+      <nav className="journey-navigator inquiry-journey-navigator inquiry-display" aria-label="Schritte der Projektanfrage">
+        <span className="journey-rail" aria-hidden="true">
+          <span
+            className="journey-rail-progress"
+            style={{ height: `${(step / (STEPS.length - 1)) * 100}%` }}
+          />
+        </span>
+        {STEPS.map((label, index) => {
+          const isActive = index === step;
+          const isVisited = index <= furthestStep && !isActive;
+          const isReachable = index <= furthestStep || (index === step + 1 && canNext);
+          return (
+            <button
+              key={label}
+              type="button"
+              className={`journey-station ${isActive ? 'is-active' : ''} ${isVisited ? 'is-visited' : ''}`}
+              aria-current={isActive ? 'step' : undefined}
+              aria-label={`Zu Schritt ${index + 1}: ${label}`}
+              disabled={!isReachable}
+              onClick={() => goToStep(index)}
+            >
+              <span className="journey-label">{label}</span>
+              <span className="journey-node" aria-hidden="true">
+                <span className="journey-node-core" />
+              </span>
+            </button>
+          );
+        })}
+        <span className="journey-count" aria-hidden="true">
+          {String(step + 1).padStart(2, '0')} / {String(STEPS.length).padStart(2, '0')}
+        </span>
+      </nav>
 
       <main className="inquiry-shell mx-auto px-6 py-10">
         {/* Title */}
@@ -494,7 +526,7 @@ export default function AnfragePage() {
         {/* Navigation */}
         <div className="inquiry-navigation inquiry-display flex items-center justify-between">
           <button
-            onClick={() => setStep(s => Math.max(0, s - 1))}
+            onClick={() => goToStep(step - 1)}
             disabled={step === 0}
             className={outlineBtn}
           >
@@ -505,7 +537,7 @@ export default function AnfragePage() {
 
           {step < STEPS.length - 1 ? (
             <button
-              onClick={() => setStep(s => s + 1)}
+              onClick={() => goToStep(step + 1)}
               disabled={!canNext}
               className={goldBtn}
             >
