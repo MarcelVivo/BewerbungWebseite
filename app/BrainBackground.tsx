@@ -2953,10 +2953,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     4.35,
     SATELLITE_METALS.green
   );
-  // Während die Kamera diese Höhe passiert, fährt das Gehirn rein seitlich
-  // vom linken Bildrand herein. Seine Position wird dafür in der jeweils
-  // aktuellen Kameratangente geführt; es kann dadurch beim Helixflug nicht
-  // mehr durch den Vordergrund oder vor der Kamera vorbeiziehen.
+  // Während die Kamera diese Hoehe passiert, bleibt das Gehirn fest an
+  // derselben linken Bildschirmposition verankert. Es besitzt dort weder
+  // eine Ein-/Ausfahrt noch das sonstige Positionswackeln der Satelliten.
   var greenRevealProgress=THREE.MathUtils.clamp(
     (cameraTargetStart-greenSatelliteY)/cameraTravel,
     0,
@@ -2965,8 +2964,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   var greenRevealRadius=isMobile?2.45:5.65;
   greenSatelliteBrain.userData.cameraReveal={
     progress:greenRevealProgress,
-    radius:greenRevealRadius,
-    offscreenRadius:greenSatelliteRadius
+    radius:greenRevealRadius
   };
 
   // --- Verbindliche Maske für beide Gehirnhälften: dieselbe Scatter-Punktwolke
@@ -4819,32 +4817,30 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         var satelliteData=satelliteBrain.userData;
         var satelliteTime=t*.31+satelliteData.phase;
         var satelliteBaseX=satelliteData.baseX;
+        var satelliteBaseY=satelliteData.baseY;
         var satelliteBaseZ=satelliteData.baseZ;
         if(satelliteData.cameraReveal){
-          var greenRevealIn=smoother(
-            (cameraProgress-(satelliteData.cameraReveal.progress-.065))/.04
-          );
-          var greenRevealOut=1-smoother(
-            (cameraProgress-(cameraHelixExitStart-.04))/.04
-          );
-          var greenRevealWeight=greenRevealIn*greenRevealOut;
-          if(cameraProgress<cameraHelixExitStart){
+          var greenPinnedToScreen=cameraProgress>=satelliteData.cameraReveal.progress-.065
+            &&cameraProgress<cameraHelixExitStart;
+          if(greenPinnedToScreen){
             // Die Tangente (-cos, +sin) entspricht exakt der linken
-            // Bildschirmachse der aktuellen Helixkamera. Nur der Radius wird
-            // animiert: weit ausserhalb -> linker Rand -> weit ausserhalb.
+            // Bildschirmachse der aktuellen Helixkamera. Konstanter Radius
+            // und die aktuelle Blickhoehe halten das Gehirn pixelstabil.
             var greenRevealOrbit=cameraProgress*Math.PI*2;
-            var greenScreenLeftRadius=THREE.MathUtils.lerp(
-              satelliteData.cameraReveal.offscreenRadius,
-              satelliteData.cameraReveal.radius,
-              greenRevealWeight
-            );
-            satelliteBaseX=-Math.cos(greenRevealOrbit)*greenScreenLeftRadius;
-            satelliteBaseZ=Math.sin(greenRevealOrbit)*greenScreenLeftRadius;
+            satelliteBaseX=-Math.cos(greenRevealOrbit)*satelliteData.cameraReveal.radius;
+            satelliteBaseY=cameraAimY;
+            satelliteBaseZ=Math.sin(greenRevealOrbit)*satelliteData.cameraReveal.radius;
           }
         }
-        satelliteBrain.position.x=satelliteBaseX+Math.sin(satelliteTime)*.16;
-        satelliteBrain.position.y=satelliteData.baseY+Math.cos(satelliteTime*1.17)*.13;
-        satelliteBrain.position.z=satelliteBaseZ+Math.sin(satelliteTime*1.43+1.4)*.12;
+        if(satelliteData.cameraReveal){
+          // Das grüne Gehirn bleibt auch ausserhalb dieses Abschnitts exakt
+          // auf seiner jeweiligen festen Position; kein ambienter XYZ-Drift.
+          satelliteBrain.position.set(satelliteBaseX,satelliteBaseY,satelliteBaseZ);
+        }else{
+          satelliteBrain.position.x=satelliteBaseX+Math.sin(satelliteTime)*.16;
+          satelliteBrain.position.y=satelliteBaseY+Math.cos(satelliteTime*1.17)*.13;
+          satelliteBrain.position.z=satelliteBaseZ+Math.sin(satelliteTime*1.43+1.4)*.12;
+        }
         satelliteBrain.rotation.x=BASE_X+Math.sin(satelliteTime*.81)*.025;
         satelliteBrain.rotation.y=satelliteData.baseRotY+satelliteSway;
         // Keine seitliche Roll-Neigung, siehe Kommentar beim Hauptgehirn.
@@ -4930,12 +4926,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         0,
         1
       );
-      // Vor der Kartenstation bleibt der frühere angeschnittene Blick auf
-      // das grüne Gehirn erhalten. Während Totalen und Kartenüberflug wird
-      // das komplette Gehirn ausgeblendet; erst im leeren Raum hinter der
-      // Karte darf es wieder Teil des Kamerabilds werden.
-      greenSatelliteBrain.visible=sf<cameraHelixExitStart-.015
-        ||brainApproachProgress>.42;
+      // Erst an seiner vorgesehenen Hoehenstation wird die feste linke
+      // Bildschirmposition sichtbar. Totalen/Karten bleiben frei; fuer den
+      // spaeteren Schlussanflug erscheint es wieder an der festen Weltposition.
+      var greenAtScrollStation=sf>=greenRevealProgress-.065
+        &&sf<cameraHelixExitStart-.015;
+      greenSatelliteBrain.visible=greenAtScrollStation||brainApproachProgress>.42;
       var valleyRevealProgress=THREE.MathUtils.clamp(
         (chapterTransitionProgress-.1)/.9,
         0,
