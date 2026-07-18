@@ -847,6 +847,62 @@ function ValueImpactWorld({ lang }: { lang: 'de' | 'en' }) {
   );
 }
 
+function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
+  return (
+    <div className={`project-cta-content ${chakraPetch.className}`}>
+      <p className="project-cta-kicker">
+        {lang === 'de' ? 'DIGITALSTUDIO MARCEL SPAHR' : 'MARCEL SPAHR DIGITAL STUDIO'}
+      </p>
+      <h2>{lang === 'de' ? 'DEINE IDEE.' : 'YOUR IDEA.'}</h2>
+      <p className="project-cta-copy">
+        {lang === 'de'
+          ? 'Bereit, daraus ein digitales System zu machen?'
+          : 'Ready to turn it into a digital system?'}
+      </p>
+      <a href="/anfrage" className="project-cta-button">
+        <span>{lang === 'de' ? 'Projekt besprechen' : 'Discuss your project'}</span>
+        <ChevronRight size={18} strokeWidth={2.2} aria-hidden="true" />
+      </a>
+    </div>
+  );
+}
+
+function ProjectCtaWorld({ lang }: { lang: 'de' | 'en' }) {
+  const worldRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const world = worldRef.current;
+    if (!world) return;
+    let rafId = 0;
+
+    const frame = () => {
+      rafId = requestAnimationFrame(frame);
+      const cameraState = (window as any).__cardsCameraState;
+      if (!cameraState) return;
+
+      const approachProgress = Math.max(0, Math.min(1, cameraState.approachProgress || 0));
+      const revealRaw = Math.max(0, Math.min(1, (approachProgress - 0.56) / 0.3));
+      const reveal = revealRaw * revealRaw * (3 - 2 * revealRaw);
+      const translateY = (1 - reveal) * 28;
+      const scale = 0.965 + reveal * 0.035;
+
+      world.style.opacity = reveal.toFixed(3);
+      world.style.transform = `translate3d(-50%, ${translateY.toFixed(2)}px, 0) scale(${scale.toFixed(4)})`;
+      world.style.pointerEvents = reveal > 0.92 ? 'auto' : 'none';
+      world.setAttribute('aria-hidden', reveal > 0.65 ? 'false' : 'true');
+    };
+
+    rafId = requestAnimationFrame(frame);
+    return () => cancelAnimationFrame(rafId);
+  }, []);
+
+  return (
+    <div ref={worldRef} className="project-cta-world" aria-hidden="true">
+      <ProjectCtaContent lang={lang} />
+    </div>
+  );
+}
+
 // Split-Flap-Buchstaben-Zerhacker für alle 5 "Deine …"-Intro-Textstationen:
 // jeder Buchstabe klappt unabhängig von seinen Nachbarn (eigenes Tempo,
 // eigene Pausen) endlos durch zufällige Zeichen — kein Split-Flap-Kästchen
@@ -1575,8 +1631,8 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       <div id="journey-solutions" className="spiral-anchor top-[47%]" />
       <div id="journey-value" className="spiral-anchor top-[56%]" />
       <div id="journey-references" className="spiral-anchor top-[62%]" />
-      <div id="journey-contact" className="spiral-anchor top-[82%]" />
       <div id="journey-about" className="spiral-anchor top-[94%]" />
+      <div id="journey-contact" className="spiral-anchor top-[99%]" />
 
       <div className="spiral-sticky">
         <div className="spiral-stage">
@@ -1693,6 +1749,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
         </div>
 
         <ValueImpactWorld lang={lang} />
+        <ProjectCtaWorld lang={lang} />
 
         <div ref={cardsWorldRef} className="spiral-cards-world">
         <div
@@ -1957,6 +2014,9 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
             </section>
           </div>
           <MobileValueImpact lang={lang} />
+          <div id="mobile-journey-contact" className="mobile-project-cta">
+            <ProjectCtaContent lang={lang} />
+          </div>
         </div>
       </div>
     </section>
@@ -2119,7 +2179,11 @@ export default function HomePage() {
                   </span>
                 </p>
               </div>
-              <div style={{ animationDelay: '0.18s' }} className="ms-anim mt-7 flex justify-center">
+              <div style={{ animationDelay: '0.18s' }} className="hero-action-row ms-anim mt-7 flex items-center justify-center gap-7">
+                <a href="/anfrage" className={`hero-project-cta ${chakraPetch.className}`}>
+                  <span>{lang === 'de' ? 'Projekt besprechen' : 'Discuss your project'}</span>
+                  <ChevronRight size={16} strokeWidth={2.2} aria-hidden="true" />
+                </a>
                 <a
                   href="#solution-spiral"
                   className={`group flex flex-col items-center gap-1 text-[#e7c56a] transition-colors hover:text-[#f6e3a1] ${chakraPetch.className}`}
