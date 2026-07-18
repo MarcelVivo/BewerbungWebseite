@@ -20,6 +20,11 @@ export type Project = {
   image: string;
   externalUrl?: string;
   documentUrl?: string;
+  gallery?: Array<{
+    image: string;
+    de: { title: string; description: string };
+    en: { title: string; description: string };
+  }>;
   de: ProjectLang;
   en: ProjectLang;
 };
@@ -31,6 +36,74 @@ export const PROJECTS: Project[] = [
     colorRgb: '215,184,91',
     image: '/references/verahome.jpg',
     externalUrl: 'https://www.verahome.ch',
+    gallery: [
+      {
+        image: '/references/verahome-portal/properties-anonymized.png',
+        de: {
+          title: 'Objektstruktur & Berechtigungen',
+          description: 'Liegenschaften, Einheiten, Rollen, Dokumente und operative Schritte werden in einer gemeinsamen, nachvollziehbaren Struktur geführt.',
+        },
+        en: {
+          title: 'Property structure & permissions',
+          description: 'Properties, units, roles, documents and operational next steps are managed in one consistent, traceable structure.',
+        },
+      },
+      {
+        image: '/references/verahome-portal/contacts-anonymized.png',
+        de: {
+          title: 'Kontakte & Rollen',
+          description: 'Mieter, Eigentümer, Partner, Handwerker und weitere Beteiligte lassen sich nach Rolle verwalten und gezielt in Abläufe einbinden.',
+        },
+        en: {
+          title: 'Contacts & roles',
+          description: 'Tenants, owners, partners, contractors and other stakeholders can be managed by role and connected to relevant workflows.',
+        },
+      },
+      {
+        image: '/references/verahome-portal/calendar-anonymized.png',
+        de: {
+          title: 'Kalender & Terminprozesse',
+          description: 'Verfügbarkeiten, öffentliche Buchungen, interne Termine und Teilnehmer werden direkt im Portal koordiniert.',
+        },
+        en: {
+          title: 'Calendar & appointment workflows',
+          description: 'Availability, public bookings, internal appointments and participants are coordinated directly inside the portal.',
+        },
+      },
+      {
+        image: '/references/verahome-portal/documents-anonymized.png',
+        de: {
+          title: 'Dokumentenverwaltung',
+          description: 'Ein eigener Dokumentenbereich verbindet Ordner, Vorschau, Zuweisung, Versand, Umbenennung und revisionssichere Archivierung.',
+        },
+        en: {
+          title: 'Document management',
+          description: 'A dedicated document workspace combines folders, previews, assignments, sharing, renaming and controlled archiving.',
+        },
+      },
+      {
+        image: '/references/verahome-portal/invoicing-anonymized.png',
+        de: {
+          title: 'Rechnungen & Buchhaltung',
+          description: 'Rechnungspositionen, Empfänger, Auftragsbezug und Zahlungsinformationen werden in einem integrierten Ablauf zusammengeführt.',
+        },
+        en: {
+          title: 'Invoicing & accounting',
+          description: 'Invoice items, recipients, linked assignments and payment details come together in one integrated workflow.',
+        },
+      },
+      {
+        image: '/references/verahome-portal/audit-log-anonymized.png',
+        de: {
+          title: 'Protokoll & Nachvollziehbarkeit',
+          description: 'Sensible Änderungen an Kontakten, Rollen, Objekten, Dokumenten und Einstellungen werden zentral protokolliert und exportierbar gemacht.',
+        },
+        en: {
+          title: 'Audit trail & accountability',
+          description: 'Sensitive changes to contacts, roles, properties, documents and settings are logged centrally and can be exported.',
+        },
+      },
+    ],
     de: {
       title: 'VeraHome',
       tag: 'Webplattform · CRM/ERP',
@@ -47,6 +120,7 @@ export const PROJECTS: Project[] = [
         'Individuelles CRM-/ERP-System mit Datenbank, Rollen und Berechtigungen',
         'Objekterstellung, Inserataufschaltung und strukturierte Verwaltungsprozesse',
         'Kalender, Dokumente, Rechnungen, Nachrichten und digitales Portal',
+        'Zentrales Änderungsprotokoll für Sicherheit und Nachvollziehbarkeit',
         'Schadensmeldungen, Formulare und weitere digitale Serviceabläufe',
       ],
     },
@@ -66,6 +140,7 @@ export const PROJECTS: Project[] = [
         'Custom CRM/ERP system with database, roles and permissions',
         'Property creation, listing publication and structured administration workflows',
         'Calendar, documents, invoices, messages and digital portal',
+        'Central audit trail for security and accountability',
         'Incident reports, forms and additional digital service workflows',
       ],
     },

@@ -13,6 +13,10 @@ const PL = {
     challenge: 'Ausgangslage',
     approach: 'Mein Ansatz',
     result: 'Ergebnis',
+    insightsEyebrow: 'SYSTEMEINBLICKE',
+    insightsTitle: 'Das Vera Portal im Einsatz',
+    insightsText: 'Einblick in die von mir konzipierte und entwickelte Verwaltungsplattform. Sämtliche dargestellten Personen- und Objektdaten wurden vollständig anonymisiert.',
+    enlarge: 'Ansicht vergrössern',
     live: 'Live-Projekt öffnen',
     document: 'Businessplan öffnen',
     ctaEyebrow: 'DEINE IDEE ALS NÄCHSTES PROJEKT',
@@ -27,6 +31,10 @@ const PL = {
     challenge: 'Starting point',
     approach: 'My approach',
     result: 'Outcome',
+    insightsEyebrow: 'SYSTEM INSIGHTS',
+    insightsTitle: 'The Vera Portal in action',
+    insightsText: 'A look inside the administration platform I designed and developed. All personal and property data shown has been fully anonymized.',
+    enlarge: 'Enlarge view',
     live: 'Open live project',
     document: 'Open business plan',
     ctaEyebrow: 'YOUR IDEA AS THE NEXT PROJECT',
@@ -143,6 +151,53 @@ export default function PortfolioDetailContent({ slug }: { slug: string }) {
             ))}
           </div>
         </div>
+
+        {project.gallery && project.gallery.length > 0 && (
+          <section className="mt-24 border-t border-white/10 pt-10" aria-labelledby="system-insights-title">
+            <div className="max-w-3xl mb-10">
+              <p className="text-[0.68rem] font-bold tracking-[0.2em]" style={{ color: project.color }}>{pl.insightsEyebrow}</p>
+              <h2 id="system-insights-title" className="mt-3 text-3xl sm:text-4xl font-bold text-white tracking-[-0.035em]">{pl.insightsTitle}</h2>
+              <p className="mt-4 text-[#a89880] leading-relaxed">{pl.insightsText}</p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-5 sm:gap-7">
+              {project.gallery.map((item, index) => {
+                const copy = item[lang];
+                return (
+                  <article
+                    key={item.image}
+                    className="group overflow-hidden rounded-2xl border border-white/10 bg-white/[0.025]"
+                  >
+                    <a
+                      href={item.image}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block relative overflow-hidden bg-[#edf1f5]"
+                      aria-label={`${copy.title} – ${pl.enlarge}`}
+                    >
+                      <img
+                        src={item.image}
+                        alt={`${p.title}: ${copy.title}`}
+                        loading={index > 1 ? 'lazy' : 'eager'}
+                        className="block w-full aspect-[16/9] object-cover object-top transition-transform duration-700 group-hover:scale-[1.015]"
+                      />
+                      <span
+                        className="absolute right-3 bottom-3 rounded-full border px-3 py-1.5 text-[0.65rem] font-bold tracking-wide text-[#07090b] opacity-0 translate-y-1 transition-all group-hover:opacity-100 group-hover:translate-y-0"
+                        style={{ background: project.color, borderColor: `${project.color}99` }}
+                      >
+                        {pl.enlarge}
+                      </span>
+                    </a>
+                    <div className="p-5 sm:p-6">
+                      <h3 className="font-bold text-white text-lg">{copy.title}</h3>
+                      <p className="mt-2 text-sm leading-relaxed text-[#a89880]">{copy.description}</p>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         <section
           className="mt-24 rounded-2xl border p-8 sm:p-12 text-center"
