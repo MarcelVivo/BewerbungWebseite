@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Check, ChevronLeft, ChevronRight, Bot, Lock, ArrowRight } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
 import { useEmbeddedForm } from '../EmbeddedFormContext';
+import { scrollToJourneyDestination } from '../lib/journeyNavigation';
 
 // ─── Types & Data ────────────────────────────────────────────────────────────
 
@@ -207,6 +208,7 @@ const KI_UI = {
     start: 'Check starten', questions: 'Fragen', minutes: 'Minuten', result: 'Ergebnis', immediate: 'Sofort', home: 'Zurück zur Startseite',
     successTitle: 'Dein KI-Fahrplan ist unterwegs.', success: 'Ich habe deine Antworten ausgewertet. Innerhalb von zwei Arbeitstagen melde ich mich persönlich bei dir – nicht eine KI, sondern ich: Marcel Spahr.',
     spam: 'Bitte prüfe auch deinen Spam-Ordner, falls du keine E-Mail erhältst.', toHome: 'Zur Startseite', report: '§ 11 · DEIN BERICHT',
+    nextTitle: 'Was jetzt passiert', nextItems: ['Ich prüfe deine Antworten persönlich.', 'Du erhältst deinen individuellen KI-Fahrplan.', 'Danach klären wir, welche nächsten Schritte sinnvoll sind.'], viewReferences: 'Referenzen ansehen',
     formTitleA: 'Wohin darf ich deinen', formTitleB: 'persönlichen', formTitleC: 'KI-Fahrplan schicken?',
     formIntro: 'Ich werte deine Antworten persönlich aus und sende dir konkrete Empfehlungen – zugeschnitten auf dein Unternehmen.',
     name: 'Dein Name', company: 'Firmenname', phone: 'Telefon (optional)', sending: 'Wird gesendet …', submit: 'Meinen KI-Fahrplan erhalten →',
@@ -221,6 +223,7 @@ const KI_UI = {
     start: 'Start check', questions: 'Questions', minutes: 'Minutes', result: 'Result', immediate: 'Instant', home: 'Back to homepage',
     successTitle: 'Your AI roadmap is on its way.', success: 'I have reviewed your answers. I will contact you personally within two business days – not an AI, but me: Marcel Spahr.',
     spam: 'Please also check your spam folder if you do not receive an email.', toHome: 'Go to homepage', report: '§ 11 · YOUR REPORT',
+    nextTitle: 'What happens next', nextItems: ['I personally review your answers.', 'You receive your individual AI roadmap.', 'Then we clarify which next steps make sense.'], viewReferences: 'View references',
     formTitleA: 'Where may I send your', formTitleB: 'personal', formTitleC: 'AI roadmap?',
     formIntro: 'I personally review your answers and send you concrete recommendations tailored to your business.',
     name: 'Your name', company: 'Company name', phone: 'Phone (optional)', sending: 'Sending …', submit: 'Receive my AI roadmap →',
@@ -383,6 +386,24 @@ export default function KiCheckPage() {
           <p className="text-[#7a6d5a] text-sm mb-10">
             {copy.spam}
           </p>
+          <div className="rounded-xl border border-[#2d2820] bg-[#1c1912] p-5 text-left space-y-2 mb-6">
+            <p className="text-xs text-[#7a6d5a] font-bold uppercase tracking-widest">{copy.nextTitle}</p>
+            {copy.nextItems.map((item, index) => (
+              <div key={item} className="flex items-center gap-3 text-sm text-[#a89880]">
+                <span className="w-5 h-5 rounded-full bg-[#c9a84c]/20 text-[#c9a84c] text-xs font-bold flex items-center justify-center flex-shrink-0">{index + 1}</span>
+                {item}
+              </div>
+            ))}
+          </div>
+          {embedded && (
+            <button
+              type="button"
+              onClick={() => scrollToJourneyDestination('references')}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#c9a84c] hover:bg-[#b8943a] text-[#0c0a06] font-bold transition-all"
+            >
+              {copy.viewReferences} <ChevronRight size={16} />
+            </button>
+          )}
           {!embedded && <Link
             href="/"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#c9a84c] hover:bg-[#b8943a] text-[#0c0a06] font-bold transition-all"

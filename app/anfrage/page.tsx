@@ -13,6 +13,7 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
 import { useEmbeddedForm } from '../EmbeddedFormContext';
+import { scrollToJourneyDestination } from '../lib/journeyNavigation';
 
 // ── Data ─────────────────────────────────────────────────────
 
@@ -178,6 +179,7 @@ const UI = {
     thanks: 'Vielen Dank', received: 'Deine Projektanfrage ist bei mir eingegangen.', confirmation: 'Du erhältst eine Bestätigung an',
     response: 'und ich melde mich innerhalb von zwei Arbeitstagen persönlich bei dir.', nextTitle: 'Was als Nächstes passiert',
     nextItems: ['Ich sichte deine Anforderungen sorgfältig', 'Ich melde mich innerhalb von zwei Arbeitstagen bei dir', 'Wir besprechen dein Projekt und die nächsten Schritte'],
+    viewReferences: 'Referenzen ansehen',
     error: 'Etwas ist schiefgelaufen. Bitte versuche es erneut oder schreibe mir direkt.', stepAria: 'Zu Schritt',
   },
   en: {
@@ -195,6 +197,7 @@ const UI = {
     thanks: 'Thank you', received: 'I have received your project inquiry.', confirmation: 'A confirmation will be sent to',
     response: 'and I will contact you personally within two business days.', nextTitle: 'What happens next',
     nextItems: ['I carefully review your requirements', 'I contact you within two business days', 'We discuss your project and the next steps'],
+    viewReferences: 'View references',
     error: 'Something went wrong. Please try again or contact me directly.', stepAria: 'Go to step',
   },
 };
@@ -322,6 +325,15 @@ export default function AnfragePage() {
               </div>
             ))}
           </div>
+          {embedded && (
+            <button
+              type="button"
+              className="inquiry-primary-button inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold"
+              onClick={() => scrollToJourneyDestination('references')}
+            >
+              {copy.viewReferences} <ChevronRight size={15} />
+            </button>
+          )}
           {!embedded && (
             <Link href="/" className="inline-flex items-center gap-2 text-sm text-[#c9a84c] hover:underline">
               ← {copy.backHome}

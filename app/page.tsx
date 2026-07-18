@@ -18,6 +18,7 @@ import { useLanguage } from './LanguageContext';
 import { T } from '../lib/translations';
 import { HELIX_STEP, computeCameraTravel, helixAngleForWorldIndex, helixPositionForWorldIndex } from './lib/helixGeometry';
 import { getEffectiveViewport, REF_WIDTH, REF_HEIGHT } from './lib/viewport';
+import { scrollToJourneyDestination } from './lib/journeyNavigation';
 import { PROJECTS } from './portfolio/data';
 import { Chakra_Petch } from 'next/font/google';
 
@@ -25,22 +26,9 @@ const chakraPetch = Chakra_Petch({ subsets: ['latin'], weight: '700', display: '
 const OPEN_LEAD_FORM_EVENT = 'ms:open-lead-form';
 type LeadFormId = 'consultation' | 'project' | 'ki';
 
-function scrollToContactPoint() {
-  if (window.innerWidth <= 699) {
-    document.getElementById('mobile-journey-contact')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    return;
-  }
-  const journey = document.getElementById('solution-spiral');
-  if (!journey) return;
-  window.scrollTo({
-    top: journey.offsetTop - window.innerHeight + journey.offsetHeight,
-    behavior: 'smooth',
-  });
-}
-
 function openLeadForm(form: LeadFormId) {
   window.dispatchEvent(new CustomEvent<LeadFormId>(OPEN_LEAD_FORM_EVENT, { detail: form }));
-  scrollToContactPoint();
+  scrollToJourneyDestination('contact');
 }
 
 // Radius, den die reale 3D-Leistungskarte ("Karte 01") in BrainBackground.tsx
@@ -1013,6 +1001,9 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
         sending: 'Wird gesendet …',
         successTitle: 'Vielen Dank.',
         successText: 'Deine Anfrage ist angekommen. Ich melde mich innerhalb von zwei Arbeitstagen persönlich bei dir.',
+        nextTitle: 'Was jetzt passiert',
+        nextItems: ['Ich prüfe deine Angaben persönlich.', 'Du erhältst innerhalb von zwei Arbeitstagen eine Rückmeldung.', 'Wir klären gemeinsam den sinnvollsten nächsten Schritt.'],
+        viewReferences: 'Referenzen ansehen',
         error: 'Das Senden hat nicht funktioniert. Bitte versuche es erneut oder schreibe an kontakt@marcelspahr.ch.',
         requiredName: 'Bitte gib deinen Namen ein.',
         requiredEmail: 'Bitte gib deine E-Mail-Adresse ein.',
@@ -1037,6 +1028,9 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
         sending: 'Sending …',
         successTitle: 'Thank you.',
         successText: 'Your request has arrived. I will contact you personally within two working days.',
+        nextTitle: 'What happens next',
+        nextItems: ['I personally review your information.', 'You receive a response within two business days.', 'Together, we define the most useful next step.'],
+        viewReferences: 'View references',
         error: 'The message could not be sent. Please try again or email kontakt@marcelspahr.ch.',
         requiredName: 'Please enter your name.',
         requiredEmail: 'Please enter your email address.',
@@ -1091,9 +1085,21 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
           <p className="project-cta-kicker">{copy.kicker}</p>
           <h2>{copy.title}</h2>
           {submitted ? (
-            <div className="project-consultation-success" role="status">
-              <CheckCircle size={24} strokeWidth={1.8} aria-hidden="true" />
-              <div><strong>{copy.successTitle}</strong><p>{copy.successText}</p></div>
+            <div className="project-consultation-success-wrap" role="status">
+              <div className="project-consultation-success">
+                <CheckCircle size={24} strokeWidth={1.8} aria-hidden="true" />
+                <div><strong>{copy.successTitle}</strong><p>{copy.successText}</p></div>
+              </div>
+              <div className="project-success-next">
+                <strong>{copy.nextTitle}</strong>
+                <ol>
+                  {copy.nextItems.map((item, index) => <li key={item}><span>{index + 1}</span>{item}</li>)}
+                </ol>
+              </div>
+              <button type="button" className="project-success-reference" onClick={() => scrollToJourneyDestination('references')}>
+                <span>{copy.viewReferences}</span>
+                <ChevronRight size={15} strokeWidth={2.2} aria-hidden="true" />
+              </button>
             </div>
           ) : (
             <>
@@ -2472,7 +2478,7 @@ export default function HomePage() {
 
   function scrollToContact(event: ReactMouseEvent<HTMLAnchorElement>) {
     event.preventDefault();
-    scrollToContactPoint();
+    scrollToJourneyDestination('contact');
   }
   useEffect(() => {
     const updateHeroScale = () => {

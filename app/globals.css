@@ -1082,6 +1082,94 @@ body {
   text-align: left;
 }
 
+.project-consultation-success-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(100%, 38rem);
+}
+
+.project-consultation-success-wrap .project-consultation-success {
+  width: 100%;
+}
+
+.project-success-next {
+  width: 100%;
+  margin-top: 0.7rem;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid rgba(126,239,176,0.16);
+  border-radius: 0.6rem;
+  background: rgba(0,0,0,0.28);
+  text-align: left;
+}
+
+.project-success-next > strong {
+  display: block;
+  margin-bottom: 0.45rem;
+  color: rgba(186,255,213,0.78);
+  font-size: 0.56rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.project-success-next ol {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.project-success-next li {
+  display: grid;
+  grid-template-columns: 1.2rem minmax(0, 1fr);
+  gap: 0.45rem;
+  align-items: center;
+  color: rgba(235,242,237,0.72);
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.67rem;
+  line-height: 1.35;
+}
+
+.project-success-next li span {
+  display: grid;
+  place-items: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 50%;
+  color: #baffd5;
+  background: rgba(77,191,127,0.15);
+  font-size: 0.54rem;
+  font-weight: 700;
+}
+
+.project-success-reference {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 2.25rem;
+  margin-top: 0.7rem;
+  padding: 0.5rem 0.85rem 0.5rem 1rem;
+  border: 1px solid rgba(126,239,176,0.5);
+  border-radius: 999px;
+  color: #effff5;
+  background: rgba(77,191,127,0.12);
+  font: inherit;
+  font-size: 0.64rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 180ms ease, background 180ms ease, transform 180ms ease;
+}
+
+.project-success-reference:hover,
+.project-success-reference:focus-visible {
+  border-color: rgba(126,239,176,0.9);
+  background: rgba(77,191,127,0.2);
+  outline: none;
+  transform: translateY(-1px);
+}
+
 .project-consultation-success svg {
   flex: 0 0 auto;
 }
