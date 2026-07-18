@@ -1468,31 +1468,24 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   // im Vertex-Shader und belastet den JavaScript-Thread nicht pro Partikel.
   function buildNeuralParticleOcean(){
     if(!sFibers.length) return null;
-    var particleCount=isMobile?120000:480000;
+    var particleCount=isMobile?150000:520000;
     var oceanPositions=new Float32Array(particleCount*3);
     var oceanColors=new Float32Array(particleCount*3);
     var oceanData=new Float32Array(particleCount*4);
     var oceanRandom=createSeededRandom(0x4f434541);
-    var oceanHalfWidth=isMobile?5.2:8.4;
-    var oceanDepth=isMobile?5.8:8.6;
-    var oceanCorridor=isMobile?1.45:2.25;
-    var oceanAnchor=new THREE.Vector3();
-    var oceanAnchorCount=0;
-    // Der äusserste Endring liegt nach der Kaugummi-Dehnung unterhalb des
-    // Kamerabilds. Die Ozeanoberfläche dockt deshalb bei 84 % jeder Faser an:
-    // sichtbar am unteren Bildrand, während die restlichen Fasern in sie
-    // eintauchen und darunter unsichtbar weiterlaufen.
-    for(var oceanFiberIndex=0;oceanFiberIndex<sFibers.length;oceanFiberIndex++){
-      var oceanFiber=sFibers[oceanFiberIndex];
-      var oceanTipOffset=(
-        oceanFiber.start+Math.round((oceanFiber.len-1)*.84)
-      )*3;
-      oceanAnchor.x+=sBase[oceanTipOffset];
-      oceanAnchor.y+=sBase[oceanTipOffset+1];
-      oceanAnchor.z+=sBase[oceanTipOffset+2];
-      oceanAnchorCount++;
-    }
-    oceanAnchor.multiplyScalar(1/Math.max(1,oceanAnchorCount));
+    // Gleiche Welt-Dimension wie das frühere, durch brain.scale vergrösserte
+    // Tal. Die Ebene sitzt fest unter den Karten und kann deshalb nicht mehr
+    // zusammen mit einem lokalen Faserendpunkt aus dem Kamerabild rutschen.
+    var oceanHalfWidth=isMobile?12.5:22.5;
+    var oceanDepthBehind=isMobile?3.4:5.2;
+    var oceanDepthAhead=isMobile?11.5:18.5;
+    var oceanCorridor=isMobile?4.2:7.4;
+    var oceanWorldY=cardGroupWorldY-(isMobile?4.15:6.25);
+    var oceanWorldRightX=Math.cos(organismStationAngle);
+    var oceanWorldRightZ=-Math.sin(organismStationAngle);
+    var oceanWorldForwardX=Math.sin(organismStationAngle);
+    var oceanWorldForwardZ=Math.cos(organismStationAngle);
+    var strandCollisionRadius=isMobile?.72:1.02;
     var oceanPalettes=[
       [GOLD.deep,GOLD.primary,GOLD.light],
       [SATELLITE_METALS.red.deep,SATELLITE_METALS.red.primary,SATELLITE_METALS.red.light],
@@ -1508,27 +1501,32 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       oceanSide+=(oceanRandom()-.5)*oceanHalfWidth*.035;
       // Ein kleiner Anteil liegt hinter dem Andockpunkt. So beginnt das Meer
       // sichtbar unter dem Strang und nicht erst ausserhalb des Bildrandes.
-      var oceanForward=Math.pow(oceanRandom(),.9)*oceanDepth-.72;
+      var oceanForward=-oceanDepthBehind
+        +Math.pow(oceanRandom(),.9)*(oceanDepthBehind+oceanDepthAhead);
       var oceanBankDistance=Math.max(Math.abs(oceanSide)-oceanCorridor,0);
       var oceanBank=Math.pow(
         oceanBankDistance/Math.max(.001,oceanHalfWidth-oceanCorridor),
         1.58
-      )*(isMobile?1.02:1.46);
-      var oceanFloorDrop=.16+oceanForward*.026-oceanBank;
-      var oceanMicroHeight=(oceanRandom()-.5)*.055;
+      )*(isMobile?1.8:3.15);
+      var oceanX=oceanWorldRightX*oceanSide+oceanWorldForwardX*oceanForward;
+      var oceanZ=oceanWorldRightZ*oceanSide+oceanWorldForwardZ*oceanForward;
+      var collisionDistance=Math.sqrt(oceanX*oceanX+oceanZ*oceanZ);
+      // Der Strang stanzt kein flaches Loch aus: Partikel innerhalb seines
+      // Radius werden radial an den Kontaktkragen gedrückt. So umschliesst die
+      // Oberfläche den vertikalen Strang von allen Seiten dreidimensional.
+      if(collisionDistance<strandCollisionRadius){
+        var collisionAngle=Math.atan2(oceanZ,oceanX);
+        var collisionEdge=strandCollisionRadius+oceanRandom()*.34;
+        oceanX=Math.cos(collisionAngle)*collisionEdge;
+        oceanZ=Math.sin(collisionAngle)*collisionEdge;
+        collisionDistance=collisionEdge;
+      }
+      var collisionCollar=Math.exp(-Math.max(0,collisionDistance-strandCollisionRadius)*1.35)*.18;
+      var oceanMicroHeight=(oceanRandom()-.5)*.075;
       var oceanPositionOffset=oceanIndex*3;
-      oceanPositions[oceanPositionOffset]=oceanAnchor.x
-        +organismRightX*oceanSide
-        +organismForwardX*oceanForward
-        +organismDownX*(oceanFloorDrop+oceanMicroHeight);
-      oceanPositions[oceanPositionOffset+1]=oceanAnchor.y
-        +organismRightY*oceanSide
-        +organismForwardY*oceanForward
-        +organismDownY*(oceanFloorDrop+oceanMicroHeight);
-      oceanPositions[oceanPositionOffset+2]=oceanAnchor.z
-        +organismRightZ*oceanSide
-        +organismForwardZ*oceanForward
-        +organismDownZ*(oceanFloorDrop+oceanMicroHeight);
+      oceanPositions[oceanPositionOffset]=oceanX;
+      oceanPositions[oceanPositionOffset+1]=oceanWorldY+oceanBank+collisionCollar+oceanMicroHeight;
+      oceanPositions[oceanPositionOffset+2]=oceanZ;
       var paletteRoll=oceanRandom();
       var oceanPaletteIndex=paletteRoll<.4?0:(paletteRoll<.6?1:(paletteRoll<.8?2:3));
       var oceanPalette=oceanPalettes[oceanPaletteIndex];
@@ -1545,66 +1543,79 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     }
     var oceanGeometry=new THREE.BufferGeometry();
     oceanGeometry.setAttribute('position',new THREE.BufferAttribute(oceanPositions,3));
-    oceanGeometry.setAttribute('color',new THREE.BufferAttribute(oceanColors,3));
+    oceanGeometry.setAttribute('aColor',new THREE.BufferAttribute(oceanColors,3));
     oceanGeometry.setAttribute('aOcean',new THREE.BufferAttribute(oceanData,4));
-    var oceanMaterial=new THREE.ShaderMaterial({
+    var oceanMaterial=new THREE.RawShaderMaterial({
       uniforms:{
         uTime:{value:0},
         uPixelRatio:{value:Math.min(window.devicePixelRatio||1,2)},
-        uDown:{value:new THREE.Vector3(organismDownX,organismDownY,organismDownZ)},
-        uOpacity:{value:isMobile?.78:.88}
+        uOpacity:{value:isMobile?.5:.44},
+        uReveal:{value:0},
+        uStrandRadius:{value:strandCollisionRadius}
       },
       vertexShader:[
+        'precision highp float;',
+        'uniform mat4 modelViewMatrix;',
+        'uniform mat4 projectionMatrix;',
         'uniform float uTime;',
         'uniform float uPixelRatio;',
-        'uniform vec3 uDown;',
-        'attribute vec3 color;',
+        'uniform float uStrandRadius;',
+        'attribute vec3 position;',
+        'attribute vec3 aColor;',
         'attribute vec4 aOcean;',
         'varying vec3 vColor;',
         'varying float vShimmer;',
         'varying float vCrest;',
+        'varying float vImpact;',
         'void main(){',
         '  float side=aOcean.x;',
         '  float depth=aOcean.y;',
         '  float phase=aOcean.z;',
-        // Drei sehr lange, langsam gegeneinander laufende Wellenfelder. Die
-        // kleine Phasenbeimischung verhindert starre parallele Wellenlinien.
-        '  float wave=sin(side*.43+depth*.15+uTime*.19+phase*.028)*.22;',
-        '  wave+=sin(depth*.34-side*.11-uTime*.14+phase*.018)*.16;',
-        '  wave+=sin((side+depth)*.18+uTime*.10)*.10;',
-        '  vec3 displaced=position+uDown*wave;',
+        '  float radius=length(position.xz);',
+        // Lange ankommende Wellen und eine radial nach aussen laufende
+        // Gegenwelle am Strang. Beide Bewegungsrichtungen bleiben ruhig.
+        '  float incoming=sin(depth*.32+side*.055-uTime*.28+phase*.018)*.34;',
+        '  incoming+=sin(side*.19+depth*.12-uTime*.16)*.17;',
+        '  float impact=exp(-max(0.0,radius-uStrandRadius)*.48);',
+        '  float reflected=sin((radius-uStrandRadius)*1.18+uTime*.34+phase*.012)*.25*impact;',
+        '  float wave=incoming+reflected;',
+        '  vec3 displaced=position+vec3(0.0,wave,0.0);',
         '  vec4 mvPosition=modelViewMatrix*vec4(displaced,1.0);',
         '  gl_Position=projectionMatrix*mvPosition;',
-        '  vCrest=smoothstep(.06,.34,wave);',
-        '  gl_PointSize=aOcean.w*(1.0+vCrest*.42)*uPixelRatio*(58.0/max(5.0,-mvPosition.z));',
-        '  vColor=color;',
+        '  vCrest=smoothstep(.12,.48,wave);',
+        '  vImpact=impact;',
+        '  gl_PointSize=aOcean.w*(1.0+vCrest*.48+impact*.32)*uPixelRatio*(46.0/max(6.0,-mvPosition.z));',
+        '  vColor=aColor;',
         '  vShimmer=.78+.22*sin(phase+uTime*.32+side*.11);',
         '}'
       ].join('\n'),
       fragmentShader:[
+        'precision highp float;',
         'uniform float uOpacity;',
+        'uniform float uReveal;',
         'varying vec3 vColor;',
         'varying float vShimmer;',
         'varying float vCrest;',
+        'varying float vImpact;',
         'void main(){',
         '  float d=length(gl_PointCoord-vec2(.5));',
-        '  float alpha=smoothstep(.5,.12,d)*uOpacity;',
+        '  float alpha=smoothstep(.5,.1,d)*uOpacity*uReveal;',
         '  if(alpha<.015) discard;',
-        '  gl_FragColor=vec4(vColor*vShimmer*(1.0+vCrest*.72),alpha);',
+        '  vec3 litColor=vColor*vShimmer*(1.0+vCrest*.78+vImpact*.42);',
+        '  gl_FragColor=vec4(litColor,alpha);',
         '}'
       ].join('\n'),
-      vertexColors:true,
       transparent:true,
       depthWrite:false,
-      depthTest:true,
+      depthTest:false,
       blending:THREE.AdditiveBlending,
       toneMapped:false
     });
     var oceanPoints=new THREE.Points(oceanGeometry,oceanMaterial);
     oceanPoints.name='neural-particle-ocean';
     oceanPoints.frustumCulled=false;
-    oceanPoints.renderOrder=2;
-    brain.add(oceanPoints);
+    oceanPoints.renderOrder=3;
+    world.add(oceanPoints);
     return {points:oceanPoints,material:oceanMaterial};
   }
   var neuralParticleOcean=buildNeuralParticleOcean();
@@ -4293,7 +4304,6 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       worldVerticalInStrandLocal.set(0,1,0).applyQuaternion(strandInverseRotation);
       if(neuralParticleOcean){
         neuralParticleOcean.material.uniforms.uTime.value=reduced?0:t;
-        neuralParticleOcean.material.uniforms.uDown.value.copy(worldVerticalInStrandLocal).negate();
       }
       for (var satelliteIndex=0;satelliteIndex<satelliteBrains.length;satelliteIndex++) {
         var satelliteBrain=satelliteBrains[satelliteIndex];
@@ -4383,6 +4393,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         0,
         1
       );
+      if(neuralParticleOcean){
+        neuralParticleOcean.material.uniforms.uReveal.value=smoother(
+          THREE.MathUtils.clamp((chapterTransitionProgress-.06)/.32,0,1)
+        );
+      }
       var brainApproachProgress=THREE.MathUtils.clamp(
         (sf-CAMERA_BRAIN_APPROACH_START)/Math.max(.0001,1-CAMERA_BRAIN_APPROACH_START),
         0,
