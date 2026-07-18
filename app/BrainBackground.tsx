@@ -1478,12 +1478,15 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var oceanCorridor=isMobile?1.45:2.25;
     var oceanAnchor=new THREE.Vector3();
     var oceanAnchorCount=0;
-    // Bewusst der ursprüngliche Endring: Er liegt aus der Endkamera sichtbar
-    // am unteren Rand. Die verlängerten Fasern tauchen dadurch optisch in die
-    // Oberfläche ein, statt den Ozean ausserhalb des Bildes mitzuziehen.
+    // Der äusserste Endring liegt nach der Kaugummi-Dehnung unterhalb des
+    // Kamerabilds. Die Ozeanoberfläche dockt deshalb bei 84 % jeder Faser an:
+    // sichtbar am unteren Bildrand, während die restlichen Fasern in sie
+    // eintauchen und darunter unsichtbar weiterlaufen.
     for(var oceanFiberIndex=0;oceanFiberIndex<sFibers.length;oceanFiberIndex++){
       var oceanFiber=sFibers[oceanFiberIndex];
-      var oceanTipOffset=(oceanFiber.start+oceanFiber.len-1)*3;
+      var oceanTipOffset=(
+        oceanFiber.start+Math.round((oceanFiber.len-1)*.84)
+      )*3;
       oceanAnchor.x+=sBase[oceanTipOffset];
       oceanAnchor.y+=sBase[oceanTipOffset+1];
       oceanAnchor.z+=sBase[oceanTipOffset+2];
@@ -1503,7 +1506,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var oceanU=(oceanIndex+.5)/particleCount;
       var oceanSide=((oceanU*1.618033988749895)%1*2-1)*oceanHalfWidth;
       oceanSide+=(oceanRandom()-.5)*oceanHalfWidth*.035;
-      var oceanForward=Math.pow(oceanRandom(),.9)*oceanDepth;
+      // Ein kleiner Anteil liegt hinter dem Andockpunkt. So beginnt das Meer
+      // sichtbar unter dem Strang und nicht erst ausserhalb des Bildrandes.
+      var oceanForward=Math.pow(oceanRandom(),.9)*oceanDepth-.72;
       var oceanBankDistance=Math.max(Math.abs(oceanSide)-oceanCorridor,0);
       var oceanBank=Math.pow(
         oceanBankDistance/Math.max(.001,oceanHalfWidth-oceanCorridor),
@@ -1528,7 +1533,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var oceanPaletteIndex=paletteRoll<.4?0:(paletteRoll<.6?1:(paletteRoll<.8?2:3));
       var oceanPalette=oceanPalettes[oceanPaletteIndex];
       oceanColor.copy(oceanPalette[Math.floor(oceanRandom()*oceanPalette.length)]);
-      oceanColor.multiplyScalar(.48+oceanRandom()*.52);
+      oceanColor.multiplyScalar(.7+oceanRandom()*.55);
       oceanColors[oceanPositionOffset]=oceanColor.r;
       oceanColors[oceanPositionOffset+1]=oceanColor.g;
       oceanColors[oceanPositionOffset+2]=oceanColor.b;
@@ -1547,7 +1552,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         uTime:{value:0},
         uPixelRatio:{value:Math.min(window.devicePixelRatio||1,2)},
         uDown:{value:new THREE.Vector3(organismDownX,organismDownY,organismDownZ)},
-        uOpacity:{value:isMobile?.62:.72}
+        uOpacity:{value:isMobile?.78:.88}
       },
       vertexShader:[
         'uniform float uTime;',
@@ -1557,19 +1562,21 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         'attribute vec4 aOcean;',
         'varying vec3 vColor;',
         'varying float vShimmer;',
+        'varying float vCrest;',
         'void main(){',
         '  float side=aOcean.x;',
         '  float depth=aOcean.y;',
         '  float phase=aOcean.z;',
         // Drei sehr lange, langsam gegeneinander laufende Wellenfelder. Die
         // kleine Phasenbeimischung verhindert starre parallele Wellenlinien.
-        '  float wave=sin(side*.48+depth*.17+uTime*.20+phase*.035)*.105;',
-        '  wave+=sin(depth*.39-side*.13-uTime*.15+phase*.022)*.082;',
-        '  wave+=sin((side+depth)*.205+uTime*.105)*.052;',
+        '  float wave=sin(side*.43+depth*.15+uTime*.19+phase*.028)*.22;',
+        '  wave+=sin(depth*.34-side*.11-uTime*.14+phase*.018)*.16;',
+        '  wave+=sin((side+depth)*.18+uTime*.10)*.10;',
         '  vec3 displaced=position+uDown*wave;',
         '  vec4 mvPosition=modelViewMatrix*vec4(displaced,1.0);',
         '  gl_Position=projectionMatrix*mvPosition;',
-        '  gl_PointSize=aOcean.w*uPixelRatio*(24.0/max(5.0,-mvPosition.z));',
+        '  vCrest=smoothstep(.06,.34,wave);',
+        '  gl_PointSize=aOcean.w*(1.0+vCrest*.42)*uPixelRatio*(58.0/max(5.0,-mvPosition.z));',
         '  vColor=color;',
         '  vShimmer=.78+.22*sin(phase+uTime*.32+side*.11);',
         '}'
@@ -1578,11 +1585,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         'uniform float uOpacity;',
         'varying vec3 vColor;',
         'varying float vShimmer;',
+        'varying float vCrest;',
         'void main(){',
         '  float d=length(gl_PointCoord-vec2(.5));',
         '  float alpha=smoothstep(.5,.12,d)*uOpacity;',
         '  if(alpha<.015) discard;',
-        '  gl_FragColor=vec4(vColor*vShimmer,alpha);',
+        '  gl_FragColor=vec4(vColor*vShimmer*(1.0+vCrest*.72),alpha);',
         '}'
       ].join('\n'),
       vertexColors:true,
