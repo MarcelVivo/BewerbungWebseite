@@ -2953,22 +2953,20 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     4.35,
     SATELLITE_METALS.green
   );
-  // Während die Kamera diese Höhe passiert, fährt das Gehirn kurz an den
-  // linken Bildrand. Sein Mittelpunkt bleibt ausserhalb, die innere Kante
-  // wird jedoch angeschnitten sichtbar. Diese Weltposition hält es danach
-  // bis zur Anfahrt auf die vier Lösungskarten. Erst unmittelbar vor dieser
-  // Station gleitet es in die für die Endansicht definierte Position zurück.
+  // Während die Kamera diese Höhe passiert, fährt das Gehirn rein seitlich
+  // vom linken Bildrand herein. Seine Position wird dafür in der jeweils
+  // aktuellen Kameratangente geführt; es kann dadurch beim Helixflug nicht
+  // mehr durch den Vordergrund oder vor der Kamera vorbeiziehen.
   var greenRevealProgress=THREE.MathUtils.clamp(
     (cameraTargetStart-greenSatelliteY)/cameraTravel,
     0,
     1
   );
-  var greenRevealAngle=greenRevealProgress*Math.PI*2;
   var greenRevealRadius=isMobile?2.45:5.65;
   greenSatelliteBrain.userData.cameraReveal={
     progress:greenRevealProgress,
-    x:-Math.cos(greenRevealAngle)*greenRevealRadius,
-    z:Math.sin(greenRevealAngle)*greenRevealRadius
+    radius:greenRevealRadius,
+    offscreenRadius:greenSatelliteRadius
   };
 
   // --- Verbindliche Maske für beide Gehirnhälften: dieselbe Scatter-Punktwolke
@@ -4830,16 +4828,19 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
             (cameraProgress-(cameraHelixExitStart-.04))/.04
           );
           var greenRevealWeight=greenRevealIn*greenRevealOut;
-          satelliteBaseX=THREE.MathUtils.lerp(
-            satelliteData.baseX,
-            satelliteData.cameraReveal.x,
-            greenRevealWeight
-          );
-          satelliteBaseZ=THREE.MathUtils.lerp(
-            satelliteData.baseZ,
-            satelliteData.cameraReveal.z,
-            greenRevealWeight
-          );
+          if(cameraProgress<cameraHelixExitStart){
+            // Die Tangente (-cos, +sin) entspricht exakt der linken
+            // Bildschirmachse der aktuellen Helixkamera. Nur der Radius wird
+            // animiert: weit ausserhalb -> linker Rand -> weit ausserhalb.
+            var greenRevealOrbit=cameraProgress*Math.PI*2;
+            var greenScreenLeftRadius=THREE.MathUtils.lerp(
+              satelliteData.cameraReveal.offscreenRadius,
+              satelliteData.cameraReveal.radius,
+              greenRevealWeight
+            );
+            satelliteBaseX=-Math.cos(greenRevealOrbit)*greenScreenLeftRadius;
+            satelliteBaseZ=Math.sin(greenRevealOrbit)*greenScreenLeftRadius;
+          }
         }
         satelliteBrain.position.x=satelliteBaseX+Math.sin(satelliteTime)*.16;
         satelliteBrain.position.y=satelliteData.baseY+Math.cos(satelliteTime*1.17)*.13;
