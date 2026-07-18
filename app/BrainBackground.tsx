@@ -1588,6 +1588,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         uOpacity:{value:GOLD_RENDER.pointOpacity},
         uToneMappingExposure:{value:renderer.toneMappingExposure},
         uReveal:{value:0},
+        uBrainPulses:{value:new THREE.Vector4()},
+        uPulseGold:{value:GOLD.light.clone()},
+        uPulseRed:{value:SATELLITE_METALS.red.light.clone()},
+        uPulseBlue:{value:SATELLITE_METALS.blue.light.clone()},
+        uPulseGreen:{value:SATELLITE_METALS.green.light.clone()},
         uStrandRadius:{value:strandCollisionRadius},
         uOceanHalfWidth:{value:oceanHalfWidth},
         uOceanDepthMid:{value:(oceanDepthAhead-oceanDepthBehind)*.5},
@@ -1642,7 +1647,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         // Fläche gleichzeitig, sondern jeder Kamm läuft einzeln durch das Meer.
         '  float glbWave=sourceHeight/max(.0001,sourceWeight)*.52;',
         '  float normalizedSide=side/max(.001,uOceanHalfWidth);',
-        '  float ridgePhase=normalizedSide*17.2788+depth*.19-uTime*.095;',
+        // Die höhere Zeitphase verschiebt die Kämme gut erkennbar seitlich,
+        // ohne die vertikale Bewegung hektischer werden zu lassen.
+        '  float ridgePhase=normalizedSide*17.2788+depth*.19-uTime*.52;',
         '  float ridgeWave=sin(ridgePhase)*.38;',
         '  ridgeWave+=sin(ridgePhase*2.0-.62)*.075;',
         '  ridgeWave+=sin(depth*.31-normalizedSide*2.4+uTime*.041)*.09;',
@@ -1664,6 +1671,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         'uniform float uOpacity;',
         'uniform float uReveal;',
         'uniform float uToneMappingExposure;',
+        'uniform vec4 uBrainPulses;',
+        'uniform vec3 uPulseGold;',
+        'uniform vec3 uPulseRed;',
+        'uniform vec3 uPulseBlue;',
+        'uniform vec3 uPulseGreen;',
         'varying vec3 vColor;',
         'varying float vShimmer;',
         'varying float vCrest;',
@@ -1704,9 +1716,19 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         '  float spriteAlpha=radial<.35',
         '    ?mix(1.0,.45,radial/.35)',
         '    :.45*(1.0-(radial-.35)/.65);',
-        '  float alpha=max(0.0,spriteAlpha)*uOpacity*uReveal;',
+        // Jeder Gehirnimpuls wird farbgleich und im selben Frame auf das Meer
+        // übertragen. Das bindet die Oberfläche optisch an die vier Stränge.
+        '  float pulseEnergy=dot(uBrainPulses,vec4(1.0));',
+        '  vec3 pulseColor=uPulseGold*uBrainPulses.x',
+        '    +uPulseRed*uBrainPulses.y',
+        '    +uPulseBlue*uBrainPulses.z',
+        '    +uPulseGreen*uBrainPulses.w;',
+        '  pulseColor/=max(.0001,pulseEnergy);',
+        '  pulseEnergy=clamp(pulseEnergy,0.0,1.0);',
+        '  float alpha=max(0.0,spriteAlpha)*uOpacity*uReveal*(1.0+pulseEnergy*.82);',
         '  if(alpha<.015) discard;',
-        '  vec3 litColor=vColor;',
+        '  vec3 litColor=mix(vColor,pulseColor,pulseEnergy*.52);',
+        '  litColor*=1.0+pulseEnergy*1.35;',
         '  gl_FragColor=vec4(litColor,alpha);',
         '  gl_FragColor.rgb=oceanACES(gl_FragColor.rgb);',
         '  gl_FragColor=oceanSRGB(gl_FragColor);',
@@ -4335,6 +4357,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var goldPulseStart=-1;
     var nextGoldPulse=performance.now()+1200+Math.random()*2400;
     var lastGoldPulseStrength=-1;
+    var goldPulseStrength=0;
     function nextGoldPulseDelay(){
       // Bewusst verschieden breite Zeitgruppen statt eines einzigen
       // gleichförmigen Zufallsfensters: kurze, mittlere und lange Pausen
@@ -4351,7 +4374,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       return sine*sine;
     }
     function updateGoldBrainPulse(now){
-      if(reduced) return;
+      if(reduced){ goldPulseStrength=0; return; }
       if(goldPulseStart<0&&now>=nextGoldPulse) goldPulseStart=now;
       var strength=0;
       if(goldPulseStart>=0){
@@ -4364,6 +4387,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           strength=0;
         }
       }
+      goldPulseStrength=strength;
       if(Math.abs(strength-lastGoldPulseStrength)<.002) return;
       lastGoldPulseStrength=strength;
       for(var materialIndex=0;materialIndex<goldPulseMaterials.length;materialIndex++){
@@ -4402,7 +4426,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         next:performance.now()+initialMin+Math.random()*(initialMax-initialMin),
         minPause:minPause,
         maxPause:maxPause,
-        lastStrength:-1
+        lastStrength:-1,
+        strength:0
       };
     }
     var satellitePulseStates=[
@@ -4411,7 +4436,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       createSatellitePulseState(satelliteBrains[2],3900,8600,1200,4300)
     ];
     function updateSatelliteBrainPulse(state,now){
-      if(reduced||!state) return;
+      if(!state) return;
+      if(reduced){ state.strength=0; return; }
       if(state.start<0&&now>=state.next) state.start=now;
       var strength=0;
       if(state.start>=0){
@@ -4424,6 +4450,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           strength=0;
         }
       }
+      state.strength=strength;
       if(Math.abs(strength-state.lastStrength)<.002) return;
       state.lastStrength=strength;
       for(var index=0;index<state.materials.length;index++){
@@ -4533,6 +4560,14 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       updateGoldBrainPulse(now);
       for(var satellitePulseIndex=0;satellitePulseIndex<satellitePulseStates.length;satellitePulseIndex++){
         updateSatelliteBrainPulse(satellitePulseStates[satellitePulseIndex],now);
+      }
+      if(neuralParticleOcean){
+        neuralParticleOcean.material.uniforms.uBrainPulses.value.set(
+          goldPulseStrength,
+          satellitePulseStates[0].strength,
+          satellitePulseStates[1].strength,
+          satellitePulseStates[2].strength
+        );
       }
       var railSlowdown=cameraProgress<=cameraHelixExitStart?cameraRailSlowdown(cameraProgress):1;
       var cameraAcceleration=((targetScrollP-cameraProgress)*CAMERA_SPRING*railSlowdown-cameraVelocity*CAMERA_DAMPING)/CAMERA_MASS;
