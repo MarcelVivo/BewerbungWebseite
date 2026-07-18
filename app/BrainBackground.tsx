@@ -1455,9 +1455,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   // dieser Ebene abgeschnitten, damit der Strang tatsächlich in die
   // Partikeloberfläche eintaucht und nicht transparent darüber weiterläuft.
   var NEURAL_OCEAN_WORLD_Y=cardGroupWorldY-(isMobile?4.15:6.25);
+  var NEURAL_OCEAN_CLIP_Y=NEURAL_OCEAN_WORLD_Y-(isMobile?.42:.62);
   var neuralOceanClipPlane=new THREE.Plane(
     new THREE.Vector3(0,1,0),
-    -NEURAL_OCEAN_WORLD_Y
+    -NEURAL_OCEAN_CLIP_Y
   );
   renderer.localClippingEnabled=true;
 
@@ -1531,30 +1532,32 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var oceanX=oceanWorldRightX*oceanSide+oceanWorldForwardX*oceanForward;
       var oceanZ=oceanWorldRightZ*oceanSide+oceanWorldForwardZ*oceanForward;
       var collisionDistance=Math.sqrt(oceanX*oceanX+oceanZ*oceanZ);
-      // Der Strang stanzt kein flaches Loch aus: Partikel innerhalb seines
-      // Radius werden radial an den Kontaktkragen gedrückt. So umschliesst die
-      // Oberfläche den vertikalen Strang von allen Seiten dreidimensional.
-      if(collisionDistance<strandCollisionRadius){
-        var collisionAngle=Math.atan2(oceanZ,oceanX);
-        var collisionEdge=strandCollisionRadius+oceanRandom()*.14;
-        oceanX=Math.cos(collisionAngle)*collisionEdge;
-        oceanZ=Math.sin(collisionAngle)*collisionEdge;
-        collisionDistance=collisionEdge;
-      }
-      var collisionCollar=Math.exp(-Math.max(0,collisionDistance-strandCollisionRadius)*1.18)*.1;
+      // Keine ausgesparte Kreisfläche: Partikel laufen lückenlos bis durch
+      // die Strangachse. Ein weicher Meniskus hebt nur ihre Höhe an und lässt
+      // die Oberfläche organisch am eintauchenden Bündel hochziehen.
+      var collisionCollar=Math.exp(-collisionDistance*.72)*(isMobile?.26:.42);
       var oceanMicroHeight=(oceanRandom()-.5)*.075;
       var oceanPositionOffset=oceanIndex*3;
       oceanPositions[oceanPositionOffset]=oceanX;
       oceanPositions[oceanPositionOffset+1]=oceanWorldY+oceanBank+collisionCollar+oceanMicroHeight;
       oceanPositions[oceanPositionOffset+2]=oceanZ;
       var paletteRoll=oceanRandom();
-      // Verhältnis entsprechend der tatsächlichen Faseranzahl am Eintritt:
-      // Gold 220, Rot ca. 209, Blau ca. 209, Grün ca. 180.
-      if(paletteRoll<.269){
+      var entryColorWeight=Math.exp(-collisionDistance*.42);
+      var oceanPaletteCode;
+      if(oceanRandom()<entryColorWeight){
+        // Direkte farbliche Fortsetzung der sichtbaren Stranglagen in der
+        // Bildschirm-/Talbreite: Grün, Blau, Gold, Rot.
+        oceanPaletteCode=oceanSide<-.92?3:(oceanSide<-.18?2:(oceanSide<.34?0:1));
+      } else {
+        // In der Fläche Verhältnis entsprechend der tatsächlichen Faseranzahl:
+        // Gold 220, Rot ca. 209, Blau ca. 209, Grün ca. 180.
+        oceanPaletteCode=paletteRoll<.269?0:(paletteRoll<.524?1:(paletteRoll<.779?2:3));
+      }
+      if(oceanPaletteCode===0){
         // Exakt dieselbe gewichtete Goldpalette wie der Hauptstrang.
         oceanColor.copy(golds[Math.floor(oceanRandom()*golds.length)]);
       } else {
-        var oceanPaletteIndex=paletteRoll<.524?0:(paletteRoll<.779?1:2);
+        var oceanPaletteIndex=oceanPaletteCode-1;
         var oceanPalette=oceanPalettes[oceanPaletteIndex];
         // Exakt derselbe kontinuierliche Metallic-Verlauf wie bei den
         // Sekundärfasern: deep -> primary -> light.
@@ -1709,7 +1712,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var oceanPoints=new THREE.Points(oceanGeometry,oceanMaterial);
     oceanPoints.name='neural-particle-ocean';
     oceanPoints.frustumCulled=false;
-    oceanPoints.renderOrder=3;
+    // Nach Gold- und Sekundärfasern zeichnen: Die dichte Oberfläche legt sich
+    // über deren untergetauchten Abschnitt und verbindet beide Silhouetten.
+    oceanPoints.renderOrder=8;
     world.add(oceanPoints);
     return {
       points:oceanPoints,
