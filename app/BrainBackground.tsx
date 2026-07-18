@@ -1451,13 +1451,25 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   resetWobbleBuffers();
   rebuildGoldCenterline();
 
+  // Feste Wasserlinie in Weltkoordinaten. Alle Fasergeometrien werden unter
+  // dieser Ebene abgeschnitten, damit der Strang tatsächlich in die
+  // Partikeloberfläche eintaucht und nicht transparent darüber weiterläuft.
+  var NEURAL_OCEAN_WORLD_Y=cardGroupWorldY-(isMobile?4.15:6.25);
+  var neuralOceanClipPlane=new THREE.Plane(
+    new THREE.Vector3(0,1,0),
+    -NEURAL_OCEAN_WORLD_Y
+  );
+  renderer.localClippingEnabled=true;
+
   var lgeo=new THREE.BufferGeometry();
   lgeo.setAttribute('position',new THREE.Float32BufferAttribute(lpos,3));
   lgeo.setAttribute('color',new THREE.Float32BufferAttribute(lcol,3));
   var linesObj=new THREE.LineSegments(lgeo,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:GOLD_RENDER.lineOpacity,blending:THREE.NormalBlending,depthWrite:false}));
+  linesObj.material.clippingPlanes=[neuralOceanClipPlane];
   linesObj.name='neural-lines';
   brain.add(dbgHide('walks',linesObj));
   var wptsObj=pointsObj(wpos,wcol,SP.ptSize,GOLD_RENDER.pointOpacity);
+  wptsObj.material.clippingPlanes=[neuralOceanClipPlane];
   wptsObj.name='neural-points';
   brain.add(dbgHide('wpts',wptsObj));
   var goldLineBaseColors=linesObj.geometry.attributes.color.array.slice();
@@ -1480,12 +1492,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var oceanDepthBehind=isMobile?3.4:5.2;
     var oceanDepthAhead=isMobile?11.5:18.5;
     var oceanCorridor=isMobile?4.2:7.4;
-    var oceanWorldY=cardGroupWorldY-(isMobile?4.15:6.25);
+    var oceanWorldY=NEURAL_OCEAN_WORLD_Y;
     var oceanWorldRightX=Math.cos(organismStationAngle);
     var oceanWorldRightZ=-Math.sin(organismStationAngle);
     var oceanWorldForwardX=Math.sin(organismStationAngle);
     var oceanWorldForwardZ=Math.cos(organismStationAngle);
-    var strandCollisionRadius=isMobile?.72:1.02;
+    var strandCollisionRadius=isMobile?.4:.56;
     var oceanPalettes=[
       [GOLD.deep,GOLD.primary,GOLD.light],
       [SATELLITE_METALS.red.deep,SATELLITE_METALS.red.primary,SATELLITE_METALS.red.light],
@@ -1516,12 +1528,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       // Oberfläche den vertikalen Strang von allen Seiten dreidimensional.
       if(collisionDistance<strandCollisionRadius){
         var collisionAngle=Math.atan2(oceanZ,oceanX);
-        var collisionEdge=strandCollisionRadius+oceanRandom()*.34;
+        var collisionEdge=strandCollisionRadius+oceanRandom()*.14;
         oceanX=Math.cos(collisionAngle)*collisionEdge;
         oceanZ=Math.sin(collisionAngle)*collisionEdge;
         collisionDistance=collisionEdge;
       }
-      var collisionCollar=Math.exp(-Math.max(0,collisionDistance-strandCollisionRadius)*1.35)*.18;
+      var collisionCollar=Math.exp(-Math.max(0,collisionDistance-strandCollisionRadius)*1.18)*.1;
       var oceanMicroHeight=(oceanRandom()-.5)*.075;
       var oceanPositionOffset=oceanIndex*3;
       oceanPositions[oceanPositionOffset]=oceanX;
@@ -1531,7 +1543,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var oceanPaletteIndex=paletteRoll<.4?0:(paletteRoll<.6?1:(paletteRoll<.8?2:3));
       var oceanPalette=oceanPalettes[oceanPaletteIndex];
       oceanColor.copy(oceanPalette[Math.floor(oceanRandom()*oceanPalette.length)]);
-      oceanColor.multiplyScalar(.7+oceanRandom()*.55);
+      oceanColor.multiplyScalar(.3+oceanRandom()*.42);
       oceanColors[oceanPositionOffset]=oceanColor.r;
       oceanColors[oceanPositionOffset+1]=oceanColor.g;
       oceanColors[oceanPositionOffset+2]=oceanColor.b;
@@ -1549,7 +1561,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       uniforms:{
         uTime:{value:0},
         uPixelRatio:{value:Math.min(window.devicePixelRatio||1,2)},
-        uOpacity:{value:isMobile?.5:.44},
+        uOpacity:{value:isMobile?.42:.36},
         uReveal:{value:0},
         uStrandRadius:{value:strandCollisionRadius}
       },
@@ -1574,17 +1586,17 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         '  float radius=length(position.xz);',
         // Lange ankommende Wellen und eine radial nach aussen laufende
         // Gegenwelle am Strang. Beide Bewegungsrichtungen bleiben ruhig.
-        '  float incoming=sin(depth*.32+side*.055-uTime*.28+phase*.018)*.34;',
-        '  incoming+=sin(side*.19+depth*.12-uTime*.16)*.17;',
-        '  float impact=exp(-max(0.0,radius-uStrandRadius)*.48);',
-        '  float reflected=sin((radius-uStrandRadius)*1.18+uTime*.34+phase*.012)*.25*impact;',
+        '  float incoming=sin(depth*.17+side*.035-uTime*.12+phase*.009)*.92;',
+        '  incoming+=sin(side*.095+depth*.07-uTime*.065)*.42;',
+        '  float impact=exp(-max(0.0,radius-uStrandRadius)*.31);',
+        '  float reflected=sin((radius-uStrandRadius)*.62+uTime*.15+phase*.006)*.58*impact;',
         '  float wave=incoming+reflected;',
         '  vec3 displaced=position+vec3(0.0,wave,0.0);',
         '  vec4 mvPosition=modelViewMatrix*vec4(displaced,1.0);',
         '  gl_Position=projectionMatrix*mvPosition;',
-        '  vCrest=smoothstep(.12,.48,wave);',
+        '  vCrest=smoothstep(.34,1.18,wave);',
         '  vImpact=impact;',
-        '  gl_PointSize=aOcean.w*(1.0+vCrest*.48+impact*.32)*uPixelRatio*(46.0/max(6.0,-mvPosition.z));',
+        '  gl_PointSize=aOcean.w*(1.0+vCrest*.28+impact*.16)*uPixelRatio*(31.0/max(6.0,-mvPosition.z));',
         '  vColor=aColor;',
         '  vShimmer=.78+.22*sin(phase+uTime*.32+side*.11);',
         '}'
@@ -1601,14 +1613,14 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         '  float d=length(gl_PointCoord-vec2(.5));',
         '  float alpha=smoothstep(.5,.1,d)*uOpacity*uReveal;',
         '  if(alpha<.015) discard;',
-        '  vec3 litColor=vColor*vShimmer*(1.0+vCrest*.78+vImpact*.42);',
+        '  vec3 litColor=vColor*vShimmer*(1.0+vCrest*.48+vImpact*.18);',
         '  gl_FragColor=vec4(litColor,alpha);',
         '}'
       ].join('\n'),
       transparent:true,
       depthWrite:false,
-      depthTest:false,
-      blending:THREE.AdditiveBlending,
+      depthTest:true,
+      blending:THREE.NormalBlending,
       toneMapped:false
     });
     var oceanPoints=new THREE.Points(oceanGeometry,oceanMaterial);
@@ -2861,6 +2873,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     lineGeometry.setAttribute('position',new THREE.BufferAttribute(new Float32Array(0),3));
     lineGeometry.setAttribute('color',new THREE.BufferAttribute(new Float32Array(0),3));
     var lineMesh=new THREE.LineSegments(lineGeometry,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:GOLD_RENDER.lineOpacity,blending:THREE.NormalBlending,depthWrite:false}));
+    lineMesh.material.clippingPlanes=[neuralOceanClipPlane];
     lineMesh.frustumCulled=false;
     lineMesh.renderOrder=4;
     tailGroup.add(lineMesh);
@@ -2868,6 +2881,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     pointGeometry.setAttribute('position',new THREE.BufferAttribute(new Float32Array(0),3));
     pointGeometry.setAttribute('color',new THREE.BufferAttribute(new Float32Array(0),3));
     var pointMesh=new THREE.Points(pointGeometry,new THREE.PointsMaterial({size:SP.ptSize,map:sprite,transparent:true,opacity:GOLD_RENDER.pointOpacity,vertexColors:true,color:0xffffff,blending:THREE.NormalBlending,depthWrite:false}));
+    pointMesh.material.clippingPlanes=[neuralOceanClipPlane];
     pointMesh.frustumCulled=false;
     pointMesh.renderOrder=5;
     tailGroup.add(pointMesh);
