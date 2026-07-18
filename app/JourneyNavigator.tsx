@@ -59,7 +59,7 @@ export default function JourneyNavigator() {
       const journey = document.getElementById('solution-spiral');
       if (journey) {
         window.scrollTo({
-          top: journey.offsetTop - window.innerHeight + journey.offsetHeight * 0.885,
+          top: journey.offsetTop - window.innerHeight + journey.offsetHeight * 0.93,
           behavior: 'smooth',
         });
         return;

@@ -4926,8 +4926,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         var frontalX=approachFocusX;
         var frontalY=approachFocusY;
         var frontalZ=approachFocusZ+frontalDistance;
-        var entryStart=.66;
-        var surfaceProgress=smoother(THREE.MathUtils.clamp(brainApproachProgress/entryStart,0,1));
+        // Die Kamera erreicht die frontale Position früh genug, um dort
+        // während eines eigenen Scrollabschnitts vollständig stillzustehen.
+        // Erst nach diesem Stopp beginnt der Eintritt in das Nervennetz.
+        var surfaceArrival=.52;
+        var entryStart=.72;
+        var surfaceProgress=smoother(THREE.MathUtils.clamp(brainApproachProgress/surfaceArrival,0,1));
         var insideProgress=smoother(THREE.MathUtils.clamp((brainApproachProgress-entryStart)/Math.max(.0001,1-entryStart),0,1));
         var insideX=approachFocusX;
         var insideY=approachFocusY+.04;

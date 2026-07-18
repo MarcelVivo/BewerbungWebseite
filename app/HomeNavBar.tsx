@@ -62,10 +62,9 @@ export default function HomeNavBar() {
 
     const journey = document.getElementById('solution-spiral');
     if (!journey) return;
-    // Exakter Kamerastand: approachProgress ≈ 0.36. Hier ist das Profil
-    // vollständig sichtbar, während das abschliessende Kontakt-CTA noch
-    // nicht eingeblendet wird.
-    const profileCameraProgress = 0.885;
+    // Exakter Kamerastand: approachProgress ≈ 0.61. Die Kamera hält hier
+    // frontal vor dem grünen Gehirn und das Profil ist vollständig sichtbar.
+    const profileCameraProgress = 0.93;
     window.scrollTo({
       top: journey.offsetTop - window.innerHeight + journey.offsetHeight * profileCameraProgress,
       behavior,

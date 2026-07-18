@@ -784,10 +784,10 @@ body {
 /* ── Persönliche Studio-Positionierung vor dem Schlussanflug ── */
 .studio-profile-world {
   position: absolute;
-  top: clamp(4.5rem, 9vh, 8rem);
+  top: 50%;
   left: 50%;
   z-index: 1305;
-  width: min(88vw, 76rem);
+  width: min(86vw, 64rem);
   opacity: 0;
   pointer-events: none;
   transform-origin: 50% 0;
@@ -796,9 +796,9 @@ body {
 
 .studio-profile-content {
   display: grid;
-  grid-template-columns: minmax(0, 0.86fr) minmax(0, 1.14fr);
-  gap: clamp(1.5rem, 4vw, 4.5rem);
-  padding: clamp(1.25rem, 2.1vw, 2rem);
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: clamp(1.5rem, 3.2vw, 3rem);
+  padding: clamp(1.25rem, 2vw, 1.8rem);
   border: 1px solid rgba(77,191,127,0.24);
   border-radius: 0.8rem;
   color: #fff;
@@ -820,7 +820,7 @@ body {
   margin: 0;
   max-width: 28rem;
   color: #fff;
-  font-size: clamp(1.6rem, 2.8vw, 3rem);
+  font-size: clamp(1.55rem, 2.35vw, 2.55rem);
   letter-spacing: -0.045em;
   line-height: 1;
 }
@@ -839,21 +839,23 @@ body {
 
 .studio-profile-facts {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.7rem;
+  grid-template-columns: 1fr;
+  gap: 0;
 }
 
 .studio-profile-fact {
+  display: grid;
+  grid-template-columns: minmax(8.5rem, 0.8fr) minmax(0, 1.2fr);
+  gap: 0.8rem;
+  align-items: baseline;
   min-width: 0;
-  padding: 0.8rem 0.9rem;
-  border: 1px solid rgba(255,255,255,0.09);
-  border-top-color: rgba(126,239,176,0.3);
-  background: rgba(255,255,255,0.025);
+  padding: 0.72rem 0;
+  border-top: 1px solid rgba(126,239,176,0.16);
 }
 
 .studio-profile-fact strong,
 .studio-profile-fact span {
-  display: block;
+  display: inline;
 }
 
 .studio-profile-fact strong {
@@ -862,22 +864,17 @@ body {
 }
 
 .studio-profile-fact span {
-  margin-top: 0.25rem;
   color: rgba(168,152,128,0.9);
   font-size: clamp(0.56rem, 0.66vw, 0.7rem);
   line-height: 1.4;
 }
 
-.studio-profile-principles {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-}
-
-.studio-profile-principles p {
+.studio-profile-statement {
   margin: 0;
+  padding-top: 0.95rem;
+  border-top: 1px solid rgba(255,255,255,0.08);
   color: rgba(212,196,168,0.84);
-  font-size: clamp(0.58rem, 0.7vw, 0.74rem);
+  font-size: clamp(0.62rem, 0.72vw, 0.76rem);
   line-height: 1.55;
 }
 
@@ -3545,9 +3542,13 @@ body {
     font-size: 0.9rem;
   }
 
-  .mobile-studio-profile .studio-profile-facts,
-  .mobile-studio-profile .studio-profile-principles {
+  .mobile-studio-profile .studio-profile-facts {
     grid-template-columns: 1fr;
+  }
+
+  .mobile-studio-profile .studio-profile-fact {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
   }
 
   .mobile-studio-profile .studio-profile-fact strong {
@@ -3555,7 +3556,7 @@ body {
   }
 
   .mobile-studio-profile .studio-profile-fact span,
-  .mobile-studio-profile .studio-profile-principles p {
+  .mobile-studio-profile .studio-profile-statement {
     font-size: 0.78rem;
   }
 

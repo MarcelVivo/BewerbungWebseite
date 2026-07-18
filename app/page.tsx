@@ -1058,14 +1058,10 @@ function StudioProfileContent({ lang }: { lang: 'de' | 'en' }) {
         kicker: 'DIGITALSTUDIO MARCEL SPAHR · BERN',
         title: 'Persönlich geführt. Ganzheitlich umgesetzt.',
         intro: 'Ich begleite Schweizer KMUs und Startups persönlich – von der ersten Idee bis zu einer Lösung, die im Alltag funktioniert und mit dem Unternehmen wachsen kann.',
-        collaboration: 'Ich arbeite eigenverantwortlich und setze KI als leistungsfähiges Werkzeug ein. Strategie, Entscheidungen, Qualität und die persönliche Zusammenarbeit bleiben dabei immer in meiner Hand.',
-        values: 'Empathie bedeutet für mich, zwischen den Zeilen zu lesen, unterschiedliche Stakeholder zu verstehen und komplexe Vorhaben so lange zu begleiten, bis sie wirklich abgeschlossen sind.',
+        statement: 'Ich denke Projekte von A bis Z, lese zwischen den Zeilen und verbinde unterschiedliche Stakeholder. KI nutze ich als Werkzeug – Verantwortung, Entscheidungen und Qualität bleiben persönlich bei mir.',
         facts: [
-          ['15+ Jahre', 'IT, Projektmanagement, Digitalisierung, Marketing & Verkauf'],
-          ['Wirtschaftsinformatik HF', 'HF Schule Bern · 2023–2026 · Diplom folgt in Kürze'],
-          ['Werbetechniker-Diplom', 'Marketing, Design & Grafik'],
-          ['A–Z', 'Konzeption, Umsetzung, Skalierbarkeit & Begleitung'],
-          ['KI als Werkzeug', 'Persönliche Verantwortung, Entscheidungen & Qualität'],
+          ['15+ Jahre Erfahrung', 'IT, Projektmanagement, Digitalisierung, Marketing & Verkauf'],
+          ['Zwei Fachrichtungen', 'Wirtschaftsinformatik HF · Werbetechniker-Diplom'],
           ['Bern', 'Schweizweit und international tätig'],
         ],
       }
@@ -1073,14 +1069,10 @@ function StudioProfileContent({ lang }: { lang: 'de' | 'en' }) {
         kicker: 'MARCEL SPAHR DIGITAL STUDIO · BERN',
         title: 'Personally led. Comprehensively delivered.',
         intro: 'I personally support Swiss SMEs and startups from the first idea to a solution that works in daily operations and can scale with the business.',
-        collaboration: 'I work independently and use AI as a powerful tool. Strategy, decisions, quality and the personal working relationship always remain in my hands.',
-        values: 'To me, empathy means reading between the lines, understanding different stakeholders and staying with complex initiatives until they are genuinely complete.',
+        statement: 'I think projects through from A to Z, read between the lines and connect different stakeholders. I use AI as a tool – responsibility, decisions and quality remain personal.',
         facts: [
-          ['15+ years', 'IT, project management, digitalization, marketing & sales'],
-          ['Business Information Systems', 'HF School Bern · 2023–2026 · diploma to follow shortly'],
-          ['Advertising Technology Diploma', 'Marketing, design & graphics'],
-          ['A–Z', 'Concept, delivery, scalability & ongoing guidance'],
-          ['AI as a tool', 'Personal responsibility, decisions & quality'],
+          ['15+ years of experience', 'IT, project management, digitalization, marketing & sales'],
+          ['Two disciplines', 'Business Information Systems HF · Advertising Technology Diploma'],
           ['Bern', 'Working across Switzerland and internationally'],
         ],
       };
@@ -1101,10 +1093,7 @@ function StudioProfileContent({ lang }: { lang: 'de' | 'en' }) {
             </div>
           ))}
         </div>
-        <div className="studio-profile-principles">
-          <p>{copy.collaboration}</p>
-          <p>{copy.values}</p>
-        </div>
+        <p className="studio-profile-statement">{copy.statement}</p>
       </div>
     </div>
   );
@@ -1124,8 +1113,8 @@ function StudioProfileWorld({ lang }: { lang: 'de' | 'en' }) {
       if (!cameraState) return;
 
       const approachProgress = Math.max(0, Math.min(1, cameraState.approachProgress || 0));
-      const revealRaw = Math.max(0, Math.min(1, (approachProgress - 0.12) / 0.18));
-      const fadeRaw = Math.max(0, Math.min(1, (approachProgress - 0.46) / 0.16));
+      const revealRaw = Math.max(0, Math.min(1, (approachProgress - 0.5) / 0.07));
+      const fadeRaw = Math.max(0, Math.min(1, (approachProgress - 0.68) / 0.07));
       const reveal = revealRaw * revealRaw * (3 - 2 * revealRaw);
       const fade = fadeRaw * fadeRaw * (3 - 2 * fadeRaw);
       const opacity = reveal * (1 - fade);
@@ -1133,7 +1122,7 @@ function StudioProfileWorld({ lang }: { lang: 'de' | 'en' }) {
       const scale = 0.975 + reveal * 0.025;
 
       world.style.opacity = opacity.toFixed(3);
-      world.style.transform = `translate3d(-50%, ${translateY.toFixed(2)}px, 0) scale(${scale.toFixed(4)})`;
+      world.style.transform = `translate3d(-50%, calc(-50% + ${translateY.toFixed(2)}px), 0) scale(${scale.toFixed(4)})`;
       world.style.pointerEvents = opacity > 0.92 ? 'auto' : 'none';
       world.setAttribute('aria-hidden', opacity > 0.65 ? 'false' : 'true');
     };
@@ -1913,7 +1902,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       <div id="journey-solutions" className="spiral-anchor top-[47%]" />
       <div id="journey-value" className="spiral-anchor top-[56%]" />
       <div id="journey-references" className="spiral-anchor top-[70%]" />
-      <div id="journey-about" className="spiral-anchor top-[78.7%]" />
+      <div id="journey-about" className="spiral-anchor top-[83.2%]" />
       <div id="journey-contact" className="spiral-anchor top-[99%]" />
 
       <div className="spiral-sticky">
