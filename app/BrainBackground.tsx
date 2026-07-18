@@ -1582,8 +1582,9 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       uniforms:{
         uTime:{value:0},
         uPixelRatio:{value:Math.min(window.devicePixelRatio||1,2)},
-        // Durchschnittliche Ring-Deckkraft (.58 + .72 * .34 = .8248).
-        uOpacity:{value:.825},
+        // Der zeitliche Alpha-Schimmer wird im Shader exakt wie beim Ring
+        // berechnet; die Basis bleibt deshalb unskaliert.
+        uOpacity:{value:1},
         uBrightness:{value:.5},
         uReveal:{value:0},
         uBrainPulses:{value:new THREE.Vector4()},
@@ -1657,7 +1658,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         '  vImpact=impact;',
         '  gl_PointSize=aOcean.w*(1.0+vCrest*.28+impact*.16)*uPixelRatio*(31.0/max(6.0,-mvPosition.z));',
         '  vColor=aColor;',
-        '  vShimmer=1.0;',
+        // Dieselbe individuelle Funkelphase wie bei den Ringpartikeln.
+        '  vShimmer=.72+.28*sin(uTime*(.48+aOcean.w*.16)+phase);',
         '}'
       ].join('\n'),
       fragmentShader:[
@@ -1672,15 +1674,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         'varying float vImpact;',
         'void main(){',
         '  float radial=length(gl_PointCoord-vec2(.5))*2.0;',
-        // Gleicher radialer Alpha-Verlauf wie die softSprite-Textur der
-        // Strangpunkte: 1.0 im Kern, .45 bei 35 %, 0.0 am Rand.
-        '  float spriteAlpha=radial<.35',
-        '    ?mix(1.0,.45,radial/.35)',
-        '    :.45*(1.0-(radial-.35)/.65);',
+        // Exakt derselbe kompakte Leuchtkern wie beim unteren Goldring.
+        '  float glow=pow(max(0.0,1.0-radial),1.7);',
         // Wie beim Goldring reagiert der Ozean nur auf den goldenen Puls und
         // bleibt dadurch dauerhaft in derselben Goldfarbe.
         '  float pulseEnergy=clamp(uBrainPulses.x,0.0,1.0);',
-        '  float alpha=max(0.0,spriteAlpha)*uOpacity*uReveal*(1.0+pulseEnergy*.9);',
+        '  float alpha=glow*uOpacity*uReveal*(.58+vShimmer*.34)*(1.0+pulseEnergy*.9);',
         '  if(alpha<.015) discard;',
         '  vec3 litColor=mix(vColor,vec3(1.0),.22+pulseEnergy*.28);',
         '  gl_FragColor=vec4(litColor*(1.0+pulseEnergy*.72)*uBrightness,alpha);',
@@ -1689,7 +1688,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       transparent:true,
       depthWrite:false,
       depthTest:true,
-      blending:THREE.NormalBlending,
+      blending:THREE.AdditiveBlending,
       toneMapped:false
     });
     var oceanPoints=new THREE.Points(oceanGeometry,oceanMaterial);
