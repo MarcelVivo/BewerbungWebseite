@@ -756,7 +756,7 @@ body {
   top: 50%;
   bottom: auto;
   z-index: 1270;
-  width: min(70vw, 90rem);
+  width: min(76vw, 68rem);
   opacity: 0;
   pointer-events: none;
   transform-origin: 50% 100%;
@@ -1115,7 +1115,7 @@ body {
   top: 50%;
   left: 50%;
   z-index: 1300;
-  width: min(88vw, 92rem);
+  width: min(82vw, 72rem);
   opacity: 0;
   pointer-events: none;
   transform-origin: 50% 50%;
@@ -1150,8 +1150,8 @@ body {
 
 .references-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: clamp(1rem, 1.5vw, 1.65rem);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(0.75rem, 1.15vw, 1.15rem);
 }
 
 .reference-card {
@@ -1185,7 +1185,7 @@ body {
 
 .reference-card-image {
   position: relative;
-  height: clamp(9.5rem, 21vh, 13.5rem);
+  height: clamp(6.25rem, 12vh, 8.25rem);
   overflow: hidden;
   border-bottom: 1px solid rgba(255,255,255,0.08);
   background: #080a0c;
@@ -1233,8 +1233,8 @@ body {
 .reference-card-copy {
   display: flex;
   flex-direction: column;
-  min-height: clamp(13.5rem, 28vh, 17rem);
-  padding: clamp(0.85rem, 1.15vw, 1.2rem);
+  min-height: clamp(8.75rem, 16vh, 10.5rem);
+  padding: clamp(0.7rem, 0.9vw, 0.95rem);
 }
 
 .reference-card-tag {
@@ -1335,8 +1335,8 @@ body {
 
 .value-diagram-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: clamp(1.4rem, 2.1vw, 3rem);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(0.8rem, 1.25vw, 1.35rem);
   width: 100%;
   transition: opacity 180ms ease, transform 220ms cubic-bezier(.2,.72,.28,1);
 }
@@ -1358,10 +1358,10 @@ body {
   --value-accent-rgb: 200,154,61;
   position: relative;
   display: grid;
-  grid-template-rows: auto minmax(16rem, 1fr) auto;
+  grid-template-rows: auto minmax(8rem, 1fr) auto;
   width: 100%;
   min-width: 0;
-  min-height: clamp(25rem, 52vh, 31rem);
+  min-height: clamp(15.5rem, 31vh, 18.5rem);
   padding: clamp(1rem, 1.25vw, 1.4rem) clamp(0.7rem, 1vw, 1.05rem) clamp(0.9rem, 1.1vw, 1.25rem);
   overflow: visible;
   border: 1px solid rgba(255,255,255,0.12);
@@ -1479,8 +1479,8 @@ body {
   align-self: center;
   justify-self: center;
   width: 108%;
-  height: clamp(12rem, 25vh, 17rem);
-  margin: 0.8rem auto;
+  height: clamp(7rem, 14vh, 9.5rem);
+  margin: 0.45rem auto;
   overflow: visible;
   fill: none;
   stroke-linecap: round;
@@ -3467,11 +3467,11 @@ body {
   }
 
   .value-diagram {
-    min-height: clamp(22rem, 48vh, 26rem);
+    min-height: clamp(15rem, 32vh, 18rem);
   }
 
   .value-chart-svg {
-    height: clamp(9rem, 18vh, 12rem);
+    height: clamp(6.5rem, 13vh, 8.5rem);
   }
 }
 
@@ -3616,8 +3616,8 @@ body {
   }
 
   .mobile-references .references-grid {
-    grid-template-columns: 1fr;
-    gap: 1.25rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
   }
 
   .mobile-references .reference-card-image {
@@ -3627,30 +3627,30 @@ body {
 
   .mobile-references .reference-card-copy {
     min-height: 0;
-    padding: 1.15rem;
+    padding: 0.72rem;
   }
 
   .mobile-references .reference-card-copy h3 {
-    font-size: clamp(1.35rem, 7vw, 1.8rem);
+    font-size: clamp(0.82rem, 4.2vw, 1.08rem);
   }
 
   .mobile-references .reference-card-tagline {
-    display: block;
-    overflow: visible;
-    font-size: 0.86rem;
-    -webkit-line-clamp: unset;
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: clamp(0.58rem, 2.8vw, 0.7rem);
+    -webkit-line-clamp: 3;
   }
 
   .mobile-references .reference-card-role {
-    display: block;
-    overflow: visible;
-    margin-bottom: 1rem;
-    font-size: 0.72rem;
-    -webkit-line-clamp: unset;
+    display: -webkit-box;
+    overflow: hidden;
+    margin-bottom: 0.65rem;
+    font-size: clamp(0.5rem, 2.35vw, 0.6rem);
+    -webkit-line-clamp: 2;
   }
 
   .mobile-references .reference-card-case-link {
-    font-size: 0.76rem;
+    font-size: clamp(0.52rem, 2.4vw, 0.62rem);
   }
 
   .mobile-project-cta .project-cta-content h2 {
@@ -3693,8 +3693,9 @@ body {
   }
 
   .mobile-value-impact .value-diagram {
-    min-height: 22rem;
-    padding: 1rem 0.78rem 1.1rem;
+    grid-template-rows: auto minmax(7rem, 1fr) auto;
+    min-height: 17rem;
+    padding: 0.75rem 0.55rem 0.85rem;
   }
 
   .mobile-value-impact .value-diagram:nth-child(3) {
@@ -3706,7 +3707,7 @@ body {
   }
 
   .mobile-value-impact .value-chart-svg {
-    height: 9rem;
+    height: 7rem;
   }
 
   .mobile-value-impact .value-diagram-result strong {
@@ -3810,9 +3811,9 @@ body {
   }
 
   .spiral-service-stations {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.7rem;
-    width: min(25rem, calc(100vw - 2rem));
+    width: min(34rem, calc(100vw - 2rem));
   }
 
   .spiral-service-stations .spiral-service-card {
@@ -3844,31 +3845,32 @@ body {
   }
 
   .spiral-mobile-services {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
   }
 
   .spiral-mobile-services .spiral-service-card {
     min-height: 0;
     height: auto;
     max-height: none;
-    aspect-ratio: auto;
-    overflow: visible;
-    padding: 1rem 1.1rem 1.05rem;
+    aspect-ratio: 6 / 5;
+    overflow: hidden;
+    padding: 0.65rem;
     color: inherit;
     font: inherit;
   }
 
   .spiral-mobile-services .spiral-service-title {
-    font-size: clamp(1.2rem, 6vw, 1.6rem);
-    line-height: 1;
+    font-size: clamp(0.76rem, 3.7vw, 0.98rem);
+    line-height: 1.08;
   }
 
   .spiral-mobile-services .spiral-service-body {
-    display: block;
-    overflow: visible;
-    font-size: clamp(0.86rem, 4vw, 1rem);
-    line-height: 1.4;
-    -webkit-line-clamp: unset;
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: clamp(0.56rem, 2.65vw, 0.7rem);
+    line-height: 1.25;
+    -webkit-line-clamp: 3;
   }
 
   .hero-top-copy .hero-title-flap {
@@ -3934,7 +3936,8 @@ body {
     height: auto;
     min-height: 0;
     max-height: none;
-    aspect-ratio: auto;
+    aspect-ratio: 6 / 5;
+    overflow: hidden;
   }
 
   .spiral-intro-index {
@@ -3942,21 +3945,22 @@ body {
   }
 
   .mobile-value-impact .value-diagram-grid {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
   }
 
   .mobile-value-impact .value-diagram + .value-diagram {
     border-top: 1px solid rgba(255,255,255,0.14);
-    border-left: 0;
   }
 
   .mobile-value-impact .value-diagram {
-    min-height: 23rem;
-    padding: 1.1rem 0.35rem 1.2rem;
+    grid-template-rows: auto minmax(5.75rem, 1fr) auto;
+    min-height: 15rem;
+    padding: 0.65rem 0.3rem 0.75rem;
   }
 
   .mobile-value-impact .value-chart-svg {
-    height: 12rem;
+    height: 5.75rem;
   }
 
   .mobile-value-impact .value-diagram-result strong {
@@ -4084,7 +4088,7 @@ body {
   }
 
   .mobile-value-impact .value-diagram-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -4100,7 +4104,7 @@ body {
 
 @media (max-width: 480px) and (prefers-reduced-motion: reduce) {
   .mobile-value-impact .value-diagram-grid {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
