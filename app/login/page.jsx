@@ -1,10 +1,11 @@
 "use client";
 import { useState } from 'react';
-import { User } from 'lucide-react';
+import { Eye, EyeOff, User } from 'lucide-react';
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
   async function onSubmit(e) {
@@ -44,7 +45,25 @@ export default function LoginPage() {
           <label className="block text-sm font-medium text-[#d4c4a8]">Benutzername</label>
           <input className={inputCls} value={username} onChange={(e) => setUsername(e.target.value)} required />
           <label className="block text-sm font-medium text-[#d4c4a8]">Passwort</label>
-          <input type="password" className={inputCls} value={password} onChange={(e) => setPassword(e.target.value)} required />
+          <div className="relative">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              className={`${inputCls} pr-11`}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((visible) => !visible)}
+              aria-label={showPassword ? 'Passwort ausblenden' : 'Passwort anzeigen'}
+              aria-pressed={showPassword}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7a6d5a] transition-colors hover:text-[#c9a84c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c9a84c] rounded"
+            >
+              {showPassword ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
+            </button>
+          </div>
         </div>
         {error && <div className="text-[#a6425c] text-sm bg-[#a6425c]/10 rounded-lg px-3 py-2">{error}</div>}
         <button
