@@ -237,7 +237,7 @@ const KI_UI = {
 
 // ─── Shared styles ────────────────────────────────────────────────────────────
 
-const SERIF = { fontFamily: 'var(--font-playfair), Georgia, serif' };
+const SITE_FONT = { fontFamily: 'var(--font-site)' };
 const INPUT = 'w-full rounded-xl bg-[#1c1912] border border-[#2d2820] focus:border-[#c9a84c] focus:ring-1 focus:ring-[#c9a84c] outline-none px-4 py-4 text-[#f4edd8] placeholder-[#7a6d5a] text-sm transition-colors';
 
 function KiLanguageToggle() {
@@ -332,7 +332,7 @@ export default function KiCheckPage() {
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#c9a84c]/40 bg-[#c9a84c]/10 text-[#d4b86a] text-sm font-medium mb-8">
               <Bot size={14} /> {copy.badge}
             </div>
-            <h1 className="text-5xl sm:text-6xl font-bold text-white leading-tight mb-5" style={SERIF}>
+            <h1 className="text-5xl sm:text-6xl font-bold text-white leading-tight mb-5" style={SITE_FONT}>
               {copy.headingA}{' '}
               <em className="not-italic text-[#c9a84c]">{copy.headingB}</em>{' '}
               {copy.headingC}
@@ -384,7 +384,7 @@ export default function KiCheckPage() {
           <div className="w-20 h-20 rounded-full bg-[#c9a84c]/10 border border-[#c9a84c]/30 flex items-center justify-center mx-auto mb-8">
             <Check size={36} className="text-[#c9a84c]" />
           </div>
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4" style={SERIF}>
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4" style={SITE_FONT}>
             {copy.successTitle}
           </h2>
           <p className="text-[#a89880] leading-relaxed mb-3">
@@ -435,7 +435,7 @@ export default function KiCheckPage() {
             <p className="text-[#c9a84c] text-xs font-bold tracking-widest uppercase mb-3">
               {copy.report}
             </p>
-            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3 leading-tight" style={SERIF}>
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3 leading-tight" style={SITE_FONT}>
               {copy.formTitleA}{' '}
               <em className="not-italic text-[#c9a84c]">{copy.formTitleB}</em>{' '}
               {copy.formTitleC}
@@ -537,7 +537,7 @@ export default function KiCheckPage() {
       </div>
 
       {/* Step counter */}
-      <div className="text-center py-4 text-[#7a6d5a] text-sm font-mono tracking-wider select-none">
+      <div className="text-center py-4 text-[#7a6d5a] text-sm tracking-wider select-none">
         {String(step).padStart(2, '0')} / {String(TOTAL).padStart(2, '0')}
       </div>
 
@@ -547,7 +547,7 @@ export default function KiCheckPage() {
           <p className="text-[#c9a84c] text-xs font-bold tracking-widest uppercase mb-4">
             {tr(current.section)}
           </p>
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-2 leading-tight" style={SERIF}>
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-2 leading-tight" style={SITE_FONT}>
             {tr(current.question)}
           </h2>
           {current.hint && (

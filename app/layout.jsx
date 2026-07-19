@@ -1,6 +1,14 @@
 import './globals.css';
+import { Chakra_Petch } from 'next/font/google';
 import { LanguageProvider } from './LanguageContext';
 import CustomCursor from './CustomCursor';
+
+const siteFont = Chakra_Petch({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-chakra-petch',
+  display: 'swap',
+});
 
 export const metadata = {
   title: {
@@ -128,14 +136,14 @@ const jsonLd = [
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="de">
+    <html lang="de" className={siteFont.variable}>
       <head>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="text-[#f4edd8]">
+      <body className={`${siteFont.className} text-[#f4edd8]`}>
         <CustomCursor />
         <LanguageProvider>{children}</LanguageProvider>
       </body>

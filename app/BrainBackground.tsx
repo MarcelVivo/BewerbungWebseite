@@ -19,6 +19,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var isMobile = innerWidth < 700;
+    // Canvas-Texte können CSS nicht direkt erben. Deshalb übernehmen auch
+    // die in Texturen gerenderten 3D-Beschriftungen exakt die zentral im
+    // Root-Layout gesetzte Chakra-Petch-Schriftfamilie.
+    var canvasFontFamily = window.getComputedStyle(document.body).fontFamily || '"Chakra Petch", sans-serif';
     // Timing und Verlauf der Kameraschiene bleiben identisch. Auf schmalen
     // Viewports erweitert sich nur der Bildausschnitt, damit alle Gehirne
     // im gleichen Größenverhältnis wie auf dem Desktop sichtbar bleiben.
@@ -163,11 +167,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var textLines=label.split('\n');
     context.clearRect(0,0,textCanvas.width,textCanvas.height);
     context.fillStyle='rgba(231,197,106,.92)';
-    context.font='700 30px Arial, sans-serif';
+    context.font='700 30px '+canvasFontFamily;
     context.letterSpacing='10px';
     context.fillText(('0'+(index+1)).slice(-2),80,74);
     context.fillStyle='rgba(255,255,255,.98)';
-    context.font='900 102px Arial, sans-serif';
+    context.font='700 102px '+canvasFontFamily;
     context.shadowColor='rgba(231,197,106,.32)';
     context.shadowBlur=24;
     var lineOffsets=[[0,78,24],[94,8,116],[28,112,4],[86,0,62],[10,96,38]][index%5];
@@ -222,13 +226,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     context.fillStyle=glow;
     context.fillRect(0,0,1536,864);
     context.fillStyle=card.accent;
-    context.font='700 30px Arial, sans-serif';
+    context.font='700 30px '+canvasFontFamily;
     context.fillText(card.code,96,100);
     context.fillStyle='rgba(255,255,255,.98)';
-    context.font='900 82px Arial, sans-serif';
+    context.font='700 82px '+canvasFontFamily;
     card.title.split('\n').forEach(function(line,lineIndex){ context.fillText(line,96,240+lineIndex*94); });
     context.fillStyle='rgba(245,236,214,.82)';
-    context.font='500 36px Arial, sans-serif';
+    context.font='500 36px '+canvasFontFamily;
     var words=card.body.split(' '), line='', lineY=550;
     words.forEach(function(word){
       var candidate=line?line+' '+word:word;

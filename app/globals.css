@@ -7,8 +7,9 @@
    Premium Metallic Edition
    ========================================================== */
 :root {
-  --font-inter: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-playfair: Georgia, "Times New Roman", serif;
+  --font-site: var(--font-chakra-petch), "Chakra Petch", sans-serif;
+  --font-inter: var(--font-site);
+  --font-playfair: var(--font-site);
 
   --background-primary:   #0F1012;
   --background-secondary: #121315;
@@ -73,10 +74,19 @@ html.custom-cursor-active * {
 
 body {
   overflow-x: hidden;
+  font-family: var(--font-site);
   background:
     radial-gradient(ellipse 70% 45% at 15% 5%, rgba(200,154,61,.07) 0%, transparent 65%),
     radial-gradient(ellipse 50% 35% at 85% 90%, rgba(77,127,191,.045) 0%, transparent 60%),
     var(--background-primary);
+}
+
+button,
+input,
+textarea,
+select,
+option {
+  font-family: var(--font-site);
 }
 
 [class~="bg-[#0c0a06]"] { background-color: var(--background-primary) !important; }
@@ -1217,7 +1227,7 @@ body {
   gap: 0.45rem;
   align-items: center;
   color: rgba(235,242,237,0.72);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-site);
   font-size: 0.67rem;
   line-height: 1.35;
 }
@@ -2178,7 +2188,7 @@ body {
   max-width: 48rem;
   margin: clamp(0.7rem, 1.35vh, 1.05rem) 0 0;
   color: rgba(255,255,255,0.72);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-site);
   font-size: clamp(0.72rem, 0.82vw, 0.96rem);
   line-height: 1.5;
 }
@@ -2213,7 +2223,7 @@ body {
   gap: 0.45rem;
   align-items: start;
   color: rgba(255,255,255,0.76);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-site);
   font-size: clamp(0.64rem, 0.72vw, 0.82rem);
   line-height: 1.34;
 }
@@ -4383,8 +4393,8 @@ body {
 }
 
 .inquiry-display {
-  font-family: "Arial Narrow", "DIN Alternate", "Roboto Condensed", var(--font-inter);
-  font-stretch: condensed;
+  font-family: var(--font-site);
+  font-stretch: normal;
 }
 
 .inquiry-space {
@@ -4816,7 +4826,7 @@ body {
 .project-form-tabs button small {
   max-width: 18rem;
   color: rgba(212,225,216,0.42);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-site);
   font-size: clamp(0.48rem, 0.55vw, 0.58rem);
   font-weight: 400;
   letter-spacing: 0;
