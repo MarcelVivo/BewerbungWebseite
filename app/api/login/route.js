@@ -7,29 +7,58 @@ function sign(payload, secret) {
   return `${b64}.${h}`;
 }
 
+function secureEqual(value, expected) {
+  const left = crypto.createHash('sha256').update(String(value)).digest();
+  const right = crypto.createHash('sha256').update(String(expected)).digest();
+  return crypto.timingSafeEqual(left, right);
+}
+
 export async function POST(request) {
-  const { username, password } = await request.json();
-  const ADMIN_USER = process.env.ADMIN_USER || 'Recruiter';
-  const ADMIN_PASS = process.env.ADMIN_PASS || 'Marcel2025!';
-  const SESSION_SECRET = process.env.SESSION_SECRET || 'please-change';
-  const isProd = process.env.NODE_ENV === 'production';
+  const ADMIN_USER = process.env.ADMIN_USER;
+  const ADMIN_PASS = process.env.ADMIN_PASS;
+  const SESSION_SECRET = process.env.SESSION_SECRET;
 
-  let role = null;
-  if (username === ADMIN_USER && password === ADMIN_PASS) role = 'owner';
-
-  if (!role) {
-    return new Response('Unauthorized', { status: 401 });
+  if (!ADMIN_USER || !ADMIN_PASS || !SESSION_SECRET || SESSION_SECRET.length < 32) {
+    console.error('Expertise login is missing secure server configuration.');
+    return Response.json(
+      { error: 'Anmeldung derzeit nicht verfügbar.' },
+      { status: 503, headers: { 'Cache-Control': 'no-store' } },
+    );
   }
 
-  const exp = Date.now() + 1000 * 60 * 60 * 8; // 8h
+  let credentials;
+  try {
+    credentials = await request.json();
+  } catch {
+    return Response.json({ error: 'Ungültige Anfrage.' }, { status: 400 });
+  }
+
+  const username = typeof credentials?.username === 'string' ? credentials.username : '';
+  const password = typeof credentials?.password === 'string' ? credentials.password : '';
+  const usernameMatches = secureEqual(username, ADMIN_USER);
+  const passwordMatches = secureEqual(password, ADMIN_PASS);
+  const authenticated = usernameMatches && passwordMatches;
+
+  if (!authenticated) {
+    return Response.json(
+      { error: 'Ungültige Anmeldedaten.' },
+      { status: 401, headers: { 'Cache-Control': 'no-store' } },
+    );
+  }
+
+  const role = 'owner';
+  const exp = Date.now() + 1000 * 60 * 60 * 8;
   const token = sign({ u: username, r: role, exp }, SESSION_SECRET);
-  const cookieStore = cookies();
-  cookieStore.set('msb_token', token, {
+  cookies().set('msb_token', token, {
     httpOnly: true,
     sameSite: 'lax',
-    secure: isProd,
+    secure: process.env.NODE_ENV === 'production',
     path: '/',
     maxAge: 60 * 60 * 8,
   });
-  return Response.json({ ok: true, user: { username, role } });
+
+  return Response.json(
+    { ok: true, user: { username, role } },
+    { headers: { 'Cache-Control': 'no-store' } },
+  );
 }

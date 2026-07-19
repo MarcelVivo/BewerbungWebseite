@@ -101,7 +101,10 @@ function handleRecruiterAuth(req: NextRequest): NextResponse {
 
 async function handleOldAuth(req: NextRequest): Promise<NextResponse> {
   const token  = req.cookies.get('msb_token')?.value || '';
-  const secret = process.env.SESSION_SECRET || 'please-change';
+  const secret = process.env.SESSION_SECRET;
+  if (!secret || secret.length < 32) {
+    return NextResponse.redirect(new URL('/login?error=not_configured', req.url));
+  }
   const valid  = await verifyOldToken(token, secret);
 
   if (valid) return NextResponse.next();
