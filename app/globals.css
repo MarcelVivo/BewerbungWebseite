@@ -4397,6 +4397,17 @@ option {
   font-stretch: normal;
 }
 
+/* Projektanfrage und KI-Check sind eigenständige Seiten, werden zusätzlich
+   aber vollständig in die grüne Beratungskarte eingebettet. Ihre internen
+   Utility-Klassen dürfen die gemeinsame Seitentypografie in keinem der
+   beiden Modi überschreiben. */
+.inquiry-page,
+.inquiry-page *,
+.ki-check-page,
+.ki-check-page * {
+  font-family: var(--font-site) !important;
+}
+
 .inquiry-space {
   position: fixed;
   inset: 0;

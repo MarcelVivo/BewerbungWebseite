@@ -325,7 +325,7 @@ export default function KiCheckPage() {
   // ── Intro ──────────────────────────────────────────────────────────────────
   if (step === 0) {
     return (
-      <div className={`min-h-screen bg-[#0c0a06] flex flex-col ${embedded ? 'ki-check-embedded' : ''}`}>
+      <div className={`ki-check-page min-h-screen bg-[#0c0a06] flex flex-col ${embedded ? 'ki-check-embedded' : ''}`}>
         {!embedded && <KiLanguageToggle />}
         <div className="flex-1 flex items-center justify-center px-4 py-16">
           <div className="max-w-xl w-full text-center">
@@ -378,7 +378,7 @@ export default function KiCheckPage() {
   // ── Success ────────────────────────────────────────────────────────────────
   if (step === 12) {
     return (
-      <div className={`min-h-screen bg-[#0c0a06] flex flex-col items-center justify-center px-4 py-16 text-center ${embedded ? 'ki-check-embedded' : ''}`}>
+      <div className={`ki-check-page min-h-screen bg-[#0c0a06] flex flex-col items-center justify-center px-4 py-16 text-center ${embedded ? 'ki-check-embedded' : ''}`}>
         {!embedded && <KiLanguageToggle />}
         <div className="max-w-lg w-full">
           <div className="w-20 h-20 rounded-full bg-[#c9a84c]/10 border border-[#c9a84c]/30 flex items-center justify-center mx-auto mb-8">
@@ -425,7 +425,7 @@ export default function KiCheckPage() {
   // ── Contact Form ───────────────────────────────────────────────────────────
   if (step === 11) {
     return (
-      <div className={`min-h-screen bg-[#0c0a06] flex flex-col ${embedded ? 'ki-check-embedded' : ''}`}>
+      <div className={`ki-check-page min-h-screen bg-[#0c0a06] flex flex-col ${embedded ? 'ki-check-embedded' : ''}`}>
         {!embedded && <KiLanguageToggle />}
         <div className="h-1 bg-[#1c1912]">
           <div className="h-full bg-[#c9a84c] transition-all duration-500" style={{ width: '100%' }} />
@@ -526,7 +526,7 @@ export default function KiCheckPage() {
   const canContinue  = isMulti && multiSel.length > 0;
 
   return (
-    <div className={`min-h-screen bg-[#0c0a06] flex flex-col ${embedded ? 'ki-check-embedded' : ''}`}>
+    <div className={`ki-check-page min-h-screen bg-[#0c0a06] flex flex-col ${embedded ? 'ki-check-embedded' : ''}`}>
       {!embedded && <KiLanguageToggle />}
       {/* Progress bar */}
       <div className="h-1 bg-[#1c1912]">
