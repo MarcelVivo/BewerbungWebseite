@@ -4961,3 +4961,274 @@ body {
     padding-inline: 0.2rem !important;
   }
 }
+
+/* ── Einheitliches quadratisches Kartensystem ────────────────
+   Alle primären 2×2-Gruppen bestehen aus echten 1:1-Karten. Einzelne
+   Detail- und Formularflächen bleiben ebenfalls 1:1 und scrollen ihren
+   Inhalt intern, wenn der verfügbare Bildschirm kleiner wird. */
+:root {
+  --journey-card-reserve: clamp(9.5rem, 13vw, 13.5rem);
+  --square-card-cluster: min(66rem, 72vh, calc(100vw - var(--journey-card-reserve) - 2rem));
+}
+
+.spiral-service-stations,
+.value-diagram-grid,
+.references-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  justify-items: stretch;
+}
+
+.spiral-service-card,
+.value-diagram,
+.reference-card,
+.spiral-card,
+.spiral-card-wide,
+.neural-panel {
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  box-sizing: border-box;
+}
+
+.spiral-service-card,
+.value-diagram,
+.spiral-card,
+.spiral-card-wide,
+.neural-panel {
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(231,197,106,0.3) transparent;
+}
+
+.spiral-service-card::-webkit-scrollbar,
+.value-diagram::-webkit-scrollbar,
+.spiral-card::-webkit-scrollbar,
+.neural-panel::-webkit-scrollbar,
+.reference-card-copy::-webkit-scrollbar,
+.studio-profile-content::-webkit-scrollbar,
+.value-info-card::-webkit-scrollbar,
+.inquiry-card::-webkit-scrollbar {
+  width: 0.3rem;
+  height: 0.3rem;
+}
+
+.spiral-service-card::-webkit-scrollbar-thumb,
+.value-diagram::-webkit-scrollbar-thumb,
+.spiral-card::-webkit-scrollbar-thumb,
+.neural-panel::-webkit-scrollbar-thumb,
+.reference-card-copy::-webkit-scrollbar-thumb,
+.studio-profile-content::-webkit-scrollbar-thumb,
+.value-info-card::-webkit-scrollbar-thumb,
+.inquiry-card::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(231,197,106,0.28);
+}
+
+.reference-card {
+  display: grid;
+  grid-template-rows: minmax(0, 38%) minmax(0, 62%);
+  overflow: hidden;
+}
+
+.reference-card-image {
+  height: 100%;
+  min-height: 0;
+  aspect-ratio: auto;
+}
+
+.reference-card-copy {
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--reference-accent-rgb),0.34) transparent;
+}
+
+.value-diagram {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.value-chart-svg {
+  min-height: 0;
+  max-height: none;
+}
+
+.value-info-card,
+.spiral-detail-panel,
+.mobile-solution-info.value-info-card {
+  width: 100%;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+  aspect-ratio: 1 / 1;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--value-accent-rgb),0.34) transparent;
+}
+
+.studio-profile-content,
+.project-cta-content,
+.inquiry-card,
+.inquiry-success-card {
+  aspect-ratio: 1 / 1;
+  box-sizing: border-box;
+}
+
+.studio-profile-content,
+.inquiry-card,
+.inquiry-success-card {
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(126,239,176,0.28) transparent;
+}
+
+.project-cta-content {
+  height: auto;
+  min-height: 0;
+  max-height: none;
+}
+
+.inquiry-card,
+.inquiry-success-card {
+  width: min(100%, 72vh, 44rem);
+  min-height: 0;
+  max-width: none;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+@media (min-width: 901px) {
+  .spiral-service-stations,
+  .value-impact-world,
+  .references-world {
+    width: var(--square-card-cluster);
+    max-width: var(--square-card-cluster);
+  }
+
+  .studio-profile-world,
+  .project-cta-world {
+    width: min(60rem, 70vh, calc(100vw - var(--journey-card-reserve) - 2rem));
+    max-width: min(60rem, 70vh, calc(100vw - var(--journey-card-reserve) - 2rem));
+  }
+
+  .studio-profile-content {
+    align-content: center;
+  }
+
+  .references-grid,
+  .value-diagram-grid,
+  .spiral-service-stations {
+    gap: clamp(0.7rem, 1.15vw, 1.15rem);
+  }
+}
+
+@media (max-width: 900px) {
+  :root {
+    --journey-card-reserve: clamp(4.8rem, 13vw, 6.5rem);
+  }
+
+  .spiral-mobile {
+    padding-right: var(--journey-card-reserve) !important;
+    padding-left: clamp(0.8rem, 3vw, 1.5rem) !important;
+  }
+
+  .spiral-mobile > div {
+    width: min(100%, 30rem);
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .spiral-mobile-services,
+  .mobile-value-impact .value-diagram-grid,
+  .mobile-references .references-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(0.45rem, 1.8vw, 0.75rem);
+    width: 100%;
+  }
+
+  .spiral-mobile-services .spiral-service-card,
+  .mobile-value-impact .value-diagram,
+  .mobile-references .reference-card {
+    min-height: 0;
+    height: auto;
+    max-height: none;
+    aspect-ratio: 1 / 1;
+  }
+
+  .spiral-mobile-services .spiral-service-card {
+    overflow: auto;
+  }
+
+  .mobile-references .reference-card-image {
+    height: 100%;
+    aspect-ratio: auto;
+  }
+
+  .mobile-studio-profile .studio-profile-content,
+  .mobile-project-cta .project-cta-content {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    aspect-ratio: 1 / 1;
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .mobile-project-cta {
+    padding-right: 0;
+    padding-left: 0;
+  }
+
+  .mobile-project-cta .project-cta-stage {
+    overflow-y: auto;
+  }
+
+  .mobile-value-impact .value-info-card,
+  .mobile-solution-info.value-info-card {
+    height: 100%;
+    max-height: 100%;
+    aspect-ratio: 1 / 1;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --journey-card-reserve: 4.75rem;
+  }
+
+  .spiral-mobile {
+    padding-right: var(--journey-card-reserve) !important;
+    padding-left: 0.65rem !important;
+  }
+
+  .spiral-mobile-services .spiral-service-card,
+  .mobile-value-impact .value-diagram,
+  .mobile-references .reference-card {
+    padding: 0.55rem;
+  }
+
+  .mobile-references .reference-card {
+    padding: 0;
+  }
+
+  .mobile-studio-profile .studio-profile-content {
+    padding: 0.85rem;
+  }
+
+  .mobile-project-cta .project-cta-content {
+    padding: 0.5rem;
+  }
+}
