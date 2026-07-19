@@ -435,7 +435,7 @@ export default function AnfragePage() {
         </div>
 
         {/* Card */}
-        <div className="inquiry-card inquiry-display p-6 sm:p-8 mb-6">
+        <div className={`inquiry-card inquiry-card--step-${step} inquiry-display p-6 sm:p-8 mb-6`}>
           <span className="inquiry-card-corner inquiry-card-corner--tl" aria-hidden="true" />
           <span className="inquiry-card-corner inquiry-card-corner--br" aria-hidden="true" />
 
@@ -444,7 +444,7 @@ export default function AnfragePage() {
             <div className="space-y-6">
               <div>
                 <h2 className="text-lg font-bold text-white mb-5">{copy.aboutTitle}</h2>
-                <div className="grid sm:grid-cols-2 gap-4">
+                <div className="inquiry-contact-grid grid sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs text-[#7a6d5a] mb-1.5 flex items-center gap-1.5"><User size={11} /> {copy.name}</label>
                     <input value={form.name} onChange={e => set('name', e.target.value)} className={inp} placeholder="Max Müller" />
@@ -465,7 +465,7 @@ export default function AnfragePage() {
               </div>
               <div>
                 <h3 className="text-sm font-semibold text-white mb-3">{copy.industry}</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <div className="inquiry-industry-grid grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {BRANCHEN.map(b => {
                     const selected = form.branche === b.label;
                     return (
@@ -497,7 +497,7 @@ export default function AnfragePage() {
           {step === 1 && (
             <div className="space-y-4">
               <h2 className="text-lg font-bold text-white mb-5">{copy.planning}</h2>
-              <div className="grid sm:grid-cols-2 gap-3">
+              <div className="inquiry-project-grid grid sm:grid-cols-2 gap-3">
                 {PROJEKTTYPEN.map(p => {
                   const selected = form.projekttyp === p.label;
                   return (
@@ -529,7 +529,7 @@ export default function AnfragePage() {
 
           {/* Step 2: Anforderungen */}
           {step === 2 && (
-            <div className="space-y-6">
+            <div className="inquiry-requirements-step space-y-6">
               <div>
                 <h2 className="text-lg font-bold text-white mb-2">{copy.capabilities}</h2>
                 <p className="text-sm text-[#7a6d5a] mb-5">

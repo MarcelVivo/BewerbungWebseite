@@ -327,28 +327,28 @@ export default function KiCheckPage() {
     return (
       <div className={`ki-check-page min-h-screen bg-[#0c0a06] flex flex-col ${embedded ? 'ki-check-embedded' : ''}`}>
         {!embedded && <KiLanguageToggle />}
-        <div className="flex-1 flex items-center justify-center px-4 py-16">
-          <div className="max-w-xl w-full text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#c9a84c]/40 bg-[#c9a84c]/10 text-[#d4b86a] text-sm font-medium mb-8">
+        <div className="ki-check-intro-shell flex-1 flex items-center justify-center px-4 py-16">
+          <div className="ki-check-intro max-w-xl w-full text-center">
+            <div className="ki-check-badge inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#c9a84c]/40 bg-[#c9a84c]/10 text-[#d4b86a] text-sm font-medium mb-8">
               <Bot size={14} /> {copy.badge}
             </div>
-            <h1 className="text-5xl sm:text-6xl font-bold text-white leading-tight mb-5" style={SITE_FONT}>
+            <h1 className="ki-check-heading text-5xl sm:text-6xl font-bold text-white leading-tight mb-5" style={SITE_FONT}>
               {copy.headingA}{' '}
               <em className="not-italic text-[#c9a84c]">{copy.headingB}</em>{' '}
               {copy.headingC}
             </h1>
-            <p className="text-lg text-[#a89880] leading-relaxed mb-10 max-w-md mx-auto">
+            <p className="ki-check-intro-copy text-lg text-[#a89880] leading-relaxed mb-10 max-w-md mx-auto">
               {copy.introA}{' '}
               <span className="text-[#f4edd8]">{copy.introB}</span>{' '}
               {copy.introC}
             </p>
             <button
               onClick={() => setStep(1)}
-              className="inline-flex items-center gap-3 px-8 py-4 rounded-xl bg-[#c9a84c] hover:bg-[#b8943a] text-[#0c0a06] font-bold text-lg transition-all shadow-lg shadow-[#c9a84c]/30 hover:shadow-[#c9a84c]/50 hover:scale-[1.02]"
+              className="ki-check-start inline-flex items-center gap-3 px-8 py-4 rounded-xl bg-[#c9a84c] hover:bg-[#b8943a] text-[#0c0a06] font-bold text-lg transition-all shadow-lg shadow-[#c9a84c]/30 hover:shadow-[#c9a84c]/50 hover:scale-[1.02]"
             >
               {copy.start} <ArrowRight size={20} />
             </button>
-            <div className="mt-10 flex items-center justify-center gap-10 text-[#7a6d5a] text-sm">
+            <div className="ki-check-stats mt-10 flex items-center justify-center gap-10 text-[#7a6d5a] text-sm">
               <div className="text-center">
                 <div className="text-2xl font-bold text-white">10</div>
                 <div className="text-xs tracking-widest uppercase mt-0.5">{copy.questions}</div>
@@ -378,10 +378,10 @@ export default function KiCheckPage() {
   // ── Success ────────────────────────────────────────────────────────────────
   if (step === 12) {
     return (
-      <div className={`ki-check-page min-h-screen bg-[#0c0a06] flex flex-col items-center justify-center px-4 py-16 text-center ${embedded ? 'ki-check-embedded' : ''}`}>
+      <div className={`ki-check-page ki-check-success min-h-screen bg-[#0c0a06] flex flex-col items-center justify-center px-4 py-16 text-center ${embedded ? 'ki-check-embedded' : ''}`}>
         {!embedded && <KiLanguageToggle />}
-        <div className="max-w-lg w-full">
-          <div className="w-20 h-20 rounded-full bg-[#c9a84c]/10 border border-[#c9a84c]/30 flex items-center justify-center mx-auto mb-8">
+        <div className="ki-check-success-content max-w-lg w-full">
+          <div className="ki-check-success-icon w-20 h-20 rounded-full bg-[#c9a84c]/10 border border-[#c9a84c]/30 flex items-center justify-center mx-auto mb-8">
             <Check size={36} className="text-[#c9a84c]" />
           </div>
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4" style={SITE_FONT}>
@@ -393,7 +393,7 @@ export default function KiCheckPage() {
           <p className="text-[#7a6d5a] text-sm mb-10">
             {copy.spam}
           </p>
-          <div className="rounded-xl border border-[#2d2820] bg-[#1c1912] p-5 text-left space-y-2 mb-6">
+          <div className="ki-check-success-next rounded-xl border border-[#2d2820] bg-[#1c1912] p-5 text-left space-y-2 mb-6">
             <p className="text-xs text-[#7a6d5a] font-bold uppercase tracking-widest">{copy.nextTitle}</p>
             {copy.nextItems.map((item, index) => (
               <div key={item} className="flex items-center gap-3 text-sm text-[#a89880]">
@@ -430,8 +430,8 @@ export default function KiCheckPage() {
         <div className="h-1 bg-[#1c1912]">
           <div className="h-full bg-[#c9a84c] transition-all duration-500" style={{ width: '100%' }} />
         </div>
-        <div className="flex-1 flex items-center justify-center px-4 py-12">
-          <div className="max-w-md w-full">
+        <div className="ki-check-contact-shell flex-1 flex items-center justify-center px-4 py-12">
+          <div className="ki-check-contact max-w-md w-full">
             <p className="text-[#c9a84c] text-xs font-bold tracking-widest uppercase mb-3">
               {copy.report}
             </p>
@@ -443,7 +443,7 @@ export default function KiCheckPage() {
             <p className="text-[#a89880] text-sm mb-8 leading-relaxed">
               {copy.formIntro}
             </p>
-            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+            <form onSubmit={handleSubmit} className="ki-check-contact-form space-y-4" noValidate>
               <input
                 required type="text" placeholder={copy.name}
                 value={form.name}
@@ -491,7 +491,7 @@ export default function KiCheckPage() {
                 {submitting ? copy.sending : copy.submit}
               </button>
             </form>
-            <div className="mt-6 flex items-start gap-3 text-[#7a6d5a] text-xs leading-relaxed">
+            <div className="ki-check-privacy mt-6 flex items-start gap-3 text-[#7a6d5a] text-xs leading-relaxed">
               <Lock size={12} className="flex-shrink-0 mt-0.5 text-[#c9a84c]" />
               <p>
                 {copy.privacy}{' '}
@@ -502,7 +502,7 @@ export default function KiCheckPage() {
             </div>
           </div>
         </div>
-        <div className="py-6 text-center">
+        <div className="ki-check-back py-6 text-center">
           <button
             onClick={() => setStep(10)}
             className="inline-flex items-center gap-1.5 text-[#7a6d5a] hover:text-[#a89880] text-sm transition-colors"
@@ -537,13 +537,13 @@ export default function KiCheckPage() {
       </div>
 
       {/* Step counter */}
-      <div className="text-center py-4 text-[#7a6d5a] text-sm tracking-wider select-none">
+      <div className="ki-check-counter text-center py-4 text-[#7a6d5a] text-sm tracking-wider select-none">
         {String(step).padStart(2, '0')} / {String(TOTAL).padStart(2, '0')}
       </div>
 
       {/* Question content */}
-      <div className="flex-1 flex items-start justify-center px-4 pb-6">
-        <div className="max-w-xl w-full pt-4">
+      <div className="ki-check-question-shell flex-1 flex items-start justify-center px-4 pb-6">
+        <div className="ki-check-question max-w-xl w-full pt-4">
           <p className="text-[#c9a84c] text-xs font-bold tracking-widest uppercase mb-4">
             {tr(current.section)}
           </p>
@@ -555,7 +555,7 @@ export default function KiCheckPage() {
           )}
           {!current.hint && <div className="mb-6" />}
 
-          <div className="space-y-2.5">
+          <div className="ki-check-options space-y-2.5">
             {current.options.map(opt => {
               const selected = isMulti ? multiSel.includes(opt) : singleSel === opt;
               const disabled = isMulti && atMax && !selected;
@@ -601,7 +601,7 @@ export default function KiCheckPage() {
       </div>
 
       {/* Back navigation */}
-      <div className="py-6 px-4 text-center">
+      <div className="ki-check-back py-6 px-4 text-center">
         <button
           onClick={() => setStep(s => Math.max(0, s - 1))}
           className="inline-flex items-center gap-1.5 text-[#7a6d5a] hover:text-[#a89880] text-sm transition-colors"
