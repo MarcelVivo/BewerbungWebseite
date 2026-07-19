@@ -3,7 +3,7 @@ export type Lang = 'de' | 'en';
 export const T = {
   de: {
     nav: {
-      about: 'Ansatz', services: 'Lösungen', portfolio: 'Referenzen',
+      about: 'Dein Digitalpartner', services: 'Meine Umsetzung', portfolio: 'Meine Referenzen',
       process: 'Ablauf', book: 'Termin buchen',
     },
     hero: {
@@ -25,7 +25,7 @@ export const T = {
       linkedin: 'LinkedIn', email: 'E-Mail',
     },
     services: {
-      label: 'Lösungen', heading: 'Was ich für dich baue', more: 'Ansehen',
+      label: 'Meine Umsetzung', heading: 'Was ich für dich baue', more: 'Ansehen',
       items: [
         { title: 'Corporate Design & Markenauftritt', desc: 'Ein klarer visueller Auftritt, der professionell wirkt und überall konsistent bleibt.' },
         { title: 'Moderne 2D- & 3D-Websites', desc: 'Schöne, schnelle Websites mit starken Animationen, sauberer UX und technischer Substanz.' },
@@ -39,7 +39,7 @@ export const T = {
       ],
     },
     portfolio: {
-      label: 'Referenzen', heading: 'Erfahrung, die trägt', subheading: 'Technologie, Prozesse, Design und Umsetzung aus realen Projekten.',
+      label: 'Meine Referenzen', heading: 'Erfahrung, die trägt', subheading: 'Technologie, Prozesse, Design und Umsetzung aus realen Projekten.',
       viewProject: 'Projekt ansehen', expertiseLabel: 'Vollständige Expertise einsehen',
       items: [
         { tag: 'Software', title: 'Nationale App-Infrastruktur', desc: 'Architektur, Spezifikation und Qualität für digitale Systeme mit hohen Anforderungen.' },
@@ -86,7 +86,7 @@ export const T = {
 
   en: {
     nav: {
-      about: 'Approach', services: 'Solutions', portfolio: 'References',
+      about: 'Your Digital Partner', services: 'My Execution', portfolio: 'My Work',
       process: 'Process', book: 'Book a Call',
     },
     hero: {
@@ -108,7 +108,7 @@ export const T = {
       linkedin: 'LinkedIn', email: 'Email',
     },
     services: {
-      label: 'Solutions', heading: 'What I build for you', more: 'View',
+      label: 'My Execution', heading: 'What I build for you', more: 'View',
       items: [
         { title: 'Corporate design & brand presence', desc: 'A clear visual identity that feels professional and stays consistent everywhere.' },
         { title: 'Modern 2D & 3D websites', desc: 'Beautiful, fast websites with strong motion, clear UX and technical substance.' },
@@ -122,7 +122,7 @@ export const T = {
       ],
     },
     portfolio: {
-      label: 'References', heading: 'Experience that holds up', subheading: 'Technology, processes, design and execution from real projects.',
+      label: 'My Work', heading: 'Experience that holds up', subheading: 'Technology, processes, design and execution from real projects.',
       viewProject: 'View project', expertiseLabel: 'View full expertise',
       items: [
         { tag: 'Software', title: 'National app infrastructure', desc: 'Architecture, specification and quality for digital systems with high requirements.' },

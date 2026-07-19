@@ -8,11 +8,11 @@ import { openJourneyLeadForm } from './lib/journeyNavigation';
 const chakraPetch = Chakra_Petch({ subsets: ['latin'], weight: '700', display: 'swap' });
 
 const STATIONS = [
-  { label: { de: 'Start', en: 'Start' }, target: 'journey-start' },
-  { label: { de: 'Lösungen', en: 'Solutions' }, target: 'journey-solutions', mobileTarget: 'mobile-solutions' },
+  { label: { de: 'Deine Idee', en: 'Your Idea' }, target: 'journey-start' },
+  { label: { de: 'Meine Umsetzung', en: 'My Execution' }, target: 'journey-solutions', mobileTarget: 'mobile-solutions' },
   { label: { de: 'Dein Mehrwert', en: 'Your Value' }, target: 'journey-value', mobileTarget: 'mobile-journey-value' },
-  { label: { de: 'Meine Referenzen', en: 'My References' }, target: 'journey-references', mobileTarget: 'mobile-journey-references' },
-  { label: { de: 'Über mich', en: 'About Me' }, target: 'journey-about', mobileTarget: 'mobile-journey-about' },
+  { label: { de: 'Meine Referenzen', en: 'My Work' }, target: 'journey-references', mobileTarget: 'mobile-journey-references' },
+  { label: { de: 'Dein Digitalpartner', en: 'Your Digital Partner' }, target: 'journey-about', mobileTarget: 'mobile-journey-about' },
   { label: { de: 'Deine Lösung', en: 'Your Solution' }, target: 'journey-contact', mobileTarget: 'mobile-journey-contact' },
 ];
 

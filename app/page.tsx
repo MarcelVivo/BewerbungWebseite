@@ -747,7 +747,7 @@ function ValueImpactWorld({ lang }: { lang: 'de' | 'en' }) {
   const valueTitleRef = useRef<HTMLHeadingElement | null>(null);
   const flapTriggerRef = useRef<() => void>(() => {});
 
-  // Exakt dieselbe Split-Flap-Mechanik wie beim Titel "LÖSUNGEN": kurz
+  // Exakt dieselbe Split-Flap-Mechanik wie beim Titel "MEINE UMSETZUNG": kurz
   // durchlaufen, danach sauber auf dem Zieltext einrasten und den Effekt im
   // gleichen 5-Sekunden-Rhythmus wiederholen.
   useEffect(() => {
@@ -861,7 +861,7 @@ function ReferenceCardsContent({ lang }: { lang: 'de' | 'en' }) {
     <div className={`references-content ${chakraPetch.className}`}>
       <div className="references-heading">
         <p>{lang === 'de' ? 'AUSGEWÄHLTE ARBEITEN' : 'SELECTED WORK'}</p>
-        <h2>{lang === 'de' ? 'MEINE REFERENZEN' : 'MY REFERENCES'}</h2>
+        <h2>{lang === 'de' ? 'MEINE REFERENZEN' : 'MY WORK'}</h2>
       </div>
       <div className="references-grid">
         {PROJECTS.map((project, index) => {
@@ -1242,7 +1242,7 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
 function StudioProfileContent({ lang }: { lang: 'de' | 'en' }) {
   const copy = lang === 'de'
     ? {
-        kicker: 'DIGITALSTUDIO MARCEL SPAHR · BERN',
+        kicker: 'DEIN DIGITALPARTNER · DIGITALSTUDIO MARCEL SPAHR · BERN',
         title: 'Persönlich geführt. Ganzheitlich umgesetzt.',
         intro: 'Ich begleite Schweizer KMUs und Startups persönlich – von der ersten Idee bis zu einer Lösung, die im Alltag funktioniert und mit dem Unternehmen wachsen kann.',
         statement: 'Ich denke Projekte von A bis Z, lese zwischen den Zeilen und verbinde unterschiedliche Stakeholder. KI nutze ich als Werkzeug – Verantwortung, Entscheidungen und Qualität bleiben persönlich bei mir.',
@@ -1253,7 +1253,7 @@ function StudioProfileContent({ lang }: { lang: 'de' | 'en' }) {
         ],
       }
     : {
-        kicker: 'MARCEL SPAHR DIGITAL STUDIO · BERN',
+        kicker: 'YOUR DIGITAL PARTNER · MARCEL SPAHR DIGITAL STUDIO · BERN',
         title: 'Personally led. Comprehensively delivered.',
         intro: 'I personally support Swiss SMEs and startups from the first idea to a solution that works in daily operations and can scale with the business.',
         statement: 'I think projects through from A to Z, read between the lines and connect different stakeholders. I use AI as a tool – responsibility, decisions and quality remain personal.',
@@ -1473,7 +1473,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       // während nur der Kameraradius wächst. Eine reine Y-Distanzprüfung
       // hielt die Karten deshalb während der gesamten Tal-Ausfahrt sichtbar.
       // Der echte Ausfahrfortschritt blendet die komplette Kartengruppe
-      // inklusive "LÖSUNGEN" nun aus, bevor "Dein Mehrwert" aufsteigt.
+      // inklusive "MEINE UMSETZUNG" nun aus, bevor "Dein Mehrwert" aufsteigt.
       const exitProgress = Math.max(0, Math.min(1, cam.exitProgress || 0));
       const exitFadeRaw = Math.max(0, Math.min(1, (exitProgress - 0.015) / 0.075));
       const exitFade = 1 - exitFadeRaw * exitFadeRaw * (3 - 2 * exitFadeRaw);
@@ -1535,7 +1535,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
     if (!title) return;
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const label = lang === 'de' ? 'LÖSUNGEN' : 'SOLUTIONS';
+    const label = lang === 'de' ? 'MEINE UMSETZUNG' : 'MY EXECUTION';
     const letters = buildFlapWord(title, label);
     setFlapWordMode(letters, 'settle', true);
 
@@ -2215,12 +2215,12 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
         <div
           ref={serviceStationsRef}
           className={`spiral-service-stations ${activeService ? 'is-detail-open' : ''}`}
-          aria-label={lang === 'de' ? 'Service Leistungen' : 'Services'}
+          aria-label={lang === 'de' ? 'Meine Umsetzung' : 'My Execution'}
         >
           <h2
             ref={solutionsFlapRef}
             className={`spiral-solutions-flap intro-flap-word ${chakraPetch.className}`}
-            aria-label={lang === 'de' ? 'Lösungen' : 'Solutions'}
+            aria-label={lang === 'de' ? 'Meine Umsetzung' : 'My Execution'}
           />
           {serviceCards.map((card, i) => {
             return (
