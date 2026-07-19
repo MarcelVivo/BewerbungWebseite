@@ -693,6 +693,163 @@ option {
   box-shadow: 0 0 8px rgba(231,197,106,0.8);
 }
 
+@keyframes journey-target-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(231,197,106,0.42), 0 0 10px rgba(231,197,106,0.28);
+  }
+  50% {
+    transform: scale(1.24);
+    box-shadow: 0 0 0 5px rgba(231,197,106,0), 0 0 20px rgba(231,197,106,0.78);
+  }
+}
+
+.journey-station.is-travel-target:not(.is-active) .journey-label {
+  color: #f6e3a1;
+  opacity: 0.88;
+  transform: translateX(-0.08rem);
+  text-shadow: 0 0 12px rgba(231,197,106,0.46), 0 5px 18px #000;
+}
+
+.journey-station.is-travel-target .journey-node {
+  border-color: #e7c56a;
+  animation: journey-target-pulse 760ms ease-in-out infinite;
+}
+
+.journey-station.is-travel-target .journey-node-core {
+  background: #f6e3a1;
+  box-shadow: 0 0 10px rgba(246,227,161,0.9);
+}
+
+/* Nichtlineare Sprünge erhalten einen kurzen Reisevorhang. Die Three.js-
+   Helix bleibt darunter sichtbar und bewegt sich weiter, während die
+   dazwischenliegenden Inhaltskarten nicht einzeln aufblitzen. */
+.journey-travel-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 44;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(200,154,61,0.04), rgba(0,0,0,0.48) 72%),
+    linear-gradient(180deg, rgba(0,0,0,0.08), rgba(0,0,0,0.28));
+  backdrop-filter: blur(0);
+  transition: opacity 180ms ease, backdrop-filter 220ms ease;
+}
+
+.journey-travel-veil::before,
+.journey-travel-veil::after {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  opacity: 0;
+  background: repeating-linear-gradient(
+    104deg,
+    transparent 0,
+    transparent 7.5%,
+    rgba(231,197,106,0.055) 7.65%,
+    transparent 7.9%
+  );
+  transform: translate3d(-8%, 6%, 0) scale(1.12);
+}
+
+.journey-travel-veil::after {
+  background: repeating-linear-gradient(
+    76deg,
+    transparent 0,
+    transparent 10%,
+    rgba(77,191,127,0.04) 10.15%,
+    transparent 10.45%
+  );
+  transform: translate3d(8%, -6%, 0) scale(1.08);
+}
+
+.journey-travel-veil > span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(72vw, 58rem);
+  height: 1px;
+  opacity: 0;
+  background: linear-gradient(90deg, transparent, rgba(246,227,161,0.36), transparent);
+  transform-origin: 50% 50%;
+}
+
+.journey-travel-veil > span:nth-child(1) { transform: translate(-50%, -50%) rotate(18deg); }
+.journey-travel-veil > span:nth-child(2) { transform: translate(-50%, -50%) rotate(-24deg); }
+.journey-travel-veil > span:nth-child(3) { transform: translate(-50%, -50%) rotate(90deg); }
+
+.journey-travel-veil.is-fast {
+  opacity: 0.28;
+  backdrop-filter: blur(1px);
+}
+
+.journey-travel-veil.is-warp {
+  opacity: 0.82;
+  backdrop-filter: blur(2.5px);
+}
+
+.journey-travel-veil.is-warp::before,
+.journey-travel-veil.is-warp::after {
+  opacity: 1;
+  animation: journey-warp-drift 960ms cubic-bezier(.2,.72,.28,1) both;
+}
+
+.journey-travel-veil.is-warp > span {
+  opacity: 1;
+  animation: journey-warp-line 960ms cubic-bezier(.2,.72,.28,1) both;
+}
+
+.journey-travel-veil.is-warp > span:nth-child(2) { animation-delay: 55ms; }
+.journey-travel-veil.is-warp > span:nth-child(3) { animation-delay: 110ms; }
+
+@keyframes journey-warp-drift {
+  0% { transform: translate3d(-4%, 3%, 0) scale(1.02); }
+  50% { transform: translate3d(0, 0, 0) scale(1.2); }
+  100% { transform: translate3d(4%, -3%, 0) scale(1.04); }
+}
+
+@keyframes journey-warp-line {
+  0%, 100% { width: 18vw; filter: blur(2px); opacity: 0; }
+  42%, 58% { width: min(92vw, 80rem); filter: blur(0); opacity: 0.72; }
+}
+
+body.journey-fast-travel .intro-flap-world,
+body.journey-fast-travel .spiral-service-stations,
+body.journey-fast-travel .value-impact-world,
+body.journey-fast-travel .references-world,
+body.journey-fast-travel .studio-profile-world,
+body.journey-fast-travel .project-cta-world,
+body.journey-fast-travel .spiral-mobile-services,
+body.journey-fast-travel .mobile-value-impact,
+body.journey-fast-travel .mobile-references,
+body.journey-fast-travel .mobile-studio-profile,
+body.journey-fast-travel .mobile-project-cta,
+body.journey-warp-active .intro-flap-world,
+body.journey-warp-active .spiral-service-stations,
+body.journey-warp-active .value-impact-world,
+body.journey-warp-active .references-world,
+body.journey-warp-active .studio-profile-world,
+body.journey-warp-active .project-cta-world,
+body.journey-warp-active .spiral-mobile-services,
+body.journey-warp-active .mobile-value-impact,
+body.journey-warp-active .mobile-references,
+body.journey-warp-active .mobile-studio-profile,
+body.journey-warp-active .mobile-project-cta {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .journey-station.is-travel-target .journey-node,
+  .journey-travel-veil.is-warp::before,
+  .journey-travel-veil.is-warp::after,
+  .journey-travel-veil.is-warp > span {
+    animation: none !important;
+  }
+}
+
 .journey-count {
   margin-right: 0.05rem;
   color: rgba(231,197,106,0.58);

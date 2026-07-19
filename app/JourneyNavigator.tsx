@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Chakra_Petch } from 'next/font/google';
 import { useLanguage } from './LanguageContext';
 import { openJourneyLeadForm } from './lib/journeyNavigation';
@@ -47,12 +47,18 @@ function getVisibleDesktopStation() {
 
 export default function JourneyNavigator() {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [travelTargetIndex, setTravelTargetIndex] = useState<number | null>(null);
+  const [travelMode, setTravelMode] = useState<'fast' | 'warp' | null>(null);
+  const travelTargetRef = useRef<number | null>(null);
+  const cancelTravelRef = useRef<(() => void) | null>(null);
   const { lang, setLang } = useLanguage();
 
   useEffect(() => {
     let rafId = 0;
 
     const update = () => {
+      if (travelTargetRef.current !== null) return;
+
       if (window.innerWidth > 699) {
         const journey = document.getElementById('solution-spiral');
         if (!journey) return;
@@ -103,11 +109,131 @@ export default function JourneyNavigator() {
     };
   }, []);
 
-  function goToStation(index: number) {
-    if (index === STATIONS.length - 1) {
-      openJourneyLeadForm('overview');
+  useEffect(() => {
+    const interruptTravel = (event: Event) => {
+      if (travelTargetRef.current === null) return;
+      if (event instanceof KeyboardEvent) {
+        const navigationKeys = ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '];
+        if (!navigationKeys.includes(event.key)) return;
+      }
+      cancelTravelRef.current?.();
+    };
+
+    window.addEventListener('wheel', interruptTravel, { passive: true });
+    window.addEventListener('touchstart', interruptTravel, { passive: true });
+    window.addEventListener('keydown', interruptTravel);
+    return () => {
+      window.removeEventListener('wheel', interruptTravel);
+      window.removeEventListener('touchstart', interruptTravel);
+      window.removeEventListener('keydown', interruptTravel);
+      cancelTravelRef.current?.();
+    };
+  }, []);
+
+  function getStationTop(index: number) {
+    const station = STATIONS[index];
+    if (window.innerWidth > 699 && index > 0) {
+      const journey = document.getElementById('solution-spiral');
+      if (journey) {
+        return journey.offsetTop - window.innerHeight + journey.offsetHeight * DESKTOP_STATION_PROGRESS[index];
+      }
+    }
+
+    const targetId = window.innerWidth <= 699 && station.mobileTarget
+      ? station.mobileTarget
+      : station.target;
+    const target = document.getElementById(targetId);
+    if (!target) return window.scrollY;
+    const targetTop = target.getBoundingClientRect().top + window.scrollY;
+    return targetTop - Math.max(0, (window.innerHeight - target.offsetHeight) / 2);
+  }
+
+  function startAdaptiveTravel(index: number, mode: 'fast' | 'warp') {
+    cancelTravelRef.current?.();
+    window.scrollTo({ top: window.scrollY, behavior: 'auto' });
+
+    const startY = window.scrollY;
+    const maxY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+    const targetY = Math.max(0, Math.min(maxY, getStationTop(index)));
+    const distanceY = targetY - startY;
+    const duration = mode === 'warp' ? 960 : 720;
+    const bodyClass = mode === 'warp' ? 'journey-warp-active' : 'journey-fast-travel';
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (reduced || Math.abs(distanceY) < 2) {
+      window.scrollTo({ top: targetY, behavior: 'auto' });
+      setActiveIndex(index);
       return;
     }
+
+    let frameId = 0;
+    let finishFrameOne = 0;
+    let finishFrameTwo = 0;
+    let cancelled = false;
+    let startTime = 0;
+
+    travelTargetRef.current = index;
+    setTravelTargetIndex(index);
+    setTravelMode(mode);
+    document.body.classList.add('journey-navigation-active', bodyClass);
+
+    const clearTravelState = () => {
+      document.body.classList.remove('journey-navigation-active', 'journey-fast-travel', 'journey-warp-active');
+      travelTargetRef.current = null;
+      cancelTravelRef.current = null;
+      setTravelTargetIndex(null);
+      setTravelMode(null);
+    };
+
+    const cancel = () => {
+      if (cancelled) return;
+      cancelled = true;
+      window.cancelAnimationFrame(frameId);
+      window.cancelAnimationFrame(finishFrameOne);
+      window.cancelAnimationFrame(finishFrameTwo);
+      window.scrollTo({ top: window.scrollY, behavior: 'auto' });
+      clearTravelState();
+    };
+    cancelTravelRef.current = cancel;
+
+    const frame = (time: number) => {
+      if (cancelled) return;
+      if (!startTime) startTime = time;
+      const progress = Math.min(1, (time - startTime) / duration);
+      const eased = progress < 0.5
+        ? 4 * progress * progress * progress
+        : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+      window.scrollTo({ top: startY + distanceY * eased, behavior: 'auto' });
+
+      if (progress < 1) {
+        frameId = window.requestAnimationFrame(frame);
+        return;
+      }
+
+      window.scrollTo({ top: targetY, behavior: 'auto' });
+      setActiveIndex(index);
+      // Zwei Frames geben Kamera und Zielkarte Zeit, ihre endgültige
+      // Position zu berechnen, bevor der Reisevorhang verschwindet.
+      finishFrameOne = window.requestAnimationFrame(() => {
+        finishFrameTwo = window.requestAnimationFrame(clearTravelState);
+      });
+    };
+
+    frameId = window.requestAnimationFrame(frame);
+  }
+
+  function goToStation(index: number) {
+    if (index === STATIONS.length - 1) {
+      openJourneyLeadForm('overview', { navigate: false });
+    }
+
+    const stationDistance = Math.abs(index - activeIndex);
+    if (stationDistance >= 2) {
+      startAdaptiveTravel(index, stationDistance >= 3 ? 'warp' : 'fast');
+      return;
+    }
+
+    cancelTravelRef.current?.();
     const station = STATIONS[index];
     if (window.innerWidth > 699 && index > 0) {
       const journey = document.getElementById('solution-spiral');
@@ -126,10 +252,19 @@ export default function JourneyNavigator() {
   }
 
   return (
-    <nav
+    <>
+      <div
+        className={`journey-travel-veil ${travelMode ? `is-${travelMode}` : ''}`}
+        aria-hidden="true"
+      >
+        <span />
+        <span />
+        <span />
+      </div>
+      <nav
       className={`journey-navigator ${chakraPetch.className}`}
       aria-label={lang === 'de' ? 'Seitennavigation' : 'Page navigation'}
-    >
+      >
       <div className="journey-language" aria-label={lang === 'de' ? 'Sprache wählen' : 'Choose language'}>
         <button
           type="button"
@@ -158,13 +293,15 @@ export default function JourneyNavigator() {
       {STATIONS.map((station, index) => {
         const isActive = index === activeIndex;
         const isVisited = index < activeIndex;
+        const isTravelTarget = index === travelTargetIndex;
         const label = station.label[lang];
         return (
           <button
             key={station.target}
             type="button"
-            className={`journey-station ${isActive ? 'is-active' : ''} ${isVisited ? 'is-visited' : ''}`}
+            className={`journey-station ${isActive ? 'is-active' : ''} ${isVisited ? 'is-visited' : ''} ${isTravelTarget ? 'is-travel-target' : ''}`}
             aria-current={isActive ? 'location' : undefined}
+            aria-busy={isTravelTarget || undefined}
             aria-label={lang === 'de' ? `Zu ${label}` : `Go to ${label}`}
             onClick={() => goToStation(index)}
           >
@@ -182,7 +319,7 @@ export default function JourneyNavigator() {
         <button
           type="button"
           className="journey-utility-contact"
-          onClick={() => openJourneyLeadForm('overview')}
+          onClick={() => goToStation(STATIONS.length - 1)}
         >
           {lang === 'de' ? 'Deine Lösung' : 'Your solution'}
         </button>
@@ -192,6 +329,7 @@ export default function JourneyNavigator() {
           <a href="/impressum">{lang === 'de' ? 'Impressum' : 'Legal notice'}</a>
         </div>
       </div>
-    </nav>
+      </nav>
+    </>
   );
 }

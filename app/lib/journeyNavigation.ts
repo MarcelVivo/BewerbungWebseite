@@ -27,7 +27,10 @@ export function scrollToJourneyDestination(destination: JourneyDestination) {
   });
 }
 
-export function openJourneyLeadForm(form: JourneyLeadForm = 'overview') {
+export function openJourneyLeadForm(
+  form: JourneyLeadForm = 'overview',
+  options: { navigate?: boolean } = {},
+) {
   window.dispatchEvent(new CustomEvent<JourneyLeadForm>(OPEN_LEAD_FORM_EVENT, { detail: form }));
-  scrollToJourneyDestination('contact');
+  if (options.navigate !== false) scrollToJourneyDestination('contact');
 }
