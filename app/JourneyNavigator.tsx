@@ -273,7 +273,7 @@ export default function JourneyNavigator() {
 
     const stationDistance = Math.abs(index - activeIndex);
     if (stationDistance >= 2) {
-      startAdaptiveTravel(index, stationDistance >= 3 ? 'warp' : 'fast');
+      startAdaptiveTravel(index, 'warp');
       return;
     }
 
