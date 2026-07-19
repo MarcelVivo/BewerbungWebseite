@@ -6096,7 +6096,7 @@ option {
 }
 
 .project-cta-embedded .ki-check-question > button {
-  align-self: flex-start;
+  align-self: flex-end;
   margin-top: 0.42rem;
   padding: 0.38rem 0.62rem;
   border-radius: 0.55rem;
