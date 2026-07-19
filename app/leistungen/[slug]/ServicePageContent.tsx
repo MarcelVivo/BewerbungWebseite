@@ -42,7 +42,7 @@ const PL = {
     ctaPrefix: 'Interessiert an ',
     ctaSuffix: '? Schreib mir – ich melde mich innerhalb von 2 Arbeitstagen und wir schauen gemeinsam, was für dich Sinn macht. Unverbindlich.',
     navServices: 'Leistungen', navPortfolio: 'Portfolio', navAbout: 'Über mich',
-    navCta: 'Kostenlos anfragen', backHome: 'Zurück zur Startseite',
+    navCta: 'Deine Lösung starten', backHome: 'Zurück zur Startseite',
     imprint: 'Impressum', privacy: 'Datenschutz',
   },
   en: {
@@ -55,7 +55,7 @@ const PL = {
     ctaPrefix: 'Interested in ',
     ctaSuffix: "? Write to me – I'll respond within 2 business days and we'll see together what makes sense for you. No commitment.",
     navServices: 'Services', navPortfolio: 'Portfolio', navAbout: 'About me',
-    navCta: 'Free inquiry', backHome: 'Back to home',
+    navCta: 'Start your solution', backHome: 'Back to home',
     imprint: 'Imprint', privacy: 'Privacy',
   },
 };
@@ -449,7 +449,7 @@ export default function ServicePageContent({ slug }: { slug: string }) {
               <button onClick={() => setLang('de')} className={`px-2.5 py-1 text-xs font-semibold transition-colors ${lang === 'de' ? 'bg-[#c9a84c] text-[#0c0a06]' : 'text-[#a89880] hover:text-[#f4edd8]'}`}>DE</button>
               <button onClick={() => setLang('en')} className={`px-2.5 py-1 text-xs font-semibold transition-colors ${lang === 'en' ? 'bg-[#c9a84c] text-[#0c0a06]' : 'text-[#a89880] hover:text-[#f4edd8]'}`}>EN</button>
             </div>
-            <a href="#contact" className="px-4 py-1.5 rounded-lg text-[#0c0a06] text-sm font-semibold transition-colors" style={{ background: metallicGradient(service.color) }}>
+            <a href={`/?lead=${service.slug === 'automatisierung-ki-agenten' ? 'ki' : 'project'}`} className="px-4 py-1.5 rounded-lg text-[#0c0a06] text-sm font-semibold transition-colors" style={{ background: metallicGradient(service.color) }}>
               {pl.navCta}
             </a>
           </nav>

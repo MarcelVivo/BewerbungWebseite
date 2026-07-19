@@ -1,4 +1,7 @@
 export type JourneyDestination = 'references' | 'contact';
+export type JourneyLeadForm = 'overview' | 'consultation' | 'project' | 'ki';
+
+export const OPEN_LEAD_FORM_EVENT = 'ms:open-lead-form';
 
 const DESKTOP_PROGRESS: Record<JourneyDestination, number> = {
   references: 0.7,
@@ -22,4 +25,9 @@ export function scrollToJourneyDestination(destination: JourneyDestination) {
     top: journey.offsetTop - window.innerHeight + journey.offsetHeight * DESKTOP_PROGRESS[destination],
     behavior: 'smooth',
   });
+}
+
+export function openJourneyLeadForm(form: JourneyLeadForm = 'overview') {
+  window.dispatchEvent(new CustomEvent<JourneyLeadForm>(OPEN_LEAD_FORM_EVENT, { detail: form }));
+  scrollToJourneyDestination('contact');
 }

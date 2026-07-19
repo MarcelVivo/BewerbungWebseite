@@ -18,18 +18,17 @@ import { useLanguage } from './LanguageContext';
 import { T } from '../lib/translations';
 import { HELIX_STEP, computeCameraTravel, helixAngleForWorldIndex, helixPositionForWorldIndex } from './lib/helixGeometry';
 import { getEffectiveViewport, REF_WIDTH, REF_HEIGHT } from './lib/viewport';
-import { scrollToJourneyDestination } from './lib/journeyNavigation';
+import {
+  OPEN_LEAD_FORM_EVENT,
+  openJourneyLeadForm,
+  scrollToJourneyDestination,
+  type JourneyLeadForm,
+} from './lib/journeyNavigation';
 import { PROJECTS } from './portfolio/data';
 import { Chakra_Petch } from 'next/font/google';
 
 const chakraPetch = Chakra_Petch({ subsets: ['latin'], weight: '700', display: 'swap' });
-const OPEN_LEAD_FORM_EVENT = 'ms:open-lead-form';
-type LeadFormId = 'consultation' | 'project' | 'ki';
-
-function openLeadForm(form: LeadFormId) {
-  window.dispatchEvent(new CustomEvent<LeadFormId>(OPEN_LEAD_FORM_EVENT, { detail: form }));
-  scrollToJourneyDestination('contact');
-}
+type LeadFormId = JourneyLeadForm;
 
 // Radius, den die reale 3D-Leistungskarte ("Karte 01") in BrainBackground.tsx
 // hatte, bevor sie durch dieses DOM-Kartenpanel ersetzt wurde — dieselbe
@@ -964,7 +963,7 @@ function ReferencesWorld({ lang }: { lang: 'de' | 'en' }) {
 }
 
 function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
-  const [activeForm, setActiveForm] = useState<LeadFormId>('consultation');
+  const [activeForm, setActiveForm] = useState<LeadFormId>('overview');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
@@ -976,7 +975,7 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
   useEffect(() => {
     const handleOpenForm = (event: Event) => {
       const requestedForm = (event as CustomEvent<LeadFormId>).detail;
-      if (requestedForm === 'consultation' || requestedForm === 'project' || requestedForm === 'ki') {
+      if (requestedForm === 'overview' || requestedForm === 'consultation' || requestedForm === 'project' || requestedForm === 'ki') {
         setActiveForm(requestedForm);
       }
     };
@@ -988,6 +987,9 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
         kicker: 'PERSÖNLICH · UNVERBINDLICH · AUF AUGENHÖHE',
         title: 'DEINE BERATUNG.',
         text: 'Erzähl mir kurz, was du aufbauen, verbessern oder digitalisieren möchtest. Ich melde mich persönlich bei dir.',
+        overviewKicker: 'DREI WEGE · EIN KLARES ZIEL',
+        overviewTitle: 'DEINE LÖSUNG.',
+        overviewText: 'Wähle den Einstieg, der zu deinem aktuellen Vorhaben passt. Du kannst jederzeit zwischen den drei Wegen wechseln.',
         name: 'Name',
         email: 'E-Mail',
         message: 'Worum geht es?',
@@ -1019,6 +1021,9 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
         kicker: 'PERSONAL · NO OBLIGATION · EYE TO EYE',
         title: 'YOUR CONSULTATION.',
         text: 'Tell me briefly what you want to build, improve or digitize. I will get back to you personally.',
+        overviewKicker: 'THREE PATHS · ONE CLEAR GOAL',
+        overviewTitle: 'YOUR SOLUTION.',
+        overviewText: 'Choose the entry point that best matches your current project. You can switch between all three paths at any time.',
         name: 'Name',
         email: 'Email',
         message: 'What would you like to discuss?',
@@ -1090,7 +1095,38 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
     <div className={`project-cta-content ${chakraPetch.className}`}>
       <div className="project-cta-stage">
         <section
+          className="project-cta-panel project-cta-overview"
+          hidden={activeForm !== 'overview'}
+          role="tabpanel"
+          aria-label={lang === 'de' ? 'Formularauswahl' : 'Form selection'}
+        >
+          <p className="project-cta-kicker">{copy.overviewKicker}</p>
+          <h2>{copy.overviewTitle}</h2>
+          <p className="project-cta-copy">{copy.overviewText}</p>
+          <div className="project-form-overview-grid">
+            {([
+              ['consultation', copy.submit, copy.consultationHint, MessageSquare],
+              ['project', copy.project, copy.projectHint, ClipboardList],
+              ['ki', copy.kiCheck, copy.kiCheckHint, Bot],
+            ] as const).map(([id, label, hint, Icon]) => (
+              <button
+                key={id}
+                type="button"
+                data-form={id}
+                onClick={() => setActiveForm(id)}
+              >
+                <span className="project-form-overview-icon"><Icon size={22} strokeWidth={1.8} /></span>
+                <strong>{label}</strong>
+                <small>{hint}</small>
+                <span className="project-form-overview-arrow"><ChevronRight size={17} strokeWidth={2.2} /></span>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section
           className="project-cta-panel project-cta-consultation"
+          data-form="consultation"
           hidden={activeForm !== 'consultation'}
           role="tabpanel"
           aria-labelledby="project-form-tab-consultation"
@@ -1155,6 +1191,7 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
 
         <section
           className="project-cta-panel project-cta-embedded"
+          data-form="project"
           hidden={activeForm !== 'project'}
           role="tabpanel"
           aria-labelledby="project-form-tab-project"
@@ -1166,6 +1203,7 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
 
         <section
           className="project-cta-panel project-cta-embedded"
+          data-form="ki"
           hidden={activeForm !== 'ki'}
           role="tabpanel"
           aria-labelledby="project-form-tab-ki"
@@ -1189,6 +1227,7 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
             role="tab"
             aria-selected={activeForm === id}
             className={activeForm === id ? 'is-active' : ''}
+            data-form={id}
             onClick={() => setActiveForm(id)}
           >
             <strong>{label}</strong>
@@ -2272,21 +2311,21 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
                   </ul>
                 </div>
               </div>
-              {detailService.slug === 'ki-automation-prozesse' && (
-                <button
-                  type="button"
-                  className="value-info-cta"
-                  tabIndex={activeService ? 0 : -1}
-                  onClick={() => {
-                    setActiveServiceSlug(null);
-                    openLeadForm('ki');
-                  }}
-                >
-                  <Bot size={15} strokeWidth={2} aria-hidden="true" />
-                  <span>{lang === 'de' ? 'Kostenloser KI-Check' : 'Free AI check'}</span>
-                  <ChevronRight size={14} strokeWidth={2.2} aria-hidden="true" />
-                </button>
-              )}
+              <button
+                type="button"
+                className="value-info-cta"
+                tabIndex={activeService ? 0 : -1}
+                onClick={() => {
+                  setActiveServiceSlug(null);
+                  openJourneyLeadForm(detailService.slug === 'ki-automation-prozesse' ? 'ki' : 'project');
+                }}
+              >
+                {detailService.slug === 'ki-automation-prozesse'
+                  ? <Bot size={15} strokeWidth={2} aria-hidden="true" />
+                  : <ClipboardList size={15} strokeWidth={2} aria-hidden="true" />}
+                <span>{lang === 'de' ? 'Deine Lösung starten' : 'Start your solution'}</span>
+                <ChevronRight size={14} strokeWidth={2.2} aria-hidden="true" />
+              </button>
             </div>
 
             <div className="value-info-visual">
@@ -2431,21 +2470,21 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
                     </ul>
                   </div>
                 </div>
-                {detailService.slug === 'ki-automation-prozesse' && (
-                  <button
-                    type="button"
-                    className="value-info-cta"
-                    tabIndex={activeService ? 0 : -1}
-                    onClick={() => {
-                      setActiveServiceSlug(null);
-                      openLeadForm('ki');
-                    }}
-                  >
-                    <Bot size={15} strokeWidth={2} aria-hidden="true" />
-                    <span>{lang === 'de' ? 'Kostenloser KI-Check' : 'Free AI check'}</span>
-                    <ChevronRight size={14} strokeWidth={2.2} aria-hidden="true" />
-                  </button>
-                )}
+                <button
+                  type="button"
+                  className="value-info-cta"
+                  tabIndex={activeService ? 0 : -1}
+                  onClick={() => {
+                    setActiveServiceSlug(null);
+                    openJourneyLeadForm(detailService.slug === 'ki-automation-prozesse' ? 'ki' : 'project');
+                  }}
+                >
+                  {detailService.slug === 'ki-automation-prozesse'
+                    ? <Bot size={15} strokeWidth={2} aria-hidden="true" />
+                    : <ClipboardList size={15} strokeWidth={2} aria-hidden="true" />}
+                  <span>{lang === 'de' ? 'Deine Lösung starten' : 'Start your solution'}</span>
+                  <ChevronRight size={14} strokeWidth={2.2} aria-hidden="true" />
+                </button>
               </div>
               <div className="value-info-visual">
                 <ValueInfoGraphic index={detailServiceIndex} />
@@ -2490,6 +2529,12 @@ export default function HomePage() {
       ? 'Digitalstudio Marcel Spahr – Weblösungen, CRM & ERP für KMU'
       : 'Marcel Spahr Digital Studio – Web Solutions, CRM & ERP for SMEs';
   }, [lang]);
+  useEffect(() => {
+    const requestedForm = new URLSearchParams(window.location.search).get('lead');
+    if (requestedForm !== 'overview' && requestedForm !== 'consultation' && requestedForm !== 'project' && requestedForm !== 'ki') return;
+    const timer = window.setTimeout(() => openJourneyLeadForm(requestedForm), 300);
+    return () => window.clearTimeout(timer);
+  }, []);
   // Auf schmalen Bildschirmen (<900px, dieselbe Schwelle wie
   // getEffectiveViewport()) wird die komplette Hero-Komposition (Gehirne +
   // Überschrift + Buttons) exakt wie am Desktop aufgebaut und danach
@@ -2643,10 +2688,14 @@ export default function HomePage() {
                 </p>
               </div>
               <div style={{ animationDelay: '0.18s' }} className="hero-action-row ms-anim mt-7 flex flex-col items-center justify-center gap-3">
-                <a href="/anfrage" className={`hero-project-cta ${chakraPetch.className}`}>
-                  <span>{lang === 'de' ? 'Projekt besprechen' : 'Discuss your project'}</span>
+                <button
+                  type="button"
+                  className={`hero-project-cta ${chakraPetch.className}`}
+                  onClick={() => openJourneyLeadForm('overview')}
+                >
+                  <span>{lang === 'de' ? 'Deine Lösung starten' : 'Start your solution'}</span>
                   <ChevronRight size={16} strokeWidth={2.2} aria-hidden="true" />
-                </a>
+                </button>
                 <a
                   href="#solution-spiral"
                   className={`group flex flex-col items-center gap-1 text-[#e7c56a] transition-colors hover:text-[#f6e3a1] ${chakraPetch.className}`}

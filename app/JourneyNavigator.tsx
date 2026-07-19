@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Chakra_Petch } from 'next/font/google';
 import { useLanguage } from './LanguageContext';
+import { openJourneyLeadForm } from './lib/journeyNavigation';
 
 const chakraPetch = Chakra_Petch({ subsets: ['latin'], weight: '700', display: 'swap' });
 
@@ -12,7 +13,7 @@ const STATIONS = [
   { label: { de: 'Dein Mehrwert', en: 'Your Value' }, target: 'journey-value', mobileTarget: 'mobile-journey-value' },
   { label: { de: 'Meine Referenzen', en: 'My References' }, target: 'journey-references', mobileTarget: 'mobile-journey-references' },
   { label: { de: 'Über mich', en: 'About Me' }, target: 'journey-about', mobileTarget: 'mobile-journey-about' },
-  { label: { de: 'Deine Beratung', en: 'Your Consultation' }, target: 'journey-contact', mobileTarget: 'mobile-journey-contact' },
+  { label: { de: 'Deine Lösung', en: 'Your Solution' }, target: 'journey-contact', mobileTarget: 'mobile-journey-contact' },
 ];
 
 // Dieselben normierten Positionen, an denen die Desktop-Kamera ihre sechs
@@ -103,6 +104,10 @@ export default function JourneyNavigator() {
   }, []);
 
   function goToStation(index: number) {
+    if (index === STATIONS.length - 1) {
+      openJourneyLeadForm('overview');
+      return;
+    }
     const station = STATIONS[index];
     if (window.innerWidth > 699 && index > 0) {
       const journey = document.getElementById('solution-spiral');
@@ -177,9 +182,9 @@ export default function JourneyNavigator() {
         <button
           type="button"
           className="journey-utility-contact"
-          onClick={() => goToStation(STATIONS.length - 1)}
+          onClick={() => openJourneyLeadForm('overview')}
         >
-          {lang === 'de' ? 'Kontakt' : 'Contact'}
+          {lang === 'de' ? 'Deine Lösung' : 'Your solution'}
         </button>
         <div className="journey-utility-legal">
           <a href="/datenschutz">{lang === 'de' ? 'Datenschutz' : 'Privacy'}</a>

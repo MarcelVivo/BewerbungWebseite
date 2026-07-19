@@ -11,7 +11,7 @@ export const T = {
       tagline: 'Du hast ein Problem. Ich baue die komplette Lösung – inklusive sinnvoller KI.',
       title: 'Websites, Systeme und Prozesse aus einem Guss.',
       subtitle: 'Ich entwickle professionelle digitale Lösungen für KMU und Unternehmen: Corporate Design, moderne 2D- und 3D-Websites, CRM-/ERP-Systeme, Datenbanken, Automatisierung und KI-Unterstützung. Ich behalte den Überblick im KI-Lösungsdschungel und finde die Optimierung, die zu deinem Unternehmen passt.',
-      cta: 'Projekt besprechen', more: 'Lösungen ansehen',
+      cta: 'Deine Lösung starten', more: 'Lösungen ansehen',
     },
     about: {
       label: 'Ansatz', heading: 'Eine Lösung, die wirklich hält',
@@ -66,7 +66,7 @@ export const T = {
     process: {
       label: 'Ablauf', heading1: 'Vom Problem ', heading2: 'zur kompletten Lösung',
       subheading: 'Schritt für Schritt, transparent und so umgesetzt, dass alles zusammenpasst.',
-      cta: 'Projekt besprechen',
+      cta: 'Deine Lösung starten',
       steps: [
         { num: '01', title: 'Problem verstehen', badge: 'Start', tagline: 'Ziele, Alltag und Engpässe klären', desc: 'Wir besprechen, was heute nicht funktioniert, was besser werden soll und welche Lösung für dein Unternehmen wirklich Sinn ergibt.' },
         { num: '02', title: 'Lösung planen', badge: 'Konzept', tagline: 'Design, Daten und Prozesse verbinden', desc: 'Ich entwerfe den roten Faden: Struktur, Funktionen, Datenmodell, Designrichtung und sinnvolle Etappen.' },
@@ -94,7 +94,7 @@ export const T = {
       tagline: 'You have a problem. I build the complete solution – including useful AI.',
       title: 'Websites, systems and processes in one flow.',
       subtitle: 'I build professional digital solutions for SMEs and companies: corporate design, modern 2D and 3D websites, CRM/ERP systems, databases, automation and AI support. I keep track of the AI solution jungle and find the optimization that fits your business.',
-      cta: 'Discuss project', more: 'View solutions',
+      cta: 'Start your solution', more: 'View solutions',
     },
     about: {
       label: 'Approach', heading: 'A solution that actually holds up',
@@ -149,7 +149,7 @@ export const T = {
     process: {
       label: 'Process', heading1: 'From problem ', heading2: 'to complete solution',
       subheading: 'Step by step, transparent and implemented so everything fits together.',
-      cta: 'Discuss project',
+      cta: 'Start your solution',
       steps: [
         { num: '01', title: 'Understand the problem', badge: 'Start', tagline: 'Goals, daily work and bottlenecks', desc: 'We clarify what does not work today, what should improve and what kind of solution makes sense for your business.' },
         { num: '02', title: 'Plan the solution', badge: 'Concept', tagline: 'Connect design, data and processes', desc: 'I define the thread: structure, functions, data model, design direction and meaningful delivery stages.' },

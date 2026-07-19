@@ -23,7 +23,7 @@ const PL = {
     ctaEyebrow: 'DEINE IDEE ALS NÄCHSTES PROJEKT',
     ctaTitle: 'Lass uns dein Vorhaben besprechen.',
     ctaText: 'Erzähl mir, was du aufbauen, vereinfachen oder digitalisieren möchtest. Gemeinsam klären wir den sinnvollsten nächsten Schritt.',
-    ctaButton: 'Projekt besprechen',
+    ctaButton: 'Deine Lösung starten',
   },
   en: {
     back: '← Back to references',
@@ -41,7 +41,7 @@ const PL = {
     ctaEyebrow: 'YOUR IDEA AS THE NEXT PROJECT',
     ctaTitle: 'Let’s discuss what you want to build.',
     ctaText: 'Tell me what you want to create, simplify or digitize. Together, we will identify the most useful next step.',
-    ctaButton: 'Discuss your project',
+    ctaButton: 'Start your solution',
   },
 };
 
@@ -218,7 +218,7 @@ export default function PortfolioDetailContent({ slug }: { slug: string }) {
           <h2 className="mt-4 text-2xl sm:text-4xl font-bold text-white tracking-[-0.035em]">{pl.ctaTitle}</h2>
           <p className="mt-4 max-w-2xl mx-auto text-[#a89880] leading-relaxed">{pl.ctaText}</p>
           <Link
-            href="/anfrage"
+            href="/?lead=project"
             className="mt-7 inline-flex items-center gap-2 rounded-full px-6 py-3 font-bold text-[#07090b] transition-transform hover:-translate-y-0.5"
             style={{ background: project.color }}
           >

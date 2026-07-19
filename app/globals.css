@@ -6277,3 +6277,207 @@ option {
     padding: 0.24rem 0.32rem;
   }
 }
+
+/* ── Zentrale Lead-Auswahl: Gold / Rot / Blau ─────────────── */
+.project-cta-overview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: clamp(0.6rem, 1.4vw, 1.15rem);
+  text-align: center;
+}
+
+.project-cta-overview > h2 {
+  margin: 0.18rem 0 0.45rem;
+  color: #f4fff7;
+  font-family: var(--font-site);
+  font-size: clamp(1.55rem, 3.8vw, 3rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.035em;
+}
+
+.project-cta-overview > .project-cta-copy {
+  max-width: 42rem;
+  margin-bottom: clamp(0.7rem, 1.6vw, 1.2rem);
+}
+
+.project-form-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(0.45rem, 1vw, 0.8rem);
+  width: 100%;
+}
+
+.project-form-overview-grid button,
+.project-form-tabs button[data-form] {
+  --form-accent-rgb: 200,154,61;
+}
+
+.project-form-overview-grid button[data-form='consultation'],
+.project-form-tabs button[data-form='consultation'],
+.project-cta-panel[data-form='consultation'] {
+  --form-accent-rgb: 200,154,61;
+}
+
+.project-form-overview-grid button[data-form='project'],
+.project-form-tabs button[data-form='project'],
+.project-cta-panel[data-form='project'] {
+  --form-accent-rgb: 166,66,92;
+}
+
+.project-form-overview-grid button[data-form='ki'],
+.project-form-tabs button[data-form='ki'],
+.project-cta-panel[data-form='ki'] {
+  --form-accent-rgb: 77,127,191;
+}
+
+.project-form-overview-grid button {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  min-height: clamp(7.5rem, 15vw, 10.5rem);
+  padding: clamp(0.65rem, 1.35vw, 1rem);
+  overflow: hidden;
+  border: 1px solid rgba(var(--form-accent-rgb),0.46);
+  border-radius: 0.85rem;
+  color: #effff5;
+  text-align: left;
+  background:
+    radial-gradient(circle at 15% 5%, rgba(var(--form-accent-rgb),0.2), transparent 48%),
+    rgba(0,0,0,0.42);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.055);
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+.project-form-overview-grid button:hover,
+.project-form-overview-grid button:focus-visible {
+  border-color: rgba(var(--form-accent-rgb),0.92);
+  background:
+    radial-gradient(circle at 15% 5%, rgba(var(--form-accent-rgb),0.32), transparent 52%),
+    rgba(0,0,0,0.5);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.09), 0 0 26px rgba(var(--form-accent-rgb),0.16);
+  outline: none;
+  transform: translateY(-2px);
+}
+
+.project-form-overview-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  margin-bottom: 0.7rem;
+  border: 1px solid rgba(var(--form-accent-rgb),0.55);
+  border-radius: 0.68rem;
+  color: rgb(var(--form-accent-rgb));
+  background: rgba(var(--form-accent-rgb),0.12);
+}
+
+.project-form-overview-grid strong {
+  font-size: clamp(0.66rem, 1vw, 0.86rem);
+  line-height: 1.15;
+}
+
+.project-form-overview-grid small {
+  max-width: 15rem;
+  margin-top: 0.35rem;
+  color: rgba(212,225,216,0.58);
+  font-family: var(--font-site);
+  font-size: clamp(0.48rem, 0.68vw, 0.6rem);
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+.project-form-overview-arrow {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.7rem;
+  display: inline-flex;
+  color: rgb(var(--form-accent-rgb));
+  transition: transform 180ms ease;
+}
+
+.project-form-overview-grid button:hover .project-form-overview-arrow,
+.project-form-overview-grid button:focus-visible .project-form-overview-arrow {
+  transform: translateX(2px);
+}
+
+.project-form-tabs button[data-form] {
+  border-color: rgba(var(--form-accent-rgb),0.3);
+}
+
+.project-form-tabs button[data-form]:hover,
+.project-form-tabs button[data-form]:focus-visible {
+  border-color: rgba(var(--form-accent-rgb),0.72);
+  background: rgba(var(--form-accent-rgb),0.08);
+}
+
+.project-form-tabs button[data-form].is-active {
+  color: #fff;
+  border-color: rgba(var(--form-accent-rgb),0.94);
+  background: linear-gradient(135deg, rgba(var(--form-accent-rgb),0.28), rgba(var(--form-accent-rgb),0.08));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 0 24px rgba(var(--form-accent-rgb),0.18);
+}
+
+.project-form-tabs button[data-form].is-active strong {
+  color: rgb(var(--form-accent-rgb));
+}
+
+.project-cta-panel[data-form] {
+  border: 1px solid rgba(var(--form-accent-rgb),0.24);
+  border-radius: 0.85rem;
+  background: radial-gradient(circle at 50% 0%, rgba(var(--form-accent-rgb),0.055), transparent 52%);
+}
+
+@media (max-width: 599px) {
+  .project-cta-overview {
+    padding: 0.4rem;
+  }
+
+  .project-cta-overview > .project-cta-copy {
+    margin-bottom: 0.55rem;
+    font-size: clamp(0.5rem, 2.15vw, 0.62rem);
+  }
+
+  .project-form-overview-grid {
+    gap: 0.3rem;
+  }
+
+  .project-form-overview-grid button {
+    min-height: 6.4rem;
+    padding: 0.48rem;
+    border-radius: 0.62rem;
+  }
+
+  .project-form-overview-icon {
+    width: 1.65rem;
+    height: 1.65rem;
+    margin-bottom: 0.42rem;
+    border-radius: 0.45rem;
+  }
+
+  .project-form-overview-icon svg {
+    width: 0.85rem;
+    height: 0.85rem;
+  }
+
+  .project-form-overview-grid strong {
+    font-size: clamp(0.5rem, 2.25vw, 0.62rem);
+  }
+
+  .project-form-overview-grid small {
+    font-size: clamp(0.4rem, 1.75vw, 0.5rem);
+    line-height: 1.18;
+  }
+
+  .project-form-overview-arrow {
+    right: 0.42rem;
+    bottom: 0.38rem;
+  }
+}
