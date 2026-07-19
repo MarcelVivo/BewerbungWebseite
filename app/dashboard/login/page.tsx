@@ -154,6 +154,11 @@ function LoginForm() {
               'Anmelden'
             )}
           </button>
+          <div className="text-center">
+            <a href="/auth/passwort-vergessen" className="text-xs text-slate-500 transition-colors hover:text-[#818cf8]">
+              Passwort vergessen?
+            </a>
+          </div>
         </form>
 
         {/* Footer */}

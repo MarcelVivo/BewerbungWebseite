@@ -3,6 +3,7 @@ import { Chakra_Petch } from 'next/font/google';
 import { LanguageProvider } from './LanguageContext';
 import CustomCursor from './CustomCursor';
 import WebsiteAnalytics from './WebsiteAnalytics';
+import AuthRecoveryRedirect from './AuthRecoveryRedirect';
 
 const siteFont = Chakra_Petch({
   subsets: ['latin'],
@@ -148,6 +149,7 @@ export default function RootLayout({ children }) {
         <CustomCursor />
         <LanguageProvider>
           <WebsiteAnalytics />
+          <AuthRecoveryRedirect />
           {children}
         </LanguageProvider>
       </body>
