@@ -2,6 +2,7 @@ export type JourneyDestination = 'references' | 'contact';
 export type JourneyLeadForm = 'overview' | 'consultation' | 'project' | 'ki';
 
 export const OPEN_LEAD_FORM_EVENT = 'ms:open-lead-form';
+export const JOURNEY_CAMERA_WARP_EVENT = 'ms:journey-camera-warp';
 
 const DESKTOP_PROGRESS: Record<JourneyDestination, number> = {
   references: 0.7,

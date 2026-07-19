@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import brainData from './brainData.json';
 import { HELIX_STEP, TEXT_START_Y, CAMERA_TARGET_START, computeCameraTravel, helixAngleForWorldIndex } from './lib/helixGeometry';
+import { JOURNEY_CAMERA_WARP_EVENT } from './lib/journeyNavigation';
 
 type BrainBackgroundProps = {
   introTexts?: string[];
@@ -4605,6 +4606,15 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
         : Math.max(1,journey.offsetHeight);
       targetScrollP=Math.max(0,Math.min(1,(scrollY-start)/distance));
     };
+    const onJourneyCameraWarp = (event) => {
+      var requestedProgress=Number(event&&event.detail);
+      if(!Number.isFinite(requestedProgress)) return;
+      requestedProgress=Math.max(0,Math.min(1,requestedProgress));
+      targetScrollP=requestedProgress;
+      cameraProgress=requestedProgress;
+      cameraVelocity=0;
+      scrollP=requestedProgress;
+    };
     const onVisibilityChange = () => { documentVisible = document.visibilityState === 'visible'; };
     window.addEventListener('mousemove', onMouse);
     window.addEventListener('pointerdown', onGoldPointerDown, true);
@@ -4613,6 +4623,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     window.addEventListener('pointercancel', onGoldPointerUp, true);
     window.addEventListener('resize', resize);
     window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener(JOURNEY_CAMERA_WARP_EVENT, onJourneyCameraWarp);
     document.addEventListener('visibilitychange', onVisibilityChange);
     resize(); onScroll();
     renderer.render(scene, camera);
@@ -5038,6 +5049,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       window.removeEventListener('pointercancel', onGoldPointerUp, true);
       window.removeEventListener('resize', resize);
       window.removeEventListener('scroll', onScroll);
+      window.removeEventListener(JOURNEY_CAMERA_WARP_EVENT, onJourneyCameraWarp);
       document.removeEventListener('visibilitychange', onVisibilityChange);
       neuralGlassGeometry.dispose();
       neuralGlassMaterial.dispose();

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Chakra_Petch } from 'next/font/google';
 import { useLanguage } from './LanguageContext';
-import { openJourneyLeadForm } from './lib/journeyNavigation';
+import { JOURNEY_CAMERA_WARP_EVENT, openJourneyLeadForm } from './lib/journeyNavigation';
 
 const chakraPetch = Chakra_Petch({ subsets: ['latin'], weight: '700', display: 'swap' });
 
@@ -148,6 +148,16 @@ export default function JourneyNavigator() {
     return targetTop - Math.max(0, (window.innerHeight - target.offsetHeight) / 2);
   }
 
+  function getCameraProgressForScrollTop(scrollTop: number) {
+    const journey = document.getElementById('solution-spiral');
+    if (!journey) return 0;
+    const start = journey.offsetTop - window.innerHeight;
+    const distance = window.innerWidth <= 699
+      ? Math.max(1, window.innerHeight * 7.95)
+      : Math.max(1, journey.offsetHeight);
+    return Math.max(0, Math.min(1, (scrollTop - start) / distance));
+  }
+
   function startAdaptiveTravel(index: number, mode: 'fast' | 'warp') {
     cancelTravelRef.current?.();
     window.scrollTo({ top: window.scrollY, behavior: 'auto' });
@@ -156,7 +166,7 @@ export default function JourneyNavigator() {
     const maxY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
     const targetY = Math.max(0, Math.min(maxY, getStationTop(index)));
     const distanceY = targetY - startY;
-    const duration = mode === 'warp' ? 960 : 720;
+    const duration = mode === 'warp' ? 620 : 720;
     const bodyClass = mode === 'warp' ? 'journey-warp-active' : 'journey-fast-travel';
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -171,6 +181,7 @@ export default function JourneyNavigator() {
     let finishFrameTwo = 0;
     let cancelled = false;
     let startTime = 0;
+    let warpJumped = false;
 
     travelTargetRef.current = index;
     setTravelTargetIndex(index);
@@ -200,6 +211,39 @@ export default function JourneyNavigator() {
       if (cancelled) return;
       if (!startTime) startTime = time;
       const progress = Math.min(1, (time - startTime) / duration);
+
+      if (mode === 'warp') {
+        // Ein echter Stationssprung: Erst wird der Reisevorhang vollständig
+        // geschlossen, dann setzen wir die Scroll-/Kameraposition in genau
+        // einem Frame direkt auf das Ziel. Keine Zwischenstation wird
+        // physisch durchfahren oder gerendert.
+        if (!warpJumped && progress >= 0.42) {
+          warpJumped = true;
+          window.scrollTo({ top: targetY, behavior: 'auto' });
+          window.dispatchEvent(new CustomEvent<number>(JOURNEY_CAMERA_WARP_EVENT, {
+            detail: getCameraProgressForScrollTop(targetY),
+          }));
+          setActiveIndex(index);
+        }
+
+        if (progress < 1) {
+          frameId = window.requestAnimationFrame(frame);
+          return;
+        }
+
+        if (!warpJumped) {
+          window.scrollTo({ top: targetY, behavior: 'auto' });
+          window.dispatchEvent(new CustomEvent<number>(JOURNEY_CAMERA_WARP_EVENT, {
+            detail: getCameraProgressForScrollTop(targetY),
+          }));
+          setActiveIndex(index);
+        }
+        finishFrameOne = window.requestAnimationFrame(() => {
+          finishFrameTwo = window.requestAnimationFrame(clearTravelState);
+        });
+        return;
+      }
+
       const eased = progress < 0.5
         ? 4 * progress * progress * progress
         : 1 - Math.pow(-2 * progress + 2, 3) / 2;
