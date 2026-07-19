@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import {
   ChevronRight, ChevronLeft, Check, Plus, X,
@@ -14,6 +14,7 @@ import type { LucideIcon } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
 import { useEmbeddedForm } from '../EmbeddedFormContext';
 import { scrollToJourneyDestination } from '../lib/journeyNavigation';
+import { trackWebsiteEvent } from '../lib/analytics';
 
 // ── Data ─────────────────────────────────────────────────────
 
@@ -222,13 +223,26 @@ export default function AnfragePage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError]         = useState('');
+  const startedRef = useRef(false);
+  const openedRef = useRef(false);
+
+  function markStarted() {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    trackWebsiteEvent('form_start', { formId: 'project', step: 1 });
+  }
 
   useEffect(() => {
     if (embedded) return;
     document.title = copy.pageTitle;
+    if (!openedRef.current) {
+      openedRef.current = true;
+      trackWebsiteEvent('form_open', { formId: 'project' });
+    }
   }, [copy.pageTitle, embedded]);
 
   function set<K extends keyof Form>(k: K, v: Form[K]) {
+    markStarted();
     setForm(p => ({ ...p, [k]: v }));
   }
 
@@ -264,6 +278,9 @@ export default function AnfragePage() {
     const boundedStep = Math.max(0, Math.min(STEPS.length - 1, nextStep));
     const canAdvance = boundedStep <= furthestStep || (boundedStep === step + 1 && canNext);
     if (!canAdvance) return;
+    if (boundedStep !== step) {
+      trackWebsiteEvent('form_step', { formId: 'project', step: boundedStep + 1 });
+    }
     setStep(boundedStep);
     setFurthestStep(previous => Math.max(previous, boundedStep));
   }
@@ -275,6 +292,7 @@ export default function AnfragePage() {
       return;
     }
     setSubmitting(true);
+    trackWebsiteEvent('form_submit', { formId: 'project', step: 4 });
     try {
       const res = await fetch('/api/re-anfrage', {
         method: 'POST',
@@ -297,8 +315,10 @@ export default function AnfragePage() {
         }),
       });
       if (!res.ok) throw new Error('Fehler beim Senden');
+      trackWebsiteEvent('form_success', { formId: 'project', step: 4 });
       setSubmitted(true);
     } catch {
+      trackWebsiteEvent('form_error', { formId: 'project', step: 4, metadata: { error_type: 'submit' } });
       setError(copy.error);
     } finally {
       setSubmitting(false);

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Chakra_Petch } from 'next/font/google';
 import { useLanguage } from './LanguageContext';
 import { JOURNEY_CAMERA_WARP_EVENT, openJourneyLeadForm } from './lib/journeyNavigation';
+import { trackWebsiteEvent } from './lib/analytics';
 
 const chakraPetch = Chakra_Petch({ subsets: ['latin'], weight: '700', display: 'swap' });
 
@@ -51,7 +52,17 @@ export default function JourneyNavigator() {
   const [travelMode, setTravelMode] = useState<'fast' | 'warp' | null>(null);
   const travelTargetRef = useRef<number | null>(null);
   const cancelTravelRef = useRef<(() => void) | null>(null);
+  const trackedStationsRef = useRef(new Set<number>());
   const { lang, setLang } = useLanguage();
+
+  useEffect(() => {
+    if (trackedStationsRef.current.has(activeIndex)) return;
+    trackedStationsRef.current.add(activeIndex);
+    trackWebsiteEvent('journey_station_view', {
+      station: STATIONS[activeIndex].target,
+      metadata: { station_index: activeIndex + 1 },
+    });
+  }, [activeIndex]);
 
   useEffect(() => {
     let rafId = 0;
@@ -267,8 +278,15 @@ export default function JourneyNavigator() {
   }
 
   function goToStation(index: number) {
+    trackWebsiteEvent('journey_navigation', {
+      station: STATIONS[index].target,
+      metadata: {
+        from_station: STATIONS[activeIndex].target,
+        to_station: STATIONS[index].target,
+      },
+    });
     if (index === STATIONS.length - 1) {
-      openJourneyLeadForm('overview', { navigate: false });
+      openJourneyLeadForm('overview', { navigate: false, ctaId: 'journey_navigation_solution' });
     }
 
     const stationDistance = Math.abs(index - activeIndex);

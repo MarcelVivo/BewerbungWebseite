@@ -17,7 +17,7 @@ const C: Record<'de' | 'en', { title: string; subtitle: string; back: string; up
     title: 'Datenschutzerklärung',
     subtitle: 'Gemäss Schweizer Bundesgesetz über den Datenschutz (nDSG)',
     back: '← Zurück zur Startseite',
-    updated: 'Stand: Januar 2025',
+    updated: 'Stand: Juli 2026',
     sections: [
       {
         heading: '1. Verantwortlicher',
@@ -39,7 +39,7 @@ const C: Record<'de' | 'en', { title: string; subtitle: string; back: string; up
       {
         heading: '3.1 Kontaktformular',
         paragraphs: [
-          'Wenn Sie das Kontaktformular nutzen, werden folgende Daten erhoben: Name, E-Mail-Adresse und Nachrichteninhalt. Diese werden ausschliesslich zur Bearbeitung Ihrer Anfrage verwendet und danach gelöscht.',
+          'Wenn Sie die Beratungsanfrage, Projektanfrage oder den KI-Check nutzen, werden die von Ihnen eingegebenen Kontakt-, Projekt- und Unternehmensangaben erhoben. Diese werden ausschliesslich zur Bearbeitung Ihrer Anfrage beziehungsweise zur Erstellung Ihrer persönlichen Auswertung verwendet und gelöscht, sobald sie für diesen Zweck nicht mehr erforderlich sind und keine gesetzliche Aufbewahrungspflicht besteht.',
           'Zur technischen Abwicklung werden folgende Auftragsverarbeiter eingesetzt:',
         ],
         list: [
@@ -70,9 +70,12 @@ const C: Record<'de' | 'en', { title: string; subtitle: string; back: string; up
         ],
       },
       {
-        heading: '4. Keine Tracking-Tools',
+        heading: '4. Cookielose Reichweiten- und Conversion-Messung',
         paragraphs: [
-          'Diese Website verwendet keine Tracking-Cookies, kein Google Analytics, keinen Meta Pixel und keine sonstigen Marketing- oder Analyse-Tools. Ein Cookie-Banner ist daher nicht erforderlich.',
+          'Zur Verbesserung der Website und ihrer Kontaktwege wird eine eigene, datensparsame Reichweiten- und Conversion-Messung eingesetzt. Erfasst werden Ereignisse wie Seitenaufruf, erreichte Journey-Station, Klick auf einen Handlungsaufruf, Formularstart, Formularschritt und erfolgreicher Abschluss. Zusätzlich können die Referrer-Domain sowie vom aufrufenden Link übermittelte UTM-Kampagnenparameter verarbeitet werden.',
+          'Für jeden Seitenaufruf wird im Arbeitsspeicher des Browsers eine zufällige, nicht dauerhafte Kennung erzeugt. Sie wird weder in Cookies noch in localStorage oder sessionStorage gespeichert und ist nach einem Neuladen nicht wiedererkennbar. Im Analyse-Datensatz werden keine IP-Adresse, kein User-Agent, keine Formulareingaben und kein Geräte-Fingerabdruck gespeichert. Es entstehen keine dauerhaften Nutzerprofile und keine websiteübergreifende Nachverfolgung.',
+          'Die Daten werden in der Supabase-Datenbank in Frankfurt/EU gespeichert, ausschliesslich intern ausgewertet und spätestens nach 180 Tagen automatisch gelöscht. Global Privacy Control und die Browser-Einstellung Do Not Track werden respektiert. Rechtsgrundlage ist das berechtigte Interesse an der verständlichen und wirksamen Gestaltung des eigenen Webangebots. Für diese Messung werden keine Tracking-Cookies gesetzt; daher wird hierfür kein Cookie-Banner eingeblendet.',
+          'Diese Website verwendet kein Google Analytics, keinen Meta Pixel und keine externen Werbe- oder Profiling-Dienste.',
           'Google Fonts werden von Next.js lokal auf dem Webserver bereitgestellt – es erfolgt keine Verbindung zu Google-Servern.',
         ],
       },
@@ -119,7 +122,7 @@ const C: Record<'de' | 'en', { title: string; subtitle: string; back: string; up
     title: 'Privacy Policy',
     subtitle: 'In accordance with the Swiss Federal Act on Data Protection (nDSG)',
     back: '← Back to homepage',
-    updated: 'Last updated: January 2025',
+    updated: 'Last updated: July 2026',
     sections: [
       {
         heading: '1. Controller',
@@ -141,7 +144,7 @@ const C: Record<'de' | 'en', { title: string; subtitle: string; back: string; up
       {
         heading: '3.1 Contact Form',
         paragraphs: [
-          'When you use the contact form, the following data is collected: name, email address, and message content. This data is used solely to process your enquiry and is deleted afterwards.',
+          'When you use the consultation request, project inquiry or AI check, the contact, project and company information you enter is collected. It is used solely to handle your inquiry or prepare your personal assessment and is deleted once it is no longer required for that purpose, unless a statutory retention obligation applies.',
           'The following processors handle the technical transmission:',
         ],
         list: [
@@ -172,9 +175,12 @@ const C: Record<'de' | 'en', { title: string; subtitle: string; back: string; up
         ],
       },
       {
-        heading: '4. No Tracking Tools',
+        heading: '4. Cookieless Reach and Conversion Measurement',
         paragraphs: [
-          'This website does not use tracking cookies, Google Analytics, Meta Pixel, or any other marketing or analytics tools. A cookie banner is therefore not required.',
+          'To improve the website and its contact paths, this website uses its own data-minimising reach and conversion measurement. Events such as page views, journey stations reached, calls-to-action clicked, form starts, form steps and successful completions are recorded. The referrer domain and UTM campaign parameters supplied by the referring link may also be processed.',
+          'A random, non-persistent identifier is generated in browser memory for each page load. It is not stored in cookies, localStorage or sessionStorage and cannot be recognised after reloading. No IP address, user agent, form input or device fingerprint is stored in the analytics dataset. No persistent user profiles or cross-site tracking are created.',
+          'The data is stored in the Supabase database in Frankfurt/EU, used solely for internal analysis and automatically deleted after no more than 180 days. Global Privacy Control and the browser Do Not Track setting are respected. Processing is based on the legitimate interest in making this website clear and effective. This measurement does not set tracking cookies; no cookie banner is therefore displayed for it.',
+          'This website does not use Google Analytics, Meta Pixel or external advertising or profiling services.',
           'Google Fonts are served locally by Next.js from the web server — no connection to Google servers is made.',
         ],
       },

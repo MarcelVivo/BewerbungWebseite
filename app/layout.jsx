@@ -2,6 +2,7 @@ import './globals.css';
 import { Chakra_Petch } from 'next/font/google';
 import { LanguageProvider } from './LanguageContext';
 import CustomCursor from './CustomCursor';
+import WebsiteAnalytics from './WebsiteAnalytics';
 
 const siteFont = Chakra_Petch({
   subsets: ['latin'],
@@ -145,7 +146,10 @@ export default function RootLayout({ children }) {
       </head>
       <body className={`${siteFont.className} text-[#f4edd8]`}>
         <CustomCursor />
-        <LanguageProvider>{children}</LanguageProvider>
+        <LanguageProvider>
+          <WebsiteAnalytics />
+          {children}
+        </LanguageProvider>
       </body>
     </html>
   );

@@ -1,3 +1,5 @@
+import { trackWebsiteEvent } from './analytics';
+
 export type JourneyDestination = 'references' | 'contact';
 export type JourneyLeadForm = 'overview' | 'consultation' | 'project' | 'ki';
 
@@ -30,8 +32,14 @@ export function scrollToJourneyDestination(destination: JourneyDestination) {
 
 export function openJourneyLeadForm(
   form: JourneyLeadForm = 'overview',
-  options: { navigate?: boolean } = {},
+  options: { navigate?: boolean; ctaId?: string } = {},
 ) {
+  if (options.ctaId) {
+    trackWebsiteEvent('cta_click', { ctaId: options.ctaId });
+  }
+  if (form !== 'overview') {
+    trackWebsiteEvent('form_open', { formId: form });
+  }
   window.dispatchEvent(new CustomEvent<JourneyLeadForm>(OPEN_LEAD_FORM_EVENT, { detail: form }));
   if (options.navigate !== false) scrollToJourneyDestination('contact');
 }

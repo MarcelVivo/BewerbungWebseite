@@ -26,6 +26,7 @@ import {
 } from './lib/journeyNavigation';
 import { PROJECTS } from './portfolio/data';
 import { Chakra_Petch } from 'next/font/google';
+import { trackWebsiteEvent, type WebsiteFormId } from './lib/analytics';
 
 const chakraPetch = Chakra_Petch({ subsets: ['latin'], weight: '700', display: 'swap' });
 type LeadFormId = JourneyLeadForm;
@@ -1030,6 +1031,19 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
+  const consultationStartedRef = useRef(false);
+
+  function selectForm(form: LeadFormId, ctaId: string) {
+    setActiveForm(form);
+    trackWebsiteEvent('cta_click', { ctaId });
+    if (form !== 'overview') trackWebsiteEvent('form_open', { formId: form as WebsiteFormId });
+  }
+
+  function markConsultationStarted() {
+    if (consultationStartedRef.current) return;
+    consultationStartedRef.current = true;
+    trackWebsiteEvent('form_start', { formId: 'consultation', step: 1 });
+  }
 
   useEffect(() => {
     const handleOpenForm = (event: Event) => {
@@ -1135,6 +1149,7 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
       return;
     }
     setSubmitting(true);
+    trackWebsiteEvent('form_submit', { formId: 'consultation', step: 1 });
     try {
       const response = await fetch('/api/kontakt', {
         method: 'POST',
@@ -1142,8 +1157,10 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
         body: JSON.stringify({ name, email, message, consent }),
       });
       if (!response.ok) throw new Error('submit failed');
+      trackWebsiteEvent('form_success', { formId: 'consultation', step: 1 });
       setSubmitted(true);
     } catch {
+      trackWebsiteEvent('form_error', { formId: 'consultation', step: 1, metadata: { error_type: 'submit' } });
       setError(copy.error);
     } finally {
       setSubmitting(false);
@@ -1176,7 +1193,7 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
                 key={id}
                 type="button"
                 data-form={id}
-                onClick={() => setActiveForm(id)}
+                onClick={() => selectForm(id, `contact_overview_${id}`)}
               >
                 <span className="project-form-overview-icon"><Icon size={22} strokeWidth={1.8} /></span>
                 <strong>{label}</strong>
@@ -1216,7 +1233,7 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
           ) : (
             <>
               <p className="project-cta-copy">{copy.text}</p>
-              <form className="project-consultation-form" onSubmit={handleSubmit} noValidate>
+              <form className="project-consultation-form" onSubmit={handleSubmit} onFocusCapture={markConsultationStarted} noValidate>
                 <label>
                   <span>{copy.name}</span>
                   <input value={name} onChange={(event) => { setName(event.target.value); setError(''); }} autoComplete="name" required />
@@ -1291,7 +1308,7 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
             aria-selected={activeForm === id}
             className={activeForm === id ? 'is-active' : ''}
             data-form={id}
-            onClick={() => setActiveForm(id)}
+            onClick={() => selectForm(id, `contact_tab_${id}`)}
           >
             <strong>{label}</strong>
             <small>{hint}</small>
@@ -2385,7 +2402,9 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
                 tabIndex={activeService ? 0 : -1}
                 onClick={() => {
                   setActiveServiceSlug(null);
-                  openJourneyLeadForm(detailService.slug === 'ki-automation-prozesse' ? 'ki' : 'project');
+                  openJourneyLeadForm(detailService.slug === 'ki-automation-prozesse' ? 'ki' : 'project', {
+                    ctaId: `desktop_service_${detailService.slug}`,
+                  });
                 }}
               >
                 {detailService.slug === 'ki-automation-prozesse'
@@ -2548,7 +2567,9 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
                   tabIndex={activeService ? 0 : -1}
                   onClick={() => {
                     setActiveServiceSlug(null);
-                    openJourneyLeadForm(detailService.slug === 'ki-automation-prozesse' ? 'ki' : 'project');
+                    openJourneyLeadForm(detailService.slug === 'ki-automation-prozesse' ? 'ki' : 'project', {
+                      ctaId: `mobile_service_${detailService.slug}`,
+                    });
                   }}
                 >
                   {detailService.slug === 'ki-automation-prozesse'
@@ -2763,7 +2784,7 @@ export default function HomePage() {
                 <button
                   type="button"
                   className={`hero-project-cta ${chakraPetch.className}`}
-                  onClick={() => openJourneyLeadForm('overview')}
+                  onClick={() => openJourneyLeadForm('overview', { ctaId: 'hero_primary' })}
                 >
                   <span>{lang === 'de' ? 'Deine Lösung starten' : 'Start your solution'}</span>
                   <ChevronRight size={16} strokeWidth={2.2} aria-hidden="true" />

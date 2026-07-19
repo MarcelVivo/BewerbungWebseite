@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import {
   Users, TrendingUp, Briefcase, Clock, FileText,
   CheckCircle2, AlertCircle, MessageSquare, BarChart2,
+  MousePointerClick, Route, Send, Radio,
 } from 'lucide-react';
 
 // ── Types ──────────────────────────────────────────────────
@@ -28,6 +29,86 @@ const EMPTY_STATS: Stats = {
   anfragen:   { total: 0, neu: 0 },
   tasks:      { total: 0, done: 0, in_progress: 0 },
 };
+
+interface WebsiteEvent {
+  event_name: string;
+  visit_id: string;
+  sequence: number;
+  station: string | null;
+  form_id: string | null;
+  source: string | null;
+  referrer_host: string | null;
+}
+
+interface WebAnalytics {
+  available: boolean;
+  visits: number;
+  ctaClicks: number;
+  formStarts: number;
+  completions: number;
+  journey: { label: string; value: number }[];
+  forms: { label: string; starts: number; completions: number }[];
+  exits: { label: string; value: number }[];
+  sources: { label: string; value: number }[];
+}
+
+const EMPTY_ANALYTICS: WebAnalytics = {
+  available: true, visits: 0, ctaClicks: 0, formStarts: 0, completions: 0,
+  journey: [], forms: [], exits: [], sources: [],
+};
+
+const JOURNEY_LABELS: Record<string, string> = {
+  'journey-start': 'Deine Idee',
+  'journey-solutions': 'Meine Umsetzung',
+  'journey-value': 'Dein Mehrwert',
+  'journey-references': 'Meine Referenzen',
+  'journey-about': 'Dein Digitalpartner',
+  'journey-contact': 'Deine Lösung',
+};
+
+function buildWebAnalytics(events: WebsiteEvent[]): WebAnalytics {
+  const visits = new Set(events.map(event => event.visit_id));
+  const uniqueBy = (eventName: string, field: 'station' | 'form_id', value: string) =>
+    new Set(events.filter(event => event.event_name === eventName && event[field] === value).map(event => event.visit_id)).size;
+
+  const lastStation = new Map<string, WebsiteEvent>();
+  events.filter(event => event.event_name === 'journey_station_view' && event.station).forEach(event => {
+    const previous = lastStation.get(event.visit_id);
+    if (!previous || event.sequence > previous.sequence) lastStation.set(event.visit_id, event);
+  });
+  const exitCounts = new Map<string, number>();
+  lastStation.forEach(event => {
+    const station = event.station!;
+    exitCounts.set(station, (exitCounts.get(station) ?? 0) + 1);
+  });
+
+  const sourceCounts = new Map<string, Set<string>>();
+  events.filter(event => event.event_name === 'page_view').forEach(event => {
+    const label = event.source || event.referrer_host || 'Direkt / unbekannt';
+    if (!sourceCounts.has(label)) sourceCounts.set(label, new Set());
+    sourceCounts.get(label)!.add(event.visit_id);
+  });
+
+  return {
+    available: true,
+    visits: visits.size,
+    ctaClicks: events.filter(event => event.event_name === 'cta_click').length,
+    formStarts: events.filter(event => event.event_name === 'form_start').length,
+    completions: events.filter(event => event.event_name === 'form_success').length,
+    journey: Object.entries(JOURNEY_LABELS).map(([key, label]) => ({
+      label, value: uniqueBy('journey_station_view', 'station', key),
+    })),
+    forms: [
+      ['consultation', 'Beratung'], ['project', 'Projektanfrage'], ['ki', 'KI-Check'],
+    ].map(([key, label]) => ({
+      label,
+      starts: uniqueBy('form_start', 'form_id', key),
+      completions: uniqueBy('form_success', 'form_id', key),
+    })),
+    exits: [...exitCounts.entries()].map(([key, value]) => ({ label: JOURNEY_LABELS[key] ?? key, value })).sort((a, b) => b.value - a.value),
+    sources: [...sourceCounts.entries()].map(([label, ids]) => ({ label, value: ids.size })).sort((a, b) => b.value - a.value).slice(0, 6),
+  };
+}
 
 // ── Helpers ────────────────────────────────────────────────
 
@@ -97,8 +178,9 @@ export default function StatistikenPage() {
   const [stats, setStats]     = useState<Stats>(EMPTY_STATS);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod]   = useState<'monat' | 'quartal' | 'jahr'>('monat');
+  const [webAnalytics, setWebAnalytics] = useState<WebAnalytics>(EMPTY_ANALYTICS);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [period]);
 
   async function load() {
     setLoading(true);
@@ -106,6 +188,8 @@ export default function StatistikenPage() {
     const now  = new Date();
     const startOfWeek  = new Date(now); startOfWeek.setDate(now.getDate() - now.getDay() + 1);
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const analyticsStart = new Date(now);
+    analyticsStart.setDate(now.getDate() - (period === 'monat' ? 30 : period === 'quartal' ? 90 : 365));
 
     const [
       { data: kunden },
@@ -116,6 +200,7 @@ export default function StatistikenPage() {
       { data: zeitWk },
       { data: anfragen },
       { data: tasks },
+      analyticsResult,
     ] = await Promise.all([
       supabase.from('kunden').select('status'),
       supabase.from('deals').select('status,wert'),
@@ -125,7 +210,18 @@ export default function StatistikenPage() {
       supabase.from('zeiteintraege').select('dauer_minuten').gte('start_zeit', startOfWeek.toISOString()),
       supabase.from('recruiter_anfragen').select('status'),
       supabase.from('tasks').select('status'),
+      supabase.from('website_events')
+        .select('event_name,visit_id,sequence,station,form_id,source,referrer_host')
+        .gte('created_at', analyticsStart.toISOString())
+        .order('created_at', { ascending: true })
+        .limit(10000),
     ]);
+
+    if (analyticsResult.error) {
+      setWebAnalytics({ ...EMPTY_ANALYTICS, available: false });
+    } else {
+      setWebAnalytics(buildWebAnalytics((analyticsResult.data ?? []) as WebsiteEvent[]));
+    }
 
     const k = kunden || [];
     const d = deals   || [];
@@ -196,8 +292,55 @@ export default function StatistikenPage() {
           <h1 className="text-2xl font-bold text-white">Statistiken</h1>
           <p className="text-slate-400 text-sm mt-0.5">Übersicht über alle Aktivitäten</p>
         </div>
-        <button onClick={load}
-          className="text-ms-400 text-sm hover:underline">Aktualisieren</button>
+        <div className="flex items-center gap-3">
+          <div className="flex rounded-lg border border-[#2d3144] p-1">
+            {([['monat', '30 Tage'], ['quartal', '90 Tage'], ['jahr', '1 Jahr']] as const).map(([value, label]) => (
+              <button key={value} onClick={() => setPeriod(value)} className={`rounded-md px-2.5 py-1 text-xs ${period === value ? 'bg-ms-500 text-white' : 'text-slate-500 hover:text-slate-300'}`}>{label}</button>
+            ))}
+          </div>
+          <button onClick={load} className="text-ms-400 text-sm hover:underline">Aktualisieren</button>
+        </div>
+      </div>
+
+      {/* Privacy-first website funnel */}
+      <div>
+        <SectionHeader title="Website & Conversion Funnel" Icon={Radio} />
+        {!webAnalytics.available ? (
+          <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5 text-sm text-amber-200">
+            Die Analytics-Tabelle ist noch nicht verfügbar. Migration <code>003_website_analytics.sql</code> in Supabase ausführen.
+          </div>
+        ) : (
+          <div className="space-y-5">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <KPICard label="Anonyme Besuche" value={webAnalytics.visits} Icon={Users} iconCls="text-cyan-400" />
+              <KPICard label="CTA-Klicks" value={webAnalytics.ctaClicks} Icon={MousePointerClick} iconCls="text-yellow-400" />
+              <KPICard label="Formularstarts" value={webAnalytics.formStarts} Icon={Route} iconCls="text-blue-400" />
+              <KPICard label="Abschlüsse" value={webAnalytics.completions} sub={`${pct(webAnalytics.completions, webAnalytics.visits)} % pro Besuch`} Icon={Send} iconCls="text-green-400" accent />
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-[#1e2235] border border-[#2d3144] rounded-2xl p-5">
+                <SectionHeader title="Journey-Reichweite" Icon={Route} />
+                <div className="space-y-3">{webAnalytics.journey.map(item => <ProgressBar key={item.label} label={item.label} value={item.value} max={Math.max(webAnalytics.visits, 1)} cls="bg-cyan-500" />)}</div>
+              </div>
+              <div className="bg-[#1e2235] border border-[#2d3144] rounded-2xl p-5">
+                <SectionHeader title="Formulare" Icon={Send} />
+                <div className="space-y-3">{webAnalytics.forms.map(item => (
+                  <div key={item.label} className="flex items-center justify-between rounded-xl bg-[#2d3144]/45 px-4 py-3 text-sm">
+                    <span className="text-slate-300">{item.label}</span><span className="text-slate-500">{item.starts} Starts <strong className="ml-3 text-green-400">{item.completions} Abschlüsse</strong></span>
+                  </div>
+                ))}</div>
+              </div>
+              <div className="bg-[#1e2235] border border-[#2d3144] rounded-2xl p-5">
+                <SectionHeader title="Letzte erreichte Station" Icon={BarChart2} />
+                <div className="space-y-3">{webAnalytics.exits.length ? webAnalytics.exits.map(item => <ProgressBar key={item.label} label={item.label} value={item.value} max={Math.max(webAnalytics.visits, 1)} cls="bg-amber-500" />) : <p className="text-sm text-slate-600">Noch keine Journey-Daten.</p>}</div>
+              </div>
+              <div className="bg-[#1e2235] border border-[#2d3144] rounded-2xl p-5">
+                <SectionHeader title="Lead-Quellen" Icon={TrendingUp} />
+                <div className="space-y-3">{webAnalytics.sources.length ? webAnalytics.sources.map(item => <ProgressBar key={item.label} label={item.label} value={item.value} max={Math.max(webAnalytics.visits, 1)} cls="bg-violet-500" />) : <p className="text-sm text-slate-600">Noch keine Quelldaten.</p>}</div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Top KPIs */}

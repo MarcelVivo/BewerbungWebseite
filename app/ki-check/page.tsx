@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Check, ChevronLeft, ChevronRight, Bot, Lock, ArrowRight } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
 import { useEmbeddedForm } from '../EmbeddedFormContext';
 import { scrollToJourneyDestination } from '../lib/journeyNavigation';
+import { trackWebsiteEvent } from '../lib/analytics';
 
 // ─── Types & Data ────────────────────────────────────────────────────────────
 
@@ -263,15 +264,33 @@ export default function KiCheckPage() {
   const [consent, setConsent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError]     = useState<string | null>(null);
+  const startedRef = useRef(false);
+  const openedRef = useRef(false);
+
+  function trackStep(nextStep: number) {
+    if (!startedRef.current) {
+      startedRef.current = true;
+      trackWebsiteEvent('form_start', { formId: 'ki', step: 1 });
+    }
+    trackWebsiteEvent('form_step', { formId: 'ki', step: nextStep });
+  }
 
   useEffect(() => {
     if (embedded) return;
     document.title = copy.title;
+    if (!openedRef.current) {
+      openedRef.current = true;
+      trackWebsiteEvent('form_open', { formId: 'ki' });
+    }
   }, [copy.title, embedded]);
 
   function setSingle(id: string, val: string) {
     setAnswers(prev => ({ ...prev, [id]: val }));
-    setTimeout(() => setStep(s => s + 1), 260);
+    setTimeout(() => setStep(s => {
+      const nextStep = s + 1;
+      trackStep(nextStep);
+      return nextStep;
+    }), 260);
   }
 
   function toggleMulti(id: string, val: string, max?: number) {
@@ -307,15 +326,22 @@ export default function KiCheckPage() {
       return;
     }
     setSubmitting(true);
+    trackWebsiteEvent('form_submit', { formId: 'ki', step: 11 });
     try {
       const res = await fetch('/api/ki-check', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ answers, ...form, consent }),
       });
-      if (res.ok) setStep(12);
-      else setError(copy.error);
+      if (res.ok) {
+        trackWebsiteEvent('form_success', { formId: 'ki', step: 12 });
+        setStep(12);
+      } else {
+        trackWebsiteEvent('form_error', { formId: 'ki', step: 11, metadata: { error_type: 'submit' } });
+        setError(copy.error);
+      }
     } catch {
+      trackWebsiteEvent('form_error', { formId: 'ki', step: 11, metadata: { error_type: 'connection' } });
       setError(copy.connection);
     } finally {
       setSubmitting(false);
@@ -343,7 +369,10 @@ export default function KiCheckPage() {
               {copy.introC}
             </p>
             <button
-              onClick={() => setStep(1)}
+              onClick={() => {
+                trackStep(1);
+                setStep(1);
+              }}
               className="ki-check-start inline-flex items-center gap-3 px-8 py-4 rounded-xl bg-[#c9a84c] hover:bg-[#b8943a] text-[#0c0a06] font-bold text-lg transition-all shadow-lg shadow-[#c9a84c]/30 hover:shadow-[#c9a84c]/50 hover:scale-[1.02]"
             >
               {copy.start} <ArrowRight size={20} />
@@ -590,7 +619,11 @@ export default function KiCheckPage() {
           {/* Multi-select continue button */}
           {isMulti && (
             <button
-              onClick={() => setStep(s => s + 1)}
+              onClick={() => setStep(s => {
+                const nextStep = s + 1;
+                trackStep(nextStep);
+                return nextStep;
+              })}
               disabled={!canContinue}
               className="mt-6 flex items-center gap-2 px-6 py-3 rounded-xl border border-[#2d2820] bg-[#1c1912] hover:border-[#c9a84c]/40 hover:bg-[#221e14] disabled:opacity-30 disabled:cursor-not-allowed text-[#d4c4a8] hover:text-white text-sm font-medium transition-all"
             >
