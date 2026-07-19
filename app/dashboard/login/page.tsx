@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { Eye, EyeOff, AlertCircle, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -16,9 +16,11 @@ function LoginForm() {
   const [error,    setError]    = useState('');
   const [loading,  setLoading]  = useState(false);
 
-  const router       = useRouter();
   const searchParams = useSearchParams();
-  const nextPath     = searchParams.get('next') || '/dashboard';
+  const requestedPath = searchParams.get('next') || '/dashboard';
+  const nextPath = requestedPath.startsWith('/dashboard') && !requestedPath.startsWith('//')
+    ? requestedPath
+    : '/dashboard';
   const configError  = searchParams.get('error') === 'not_configured';
 
   async function handleSubmit(e: React.FormEvent) {
@@ -31,20 +33,28 @@ function LoginForm() {
     setError('');
 
     try {
-      const { createClient } = await import('@/lib/supabase/client');
-      const supabase = createClient();
-      const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
-
-      if (authError) {
-        setError('Falsche E-Mail oder Passwort. Bitte erneut versuchen.');
-        setLoading(false);
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), 15000);
+      const response = await fetch('/api/auth/dashboard-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+        signal: controller.signal,
+        cache: 'no-store',
+      });
+      window.clearTimeout(timeout);
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setError(result.error || 'Falsche E-Mail-Adresse oder falsches Passwort.');
         return;
       }
 
-      router.push(nextPath);
-      router.refresh();
-    } catch {
-      setError('Verbindungsfehler. Bitte später erneut versuchen.');
+      window.location.assign(nextPath);
+    } catch (loginError) {
+      setError(loginError instanceof DOMException && loginError.name === 'AbortError'
+        ? 'Die Anmeldung hat zu lange gedauert. Bitte versuche es erneut.'
+        : 'Verbindungsfehler. Bitte versuche es erneut.');
+    } finally {
       setLoading(false);
     }
   }
