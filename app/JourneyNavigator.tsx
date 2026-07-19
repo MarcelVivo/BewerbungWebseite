@@ -19,7 +19,30 @@ const STATIONS = [
 // inhaltlichen Stationen zeigt. So stimmen Klickziel, sichtbarer Inhalt und
 // aktive Beschriftung der rechten Navigation immer miteinander überein.
 const DESKTOP_STATION_PROGRESS = [0, 26 / 55.5, 0.56, 0.7, 0.93, 1];
-const DESKTOP_ACTIVE_THRESHOLDS = [26 / 55.5, 0.56, 0.7, 0.91, 0.9748];
+// Die Schwellen markieren den sichtbaren Kapitelwechsel, nicht erst den
+// mathematischen Mittelpunkt der jeweiligen Kamerastation. Die DOM-Welten
+// unten haben Vorrang; diese Werte überbrücken lediglich die kurzen Momente,
+// in denen zwei Kapitel während einer Kamerafahrt gleichzeitig ausblenden.
+const DESKTOP_ACTIVE_THRESHOLDS = [0.452, 0.515, 0.625, 0.91, 0.9748];
+
+// Die grossen Inhaltsebenen veröffentlichen ihren echten Sichtbarkeitsstatus
+// über aria-hidden. Von hinten nach vorne geprüft gewinnt bei einer weichen
+// Überblendung immer das neuere Kapitel. Damit zeigt die Navigation exakt den
+// Inhalt an, den die Besucherin oder der Besucher gerade tatsächlich sieht.
+const DESKTOP_VISIBLE_STATIONS = [
+  { index: 5, selector: '.project-cta-world' },
+  { index: 4, selector: '.studio-profile-world' },
+  { index: 3, selector: '.references-world' },
+  { index: 2, selector: '.value-impact-world' },
+];
+
+function getVisibleDesktopStation() {
+  for (const station of DESKTOP_VISIBLE_STATIONS) {
+    const element = document.querySelector<HTMLElement>(station.selector);
+    if (element?.getAttribute('aria-hidden') === 'false') return station.index;
+  }
+  return null;
+}
 
 export default function JourneyNavigator() {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -41,6 +64,12 @@ export default function JourneyNavigator() {
             ? cameraState.cameraProgress
             : rawProgress,
         ));
+
+        const visibleStation = getVisibleDesktopStation();
+        if (visibleStation !== null) {
+          setActiveIndex(previous => previous === visibleStation ? previous : visibleStation);
+          return;
+        }
 
         let current = 0;
         DESKTOP_ACTIVE_THRESHOLDS.forEach((threshold, index) => {
