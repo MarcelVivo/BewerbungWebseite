@@ -690,6 +690,63 @@ body {
   letter-spacing: 0.12em;
 }
 
+.journey-utility {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.34rem;
+  margin-top: 0.18rem;
+  margin-right: 0.02rem;
+  pointer-events: auto;
+}
+
+.journey-utility-contact {
+  min-height: 1.55rem;
+  padding: 0.28rem 0.66rem;
+  border: 1px solid rgba(77,191,127,0.34);
+  border-radius: 999px;
+  color: rgba(223,245,231,0.72);
+  background: rgba(77,191,127,0.06);
+  font: inherit;
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+.journey-utility-contact:hover,
+.journey-utility-contact:focus-visible {
+  color: #effff5;
+  border-color: rgba(126,239,176,0.72);
+  background: rgba(77,191,127,0.13);
+  box-shadow: 0 0 16px rgba(77,191,127,0.14);
+  outline: none;
+}
+
+.journey-utility-legal {
+  display: flex;
+  align-items: center;
+  gap: 0.28rem;
+  color: rgba(168,152,128,0.24);
+  font-size: 0.43rem;
+  letter-spacing: 0.035em;
+  white-space: nowrap;
+}
+
+.journey-utility-legal a {
+  color: rgba(168,152,128,0.42);
+  text-decoration: none;
+  transition: color 180ms ease;
+}
+
+.journey-utility-legal a:hover,
+.journey-utility-legal a:focus-visible {
+  color: rgba(244,237,216,0.86);
+  outline: none;
+}
+
 .spiral-anchor {
   position: absolute;
   left: 0;
@@ -1266,94 +1323,6 @@ body {
 
 .mobile-project-cta {
   display: none;
-}
-
-/* ── Diskreter Seitenabschluss ─────────────────────────────── */
-.home-legal-footer {
-  position: relative;
-  z-index: 20;
-  padding: 0.8rem clamp(1rem, 3vw, 2.5rem) 0.9rem;
-  border-top: 1px solid rgba(212,196,168,0.08);
-  background: rgba(2,5,3,0.72);
-}
-
-.home-legal-footer-inner {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: center;
-  gap: 0.8rem;
-  width: min(100%, 76rem);
-  margin: 0 auto;
-}
-
-.home-legal-link {
-  color: rgba(168,152,128,0.48);
-  font-size: clamp(0.55rem, 0.62vw, 0.65rem);
-  letter-spacing: 0.06em;
-  text-decoration: none;
-  transition: color 180ms ease;
-}
-
-.home-legal-link:hover,
-.home-legal-link:focus-visible {
-  color: rgba(244,237,216,0.82);
-  outline: none;
-}
-
-.home-legal-link--left {
-  justify-self: start;
-}
-
-.home-legal-link--right {
-  justify-self: end;
-}
-
-.home-footer-contact {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.3rem;
-  min-height: 1.9rem;
-  padding: 0.35rem 0.75rem 0.35rem 0.85rem;
-  border: 1px solid rgba(77,191,127,0.28);
-  border-radius: 999px;
-  color: rgba(223,245,231,0.72);
-  background: rgba(77,191,127,0.055);
-  font-size: clamp(0.54rem, 0.62vw, 0.65rem);
-  font-weight: 700;
-  letter-spacing: 0.045em;
-  text-decoration: none;
-  transition: color 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
-}
-
-.home-footer-contact:hover,
-.home-footer-contact:focus-visible {
-  color: #effff5;
-  border-color: rgba(126,239,176,0.7);
-  background: rgba(77,191,127,0.12);
-  box-shadow: 0 0 18px rgba(77,191,127,0.11);
-  outline: none;
-}
-
-@media (max-width: 480px) {
-  .home-legal-footer {
-    padding-inline: 0.65rem;
-  }
-
-  .home-legal-footer-inner {
-    gap: 0.35rem;
-  }
-
-  .home-legal-link {
-    font-size: 0.5rem;
-    letter-spacing: 0.025em;
-  }
-
-  .home-footer-contact {
-    min-height: 1.75rem;
-    padding-inline: 0.55rem;
-    font-size: 0.5rem;
-  }
 }
 
 /* ── Referenzen: reale Cases zwischen Mehrwert und Schlussflug ── */
@@ -3775,6 +3744,23 @@ body {
   .journey-node {
     width: 0.72rem;
     height: 0.72rem;
+  }
+
+  .journey-utility {
+    gap: 0.26rem;
+    margin-top: 0.05rem;
+  }
+
+  .journey-utility-contact {
+    min-height: 1.4rem;
+    padding: 0.24rem 0.52rem;
+    font-size: 0.44rem;
+  }
+
+  .journey-utility-legal {
+    gap: 0.2rem;
+    font-size: 0.38rem;
+    letter-spacing: 0;
   }
 
   .spiral-section {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent, type MouseEvent as ReactMouseEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from 'react';
 import {
   Bot, BarChart3, Workflow, FolderKanban,
   GraduationCap, Globe, Lightbulb,
@@ -2500,10 +2500,6 @@ export default function HomePage() {
   const heroFlapLineRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const heroBottomFlapLineRefs = useRef<(HTMLSpanElement | null)[]>([]);
 
-  function scrollToContact(event: ReactMouseEvent<HTMLAnchorElement>) {
-    event.preventDefault();
-    scrollToJourneyDestination('contact');
-  }
   useEffect(() => {
     const updateHeroScale = () => {
       setHeroScale(getEffectiveViewport(window.innerWidth, window.innerHeight).scale);
@@ -2667,21 +2663,6 @@ export default function HomePage() {
 
       <SpiralShowcase t={t} lang={lang} />
 
-      {/* ── Diskreter rechtlicher Abschluss ── */}
-      <footer className={`home-legal-footer ${chakraPetch.className}`}>
-        <div className="home-legal-footer-inner">
-          <a href="/datenschutz" className="home-legal-link home-legal-link--left">
-            {t.footer.privacy}
-          </a>
-          <a href="#journey-contact" onClick={scrollToContact} className="home-footer-contact">
-            <span>{lang === 'de' ? 'Kontakt aufnehmen' : 'Get in touch'}</span>
-            <ChevronRight size={12} strokeWidth={2} aria-hidden="true" />
-          </a>
-          <a href="/impressum" className="home-legal-link home-legal-link--right">
-            {t.footer.imprint}
-          </a>
-        </div>
-      </footer>
     </div>
   );
 }

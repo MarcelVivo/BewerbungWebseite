@@ -144,6 +144,20 @@ export default function JourneyNavigator() {
       <span className="journey-count" aria-hidden="true">
         {String(activeIndex + 1).padStart(2, '0')} / {String(STATIONS.length).padStart(2, '0')}
       </span>
+      <div className="journey-utility">
+        <button
+          type="button"
+          className="journey-utility-contact"
+          onClick={() => goToStation(STATIONS.length - 1)}
+        >
+          {lang === 'de' ? 'Kontakt' : 'Contact'}
+        </button>
+        <div className="journey-utility-legal">
+          <a href="/datenschutz">{lang === 'de' ? 'Datenschutz' : 'Privacy'}</a>
+          <span aria-hidden="true">·</span>
+          <a href="/impressum">{lang === 'de' ? 'Impressum' : 'Legal notice'}</a>
+        </div>
+      </div>
     </nav>
   );
 }
