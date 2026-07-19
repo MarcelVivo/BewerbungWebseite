@@ -5235,9 +5235,9 @@ body {
 
 /* ── Inhaltsdichte innerhalb der quadratischen Karten ──────── */
 .value-info-card {
-  grid-template-columns: minmax(0, 1.32fr) minmax(0, 0.68fr);
-  gap: clamp(0.75rem, 1.25vw, 1.35rem);
-  padding: clamp(0.8rem, 1.25vw, 1.3rem);
+  grid-template-columns: minmax(0, 1.18fr) minmax(0, 0.82fr);
+  gap: clamp(1.15rem, 2vw, 2.25rem);
+  padding: clamp(1.25rem, 2.2vw, 2.4rem);
 }
 
 .value-info-close {
@@ -5249,102 +5249,111 @@ body {
 
 .value-info-copy,
 .spiral-detail-panel .value-info-copy {
-  justify-content: center;
-  padding: 0;
+  display: grid;
+  grid-template-rows: auto auto auto minmax(0, 1fr);
+  align-content: stretch;
+  justify-content: stretch;
+  padding: clamp(1rem, 3.2vh, 2.75rem) 0 clamp(0.65rem, 1.8vh, 1.5rem);
 }
 
 .value-info-meta {
-  gap: 0.48rem;
-  margin-bottom: clamp(0.38rem, 0.7vh, 0.6rem);
+  gap: 0.65rem;
+  margin-bottom: clamp(0.65rem, 1.15vh, 1rem);
 }
 
 .value-info-copy h3,
 .spiral-detail-panel .value-info-copy h3 {
-  max-width: calc(100% - 2.2rem);
-  font-size: clamp(1.1rem, 1.55vw, 1.75rem);
-  line-height: 1.02;
-  letter-spacing: -0.035em;
+  max-width: min(100%, 17ch);
+  font-size: clamp(1.55rem, 2.3vw, 2.75rem);
+  line-height: 1.01;
+  letter-spacing: -0.045em;
 }
 
 .value-info-copy > p,
 .spiral-detail-panel .value-info-copy > p {
-  margin-top: clamp(0.38rem, 0.7vh, 0.58rem);
-  font-size: clamp(0.62rem, 0.66vw, 0.74rem);
-  line-height: 1.36;
+  max-width: 62ch;
+  margin-top: clamp(0.7rem, 1.25vh, 1.05rem);
+  font-size: clamp(0.72rem, 0.82vw, 0.94rem);
+  line-height: 1.45;
 }
 
 .value-info-columns,
 .spiral-detail-panel .value-info-columns {
-  gap: clamp(0.55rem, 0.9vw, 0.9rem);
-  margin-top: clamp(0.52rem, 0.9vh, 0.75rem);
+  align-self: end;
+  gap: clamp(1rem, 1.55vw, 1.65rem);
+  margin-top: clamp(1.5rem, 4vh, 3.5rem);
   margin-bottom: 0;
-  padding-top: clamp(0.45rem, 0.75vh, 0.62rem);
+  padding-top: clamp(0.8rem, 1.35vh, 1.15rem);
 }
 
 .value-info-columns h4 {
-  margin-bottom: 0.4rem;
-  font-size: clamp(0.45rem, 0.48vw, 0.55rem);
+  margin-bottom: clamp(0.55rem, 0.9vh, 0.8rem);
+  font-size: clamp(0.5rem, 0.58vw, 0.67rem);
   line-height: 1.2;
-  letter-spacing: 0.075em;
+  letter-spacing: 0.1em;
 }
 
 .value-info-columns ul,
 .spiral-detail-panel .value-info-columns ul {
-  gap: clamp(0.25rem, 0.42vh, 0.38rem);
+  gap: clamp(0.48rem, 0.85vh, 0.72rem);
 }
 
 .value-info-columns li,
 .spiral-detail-panel .value-info-columns li {
-  gap: 0.3rem;
-  font-size: clamp(0.55rem, 0.59vw, 0.67rem);
-  line-height: 1.24;
+  gap: 0.45rem;
+  font-size: clamp(0.64rem, 0.72vw, 0.82rem);
+  line-height: 1.36;
 }
 
 .value-info-columns li svg {
-  width: 0.72rem;
-  height: 0.72rem;
+  width: 0.88rem;
+  height: 0.88rem;
 }
 
 .value-info-visual,
 .spiral-detail-panel .value-info-visual {
   grid-template-rows: minmax(0, 1fr) auto auto;
   min-height: 0;
-  padding: 0 0 0 clamp(0.65rem, 1vw, 1rem);
+  padding: clamp(1.15rem, 3vh, 2.4rem) 0 clamp(0.65rem, 1.8vh, 1.5rem) clamp(1rem, 1.8vw, 1.9rem);
 }
 
 .value-info-svg,
 .spiral-detail-panel .value-info-svg {
-  max-height: min(100%, 13rem);
+  align-self: center;
+  width: 108%;
+  max-width: none;
+  max-height: min(100%, 28rem);
+  margin-left: -4%;
 }
 
 .value-info-stages {
-  margin-top: 0.2rem;
+  margin-top: clamp(0.8rem, 1.5vh, 1.3rem);
 }
 
 .value-info-stages span,
 .spiral-detail-panel .value-info-stages span {
-  gap: 0.25rem;
-  padding: 0.38rem 0.18rem;
+  gap: 0.35rem;
+  padding: clamp(0.55rem, 0.95vh, 0.8rem) 0.25rem;
 }
 
 .value-info-stages b {
-  font-size: clamp(0.38rem, 0.42vw, 0.5rem);
-  letter-spacing: 0.04em;
+  font-size: clamp(0.42rem, 0.5vw, 0.58rem);
+  letter-spacing: 0.06em;
 }
 
 .value-info-result,
 .spiral-detail-panel .value-info-result {
-  gap: 0.4rem;
-  padding-top: 0.4rem;
+  gap: 0.65rem;
+  padding-top: clamp(0.7rem, 1.25vh, 1rem);
 }
 
 .value-info-result strong {
-  font-size: clamp(1.45rem, 2vw, 2.25rem);
+  font-size: clamp(2rem, 3vw, 3.5rem);
 }
 
 .value-info-result span {
-  font-size: clamp(0.42rem, 0.48vw, 0.58rem);
-  letter-spacing: 0.06em;
+  font-size: clamp(0.5rem, 0.62vw, 0.72rem);
+  letter-spacing: 0.09em;
 }
 
 .value-info-cta {
@@ -5354,28 +5363,29 @@ body {
 }
 
 .spiral-service-card {
-  padding: clamp(0.68rem, 0.95vw, 0.95rem);
+  padding: clamp(0.9rem, 1.3vw, 1.35rem);
 }
 
 .spiral-service-card .ngp-core {
-  gap: clamp(0.3rem, 0.55vh, 0.46rem);
+  justify-content: space-between;
+  gap: clamp(0.55rem, 1.1vh, 0.9rem);
 }
 
 .spiral-service-header {
-  gap: 0.42rem;
+  gap: 0.55rem;
   padding-inline: 2.15rem;
 }
 
 .spiral-service-title {
-  font-size: clamp(0.95rem, 1.28vw, 1.4rem);
+  font-size: clamp(1.1rem, 1.55vw, 1.7rem);
   line-height: 1;
   letter-spacing: -0.04em;
 }
 
 .spiral-service-body {
-  max-width: 92%;
-  font-size: clamp(0.58rem, 0.67vw, 0.74rem);
-  line-height: 1.32;
+  max-width: 96%;
+  font-size: clamp(0.66rem, 0.76vw, 0.84rem);
+  line-height: 1.42;
 }
 
 .spiral-service-more,
@@ -5387,7 +5397,7 @@ body {
 }
 
 .value-diagram {
-  padding: clamp(0.58rem, 0.85vw, 0.85rem);
+  padding: clamp(0.85rem, 1.25vw, 1.3rem);
 }
 
 .value-diagram-header {
@@ -5397,33 +5407,34 @@ body {
 
 .value-chart-svg {
   width: 100%;
-  height: min(100%, 7.5rem);
+  height: 100%;
+  max-height: none;
 }
 
 .value-diagram-result {
-  gap: 0.35rem;
-  padding: 0.5rem 0 0.15rem;
+  gap: 0.55rem;
+  padding: clamp(0.65rem, 1.2vh, 1rem) 0 0.2rem;
 }
 
 .value-diagram-result strong {
-  font-size: clamp(1.45rem, 1.85vw, 2.2rem);
+  font-size: clamp(1.75rem, 2.35vw, 2.8rem);
 }
 
 .reference-card {
-  grid-template-rows: minmax(0, 34%) minmax(0, 66%);
+  grid-template-rows: minmax(0, 43%) minmax(0, 57%);
 }
 
 .reference-card-copy {
-  padding: clamp(0.55rem, 0.72vw, 0.72rem);
+  padding: clamp(0.75rem, 1vw, 1.05rem);
 }
 
 .reference-card-tag {
-  margin-bottom: 0.34rem;
-  font-size: clamp(0.42rem, 0.48vw, 0.54rem);
+  margin-bottom: 0.48rem;
+  font-size: clamp(0.46rem, 0.54vw, 0.62rem);
 }
 
 .reference-card-copy h3 {
-  font-size: clamp(0.82rem, 1.05vw, 1.15rem);
+  font-size: clamp(1rem, 1.35vw, 1.5rem);
 }
 
 .reference-card-tagline,
@@ -5433,12 +5444,12 @@ body {
 }
 
 .reference-card-tagline {
-  font-size: clamp(0.54rem, 0.61vw, 0.68rem);
+  font-size: clamp(0.62rem, 0.7vw, 0.78rem);
   -webkit-line-clamp: 2;
 }
 
 .reference-card-role {
-  font-size: clamp(0.46rem, 0.52vw, 0.58rem);
+  font-size: clamp(0.54rem, 0.61vw, 0.68rem);
   -webkit-line-clamp: 2;
 }
 
@@ -5454,9 +5465,24 @@ body {
 
 .studio-profile-content {
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  align-content: stretch;
+  gap: clamp(1.2rem, 2vw, 2rem);
+  padding: clamp(1.3rem, 2.1vw, 2.1rem);
+}
+
+.studio-profile-intro,
+.studio-profile-details {
+  align-self: stretch;
+}
+
+.studio-profile-intro {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.studio-profile-details {
   align-content: center;
-  gap: clamp(0.8rem, 1.5vw, 1.3rem);
-  padding: clamp(0.8rem, 1.25vw, 1.2rem);
 }
 
 .studio-profile-kicker {
@@ -5464,13 +5490,13 @@ body {
 }
 
 .studio-profile-intro h2 {
-  font-size: clamp(1.2rem, 1.8vw, 1.9rem);
+  font-size: clamp(1.5rem, 2.3vw, 2.5rem);
 }
 
 .studio-profile-intro > p:last-child {
-  margin-top: 0.6rem;
-  font-size: clamp(0.6rem, 0.7vw, 0.76rem);
-  line-height: 1.42;
+  margin-top: 0.85rem;
+  font-size: clamp(0.68rem, 0.8vw, 0.88rem);
+  line-height: 1.48;
 }
 
 .studio-profile-details {
@@ -5480,16 +5506,16 @@ body {
 .studio-profile-fact {
   grid-template-columns: minmax(6.5rem, 0.78fr) minmax(0, 1.22fr);
   gap: 0.5rem;
-  padding: 0.45rem 0;
+  padding: clamp(0.65rem, 1.2vh, 1rem) 0;
 }
 
 .studio-profile-fact strong {
-  font-size: clamp(0.68rem, 0.82vw, 0.86rem);
+  font-size: clamp(0.78rem, 0.95vw, 1rem);
 }
 
 .studio-profile-fact span,
 .studio-profile-statement {
-  font-size: clamp(0.5rem, 0.57vw, 0.62rem);
+  font-size: clamp(0.58rem, 0.67vw, 0.74rem);
 }
 
 .studio-profile-statement {
@@ -5498,11 +5524,11 @@ body {
 }
 
 .project-cta-content {
-  padding: clamp(0.5rem, 0.8vw, 0.72rem);
+  padding: clamp(0.8rem, 1.25vw, 1.15rem);
 }
 
 .project-cta-consultation {
-  padding: clamp(0.35rem, 0.75vw, 0.65rem);
+  padding: clamp(0.65rem, 1.1vw, 1rem);
 }
 
 .project-cta-consultation > h2 {
