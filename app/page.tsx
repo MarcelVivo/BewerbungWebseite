@@ -59,13 +59,67 @@ const SERVICE_META = [
 const USP_ICONS = [Zap, Users, CheckCircle, Award];
 const PROCESS_ICONS = [MessageSquare, Search, Compass, Wrench, Heart];
 const CAMERA_ONLY_WORLD = true;
-const INTRO_SEQUENCE = [
-  'Deine Idee.',
-  'Deine Herausforderung.',
-  'Deine Vision.',
-  'Deine Lösung.',
-  'Deine Erfolgsgeschichte.',
-];
+const INTRO_SEQUENCES = {
+  de: [
+    'Deine Idee.',
+    'Deine Herausforderung.',
+    'Deine Vision.',
+    'Deine Lösung.',
+    'Deine Erfolgsgeschichte.',
+  ],
+  en: [
+    'Your Idea.',
+    'Your Challenge.',
+    'Your Vision.',
+    'Your Solution.',
+    'Your Success Story.',
+  ],
+} as const;
+
+function JourneySectionFlapTitle({
+  label,
+  className = '',
+}: {
+  label: string;
+  className?: string;
+}) {
+  const titleRef = useRef<HTMLHeadingElement | null>(null);
+
+  useEffect(() => {
+    const title = titleRef.current;
+    if (!title) return;
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const letters = buildFlapWord(title, label);
+    setFlapWordMode(letters, 'settle', true);
+
+    let settleTimer = 0;
+    const triggerFlap = () => {
+      if (reduced) return;
+      window.clearTimeout(settleTimer);
+      setFlapWordMode(letters, 'spin', false);
+      settleTimer = window.setTimeout(() => {
+        setFlapWordMode(letters, 'settle', false);
+      }, 720);
+    };
+
+    triggerFlap();
+    const flapInterval = window.setInterval(triggerFlap, 5000);
+    return () => {
+      window.clearInterval(flapInterval);
+      window.clearTimeout(settleTimer);
+      setFlapWordMode(letters, 'settle', true);
+    };
+  }, [label]);
+
+  return (
+    <h2
+      ref={titleRef}
+      className={`journey-section-flap intro-flap-word ${chakraPetch.className} ${className}`.trim()}
+      aria-label={label}
+    />
+  );
+}
 
 type ValueDiagramCopy = {
   code: string;
@@ -606,13 +660,18 @@ function ValueImpactContent({
 
   return (
     <div className={`value-impact-content ${chakraPetch.className}`}>
-      <h2
-        ref={titleRef}
-        className={`value-impact-flap intro-flap-word ${chakraPetch.className}`}
-        aria-label={lang === 'de' ? 'Dein Mehrwert' : 'Your value'}
-      >
-        {titleRef ? null : (lang === 'de' ? 'DEIN MEHRWERT' : 'YOUR VALUE')}
-      </h2>
+      {titleRef ? (
+        <h2
+          ref={titleRef}
+          className={`journey-section-flap value-impact-flap intro-flap-word ${chakraPetch.className}`}
+          aria-label={lang === 'de' ? 'Dein Mehrwert' : 'Your Value'}
+        />
+      ) : (
+        <JourneySectionFlapTitle
+          label={lang === 'de' ? 'DEIN MEHRWERT' : 'YOUR VALUE'}
+          className="value-impact-flap"
+        />
+      )}
       <div className={`value-diagram-stage ${activeInfoIndex !== null ? 'is-info-open' : ''}`}>
         <div className="value-diagram-grid" aria-hidden={activeInfoIndex !== null}>
           {diagrams.map((diagram, index) => (
@@ -861,7 +920,7 @@ function ReferenceCardsContent({ lang }: { lang: 'de' | 'en' }) {
     <div className={`references-content ${chakraPetch.className}`}>
       <div className="references-heading">
         <p>{lang === 'de' ? 'AUSGEWÄHLTE ARBEITEN' : 'SELECTED WORK'}</p>
-        <h2>{lang === 'de' ? 'MEINE REFERENZEN' : 'MY WORK'}</h2>
+        <JourneySectionFlapTitle label={lang === 'de' ? 'MEINE REFERENZEN' : 'MY WORK'} />
       </div>
       <div className="references-grid">
         {PROJECTS.map((project, index) => {
@@ -988,7 +1047,7 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
         title: 'DEINE BERATUNG.',
         text: 'Erzähl mir kurz, was du aufbauen, verbessern oder digitalisieren möchtest. Ich melde mich persönlich bei dir.',
         overviewKicker: 'DREI WEGE · EIN KLARES ZIEL',
-        overviewTitle: 'DEINE LÖSUNG.',
+        overviewTitle: 'WÄHLE DEINEN EINSTIEG.',
         overviewText: 'Wähle den Einstieg, der zu deinem aktuellen Vorhaben passt. Du kannst jederzeit zwischen den drei Wegen wechseln.',
         name: 'Name',
         email: 'E-Mail',
@@ -1022,7 +1081,7 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
         title: 'YOUR CONSULTATION.',
         text: 'Tell me briefly what you want to build, improve or digitize. I will get back to you personally.',
         overviewKicker: 'THREE PATHS · ONE CLEAR GOAL',
-        overviewTitle: 'YOUR SOLUTION.',
+        overviewTitle: 'CHOOSE YOUR PATH.',
         overviewText: 'Choose the entry point that best matches your current project. You can switch between all three paths at any time.',
         name: 'Name',
         email: 'Email',
@@ -1093,6 +1152,10 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
 
   return (
     <div className={`project-cta-content ${chakraPetch.className}`}>
+      <JourneySectionFlapTitle
+        label={lang === 'de' ? 'DEINE LÖSUNG' : 'YOUR SOLUTION'}
+        className="project-cta-section-flap"
+      />
       <div className="project-cta-stage">
         <section
           className="project-cta-panel project-cta-overview"
@@ -1242,7 +1305,7 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
 function StudioProfileContent({ lang }: { lang: 'de' | 'en' }) {
   const copy = lang === 'de'
     ? {
-        kicker: 'DEIN DIGITALPARTNER · DIGITALSTUDIO MARCEL SPAHR · BERN',
+        kicker: 'DIGITALSTUDIO MARCEL SPAHR · BERN',
         title: 'Persönlich geführt. Ganzheitlich umgesetzt.',
         intro: 'Ich begleite Schweizer KMUs und Startups persönlich – von der ersten Idee bis zu einer Lösung, die im Alltag funktioniert und mit dem Unternehmen wachsen kann.',
         statement: 'Ich denke Projekte von A bis Z, lese zwischen den Zeilen und verbinde unterschiedliche Stakeholder. KI nutze ich als Werkzeug – Verantwortung, Entscheidungen und Qualität bleiben persönlich bei mir.',
@@ -1253,7 +1316,7 @@ function StudioProfileContent({ lang }: { lang: 'de' | 'en' }) {
         ],
       }
     : {
-        kicker: 'YOUR DIGITAL PARTNER · MARCEL SPAHR DIGITAL STUDIO · BERN',
+        kicker: 'MARCEL SPAHR DIGITAL STUDIO · BERN',
         title: 'Personally led. Comprehensively delivered.',
         intro: 'I personally support Swiss SMEs and startups from the first idea to a solution that works in daily operations and can scale with the business.',
         statement: 'I think projects through from A to Z, read between the lines and connect different stakeholders. I use AI as a tool – responsibility, decisions and quality remain personal.',
@@ -1266,6 +1329,10 @@ function StudioProfileContent({ lang }: { lang: 'de' | 'en' }) {
 
   return (
     <div className={`studio-profile-content ${chakraPetch.className}`}>
+      <JourneySectionFlapTitle
+        label={lang === 'de' ? 'DEIN DIGITALPARTNER' : 'YOUR DIGITAL PARTNER'}
+        className="studio-profile-section-flap"
+      />
       <div className="studio-profile-intro">
         <p className="studio-profile-kicker">{copy.kicker}</p>
         <h2>{copy.title}</h2>
@@ -1375,6 +1442,7 @@ function ProjectCtaWorld({ lang }: { lang: 'de' | 'en' }) {
 // Zielbuchstaben anzuhalten ("settle"). Sobald wieder gescrollt wird, läuft
 // die Dauerschleife an denselben (dann gestoppten) Buchstaben weiter ("spin").
 function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
+  const introSequence = INTRO_SEQUENCES[lang];
   const [activeServiceSlug, setActiveServiceSlug] = useState<string | null>(null);
   const progressRef = useRef(0);
   const targetProgressRef = useRef(0);
@@ -1585,7 +1653,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       settled: boolean;
     };
 
-    const stations: IntroFlapStation[] = INTRO_SEQUENCE.map((text, worldIndex) => {
+    const stations: IntroFlapStation[] = introSequence.map((text, worldIndex) => {
       const world = introFlapWorldRefs.current[worldIndex];
       const smallEl = introFlapSmallRefs.current[worldIndex];
       const bigEl = introFlapBigRefs.current[worldIndex];
@@ -1751,7 +1819,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       window.removeEventListener('resize', alignAll);
       window.removeEventListener('scroll', onScrollActivity);
     };
-  }, []);
+  }, [introSequence]);
 
   useEffect(() => {
     if (CAMERA_ONLY_WORLD) return;
@@ -1955,31 +2023,31 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
     {
       kind: 'intro',
       code: 'INTRO 01',
-      title: INTRO_SEQUENCE[0],
+      title: introSequence[0],
       icon: Wrench,
     },
     {
       kind: 'intro',
       code: 'INTRO 02',
-      title: INTRO_SEQUENCE[1],
+      title: introSequence[1],
       icon: Users,
     },
     {
       kind: 'intro',
       code: 'INTRO 03',
-      title: INTRO_SEQUENCE[2],
+      title: introSequence[2],
       icon: Compass,
     },
     {
       kind: 'intro',
       code: 'INTRO 04',
-      title: INTRO_SEQUENCE[3],
+      title: introSequence[3],
       icon: Lightbulb,
     },
     {
       kind: 'intro',
       code: 'INTRO 05',
-      title: INTRO_SEQUENCE[4],
+      title: introSequence[4],
       icon: Workflow,
     },
     {
@@ -2094,7 +2162,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
 
       <div className="spiral-sticky">
         <div className="spiral-stage">
-          {INTRO_SEQUENCE.map((text, worldIndex) => (
+          {introSequence.map((text, worldIndex) => (
             <div
               key={`intro-flap-${worldIndex}`}
               ref={(el) => { introFlapWorldRefs.current[worldIndex] = el; }}
@@ -2396,6 +2464,10 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
             id="mobile-solutions"
             className={`spiral-mobile-service-stage scroll-mt-24 ${activeService ? 'is-info-open' : ''}`}
           >
+            <JourneySectionFlapTitle
+              label={lang === 'de' ? 'MEINE UMSETZUNG' : 'MY EXECUTION'}
+              className="mobile-solutions-section-flap"
+            />
             <div className="spiral-mobile-services">
               {serviceCards.map((card, i) => (
                 <button
@@ -2617,7 +2689,7 @@ export default function HomePage() {
       setFlapWordMode(letters, 'settle', false);
     };
   }, [lang]);
-  const introWorldTexts = useMemo(() => INTRO_SEQUENCE, []);
+  const introWorldTexts = useMemo(() => [...INTRO_SEQUENCES[lang]], [lang]);
   const serviceWorldCards = useMemo(() => lang === 'de'
     ? [
         { code: '01', title: 'Corporate Design\n& Webauftritt', body: 'Marke, Gestaltung, Wirkung und digitale Präsentation sauber aus einem System gedacht.', accent: '#c89a3d' },

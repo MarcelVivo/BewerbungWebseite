@@ -6481,3 +6481,74 @@ option {
     bottom: 0.38rem;
   }
 }
+
+/* ── Einheitliche Split-Flap-Kapitelüberschriften ───────────
+   Jede Hauptstation übernimmt exakt ihre Beschriftung aus der rechten
+   Journey-Navigation. Typografie, Grösse und Rhythmus entsprechen dem
+   ursprünglichen Titel „Meine Umsetzung“ – unabhängig vom Inhaltstyp. */
+.journey-section-flap {
+  position: relative;
+  z-index: 6;
+  justify-content: center;
+  width: 100%;
+  margin: 0 0 clamp(0.75rem, 1.5vh, 1.15rem);
+  color: #fff;
+  font-size: clamp(0.535rem, 1.18vw, 1.085rem);
+  letter-spacing: 0.035em;
+  line-height: 1;
+  text-align: center;
+  text-shadow: 0 0 24px rgba(255,255,255,0.12);
+  pointer-events: none;
+}
+
+.spiral-solutions-flap,
+.value-impact-flap,
+.references-heading .journey-section-flap,
+.studio-profile-section-flap,
+.project-cta-section-flap,
+.mobile-solutions-section-flap {
+  font-size: clamp(0.535rem, 1.18vw, 1.085rem);
+}
+
+.references-heading .journey-section-flap {
+  margin-bottom: 0;
+}
+
+.studio-profile-section-flap {
+  grid-column: 1 / -1;
+  align-self: start;
+  margin-bottom: 0;
+}
+
+.studio-profile-content {
+  row-gap: clamp(0.7rem, 1.25vw, 1.1rem);
+}
+
+.project-cta-section-flap {
+  flex: 0 0 auto;
+  margin-bottom: 0.45rem;
+}
+
+.mobile-solutions-section-flap {
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 900px) {
+  .spiral-solutions-flap,
+  .value-impact-flap,
+  .mobile-value-impact .value-impact-flap,
+  .references-heading .journey-section-flap,
+  .studio-profile-section-flap,
+  .project-cta-section-flap,
+  .mobile-solutions-section-flap {
+    font-size: clamp(0.78rem, 3.8vw, 1.05rem);
+  }
+
+  .studio-profile-section-flap {
+    margin-bottom: 0.15rem;
+  }
+
+  .project-cta-section-flap {
+    margin-bottom: 0.35rem;
+  }
+}
