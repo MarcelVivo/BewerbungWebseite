@@ -1435,14 +1435,12 @@ function StudioProfileContent({ lang }: { lang: 'de' | 'en' }) {
         className="studio-profile-section-flap"
       />
       <div className="studio-profile-intro">
-        <div className="studio-profile-person">
-          <div className="studio-profile-portrait">
-            <img src="/assets/BewerbungsFotoMarcelSpahr.jpg" alt={lang === 'de' ? 'Marcel Spahr' : 'Marcel Spahr'} />
-          </div>
-          <div className="studio-profile-identity">
-            <p className="studio-profile-kicker">{copy.kicker}</p>
-            <h2>{copy.title}</h2>
-          </div>
+        <div className="studio-profile-portrait">
+          <img src="/assets/BewerbungsFotoMarcelSpahr.jpg" alt="Marcel Spahr" />
+        </div>
+        <div className="studio-profile-identity">
+          <p className="studio-profile-kicker">{copy.kicker}</p>
+          <h2>{copy.title}</h2>
         </div>
         <p className="studio-profile-copy">{copy.intro}</p>
         <StudioWebSignature />

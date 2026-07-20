@@ -853,164 +853,6 @@ body.journey-warp-active .mobile-project-cta {
   }
 }
 
-/* ── Digitalpartner: kollisionsfreies Vollbreiten-Layout ────
-   Portrait und grosse Headline teilen sich nicht länger die schmale
-   linke Kartenhälfte. Die obere Identitätszeile und die darunterliegenden
-   Vertrauensinformationen nutzen jeweils die volle Kartenbreite. */
-.studio-profile-content {
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto auto minmax(0, 1fr);
-  align-content: start;
-  gap: clamp(0.85rem, 1.35vw, 1.25rem);
-  padding: clamp(1.5rem, 2.4vw, 2.35rem);
-}
-
-.studio-profile-section-flap,
-.studio-profile-intro,
-.studio-profile-details {
-  grid-column: 1 / -1;
-}
-
-.studio-profile-intro {
-  display: grid;
-  grid-template-columns: clamp(7.5rem, 10vw, 9.25rem) minmax(13rem, 0.9fr) minmax(16rem, 1.1fr);
-  grid-template-areas:
-    'portrait identity copy'
-    'portrait signature copy';
-  gap: 0.35rem clamp(1rem, 1.8vw, 1.75rem);
-  align-items: center;
-}
-
-.studio-profile-person {
-  display: contents;
-}
-
-.studio-profile-portrait {
-  grid-area: portrait;
-  width: 100%;
-}
-
-.studio-profile-identity {
-  grid-area: identity;
-  align-self: end;
-}
-
-.studio-profile-copy {
-  grid-area: copy;
-  align-self: center;
-  margin: 0;
-  max-width: 31rem;
-  font-size: clamp(0.86rem, 1.05vw, 1.08rem);
-}
-
-.studio-web-signature {
-  grid-area: signature;
-  align-self: start;
-  width: min(100%, 19rem);
-  margin-top: 0;
-}
-
-.studio-profile-intro .studio-profile-identity h2 {
-  max-width: 100%;
-  overflow-wrap: normal;
-  font-size: clamp(1.85rem, 2.65vw, 2.8rem);
-  line-height: 0.98;
-}
-
-.studio-profile-details {
-  display: grid;
-  grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
-  grid-template-areas:
-    'facts facts'
-    'process statement';
-  gap: clamp(0.75rem, 1.2vw, 1.1rem) clamp(1rem, 1.8vw, 1.75rem);
-  align-content: start;
-}
-
-.studio-profile-facts {
-  grid-area: facts;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: clamp(0.42rem, 0.7vw, 0.7rem);
-}
-
-.studio-profile-fact {
-  min-height: clamp(5.6rem, 9vh, 7rem);
-  padding: clamp(0.7rem, 1vw, 1rem);
-}
-
-.studio-profile-fact strong {
-  font-size: clamp(0.86rem, 1.05vw, 1.08rem);
-}
-
-.studio-profile-fact span {
-  font-size: clamp(0.66rem, 0.78vw, 0.82rem);
-}
-
-.studio-profile-process {
-  grid-area: process;
-}
-
-.studio-profile-statement {
-  grid-area: statement;
-  align-self: stretch;
-}
-
-.studio-profile-process,
-.studio-profile-statement {
-  padding-top: clamp(0.7rem, 1vw, 0.95rem);
-}
-
-.studio-profile-process li strong {
-  font-size: clamp(0.78rem, 0.92vw, 0.96rem);
-}
-
-.studio-profile-process li span,
-.studio-profile-statement p {
-  font-size: clamp(0.64rem, 0.76vw, 0.8rem);
-}
-
-@media (max-width: 900px) {
-  .mobile-studio-profile .studio-profile-content {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
-    padding: clamp(0.85rem, 3.8vw, 1.25rem);
-  }
-
-  .mobile-studio-profile .studio-profile-intro {
-    display: grid;
-    grid-template-columns: clamp(5rem, 22vw, 6.5rem) minmax(0, 1fr);
-    grid-template-areas:
-      'portrait identity'
-      'copy copy'
-      'signature signature';
-    gap: 0.55rem 0.8rem;
-  }
-
-  .mobile-studio-profile .studio-profile-copy {
-    max-width: none;
-  }
-
-  .mobile-studio-profile .studio-web-signature {
-    width: min(72%, 17rem);
-  }
-
-  .mobile-studio-profile .studio-profile-details {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      'facts'
-      'process'
-      'statement';
-  }
-
-  .mobile-studio-profile .studio-profile-facts {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .mobile-studio-profile .studio-profile-fact {
-    min-height: 0;
-  }
-}
-
 .journey-count {
   margin-right: 0.05rem;
   color: rgba(231,197,106,0.58);
@@ -6878,13 +6720,6 @@ body.journey-warp-active .mobile-project-cta {
   gap: clamp(0.65rem, 1.1vh, 0.95rem);
 }
 
-.studio-profile-person {
-  display: grid;
-  grid-template-columns: clamp(5.8rem, 8.4vw, 7.8rem) minmax(0, 1fr);
-  gap: clamp(0.75rem, 1.3vw, 1.15rem);
-  align-items: center;
-}
-
 .studio-profile-portrait {
   position: relative;
   aspect-ratio: 1 / 1;
@@ -7109,10 +6944,6 @@ body.journey-warp-active .mobile-project-cta {
     gap: 0.72rem;
   }
 
-  .mobile-studio-profile .studio-profile-person {
-    grid-template-columns: clamp(4.7rem, 22vw, 6rem) minmax(0, 1fr);
-  }
-
   .mobile-studio-profile .studio-profile-intro .studio-profile-identity h2 {
     font-size: clamp(1.15rem, 5.4vw, 1.6rem);
   }
@@ -7162,5 +6993,189 @@ body.journey-warp-active .mobile-project-cta {
   .studio-signature-spark {
     display: none;
     animation: none !important;
+  }
+}
+
+/* ── FINAL: Digitalpartner ohne Layout-Kollisionen ──────────
+   Dieser Block steht bewusst am Dateiende: Die Digitalpartner-Karte
+   hatte historisch mehrere responsive Layoutstufen. Diese Regeln bilden
+   die verbindliche Endgeometrie und dürfen nicht wieder überschrieben
+   werden. */
+.studio-profile-content {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr);
+  align-content: start;
+  gap: clamp(0.8rem, 1.25vw, 1.2rem);
+  padding: clamp(1.35rem, 2.2vw, 2.2rem);
+}
+
+.studio-profile-section-flap,
+.studio-profile-intro,
+.studio-profile-details {
+  grid-column: 1 / -1;
+}
+
+.studio-profile-intro {
+  display: grid;
+  grid-template-columns: clamp(7rem, 9.5vw, 8.75rem) minmax(0, 0.9fr) minmax(0, 1.1fr);
+  grid-template-areas:
+    'portrait identity copy'
+    'portrait signature copy';
+  gap: 0.3rem clamp(0.9rem, 1.65vw, 1.6rem);
+  align-items: center;
+}
+
+.studio-profile-portrait {
+  grid-area: portrait;
+  width: 100%;
+  max-width: 8.75rem;
+}
+
+.studio-profile-identity {
+  grid-area: identity;
+  align-self: end;
+  min-width: 0;
+}
+
+.studio-profile-copy {
+  grid-area: copy;
+  align-self: center;
+  max-width: 31rem;
+  margin: 0;
+  font-size: clamp(0.82rem, 1vw, 1.04rem);
+}
+
+.studio-web-signature {
+  grid-area: signature;
+  align-self: start;
+  width: min(100%, 18rem);
+  margin-top: 0;
+}
+
+.studio-profile-intro .studio-profile-identity h2 {
+  max-width: 100%;
+  margin: 0;
+  overflow-wrap: break-word;
+  font-size: clamp(1.6rem, 2.35vw, 2.65rem);
+  line-height: 0.98;
+}
+
+.studio-profile-details {
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
+  grid-template-areas:
+    'facts facts'
+    'process statement';
+  gap: clamp(0.7rem, 1.1vw, 1rem) clamp(0.9rem, 1.6vw, 1.55rem);
+  align-content: start;
+}
+
+.studio-profile-facts {
+  grid-area: facts;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(0.4rem, 0.65vw, 0.65rem);
+}
+
+.studio-profile-fact {
+  display: block;
+  min-height: clamp(5.25rem, 8.5vh, 6.75rem);
+  padding: clamp(0.65rem, 0.95vw, 0.95rem);
+}
+
+.studio-profile-fact strong {
+  font-size: clamp(0.82rem, 1vw, 1.04rem);
+}
+
+.studio-profile-fact span {
+  font-size: clamp(0.64rem, 0.76vw, 0.8rem);
+}
+
+.studio-profile-process {
+  grid-area: process;
+}
+
+.studio-profile-statement {
+  grid-area: statement;
+  align-self: stretch;
+}
+
+.studio-profile-process,
+.studio-profile-statement {
+  padding-top: clamp(0.65rem, 0.95vw, 0.9rem);
+}
+
+.studio-profile-process li strong {
+  font-size: clamp(0.75rem, 0.88vw, 0.92rem);
+}
+
+.studio-profile-process li span,
+.studio-profile-statement p {
+  font-size: clamp(0.62rem, 0.73vw, 0.77rem);
+}
+
+@media (min-width: 901px) and (max-width: 1150px) {
+  .studio-profile-intro {
+    grid-template-columns: clamp(6.5rem, 12vw, 8rem) minmax(0, 1fr);
+    grid-template-areas:
+      'portrait identity'
+      'portrait signature'
+      'copy copy';
+  }
+
+  .studio-profile-copy {
+    max-width: none;
+    margin-top: 0.35rem;
+  }
+
+  .studio-profile-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .studio-profile-fact {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .mobile-studio-profile .studio-profile-content {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 0.7rem;
+    padding: clamp(0.8rem, 3.6vw, 1.2rem);
+  }
+
+  .mobile-studio-profile .studio-profile-intro {
+    display: grid;
+    grid-template-columns: clamp(4.8rem, 21vw, 6.25rem) minmax(0, 1fr);
+    grid-template-areas:
+      'portrait identity'
+      'copy copy'
+      'signature signature';
+    gap: 0.5rem 0.75rem;
+  }
+
+  .mobile-studio-profile .studio-profile-copy {
+    max-width: none;
+    font-size: clamp(0.62rem, 2.7vw, 0.76rem);
+  }
+
+  .mobile-studio-profile .studio-web-signature {
+    width: min(72%, 17rem);
+  }
+
+  .mobile-studio-profile .studio-profile-details {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'facts'
+      'process'
+      'statement';
+  }
+
+  .mobile-studio-profile .studio-profile-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mobile-studio-profile .studio-profile-fact {
+    min-height: 0;
   }
 }
