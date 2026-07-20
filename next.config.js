@@ -14,6 +14,11 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  experimental: {
+    outputFileTracingIncludes: {
+      '/api/expertise-documents/[slug]': ['./private/expertise/**/*'],
+    },
+  },
   webpack: (config, { dev }) => {
     if (dev) {
       // The on-disk webpack cache repeatedly corrupts in this dev setup
@@ -27,4 +32,3 @@ const nextConfig = {
 };
 
 export default nextConfig;
-
