@@ -26,48 +26,63 @@ const DOCUMENTS: Record<string, DocumentDefinition> = {
     disposition: 'attachment',
   },
   ireb: {
-    path: ['public', 'assets', 'IREB_Zertifikat_Spahr_Marcel.pdf'],
+    path: ['private', 'expertise', 'IREB_Zertifikat_Spahr_Marcel.pdf'],
     filename: 'IREB_CPRE_Foundation_Level_Marcel_Spahr.pdf',
     contentType: 'application/pdf',
   },
   scrum: {
-    path: ['public', 'assets', 'SCRUMZertifikat.pdf'],
+    path: ['private', 'expertise', 'SCRUMZertifikat.pdf'],
     filename: 'Professional_Scrum_Master_I_Marcel_Spahr.pdf',
     contentType: 'application/pdf',
   },
   safe: {
-    path: ['public', 'assets', 'SAFeZertifikatMarcelSpahr.pdf'],
+    path: ['private', 'expertise', 'SAFeZertifikatMarcelSpahr.pdf'],
     filename: 'SAFe_6_Agilist_Marcel_Spahr.pdf',
     contentType: 'application/pdf',
   },
+  'safe-course': {
+    path: ['private', 'expertise', 'SAFeKursbestaetigungMarcelSpahr.pdf'],
+    filename: 'Leading_SAFe_6_Kursbestaetigung_Marcel_Spahr.pdf',
+    contentType: 'application/pdf',
+  },
   cambridge: {
-    path: ['public', 'assets', 'CambridgeEnglischA2ZertifikatMarcelSpahr.pdf'],
+    path: ['private', 'expertise', 'CambridgeEnglischA2ZertifikatMarcelSpahr.pdf'],
     filename: 'Cambridge_English_A2_Marcel_Spahr.pdf',
     contentType: 'application/pdf',
   },
   'swisscom-reference': {
-    path: ['public', 'assets', 'ArbeitszeugnisSwisscomMarcelSpahr2025.pdf'],
+    path: ['private', 'expertise', 'ArbeitszeugnisMarcelSpahr2025.pdf'],
     filename: 'Arbeitszeugnis_Swisscom_Marcel_Spahr_2025.pdf',
     contentType: 'application/pdf',
   },
   'requirements-project': {
-    path: ['public', 'assets', 'FinalArbeitSoftwareundRequirementsEngineering.pdf'],
+    path: ['private', 'expertise', 'FinalArbeitSoftwareundRequirementsEngineering.pdf'],
     filename: 'Projektarbeit_Software_Requirements_Engineering.pdf',
     contentType: 'application/pdf',
   },
   'covid-architecture': {
-    path: ['public', 'assets', 'SWISS_COVID_CERT_APP_SoftwareArchitektur.pdf'],
+    path: ['private', 'expertise', 'SWISS_COVID_CERT_APP_SoftwareArchitektur.pdf'],
     filename: 'Projektarbeit_Softwarearchitektur.pdf',
     contentType: 'application/pdf',
   },
   olivia: {
-    path: ['public', 'assets', 'OliviasOlivenpaste_MarcelSpahr.pdf'],
+    path: ['private', 'expertise', 'OliviasOlivenpaste_MarcelSpahr.pdf'],
     filename: 'Projektarbeit_Olivias_Olivenpaste.pdf',
     contentType: 'application/pdf',
   },
   leadership: {
-    path: ['public', 'assets', 'Personliches_Fuhrungshandbuch_MarcelSpahr.pdf'],
+    path: ['private', 'expertise', 'Personliches_Fuhrungshandbuch_MarcelSpahr.pdf'],
     filename: 'Persoenliches_Fuehrungshandbuch_Marcel_Spahr.pdf',
+    contentType: 'application/pdf',
+  },
+  werbetechniker: {
+    path: ['private', 'expertise', 'FaehigkeitszeugnisWerbetechniker.pdf'],
+    filename: 'Faehigkeitszeugnis_Werbetechniker_Marcel_Spahr.pdf',
+    contentType: 'application/pdf',
+  },
+  maler: {
+    path: ['private', 'expertise', 'FaehigkeitszeugnisMaler.pdf'],
+    filename: 'Faehigkeitszeugnis_Maler_Marcel_Spahr.pdf',
     contentType: 'application/pdf',
   },
 };

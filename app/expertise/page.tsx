@@ -131,6 +131,13 @@ const CERTIFICATES = [
     href: '/api/expertise-documents/safe',
   },
   {
+    name: 'Leading SAFe Course (6.0)',
+    org: 'Kursbestätigung',
+    date: 'Oktober 2025',
+    detail: 'Offiziell abgeschlossener Leading-SAFe-Kurs',
+    href: '/api/expertise-documents/safe-course',
+  },
+  {
     name: 'Cambridge English A2',
     org: 'Cambridge English',
     date: '2025',
@@ -777,11 +784,27 @@ export default function ExpertisePage() {
                 <BookOpenCheck size={19} className="text-[#2f6fad]" aria-hidden="true" />
                 <h3 className="mt-3 font-bold text-[#102a43]">Werbetechniker EFZ · 2007</h3>
                 <p className="mt-2 text-sm leading-6 text-[#52677d]">Gestaltung, Marketing, Produktion und präzise Umsetzung visueller Kommunikationslösungen.</p>
+                <a
+                  href="/api/expertise-documents/werbetechniker"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-[#245f98] transition hover:text-[#163f68] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#245f98]"
+                >
+                  Fähigkeitszeugnis öffnen <ArrowUpRight size={13} aria-hidden="true" />
+                </a>
               </Surface>
               <Surface className="p-6">
                 <BookOpenCheck size={19} className="text-[#2f6fad]" aria-hidden="true" />
                 <h3 className="mt-3 font-bold text-[#102a43]">Maler EFZ · 2004</h3>
                 <p className="mt-2 text-sm leading-6 text-[#52677d]">Fundament für Qualitätsbewusstsein, handwerkliche Präzision und verlässliche Ausführung.</p>
+                <a
+                  href="/api/expertise-documents/maler"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-[#245f98] transition hover:text-[#163f68] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#245f98]"
+                >
+                  Fähigkeitszeugnis öffnen <ArrowUpRight size={13} aria-hidden="true" />
+                </a>
               </Surface>
             </div>
           </section>
@@ -793,7 +816,7 @@ export default function ExpertisePage() {
               intro="Die wichtigsten Unterlagen sind priorisiert. Weitere Nachweise bleiben kompakt und gezielt zugänglich."
             />
 
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
               {CERTIFICATES.map((certificate) => (
                 <a
                   key={certificate.name}
