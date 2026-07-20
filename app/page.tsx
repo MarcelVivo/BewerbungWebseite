@@ -938,7 +938,7 @@ function ReferenceCardsContent({ lang }: { lang: 'de' | 'en' }) {
             >
               <div className="reference-card-image">
                 <img src={project.image} alt={`${copy.title} – ${copy.tag}`} />
-                <span className="reference-card-status">{copy.status}</span>
+                <span className="reference-card-status">{copy.cardStatus ?? copy.status}</span>
               </div>
               <div className="reference-card-copy">
                 <p className="reference-card-tag">{copy.tag}</p>
