@@ -14,7 +14,6 @@ import {
   ClipboardCheck,
   Download,
   FileCheck2,
-  FileText,
   GraduationCap,
   Lightbulb,
   LogOut,
@@ -326,7 +325,7 @@ export default function ExpertisePage() {
               </div>
             </div>
 
-            <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-1">
+            <div className="mt-5">
               <a
                 href="/api/expertise-documents/cv-pdf"
                 target="_blank"
@@ -334,12 +333,6 @@ export default function ExpertisePage() {
                 className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#4f8fc9] via-[#2f6fad] to-[#1d4f7a] px-3 py-3 text-center text-xs font-bold text-white transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
                 <Download size={14} aria-hidden="true" /> CV als PDF
-              </a>
-              <a
-                href="/api/expertise-documents/cv-word"
-                className="flex items-center justify-center gap-2 rounded-xl border border-[#d7e1ec] bg-[#f8fafc] px-3 py-3 text-center text-xs font-semibold text-[#334b62] transition hover:border-[#2f6fad]/45 hover:text-[#102a43] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#245f98]"
-              >
-                <FileText size={14} aria-hidden="true" /> CV als Word
               </a>
             </div>
 

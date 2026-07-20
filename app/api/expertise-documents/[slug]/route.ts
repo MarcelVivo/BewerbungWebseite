@@ -19,12 +19,6 @@ const DOCUMENTS: Record<string, DocumentDefinition> = {
     filename: 'Lebenslauf_Marcel_Spahr_2026.pdf',
     contentType: 'application/pdf',
   },
-  'cv-word': {
-    path: ['private', 'expertise', 'Lebenslauf_Marcel_Spahr_2026.docx'],
-    filename: 'Lebenslauf_Marcel_Spahr_2026.docx',
-    contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    disposition: 'attachment',
-  },
   ireb: {
     path: ['private', 'expertise', 'IREB_Zertifikat_Spahr_Marcel.pdf'],
     filename: 'IREB_CPRE_Foundation_Level_Marcel_Spahr.pdf',

@@ -16,7 +16,7 @@ const nextConfig = {
   },
   experimental: {
     outputFileTracingIncludes: {
-      '/api/expertise-documents/[slug]': ['./private/expertise/**/*'],
+      '/api/expertise-documents/[slug]': ['./private/expertise/**/*.pdf'],
     },
   },
   webpack: (config, { dev }) => {
