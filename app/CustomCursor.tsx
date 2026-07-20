@@ -1,11 +1,17 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
+
+const SYSTEM_CURSOR_PATHS = ['/expertise', '/login', '/dashboard', '/recruiter', '/projects', '/auth'];
 
 export default function CustomCursor() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const pathname = usePathname();
+  const useCustomCursor = !SYSTEM_CURSOR_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
 
   useEffect(() => {
+    if (!useCustomCursor) return;
     if (window.matchMedia('(pointer: coarse)').matches) return;
 
     const canvas = canvasRef.current;
@@ -92,7 +98,9 @@ export default function CustomCursor() {
       window.removeEventListener('mouseenter', onEnter);
       document.documentElement.classList.remove('custom-cursor-active');
     };
-  }, []);
+  }, [useCustomCursor]);
+
+  if (!useCustomCursor) return null;
 
   return (
     <canvas
