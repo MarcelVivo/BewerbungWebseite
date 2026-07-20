@@ -46,7 +46,7 @@ export async function POST(request) {
     );
   }
 
-  const role = 'owner';
+  const role = 'viewer';
   const exp = Date.now() + 1000 * 60 * 60 * 8;
   const token = sign({ u: username, r: role, exp }, SESSION_SECRET);
   cookies().set('msb_token', token, {

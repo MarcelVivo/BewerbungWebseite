@@ -40,8 +40,8 @@ Im Vercel Dashboard unter **Settings → Environment Variables** eintragen:
 | `RECRUITER_PASSWORD` | Passwort für /recruiter |
 | `SESSION_SECRET` | Secret für HMAC-Auth (langer zufälliger String) |
 | `NEXT_PUBLIC_SITE_URL` | `https://www.marcelspahr.ch` |
-| `ADMIN_USER` | Altes Login-Konto |
-| `ADMIN_PASS` | Altes Login-Passwort |
+| `ADMIN_USER` | Benutzername für den geschützten Expertise-Lesezugang |
+| `ADMIN_PASS` | Passwort für den geschützten Expertise-Lesezugang |
 
 ### 3. Optionale Variablen
 
