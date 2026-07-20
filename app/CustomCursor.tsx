@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 
-const SYSTEM_CURSOR_PATHS = ['/expertise', '/login', '/dashboard', '/recruiter', '/projects', '/auth'];
+const SYSTEM_CURSOR_PATHS = ['/bewerbungsprofil', '/expertise', '/login', '/dashboard', '/recruiter', '/projects', '/auth'];
 
 export default function CustomCursor() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);

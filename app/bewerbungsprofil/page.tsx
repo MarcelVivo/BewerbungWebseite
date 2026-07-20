@@ -243,7 +243,7 @@ function DocumentLink({
   );
 }
 
-export default function ExpertisePage() {
+export default function BewerbungsprofilPage() {
   const router = useRouter();
   const [activeSection, setActiveSection] = useState('profil');
 
@@ -279,7 +279,7 @@ export default function ExpertisePage() {
 
   return (
     <div
-      className="expertise-page min-h-screen overflow-x-hidden bg-[#f3f7fb] text-[#102a43]"
+      className="bewerbungsprofil-page min-h-screen overflow-x-hidden bg-[#f3f7fb] text-[#102a43]"
       style={{ fontFamily: 'Calibri, Carlito, Arial, sans-serif' }}
     >
       <header className="sticky top-0 z-50 border-b border-[#d7e1ec] bg-white/95 backdrop-blur-xl">

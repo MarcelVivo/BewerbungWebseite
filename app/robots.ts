@@ -5,7 +5,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/api/', '/dashboard/', '/login', '/recruiter/'],
+      disallow: ['/api/', '/dashboard/', '/login', '/recruiter/', '/bewerbungsprofil', '/expertise'],
     },
     sitemap: 'https://www.marcelspahr.ch/sitemap.xml',
     host: 'https://www.marcelspahr.ch',

@@ -19,6 +19,15 @@ const nextConfig = {
       '/api/expertise-documents/[slug]': ['./private/expertise/**/*.pdf'],
     },
   },
+  async redirects() {
+    return [
+      {
+        source: '/expertise',
+        destination: '/bewerbungsprofil',
+        permanent: true,
+      },
+    ];
+  },
   webpack: (config, { dev }) => {
     if (dev) {
       // The on-disk webpack cache repeatedly corrupts in this dev setup

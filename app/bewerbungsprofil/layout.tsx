@@ -10,6 +10,6 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ExpertiseLayout({ children }: { children: React.ReactNode }) {
+export default function BewerbungsprofilLayout({ children }: { children: React.ReactNode }) {
   return children;
 }

@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { trackWebsiteEvent } from './lib/analytics';
 
-const PRIVATE_PREFIXES = ['/dashboard', '/login', '/recruiter', '/expertise', '/projects'];
+const PRIVATE_PREFIXES = ['/dashboard', '/login', '/recruiter', '/bewerbungsprofil', '/expertise', '/projects'];
 
 export default function WebsiteAnalytics() {
   const pathname = usePathname();

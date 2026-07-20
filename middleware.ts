@@ -145,6 +145,7 @@ export const config = {
   matcher: [
     '/dashboard/:path*',
     '/recruiter/:path*',
+    '/bewerbungsprofil',
     '/expertise',
     '/api/projects/:path*',
     '/api/upload',
