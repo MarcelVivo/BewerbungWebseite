@@ -95,6 +95,9 @@ function JourneySectionFlapTitle({
     setFlapWordMode(letters, 'settle', true);
 
     let settleTimer = 0;
+    let visibilityObserver: MutationObserver | null = null;
+    let intersectionObserver: IntersectionObserver | null = null;
+    let wasVisible = false;
     const triggerFlap = () => {
       if (reduced) return;
       window.clearTimeout(settleTimer);
@@ -104,10 +107,31 @@ function JourneySectionFlapTitle({
       }, 720);
     };
 
-    triggerFlap();
-    const flapInterval = window.setInterval(triggerFlap, 5000);
+    const visibilityHost = title.closest('[aria-hidden]');
+    if (visibilityHost) {
+      const updateVisibility = () => {
+        const isVisible = visibilityHost.getAttribute('aria-hidden') === 'false';
+        if (isVisible && !wasVisible) triggerFlap();
+        wasVisible = isVisible;
+      };
+      visibilityObserver = new MutationObserver(updateVisibility);
+      visibilityObserver.observe(visibilityHost, { attributes: true, attributeFilter: ['aria-hidden'] });
+      updateVisibility();
+    } else {
+      intersectionObserver = new IntersectionObserver(
+        ([entry]) => {
+          const isVisible = entry.isIntersecting && entry.intersectionRatio >= 0.4;
+          if (isVisible && !wasVisible) triggerFlap();
+          wasVisible = isVisible;
+        },
+        { threshold: [0, 0.4, 0.75] },
+      );
+      intersectionObserver.observe(title);
+    }
+
     return () => {
-      window.clearInterval(flapInterval);
+      visibilityObserver?.disconnect();
+      intersectionObserver?.disconnect();
       window.clearTimeout(settleTimer);
       setFlapWordMode(letters, 'settle', true);
     };
