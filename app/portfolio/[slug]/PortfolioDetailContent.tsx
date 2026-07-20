@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { ChevronRight, ExternalLink, FileText } from 'lucide-react';
+import { ChevronRight, Database, ExternalLink, FileText, Globe2, ShieldCheck } from 'lucide-react';
 import { useLanguage } from '../../LanguageContext';
 import { getProject } from '../data';
 
@@ -135,6 +135,20 @@ export default function PortfolioDetailContent({ slug }: { slug: string }) {
           </div>
         </section>
 
+        {p.facts && p.facts.length > 0 && (
+          <section className="mb-20 grid grid-cols-2 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.025] lg:grid-cols-4" aria-label={lang === 'de' ? 'Projekt auf einen Blick' : 'Project at a glance'}>
+            {p.facts.map((fact, index) => (
+              <div
+                key={fact.label}
+                className={`p-5 sm:p-7 ${index % 2 !== 0 ? 'border-l border-white/10' : ''} ${index >= 2 ? 'border-t border-white/10 lg:border-t-0' : ''} ${index > 0 ? 'lg:border-l lg:border-white/10' : ''}`}
+              >
+                <p className="text-lg font-bold tracking-[-0.025em] sm:text-xl" style={{ color: project.color }}>{fact.value}</p>
+                <p className="mt-1.5 text-xs leading-relaxed text-[#8e877b]">{fact.label}</p>
+              </div>
+            ))}
+          </section>
+        )}
+
         <div className="grid lg:grid-cols-[0.72fr_1.28fr] gap-10 lg:gap-16">
           <aside className="lg:sticky lg:top-28 self-start">
             <p className="text-[0.68rem] font-bold tracking-[0.2em] uppercase" style={{ color: project.color }}>{p.tag}</p>
@@ -162,6 +176,55 @@ export default function PortfolioDetailContent({ slug }: { slug: string }) {
             ))}
           </div>
         </div>
+
+        {p.systemLayers && p.systemLayers.length > 0 && (
+          <section className="mt-24 border-t border-white/10 pt-10" aria-labelledby="project-system-title">
+            <div className="max-w-3xl">
+              <p className="text-[0.68rem] font-bold tracking-[0.2em]" style={{ color: project.color }}>{p.systemEyebrow}</p>
+              <h2 id="project-system-title" className="mt-3 text-3xl font-bold tracking-[-0.035em] text-white sm:text-4xl">{p.systemTitle}</h2>
+              <p className="mt-4 text-base leading-relaxed text-[#a89880] sm:text-lg">{p.systemIntro}</p>
+            </div>
+
+            <div className="mt-10 grid gap-5 lg:grid-cols-3">
+              {p.systemLayers.map((layer, index) => {
+                const Icon = [Globe2, Database, ShieldCheck][index] || Database;
+                return (
+                  <article key={layer.title} className="rounded-2xl border border-white/10 bg-white/[0.025] p-6 sm:p-7">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-xl border" style={{ color: project.color, borderColor: `${project.color}44`, background: `${project.color}10` }}>
+                      <Icon size={21} aria-hidden="true" />
+                    </span>
+                    <h3 className="mt-5 text-xl font-bold text-white">{layer.title}</h3>
+                    <p className="mt-3 text-sm leading-relaxed text-[#a89880]">{layer.description}</p>
+                    <ul className="mt-5 space-y-2.5 border-t border-white/10 pt-5">
+                      {layer.items.map((item) => (
+                        <li key={item} className="flex items-start gap-2.5 text-sm leading-relaxed text-[#c8bda9]">
+                          <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: project.color }} />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </article>
+                );
+              })}
+            </div>
+
+            {p.roles && p.roles.length > 0 && (
+              <div className="mt-7 grid gap-6 rounded-2xl border border-white/10 bg-white/[0.025] p-6 sm:p-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
+                <div>
+                  <h3 className="text-xl font-bold text-white sm:text-2xl">{p.rolesTitle}</h3>
+                  <p className="mt-3 text-sm leading-relaxed text-[#a89880]">{p.rolesIntro}</p>
+                </div>
+                <ul className="flex flex-wrap gap-2.5" aria-label={p.rolesTitle}>
+                  {p.roles.map((role) => (
+                    <li key={role} className="rounded-full border px-3.5 py-2 text-xs font-semibold" style={{ color: project.color, borderColor: `${project.color}44`, background: `${project.color}0b` }}>
+                      {role}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </section>
+        )}
 
         {project.gallery && project.gallery.length > 0 && (
           <section className="mt-24 border-t border-white/10 pt-10" aria-labelledby="system-insights-title">

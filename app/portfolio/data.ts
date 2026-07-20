@@ -11,6 +11,14 @@ export type ProjectLang = {
   result: string;
   points: string[];
   metaDesc: string;
+  facts?: Array<{ value: string; label: string }>;
+  systemEyebrow?: string;
+  systemTitle?: string;
+  systemIntro?: string;
+  systemLayers?: Array<{ title: string; description: string; items: string[] }>;
+  rolesTitle?: string;
+  rolesIntro?: string;
+  roles?: string[];
 };
 
 export type Project = {
@@ -107,42 +115,100 @@ export const PROJECTS: Project[] = [
     de: {
       title: 'VeraHome',
       tag: 'Webplattform · CRM/ERP',
-      tagline: 'Immobilienmarke, Website und vollständige Verwaltungsplattform als verbundenes digitales System.',
-      role: 'End-to-End: Strategie, Branding, UX/UI & Full-Stack-Entwicklung',
-      status: 'Live · 2026',
+      tagline: 'Eine komplette Immobilienmarke mit live geschalteter Website und eigener digitaler Verwaltungsplattform.',
+      role: 'Alleinverantwortlich von A–Z: Strategie, Branding, UX/UI, Frontend, Backend, Datenbank, Testing und Go-live',
+      status: 'Website vollständig live · Verwaltungsportal in Testphase · seit 01.07.2026',
       metaDesc: 'VeraHome: vollständige Immobilien-Website mit Branding, UX/UI, CRM-/ERP-Verwaltung, Kundenportal, Datenbank und digitalen Immobilienprozessen.',
-      challenge: 'Für VeraHome sollte nicht nur ein hochwertiger Webauftritt entstehen. Das neue Immobilienunternehmen benötigte gleichzeitig eine verlässliche digitale Betriebsgrundlage für Objekte, Inserate, Termine, Dokumente, Schäden, Kunden und wiederkehrende Verwaltungsabläufe.',
-      approach: 'Ich entwickelte das Projekt vollständig aus einer Hand: Strategie, Markenidentität, Design, UX, Frontend, Backend und Datenbank. Website, internes CRM-/ERP-System und geschütztes Portal wurden als ein zusammenhängendes Produkt geplant, damit öffentliche Kommunikation und tägliche Verwaltung auf derselben strukturierten Basis arbeiten.',
-      result: 'Ein durchgängiges Immobiliensystem mit zweisprachiger Website, zentraler Verwaltung und digitalen Portalfunktionen für die Zusammenarbeit mit Mietern, Eigentümern und Interessenten. VeraHome kann Inhalte, Objekte und operative Abläufe in einer eigenen, erweiterbaren Plattform führen.',
+      challenge: 'VeraHome startete als komplette Neugründung – ohne bestehende Marke, Website oder interne Systemlandschaft. Neben einem professionellen Marktauftritt musste deshalb gleichzeitig eine verlässliche digitale Betriebsgrundlage für Objekte, Inserate, Kontakte, Termine, Dokumente, Schäden, Rechnungen und wiederkehrende Verwaltungsabläufe entstehen.',
+      approach: 'Ich konzipierte VeraHome nicht als Website mit nachgelagerten Einzellösungen, sondern als ein verbundenes digitales Produkt. Markenidentität, Nutzerführung, öffentliche Website, Datenmodell, Rollen- und Berechtigungskonzept, CRM-/ERP-Funktionen sowie das geschützte Portal wurden gemeinsam geplant und von mir vollständig umgesetzt. Dadurch greifen öffentliche Kommunikation und interne Verwaltung auf eine konsistente Struktur zurück.',
+      result: 'Die zweisprachige öffentliche Website ist vollständig live. Parallel steht eine umfangreiche, rollenbasierte Verwaltungsplattform mit sämtlichen vorgesehenen Modulen zur Verfügung und wird aktuell getestet. Da das Projekt erst am 1. Juli 2026 begonnen hat, werden noch keine nicht belegten Effizienzkennzahlen ausgewiesen; der Case zeigt stattdessen transparent den real umgesetzten Funktionsumfang und Entwicklungsstand.',
       points: [
         'Strategie, Branding, Corporate Design und vollständige UX/UI-Konzeption',
         'Responsive, zweisprachige Immobilien-Website mit Leistungs- und Objektseiten',
-        'Individuelles CRM-/ERP-System mit Datenbank, Rollen und Berechtigungen',
-        'Objekterstellung, Inserataufschaltung und strukturierte Verwaltungsprozesse',
-        'Kalender, Dokumente, Rechnungen, Nachrichten und digitales Portal',
-        'Zentrales Änderungsprotokoll für Sicherheit und Nachvollziehbarkeit',
-        'Schadensmeldungen, Formulare und weitere digitale Serviceabläufe',
+        'Individuelles CRM-/ERP-System mit PostgreSQL-Datenbank, Rollen und Berechtigungen',
+        'Objekte, Einheiten, Inserate, Mietverhältnisse und Eigentümerschaften',
+        'Kontakte, Kalender, Dokumente, Rechnungen, Nachrichten und Rapporte',
+        'Schadensmeldungen, Aufträge, Archiv, Formulare und Serviceabläufe',
+        'Zentrales Audit-Protokoll für Sicherheit und Nachvollziehbarkeit',
       ],
+      facts: [
+        { value: '01.07.2026', label: 'Projektstart' },
+        { value: '100 % live', label: 'Öffentliche Website' },
+        { value: 'Testphase', label: 'Verwaltungsportal' },
+        { value: 'A–Z', label: 'Meine Verantwortung' },
+      ],
+      systemEyebrow: 'TECHNISCHE ARCHITEKTUR',
+      systemTitle: 'Ein System statt getrennter Einzellösungen',
+      systemIntro: 'VeraHome verbindet den öffentlichen Markenauftritt mit den operativen Immobilienprozessen und einer abgesicherten Datenbasis. Alle Ebenen wurden aufeinander abgestimmt und für die laufende Weiterentwicklung vorbereitet.',
+      systemLayers: [
+        {
+          title: 'Marke & öffentliche Website',
+          description: 'Der vollständig live geschaltete Auftritt macht Angebot, Objekte und Unternehmen zweisprachig zugänglich.',
+          items: ['HTML, CSS und JavaScript', 'Three.js und GSAP', 'Responsive DE/EN-Nutzerführung', 'Leistungen, Objekte, Formulare und Downloads'],
+        },
+        {
+          title: 'CRM-/ERP-Portal',
+          description: 'Die interne Webanwendung bündelt Stammdaten, Immobilienverwaltung, Kommunikation und operative Abläufe.',
+          items: ['Objekte, Einheiten und Inserate', 'Kontakte, Rollen und Mietverhältnisse', 'Kalender, Dokumente und Rechnungen', 'Schäden, Aufträge, Nachrichten und Audit-Protokoll'],
+        },
+        {
+          title: 'Daten, Sicherheit & Dienste',
+          description: 'Supabase bildet die technische Grundlage für Authentifizierung, Daten, Dateien und serverseitige Prozesse.',
+          items: ['PostgreSQL-Datenmodell', 'Supabase Auth und rollenbasierte Zugriffe', 'Row Level Security und private Storage-Bereiche', 'Edge Functions, E-Mail-Prozesse und Capacitor-iOS-Testhülle'],
+        },
+      ],
+      rolesTitle: 'Für reale Immobilienbeziehungen modelliert',
+      rolesIntro: 'Rechte, Informationen und Abläufe werden passend zur jeweiligen Verantwortung gesteuert – nicht über eine gemeinsame, unübersichtliche Standardansicht.',
+      roles: ['Administration', 'Mitarbeitende', 'Eigentümer', 'Mieter', 'Hauswarte', 'Handwerker', 'Partner', 'Interessenten'],
     },
     en: {
       title: 'VeraHome',
       tag: 'Web platform · CRM/ERP',
-      tagline: 'Real-estate brand, website and complete administration platform built as one connected digital system.',
-      role: 'End to end: strategy, branding, UX/UI & full-stack development',
-      status: 'Live · 2026',
+      tagline: 'A complete real-estate brand with a fully live website and its own digital administration platform.',
+      role: 'Sole end-to-end responsibility: strategy, branding, UX/UI, frontend, backend, database, testing and go-live',
+      status: 'Website fully live · Administration portal in testing · since 1 July 2026',
       metaDesc: 'VeraHome: complete real-estate website with branding, UX/UI, CRM/ERP administration, customer portal, database and digital property workflows.',
-      challenge: 'VeraHome needed more than a premium public website. The new real-estate company also required a dependable digital operating foundation for properties, listings, appointments, documents, incidents, customers and recurring administration workflows.',
-      approach: 'I developed the project end to end: strategy, brand identity, design, UX, frontend, backend and database. The website, internal CRM/ERP system and protected portal were designed as one coherent product so public communication and daily administration share the same structured foundation.',
-      result: 'An integrated real-estate system with a bilingual website, central administration and digital portal functions for collaborating with tenants, owners and prospects. VeraHome can manage content, properties and operational workflows in its own extensible platform.',
+      challenge: 'VeraHome began as a complete new venture, without an existing brand, website or internal system landscape. Alongside a professional market presence, it needed a dependable digital operating foundation for properties, listings, contacts, appointments, documents, incidents, invoices and recurring administration workflows.',
+      approach: 'I conceived VeraHome not as a website followed by disconnected tools, but as one connected digital product. Brand identity, user experience, public website, data model, roles and permissions, CRM/ERP functions and the protected portal were planned together and fully implemented by me. Public communication and internal administration therefore share one consistent structure.',
+      result: 'The bilingual public website is fully live. In parallel, an extensive role-based administration platform containing all planned modules is available and currently being tested. Since the project only began on 1 July 2026, no unverified efficiency metrics are presented; the case instead shows the real implemented scope and current delivery status transparently.',
       points: [
         'Strategy, branding, corporate design and complete UX/UI conception',
         'Responsive bilingual real-estate website with service and property pages',
-        'Custom CRM/ERP system with database, roles and permissions',
-        'Property creation, listing publication and structured administration workflows',
-        'Calendar, documents, invoices, messages and digital portal',
+        'Custom CRM/ERP system with PostgreSQL database, roles and permissions',
+        'Properties, units, listings, tenancies and ownership relationships',
+        'Contacts, calendar, documents, invoices, messages and reports',
+        'Incident reports, assignments, archive, forms and service workflows',
         'Central audit trail for security and accountability',
-        'Incident reports, forms and additional digital service workflows',
       ],
+      facts: [
+        { value: '1 Jul 2026', label: 'Project start' },
+        { value: '100% live', label: 'Public website' },
+        { value: 'Testing', label: 'Administration portal' },
+        { value: 'End to end', label: 'My responsibility' },
+      ],
+      systemEyebrow: 'TECHNICAL ARCHITECTURE',
+      systemTitle: 'One system instead of disconnected tools',
+      systemIntro: 'VeraHome connects its public brand presence with operational real-estate workflows and a secured data foundation. Every layer was designed to work together and support continued development.',
+      systemLayers: [
+        {
+          title: 'Brand & public website',
+          description: 'The fully live public presence makes the company, its services and properties available in two languages.',
+          items: ['HTML, CSS and JavaScript', 'Three.js and GSAP', 'Responsive DE/EN user journey', 'Services, properties, forms and downloads'],
+        },
+        {
+          title: 'CRM/ERP portal',
+          description: 'The internal web application brings master data, property management, communication and daily operations together.',
+          items: ['Properties, units and listings', 'Contacts, roles and tenancies', 'Calendar, documents and invoices', 'Incidents, assignments, messages and audit trail'],
+        },
+        {
+          title: 'Data, security & services',
+          description: 'Supabase provides the technical foundation for authentication, structured data, files and server-side processes.',
+          items: ['PostgreSQL data model', 'Supabase Auth and role-based access', 'Row Level Security and private storage areas', 'Edge Functions, email workflows and Capacitor iOS test wrapper'],
+        },
+      ],
+      rolesTitle: 'Modelled around real property relationships',
+      rolesIntro: 'Permissions, information and workflows are tailored to each responsibility instead of being forced into one shared, cluttered standard view.',
+      roles: ['Administration', 'Employees', 'Owners', 'Tenants', 'Caretakers', 'Contractors', 'Partners', 'Prospects'],
     },
   },
   {
