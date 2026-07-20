@@ -5,78 +5,80 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Lebenslauf Marcel Spahr 2026</title>
   <style>
+    @font-face { font-family: 'Calibri CV'; src: url('file:///Applications/Microsoft%20Word.app/Contents/Resources/DFonts/Calibri.ttf') format('truetype'); font-style: normal; font-weight: 400; }
+    @font-face { font-family: 'Calibri CV'; src: url('file:///Applications/Microsoft%20Word.app/Contents/Resources/DFonts/Calibrib.ttf') format('truetype'); font-style: normal; font-weight: 700 900; }
     @page { size: A4; margin: 0; }
     * { box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; background: #eceff2; color: #20242a; font-family: Arial, Helvetica, sans-serif; }
+    html, body { margin: 0; padding: 0; background: #edf3f8; color: #1d3248; font-family: 'Calibri CV', Calibri, Carlito, Arial, sans-serif; }
     body { font-size: 9pt; line-height: 1.36; }
     .page { position: relative; width: 210mm; min-height: 297mm; margin: 8mm auto; padding: 10.5mm 14mm 10mm; background: #fff; overflow: hidden; page-break-after: always; }
     .page:last-child { page-break-after: auto; }
-    .topline { position: absolute; inset: 0 0 auto; height: 4mm; background: linear-gradient(90deg, #a97824, #e4c766 58%, #3d6596); }
-    .header { display: grid; grid-template-columns: 1fr 32mm; gap: 9mm; align-items: center; padding-bottom: 4.5mm; border-bottom: 1px solid #d9dde2; }
-    .portrait { width: 32mm; height: 32mm; border-radius: 7mm; object-fit: cover; object-position: center top; border: 1px solid #d8c078; }
-    h1 { margin: 0; color: #111419; font-size: 25pt; line-height: 1; letter-spacing: -1px; }
-    .role { margin-top: 3mm; color: #765518; font-size: 11.6pt; font-weight: 700; letter-spacing: .2px; }
-    .status { margin-top: 2mm; color: #616873; font-size: 9pt; }
-    .contact { display: flex; flex-wrap: wrap; gap: 1.5mm 5mm; margin-top: 3mm; color: #424953; font-size: 8.2pt; }
+    .topline { position: absolute; inset: 0 0 auto; height: 4mm; background: linear-gradient(90deg, #163a5f, #2f6fad 58%, #69a2d6); }
+    .header { display: grid; grid-template-columns: 1fr 32mm; gap: 9mm; align-items: center; padding-bottom: 4.5mm; border-bottom: 1px solid #d7e1ec; }
+    .portrait { width: 32mm; height: 32mm; border-radius: 7mm; object-fit: cover; object-position: center top; border: 1px solid #8fb8dc; }
+    h1 { margin: 0; color: #102a43; font-size: 25pt; line-height: 1; letter-spacing: -1px; }
+    .role { margin-top: 3mm; color: #245f98; font-size: 11.6pt; font-weight: 700; letter-spacing: .2px; }
+    .status { margin-top: 2mm; color: #52677d; font-size: 9pt; }
+    .contact { display: flex; flex-wrap: wrap; gap: 1.5mm 5mm; margin-top: 3mm; color: #334b62; font-size: 8.2pt; }
     .contact a { color: inherit; text-decoration: none; }
     .section { margin-top: 4mm; }
-    .section-title { display: flex; align-items: center; gap: 3mm; margin: 0 0 3mm; color: #111419; font-size: 10.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 1.25px; }
-    .section-title::after { content: ''; height: 1px; flex: 1; background: #d9dde2; }
-    .summary { margin: 0; color: #3b424c; font-size: 9.4pt; line-height: 1.45; }
+    .section-title { display: flex; align-items: center; gap: 3mm; margin: 0 0 3mm; color: #102a43; font-size: 10.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 1.25px; }
+    .section-title::after { content: ''; height: 1px; flex: 1; background: #d7e1ec; }
+    .summary { margin: 0; color: #334b62; font-size: 9.4pt; line-height: 1.45; }
     .facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm; margin-top: 3mm; }
-    .fact { padding: 2.5mm 3mm; background: #f4f5f6; border-top: 2px solid #c39b3f; }
-    .fact strong { display: block; color: #171a1f; font-size: 14pt; line-height: 1.1; }
-    .fact span { display: block; margin-top: 1mm; color: #6e7580; font-size: 7.6pt; line-height: 1.3; }
+    .fact { padding: 2.5mm 3mm; background: #f3f7fb; border-top: 2px solid #2f6fad; }
+    .fact strong { display: block; color: #102a43; font-size: 14pt; line-height: 1.1; }
+    .fact span { display: block; margin-top: 1mm; color: #65788c; font-size: 7.6pt; line-height: 1.3; }
     .columns-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; }
-    .competency { padding: 3mm; border: 1px solid #d9dde2; border-radius: 3mm; }
-    .competency h3 { margin: 0; color: #765518; font-size: 9.3pt; }
-    .competency p { margin: 1.5mm 0 0; color: #515862; font-size: 8pt; line-height: 1.4; }
+    .competency { padding: 3mm; border: 1px solid #d7e1ec; border-radius: 3mm; }
+    .competency h3 { margin: 0; color: #245f98; font-size: 9.3pt; }
+    .competency p { margin: 1.5mm 0 0; color: #52677d; font-size: 8pt; line-height: 1.4; }
     .experience { position: relative; padding-left: 7mm; }
-    .experience::before { content: ''; position: absolute; left: 1.4mm; top: 2mm; bottom: 0; width: 1px; background: #d9dde2; }
+    .experience::before { content: ''; position: absolute; left: 1.4mm; top: 2mm; bottom: 0; width: 1px; background: #d7e1ec; }
     .job { position: relative; margin-bottom: 3mm; }
     .job:last-child { margin-bottom: 0; }
-    .job::before { content: ''; position: absolute; left: -6.9mm; top: 1.5mm; width: 3mm; height: 3mm; border-radius: 50%; background: #c39b3f; box-shadow: 0 0 0 1.4mm #f4f0e5; }
+    .job::before { content: ''; position: absolute; left: -6.9mm; top: 1.5mm; width: 3mm; height: 3mm; border-radius: 50%; background: #2f6fad; box-shadow: 0 0 0 1.4mm #e7f0f8; }
     .job-head { display: grid; grid-template-columns: 1fr auto; gap: 6mm; align-items: baseline; }
-    .job h3 { margin: 0; color: #171a1f; font-size: 10pt; }
-    .company { margin-top: .5mm; color: #765518; font-size: 8.6pt; font-weight: 700; }
-    .date { color: #68707a; font-size: 8pt; white-space: nowrap; }
+    .job h3 { margin: 0; color: #102a43; font-size: 10pt; }
+    .company { margin-top: .5mm; color: #245f98; font-size: 8.6pt; font-weight: 700; }
+    .date { color: #65788c; font-size: 8pt; white-space: nowrap; }
     ul { margin: 2mm 0 0; padding-left: 4.5mm; }
-    li { margin: 0 0 .7mm; color: #454c55; }
-    li::marker { color: #b28a34; }
-    .case { margin-top: 2.5mm; padding: 3mm 3.5mm; background: #f5f7fa; border-left: 2.2mm solid #3d6596; border-radius: 1.5mm; }
+    li { margin: 0 0 .7mm; color: #405970; }
+    li::marker { color: #2f6fad; }
+    .case { margin-top: 2.5mm; padding: 3mm 3.5mm; background: #f3f7fb; border-left: 2.2mm solid #69a2d6; border-radius: 1.5mm; }
     .case-head { display: flex; align-items: baseline; justify-content: space-between; gap: 4mm; }
-    .case h3 { margin: 0; color: #1e3552; font-size: 10pt; }
-    .case .tag { color: #50677f; font-size: 7.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; }
-    .case p { margin: 1.5mm 0 0; color: #404b58; font-size: 8.5pt; }
+    .case h3 { margin: 0; color: #1f5685; font-size: 10pt; }
+    .case .tag { color: #52677d; font-size: 7.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; }
+    .case p { margin: 1.5mm 0 0; color: #405970; font-size: 8.5pt; }
     .case-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2mm 5mm; margin-top: 2.5mm; }
-    .case-grid div { color: #444c56; font-size: 8pt; }
-    .case-grid strong { color: #1e3552; }
+    .case-grid div { color: #405970; font-size: 8pt; }
+    .case-grid strong { color: #1f5685; }
     .two-col { display: grid; grid-template-columns: 1.1fr .9fr; gap: 7mm; }
-    .education-card { padding: 3.2mm; background: #fbf8ef; border: 1px solid #e2d4ad; border-radius: 2mm; }
-    .education-card h3 { margin: 0; color: #171a1f; font-size: 11pt; }
-    .education-card .school { margin-top: 1mm; color: #765518; font-weight: 700; }
-    .education-card p { margin: 2mm 0 0; color: #4d535c; }
+    .education-card { padding: 3.2mm; background: #f3f7fb; border: 1px solid #c9d9e8; border-radius: 2mm; }
+    .education-card h3 { margin: 0; color: #102a43; font-size: 11pt; }
+    .education-card .school { margin-top: 1mm; color: #245f98; font-weight: 700; }
+    .education-card p { margin: 2mm 0 0; color: #405970; }
     .milestones { margin-top: 2.5mm; display: grid; gap: 1.3mm; }
-    .milestone { display: grid; grid-template-columns: 26mm 1fr; gap: 3mm; padding: 2mm 3mm; background: #fff; border: 1px solid #e5e7ea; }
-    .milestone strong { color: #765518; font-size: 8pt; }
-    .milestone span { color: #505761; font-size: 8pt; }
-    .project { padding: 2.2mm 0; border-bottom: 1px solid #e1e4e8; }
+    .milestone { display: grid; grid-template-columns: 26mm 1fr; gap: 3mm; padding: 2mm 3mm; background: #fff; border: 1px solid #d7e1ec; }
+    .milestone strong { color: #245f98; font-size: 8pt; }
+    .milestone span { color: #405970; font-size: 8pt; }
+    .project { padding: 2.2mm 0; border-bottom: 1px solid #d7e1ec; }
     .project:last-child { border-bottom: 0; }
-    .project h3 { margin: 0; color: #171a1f; font-size: 9.5pt; }
-    .project .meta { margin-top: .8mm; color: #765518; font-size: 7.8pt; font-weight: 700; }
-    .project p { margin: 1.5mm 0 0; color: #505761; font-size: 8.2pt; }
-    .cert { display: grid; grid-template-columns: 1fr auto; gap: 4mm; padding: 1.5mm 0; border-bottom: 1px solid #e1e4e8; }
+    .project h3 { margin: 0; color: #102a43; font-size: 9.5pt; }
+    .project .meta { margin-top: .8mm; color: #245f98; font-size: 7.8pt; font-weight: 700; }
+    .project p { margin: 1.5mm 0 0; color: #405970; font-size: 8.2pt; }
+    .cert { display: grid; grid-template-columns: 1fr auto; gap: 4mm; padding: 1.5mm 0; border-bottom: 1px solid #d7e1ec; }
     .cert:last-child { border-bottom: 0; }
-    .cert strong { display: block; color: #252930; font-size: 8.5pt; }
-    .cert span { display: block; margin-top: .5mm; color: #737a84; font-size: 7.5pt; }
-    .cert time { color: #765518; font-size: 7.8pt; font-weight: 700; white-space: nowrap; }
+    .cert strong { display: block; color: #20364d; font-size: 8.5pt; }
+    .cert span { display: block; margin-top: .5mm; color: #65788c; font-size: 7.5pt; }
+    .cert time { color: #245f98; font-size: 7.8pt; font-weight: 700; white-space: nowrap; }
     .tags { display: flex; flex-wrap: wrap; gap: 2mm; }
-    .tags span { padding: 1.5mm 2.3mm; border: 1px solid #d9dde2; border-radius: 20mm; color: #4b525b; font-size: 7.6pt; }
-    .small-note { margin-top: 2mm; color: #777e87; font-size: 7.5pt; line-height: 1.4; }
-    .footer { position: absolute; left: 14mm; right: 14mm; bottom: 6mm; display: flex; justify-content: space-between; color: #90969e; font-size: 7pt; }
-    .availability { padding: 4mm; background: #1c2734; color: #fff; border-radius: 2.5mm; }
-    .availability strong { display: block; color: #f2d982; font-size: 9.5pt; }
-    .availability p { margin: 1.5mm 0 0; color: #d1d9e2; font-size: 8pt; }
+    .tags span { padding: 1.5mm 2.3mm; border: 1px solid #d7e1ec; border-radius: 20mm; color: #405970; font-size: 7.6pt; }
+    .small-note { margin-top: 2mm; color: #65788c; font-size: 7.5pt; line-height: 1.4; }
+    .footer { position: absolute; left: 14mm; right: 14mm; bottom: 6mm; display: flex; justify-content: space-between; color: #7b8da0; font-size: 7pt; }
+    .availability { padding: 4mm; background: #163a5f; color: #fff; border-radius: 2.5mm; }
+    .availability strong { display: block; color: #d8ebfb; font-size: 9.5pt; }
+    .availability p { margin: 1.5mm 0 0; color: #e6f0f8; font-size: 8pt; }
     @media print {
       html, body { background: #fff; }
       .page { margin: 0; box-shadow: none; }
@@ -99,7 +101,7 @@
           <a href="https://www.linkedin.com/in/marcel-spahr-901568304">LinkedIn</a>
         </div>
       </div>
-      <img class="portrait" src="../../public/assets/MarcelSpahrOffice.PNG" alt="Marcel Spahr">
+      <img class="portrait" src="../../public/assets/BewerbungsFotoMarcelSpahr.jpg" alt="Marcel Spahr" width="91" height="91">
     </header>
 
     <section class="section">
@@ -172,8 +174,8 @@
         </div>
       </div>
 
-      <div class="case" style="border-left-color: #b28a34; background: #fbf8ef;">
-        <div class="case-head"><h3 style="color:#765518;">Diplomarbeit: LIQUODA</h3><span class="tag" style="color:#765518;">Einzelarbeit · 9 Interviews · IREB-orientiert</span></div>
+      <div class="case" style="border-left-color: #2f6fad; background: #f3f7fb;">
+        <div class="case-head"><h3 style="color:#245f98;">Diplomarbeit: LIQUODA</h3><span class="tag" style="color:#245f98;">Einzelarbeit · 9 Interviews · IREB-orientiert</span></div>
         <p><strong>«Detailkonzept und Anforderungsanalyse der tokenisierten Vermittlungsplattform LIQUODA»</strong></p>
         <p>Stakeholder-Analyse, Erhebung und Kategorisierung funktionaler und nicht-funktionaler Anforderungen, Priorisierung sowie systematische Analyse von Vertrauensbarrieren. Ergebnis sind ein priorisierter Anforderungskatalog, eine abgeleitete MVP-Definition und ein am Fallbeispiel LIQUODA validiertes Detailkonzept als Grundlage für den geplanten realen Plattformaufbau.</p>
       </div>
