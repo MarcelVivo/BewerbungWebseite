@@ -616,10 +616,47 @@ export default function ExpertisePage() {
           <section id="laufbahn" className="scroll-mt-24">
             <SectionHeading
               eyebrow="Berufliche Laufbahn"
-              title="16+ Jahre Swisscom — von Kundennähe zu End-to-End-Verantwortung"
-              intro="Offizielle Funktionsbezeichnungen und Projektschwerpunkte werden klar voneinander getrennt."
+              title="Berufspraxis, Unternehmergeist und End-to-End-Verantwortung"
+              intro="Meine aktuelle studienbegleitende Selbständigkeit und die langjährige Swisscom-Praxis sind chronologisch und klar voneinander abgegrenzt."
             />
             <div className="space-y-4">
+              <Surface accent className="p-6 sm:p-8">
+                <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-[.18em] text-[#245f98]">2025 – heute · Bern · studienbegleitend</p>
+                    <h3 className="mt-2 text-2xl font-bold tracking-[-.03em] text-[#102a43]">Selbständig · Digitalstudio Marcel Spahr</h3>
+                    <p className="mt-1 text-sm text-[#52677d]">Eigen- und Kundenprojekte · parallel zum HF-Studium aufgebaut</p>
+                  </div>
+                  <a
+                    href="https://www.marcelspahr.ch"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex flex-none items-center justify-center gap-2 rounded-lg border border-[#d7e1ec] bg-[#f8fafc] px-4 py-2.5 text-xs font-semibold text-[#334b62] transition hover:border-[#2f6fad]/45 hover:text-[#102a43]"
+                  >
+                    <ArrowUpRight size={14} aria-hidden="true" /> Digitalstudio ansehen
+                  </a>
+                </div>
+                <div className="mt-7 grid gap-4 md:grid-cols-2">
+                  {[
+                    'Digitale Lösungen von der Anforderungsanalyse über UX/UI bis zu Frontend, Backend, Datenmodell, Testing und Betrieb',
+                    'Direkte Zusammenarbeit mit Auftraggebenden und Übersetzung fachlicher Bedürfnisse in verständliche, skalierbare Lösungen',
+                    'Projektverantwortung für Websites, Webanwendungen, Portale, Datenbanken und Automatisierungen',
+                    'Ausgewählte Arbeiten: VeraHome, GiGi Beauty und die eigene Plattform LIQUODA',
+                  ].map((item) => (
+                    <div key={item} className="flex gap-3 rounded-xl border border-[#d7e1ec] bg-[#f8fafc] p-4">
+                      <CheckCircle2 size={17} className="mt-0.5 flex-none text-[#245f98]" aria-hidden="true" />
+                      <p className="text-sm leading-6 text-[#334b62]">{item}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-5 rounded-xl border border-[#2f6fad]/25 bg-[#2f6fad]/10 p-5">
+                  <p className="text-xs font-bold uppercase tracking-[.18em] text-[#2f6fad]">Einordnung für Arbeitgeber</p>
+                  <p className="mt-3 text-sm leading-6 text-[#2e536f]">
+                    Das Digitalstudio wurde parallel zum HF-Studium aufgebaut. Für eine Festanstellung bin ich ab sofort mit einem Pensum von 80–100 % verfügbar.
+                  </p>
+                </div>
+              </Surface>
+
               <Surface accent className="p-6 sm:p-8">
                 <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
                   <div>
