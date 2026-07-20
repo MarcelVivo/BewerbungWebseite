@@ -6717,7 +6717,137 @@ body.journey-warp-active .mobile-project-cta {
    Die kompakte 2×2-Struktur beantwortet in einer Station sowohl
    „Warum Marcel?“ als auch „Wie läuft die Zusammenarbeit ab?“. */
 .studio-profile-details {
-  gap: clamp(0.55rem, 1vh, 0.85rem);
+  gap: clamp(0.65rem, 1.1vh, 0.95rem);
+}
+
+.studio-profile-person {
+  display: grid;
+  grid-template-columns: clamp(5.8rem, 8.4vw, 7.8rem) minmax(0, 1fr);
+  gap: clamp(0.75rem, 1.3vw, 1.15rem);
+  align-items: center;
+}
+
+.studio-profile-portrait {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border: 1px solid rgba(231,197,106,0.58);
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  box-shadow: 0 0 0 0.28rem rgba(231,197,106,0.07), 0 0 30px rgba(231,197,106,0.12);
+}
+
+.studio-profile-portrait::after {
+  position: absolute;
+  inset: 0;
+  content: '';
+  border-radius: inherit;
+  box-shadow: inset 0 0 24px rgba(0,0,0,0.18);
+  pointer-events: none;
+}
+
+.studio-profile-portrait img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 20%;
+  transform: scale(1.16);
+}
+
+.studio-profile-identity {
+  min-width: 0;
+}
+
+.studio-profile-identity .studio-profile-kicker {
+  font-size: clamp(0.58rem, 0.7vw, 0.76rem);
+  line-height: 1.35;
+}
+
+.studio-profile-intro .studio-profile-identity h2 {
+  max-width: 24rem;
+  font-size: clamp(1.7rem, 2.7vw, 3rem);
+  line-height: 0.98;
+}
+
+.studio-profile-copy {
+  margin: clamp(0.85rem, 1.45vh, 1.2rem) 0 0;
+  color: rgba(241,236,225,0.88);
+  font-size: clamp(0.82rem, 0.98vw, 1.05rem);
+  line-height: 1.52;
+}
+
+.studio-web-signature {
+  width: min(100%, 22rem);
+  margin-top: clamp(0.55rem, 1vh, 0.85rem);
+}
+
+.studio-web-signature svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.studio-signature-shadow,
+.studio-signature-ink {
+  font-family: 'Snell Roundhand', 'Segoe Script', 'Brush Script MT', cursive;
+  font-size: 62px;
+  font-weight: 500;
+  letter-spacing: -1.5px;
+}
+
+.studio-signature-shadow {
+  fill: transparent;
+  stroke: rgba(231,197,106,0.14);
+  stroke-width: 0.8px;
+}
+
+.studio-signature-ink {
+  fill: #e7c56a;
+  stroke: #fff0b0;
+  stroke-width: 0.22px;
+  opacity: 0;
+  clip-path: inset(0 100% 0 0);
+  filter: drop-shadow(0 0 4px rgba(231,197,106,0.7)) drop-shadow(0 0 12px rgba(231,197,106,0.28));
+}
+
+.studio-signature-spark {
+  color: #ffe690;
+  fill: #ffe690;
+  stroke: rgba(255,230,144,0.8);
+  stroke-width: 0.8px;
+  opacity: 0;
+  transform: translate(10px, 68px);
+  filter: drop-shadow(0 0 5px rgba(255,220,105,0.95)) drop-shadow(0 0 12px rgba(231,197,106,0.65));
+}
+
+.studio-signature-spark-core {
+  fill: #fff8d8;
+}
+
+.studio-web-signature.is-writing .studio-signature-ink {
+  animation: studio-signature-write 2.8s cubic-bezier(.22,.68,.18,1) 0.35s both;
+}
+
+.studio-web-signature.is-writing .studio-signature-spark {
+  animation: studio-signature-magic 3.1s cubic-bezier(.22,.68,.18,1) 0.25s both;
+}
+
+@keyframes studio-signature-write {
+  0% { opacity: 1; clip-path: inset(0 100% 0 0); }
+  86%, 100% { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+
+@keyframes studio-signature-magic {
+  0% { opacity: 0; transform: translate(10px, 68px) scale(0.72); }
+  5% { opacity: 1; }
+  18% { transform: translate(82px, 36px) scale(1); }
+  36% { transform: translate(158px, 72px) scale(0.82); }
+  54% { transform: translate(238px, 39px) scale(1.08); }
+  72% { transform: translate(320px, 70px) scale(0.86); }
+  88% { opacity: 1; transform: translate(418px, 34px) scale(1); }
+  100% { opacity: 0; transform: translate(430px, 30px) scale(0.25); }
 }
 
 .studio-profile-facts {
@@ -6739,14 +6869,15 @@ body.journey-warp-active .mobile-project-cta {
 }
 
 .studio-profile-fact strong {
-  font-size: clamp(0.64rem, 0.76vw, 0.82rem);
+  font-size: clamp(0.8rem, 0.96vw, 1rem);
   line-height: 1.2;
 }
 
 .studio-profile-fact span {
   margin-top: 0.22rem;
-  font-size: clamp(0.47rem, 0.54vw, 0.6rem);
-  line-height: 1.32;
+  color: rgba(222,211,191,0.8);
+  font-size: clamp(0.62rem, 0.72vw, 0.78rem);
+  line-height: 1.38;
 }
 
 .studio-profile-process {
@@ -6759,7 +6890,7 @@ body.journey-warp-active .mobile-project-cta {
   display: block;
   margin: 0 0 0.45rem;
   color: rgba(126,239,176,0.84);
-  font-size: clamp(0.48rem, 0.56vw, 0.62rem);
+  font-size: clamp(0.62rem, 0.7vw, 0.76rem);
   font-weight: 700;
   letter-spacing: 0.14em;
   line-height: 1.2;
@@ -6785,7 +6916,7 @@ body.journey-warp-active .mobile-project-cta {
 .studio-profile-process li i {
   grid-row: 1 / 3;
   color: rgba(126,239,176,0.7);
-  font-size: clamp(0.45rem, 0.5vw, 0.56rem);
+  font-size: clamp(0.56rem, 0.62vw, 0.68rem);
   font-style: normal;
   font-weight: 700;
   line-height: 1.35;
@@ -6793,15 +6924,15 @@ body.journey-warp-active .mobile-project-cta {
 
 .studio-profile-process li strong {
   color: #fff;
-  font-size: clamp(0.54rem, 0.62vw, 0.68rem);
+  font-size: clamp(0.72rem, 0.82vw, 0.88rem);
   line-height: 1.2;
 }
 
 .studio-profile-process li span {
   margin-top: 0.1rem;
-  color: rgba(168,152,128,0.86);
-  font-size: clamp(0.43rem, 0.49vw, 0.55rem);
-  line-height: 1.28;
+  color: rgba(212,196,168,0.84);
+  font-size: clamp(0.58rem, 0.66vw, 0.72rem);
+  line-height: 1.34;
 }
 
 .studio-profile-statement {
@@ -6810,14 +6941,30 @@ body.journey-warp-active .mobile-project-cta {
 
 .studio-profile-statement p {
   margin: 0;
-  color: rgba(212,196,168,0.84);
-  font-size: clamp(0.48rem, 0.55vw, 0.62rem);
-  line-height: 1.42;
+  color: rgba(230,220,202,0.86);
+  font-size: clamp(0.62rem, 0.72vw, 0.78rem);
+  line-height: 1.48;
 }
 
 @media (max-width: 900px) {
   .mobile-studio-profile .studio-profile-content {
     gap: 0.72rem;
+  }
+
+  .mobile-studio-profile .studio-profile-person {
+    grid-template-columns: clamp(4.7rem, 22vw, 6rem) minmax(0, 1fr);
+  }
+
+  .mobile-studio-profile .studio-profile-intro .studio-profile-identity h2 {
+    font-size: clamp(1.15rem, 5.4vw, 1.6rem);
+  }
+
+  .mobile-studio-profile .studio-profile-copy {
+    font-size: clamp(0.64rem, 2.8vw, 0.78rem);
+  }
+
+  .mobile-studio-profile .studio-web-signature {
+    width: min(86%, 18rem);
   }
 
   .mobile-studio-profile .studio-profile-facts,
@@ -6832,17 +6979,30 @@ body.journey-warp-active .mobile-project-cta {
 
   .mobile-studio-profile .studio-profile-fact strong,
   .mobile-studio-profile .studio-profile-process li strong {
-    font-size: clamp(0.52rem, 2.25vw, 0.64rem);
+    font-size: clamp(0.62rem, 2.65vw, 0.76rem);
   }
 
   .mobile-studio-profile .studio-profile-fact span,
   .mobile-studio-profile .studio-profile-process li span,
   .mobile-studio-profile .studio-profile-statement p {
-    font-size: clamp(0.43rem, 1.85vw, 0.54rem);
+    font-size: clamp(0.52rem, 2.15vw, 0.64rem);
   }
 
   .mobile-studio-profile .studio-profile-process > p,
   .mobile-studio-profile .studio-profile-statement > strong {
-    font-size: clamp(0.45rem, 1.95vw, 0.56rem);
+    font-size: clamp(0.54rem, 2.25vw, 0.66rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .studio-signature-ink {
+    opacity: 1 !important;
+    clip-path: inset(0 0 0 0) !important;
+    animation: none !important;
+  }
+
+  .studio-signature-spark {
+    display: none;
+    animation: none !important;
   }
 }

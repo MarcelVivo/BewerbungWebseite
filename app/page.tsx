@@ -1319,45 +1319,87 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
   );
 }
 
+function StudioWebSignature() {
+  const signatureRef = useRef<HTMLDivElement | null>(null);
+  const [isWriting, setIsWriting] = useState(false);
+
+  useEffect(() => {
+    const signature = signatureRef.current;
+    if (!signature) return;
+
+    const world = signature.closest('.studio-profile-world');
+    if (world) {
+      const update = () => setIsWriting(world.getAttribute('aria-hidden') === 'false');
+      const observer = new MutationObserver(update);
+      observer.observe(world, { attributes: true, attributeFilter: ['aria-hidden'] });
+      update();
+      return () => observer.disconnect();
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsWriting(entry.isIntersecting && entry.intersectionRatio >= 0.35),
+      { threshold: [0, 0.35, 0.7] },
+    );
+    observer.observe(signature);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={signatureRef} className={`studio-web-signature${isWriting ? ' is-writing' : ''}`} aria-hidden="true">
+      <svg viewBox="0 0 440 105" focusable="false">
+        <text className="studio-signature-shadow" x="12" y="72">Marcel Spahr</text>
+        <text className="studio-signature-ink" x="12" y="72">Marcel Spahr</text>
+        <g className="studio-signature-spark">
+          <circle className="studio-signature-spark-core" cx="0" cy="0" r="4" />
+          <circle cx="-11" cy="-7" r="1.8" />
+          <circle cx="-17" cy="5" r="1.3" />
+          <circle cx="-6" cy="10" r="1.1" />
+          <path d="M -8 -2 L -25 -13 M -7 3 L -27 12 M -2 7 L -10 23" />
+        </g>
+      </svg>
+    </div>
+  );
+}
+
 function StudioProfileContent({ lang }: { lang: 'de' | 'en' }) {
   const copy = lang === 'de'
     ? {
         kicker: 'DIGITALSTUDIO MARCEL SPAHR · BERN',
         title: 'Persönlich geführt. Ganzheitlich umgesetzt.',
-        intro: 'Du arbeitest direkt mit mir – von der Analyse bis zur Einführung. So bleiben Ziele, Entscheidungen und Umsetzung verbunden und deine Lösung funktioniert nicht nur technisch, sondern auch im Arbeitsalltag.',
+        intro: 'Du arbeitest direkt mit mir – von der Analyse bis zur Einführung. So bleiben Ziele, Entscheidungen und Umsetzung verbunden.',
         statementTitle: 'Was du erwarten kannst',
-        statement: 'Ich höre genau hin, lese zwischen den Zeilen und verbinde unterschiedliche Stakeholder. Die Zusammenarbeit bleibt persönlich, transparent und fair. KI nutze ich gezielt als Werkzeug; Verantwortung, Entscheidungen und Qualität bleiben bei mir.',
+        statement: 'Ich höre genau hin, verbinde unterschiedliche Stakeholder und kommuniziere transparent und fair. KI beschleunigt gezielt; Verantwortung, Entscheidungen und Qualität bleiben bei mir.',
         processTitle: 'So entsteht deine Lösung',
         process: [
-          ['Verstehen', 'Ziele, Stakeholder und heutige Abläufe klären'],
-          ['Priorisieren', 'Anforderungen, Nutzen und sinnvollen Umfang festlegen'],
-          ['Umsetzen', 'Konzipieren, gestalten, entwickeln und testen'],
-          ['Begleiten', 'Einführen, optimieren und skalierbar weiterentwickeln'],
+          ['Verstehen', 'Ziele, Stakeholder und Abläufe klären'],
+          ['Priorisieren', 'Anforderungen, Nutzen und Umfang festlegen'],
+          ['Umsetzen', 'Konzipieren, gestalten, entwickeln, testen'],
+          ['Begleiten', 'Einführen, optimieren und weiterentwickeln'],
         ],
         facts: [
-          ['15+ Jahre Erfahrung', 'IT, Projektmanagement, Digitalisierung, Marketing & Verkauf'],
-          ['Zwei Fachrichtungen', 'Wirtschaftsinformatik HF in Abschlussphase · Werbetechniker-Diplom'],
-          ['A–Z-Verantwortung', 'Ein Ansprechpartner für Analyse, UX/UI, Entwicklung und Einführung'],
+          ['15+ Jahre Erfahrung', 'IT, Projekte, Digitalisierung, Marketing & Verkauf'],
+          ['Zwei Fachrichtungen', 'Wirtschaftsinformatik HF (Abschlussphase) · Werbetechnik'],
+          ['A–Z-Verantwortung', 'Analyse, UX/UI, Entwicklung und Einführung aus einer Hand'],
           ['Bern', 'Schweizweit und international tätig'],
         ],
       }
     : {
         kicker: 'MARCEL SPAHR DIGITAL STUDIO · BERN',
         title: 'Personally led. Comprehensively delivered.',
-        intro: 'You work directly with me from analysis through implementation. This keeps goals, decisions and delivery connected, so your solution works not only technically but also in daily operations.',
+        intro: 'You work directly with me from analysis through implementation. This keeps goals, decisions and delivery connected.',
         statementTitle: 'What you can expect',
-        statement: 'I listen carefully, read between the lines and connect different stakeholders. Our collaboration remains personal, transparent and fair. I use AI deliberately as a tool; responsibility, decisions and quality remain with me.',
+        statement: 'I listen carefully, connect different stakeholders and communicate transparently and fairly. AI accelerates where useful; responsibility, decisions and quality remain with me.',
         processTitle: 'How your solution takes shape',
         process: [
-          ['Understand', 'Clarify goals, stakeholders and current workflows'],
-          ['Prioritize', 'Define requirements, value and a meaningful scope'],
+          ['Understand', 'Clarify goals, stakeholders and workflows'],
+          ['Prioritize', 'Define requirements, value and scope'],
           ['Deliver', 'Conceive, design, develop and test'],
-          ['Support', 'Launch, optimize and develop for scale'],
+          ['Support', 'Launch, optimize and develop further'],
         ],
         facts: [
-          ['15+ years of experience', 'IT, project management, digitalization, marketing & sales'],
-          ['Two disciplines', 'Business Information Technology HF in final phase · Advertising Technology Diploma'],
-          ['End-to-end ownership', 'One contact for analysis, UX/UI, development and implementation'],
+          ['15+ years of experience', 'IT, projects, digitalization, marketing & sales'],
+          ['Two disciplines', 'Business Information Technology HF (final phase) · Advertising Technology'],
+          ['End-to-end ownership', 'Analysis, UX/UI, development and implementation from one source'],
           ['Bern', 'Working across Switzerland and internationally'],
         ],
       };
@@ -1369,9 +1411,17 @@ function StudioProfileContent({ lang }: { lang: 'de' | 'en' }) {
         className="studio-profile-section-flap"
       />
       <div className="studio-profile-intro">
-        <p className="studio-profile-kicker">{copy.kicker}</p>
-        <h2>{copy.title}</h2>
-        <p>{copy.intro}</p>
+        <div className="studio-profile-person">
+          <div className="studio-profile-portrait">
+            <img src="/assets/BewerbungsFotoMarcelSpahr.jpg" alt={lang === 'de' ? 'Marcel Spahr' : 'Marcel Spahr'} />
+          </div>
+          <div className="studio-profile-identity">
+            <p className="studio-profile-kicker">{copy.kicker}</p>
+            <h2>{copy.title}</h2>
+          </div>
+        </div>
+        <p className="studio-profile-copy">{copy.intro}</p>
+        <StudioWebSignature />
       </div>
       <div className="studio-profile-details">
         <div className="studio-profile-facts">
