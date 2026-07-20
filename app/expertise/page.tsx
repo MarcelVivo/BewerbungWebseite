@@ -299,15 +299,15 @@ export default function ExpertisePage() {
       </header>
 
       <div className="mx-auto grid max-w-[1440px] gap-8 px-4 py-6 sm:px-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:px-8 lg:py-10 xl:gap-10">
-        <aside className="min-w-0 lg:sticky lg:top-24 lg:h-[calc(100vh-7rem)] lg:self-start lg:overflow-y-auto lg:pr-1">
+        <aside className="min-w-0 lg:self-start">
           <Surface accent className="p-5">
             <div className="flex items-center gap-4 lg:block">
-              <div className="h-24 w-24 flex-none overflow-hidden rounded-2xl border border-[#2f6fad]/35 bg-[#f8fafc] lg:h-40 lg:w-full">
+              <div className="h-24 w-24 flex-none overflow-hidden rounded-full border-2 border-[#8fb8dc] bg-[#f8fafc] shadow-[0_10px_30px_rgba(47,111,173,.16)] lg:mx-auto lg:h-44 lg:w-44">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/assets/BewerbungsFotoMarcelSpahr.jpg"
                   alt="Marcel Spahr"
-                  className="h-full w-full scale-[1.35] object-cover object-center lg:scale-100"
+                  className="h-full w-full scale-[1.1] object-cover object-[center_18%]"
                 />
               </div>
               <div className="min-w-0 lg:mt-5">
