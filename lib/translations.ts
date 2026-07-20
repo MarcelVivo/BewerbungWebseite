@@ -7,10 +7,10 @@ export const T = {
       process: 'Ablauf', book: 'Termin buchen',
     },
     hero: {
-      badge: 'Weblösungen · CRM · ERP · KI-Automation · Bern',
-      tagline: 'Du hast ein Problem. Ich baue die komplette Lösung – inklusive sinnvoller KI.',
-      title: 'Websites, Systeme und Prozesse aus einem Guss.',
-      subtitle: 'Ich entwickle professionelle digitale Lösungen für KMU und Unternehmen: Corporate Design, moderne 2D- und 3D-Websites, CRM-/ERP-Systeme, Datenbanken, Automatisierung und KI-Unterstützung. Ich behalte den Überblick im KI-Lösungsdschungel und finde die Optimierung, die zu deinem Unternehmen passt.',
+      badge: 'Digitale Gesamtlösungen · Bern',
+      tagline: 'Für Schweizer KMU und Start-ups – persönlich von der Analyse bis zum Go-live.',
+      title: 'Deine digitale Gesamtlösung.',
+      subtitle: 'Ich verbinde Websites, Portale, CRM/ERP, Daten und manuelle Prozesse zu einer skalierbaren Gesamtlösung. KI setze ich dort ein, wo sie im Alltag einen konkreten Nutzen schafft.',
       cta: 'Deine Lösung starten', more: 'Lösungen ansehen',
     },
     about: {
@@ -90,10 +90,10 @@ export const T = {
       process: 'Process', book: 'Book a Call',
     },
     hero: {
-      badge: 'Web solutions · CRM · ERP · AI automation · Bern',
-      tagline: 'You have a problem. I build the complete solution – including useful AI.',
-      title: 'Websites, systems and processes in one flow.',
-      subtitle: 'I build professional digital solutions for SMEs and companies: corporate design, modern 2D and 3D websites, CRM/ERP systems, databases, automation and AI support. I keep track of the AI solution jungle and find the optimization that fits your business.',
+      badge: 'Complete digital solutions · Bern',
+      tagline: 'For Swiss SMEs and startups – personally guided from analysis through go-live.',
+      title: 'Your complete digital solution.',
+      subtitle: 'I connect websites, portals, CRM/ERP, data and manual processes into one scalable solution. I use AI where it creates concrete value in day-to-day operations.',
       cta: 'Start your solution', more: 'View solutions',
     },
     about: {

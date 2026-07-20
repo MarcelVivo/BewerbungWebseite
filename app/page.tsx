@@ -2649,8 +2649,8 @@ export default function HomePage() {
   useEffect(() => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const lines = lang === 'de'
-      ? ['DIGITALE LÖSUNGEN.', 'FÜR UNTERNEHMEN MIT ZUKUNFT.']
-      : ['DIGITAL SOLUTIONS BUILT', 'AS ONE SYSTEM.'];
+      ? ['DEINE DIGITALE GESAMTLÖSUNG.', 'FÜR SCHWEIZER KMU & START-UPS.']
+      : ['YOUR COMPLETE DIGITAL SOLUTION.', 'FOR SWISS SMES & STARTUPS.'];
     const letters = lines.flatMap((line, index) => {
       const container = heroFlapLineRefs.current[index];
       return container ? buildFlapWord(container, line) : [];
@@ -2678,14 +2678,14 @@ export default function HomePage() {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const lines = lang === 'de'
       ? [
-          'WEBSITES, SOFTWARE, KI UND AUTOMATISIERUNGEN.',
-          'STRATEGISCH GEPLANT, TECHNISCH SAUBER UMGESETZT',
-          'UND AUF NACHHALTIGES WACHSTUM AUSGERICHTET.',
+          'WEBSITES, PORTALE, CRM/ERP UND AUTOMATISIERUNGEN.',
+          'ICH VERBINDE SYSTEME, DATEN UND MANUELLE PROZESSE',
+          'ZU EINER SKALIERBAREN LÖSUNG – VON DER ANALYSE BIS ZUM GO-LIVE.',
         ]
       : [
-          'WEBSITES, SYSTEMS, DATABASES, AUTOMATION AND AI —',
-          'CLEARLY PLANNED, FAST TO BUILD',
-          'AND MADE TO LAST.',
+          'WEBSITES, PORTALS, CRM/ERP AND AUTOMATION.',
+          'I PERSONALLY CONNECT SYSTEMS, DATA AND MANUAL PROCESSES',
+          'INTO ONE SCALABLE SOLUTION – FROM ANALYSIS THROUGH GO-LIVE.',
         ];
     const letters = lines.flatMap((line, index) => {
       const container = heroBottomFlapLineRefs.current[index];
@@ -2747,13 +2747,13 @@ export default function HomePage() {
               <div className="hero-copy hero-copy-centered ms-anim">
                 <h1
                   className={`hero-title-flap max-w-6xl mx-auto text-5xl font-bold text-white leading-[0.96] tracking-[-0.055em] ${chakraPetch.className}`}
-                  aria-label={lang === 'de' ? 'DIGITALE LÖSUNGEN. FÜR UNTERNEHMEN MIT ZUKUNFT.' : 'DIGITAL SOLUTIONS BUILT AS ONE SYSTEM.'}
+                  aria-label={lang === 'de' ? 'DEINE DIGITALE GESAMTLÖSUNG. FÜR SCHWEIZER KMU UND START-UPS.' : 'YOUR COMPLETE DIGITAL SOLUTION. FOR SWISS SMES AND STARTUPS.'}
                 >
                   <span ref={(el) => { heroFlapLineRefs.current[0] = el; }} className="hero-flap-line">
-                    {lang === 'de' ? 'DIGITALE LÖSUNGEN.' : 'DIGITAL SOLUTIONS BUILT'}
+                    {lang === 'de' ? 'DEINE DIGITALE GESAMTLÖSUNG.' : 'YOUR COMPLETE DIGITAL SOLUTION.'}
                   </span>
                   <span ref={(el) => { heroFlapLineRefs.current[1] = el; }} className="hero-flap-line">
-                    {lang === 'de' ? 'FÜR UNTERNEHMEN MIT ZUKUNFT.' : 'AS ONE SYSTEM.'}
+                    {lang === 'de' ? 'FÜR SCHWEIZER KMU & START-UPS.' : 'FOR SWISS SMES & STARTUPS.'}
                   </span>
                 </h1>
               </div>
@@ -2766,17 +2766,17 @@ export default function HomePage() {
                 <p
                   className={`hero-bottom-flap max-w-lg mx-auto text-lg text-[#d8ccb3] leading-relaxed ${chakraPetch.className}`}
                   aria-label={lang === 'de'
-                    ? 'WEBSITES, SOFTWARE, KI UND AUTOMATISIERUNGEN. STRATEGISCH GEPLANT, TECHNISCH SAUBER UMGESETZT UND AUF NACHHALTIGES WACHSTUM AUSGERICHTET.'
-                    : 'WEBSITES, SYSTEMS, DATABASES, AUTOMATION AND AI — CLEARLY PLANNED, FAST TO BUILD AND MADE TO LAST.'}
+                    ? 'WEBSITES, PORTALE, CRM/ERP UND AUTOMATISIERUNGEN. ICH VERBINDE SYSTEME, DATEN UND MANUELLE PROZESSE ZU EINER SKALIERBAREN LÖSUNG – VON DER ANALYSE BIS ZUM GO-LIVE.'
+                    : 'WEBSITES, PORTALS, CRM/ERP AND AUTOMATION. I PERSONALLY CONNECT SYSTEMS, DATA AND MANUAL PROCESSES INTO ONE SCALABLE SOLUTION – FROM ANALYSIS THROUGH GO-LIVE.'}
                 >
                   <span ref={(el) => { heroBottomFlapLineRefs.current[0] = el; }} className="hero-bottom-flap-line">
-                    {lang === 'de' ? 'WEBSITES, SOFTWARE, KI UND AUTOMATISIERUNGEN.' : 'WEBSITES, SYSTEMS, DATABASES, AUTOMATION AND AI —'}
+                    {lang === 'de' ? 'WEBSITES, PORTALE, CRM/ERP UND AUTOMATISIERUNGEN.' : 'WEBSITES, PORTALS, CRM/ERP AND AUTOMATION.'}
                   </span>
                   <span ref={(el) => { heroBottomFlapLineRefs.current[1] = el; }} className="hero-bottom-flap-line">
-                    {lang === 'de' ? 'STRATEGISCH GEPLANT, TECHNISCH SAUBER UMGESETZT' : 'CLEARLY PLANNED, FAST TO BUILD'}
+                    {lang === 'de' ? 'ICH VERBINDE SYSTEME, DATEN UND MANUELLE PROZESSE' : 'I PERSONALLY CONNECT SYSTEMS, DATA AND MANUAL PROCESSES'}
                   </span>
                   <span ref={(el) => { heroBottomFlapLineRefs.current[2] = el; }} className="hero-bottom-flap-line">
-                    {lang === 'de' ? 'UND AUF NACHHALTIGES WACHSTUM AUSGERICHTET.' : 'AND MADE TO LAST.'}
+                    {lang === 'de' ? 'ZU EINER SKALIERBAREN LÖSUNG – VON DER ANALYSE BIS ZUM GO-LIVE.' : 'INTO ONE SCALABLE SOLUTION – FROM ANALYSIS THROUGH GO-LIVE.'}
                   </span>
                 </p>
               </div>
