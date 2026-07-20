@@ -383,7 +383,7 @@ export default function JourneyNavigator() {
           className="journey-utility-contact"
           onClick={() => goToStation(STATIONS.length - 1)}
         >
-          {lang === 'de' ? 'Deine Lösung' : 'Your solution'}
+          {lang === 'de' ? 'Deine Lösung starten' : 'Start your solution'}
         </button>
         <div className="journey-utility-legal">
           <a href="/datenschutz">{lang === 'de' ? 'Datenschutz' : 'Privacy'}</a>

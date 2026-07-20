@@ -4,7 +4,7 @@ export const T = {
   de: {
     nav: {
       about: 'Dein Digitalpartner', services: 'Meine Umsetzung', portfolio: 'Meine Referenzen',
-      process: 'Ablauf', book: 'Termin buchen',
+      process: 'Ablauf', book: 'Deine Lösung starten',
     },
     hero: {
       badge: 'Digitale Gesamtlösungen · Bern',
@@ -87,7 +87,7 @@ export const T = {
   en: {
     nav: {
       about: 'Your Digital Partner', services: 'My Execution', portfolio: 'My Work',
-      process: 'Process', book: 'Book a Call',
+      process: 'Process', book: 'Start your solution',
     },
     hero: {
       badge: 'Complete digital solutions · Bern',

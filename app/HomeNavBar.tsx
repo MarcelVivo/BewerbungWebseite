@@ -5,6 +5,7 @@ import { Menu, X } from 'lucide-react';
 import { Chakra_Petch } from 'next/font/google';
 import { useLanguage } from './LanguageContext';
 import { buildFlapWord, setFlapWordMode, type FlapLetter } from './lib/splitFlap';
+import { openJourneyLeadForm } from './lib/journeyNavigation';
 import { T } from '../lib/translations';
 
 const chakraPetch = Chakra_Petch({ subsets: ['latin'], weight: '700', display: 'swap' });
@@ -110,9 +111,13 @@ export default function HomeNavBar() {
               className={`px-2.5 py-1 text-xs font-semibold transition-colors ${lang === 'en' ? 'bg-[#c9a84c] text-[#0c0a06]' : 'text-[#a89880] hover:text-[#f4edd8]'}`}
             ><NavbarFlapLabel label="EN" /></button>
           </div>
-          <a href="mailto:kontakt@marcelspahr.ch?subject=Termin%20buchen" className="ml-1 px-4 py-1.5 rounded-lg bg-[#c9a84c] hover:bg-[#b8943a] text-[#0c0a06] text-sm font-semibold transition-colors">
+          <button
+            type="button"
+            className="ml-1 px-4 py-1.5 rounded-lg bg-[#c9a84c] hover:bg-[#b8943a] text-[#0c0a06] text-sm font-semibold transition-colors"
+            onClick={() => openJourneyLeadForm('overview', { ctaId: 'header_primary_desktop' })}
+          >
             <NavbarFlapLabel label={t.book} />
-          </a>
+          </button>
         </nav>
         <div className={`flex items-center gap-3 lg:hidden ${chakraPetch.className}`}>
           {/* Mobile language toggle */}
@@ -131,7 +136,16 @@ export default function HomeNavBar() {
           {NAV_LINKS.map(l => (
             <a key={l.href} href={l.href} className="block text-sm text-[#d4c4a8] hover:text-[#f4edd8]" onClick={(event) => { handleNavClick(event, l.href); if (l.href !== '#journey-about') setOpen(false); }}><NavbarFlapLabel label={l.label} /></a>
           ))}
-          <a href="mailto:kontakt@marcelspahr.ch?subject=Termin%20buchen" className="block text-sm font-semibold text-[#c9a84c]" onClick={() => setOpen(false)}><NavbarFlapLabel label={t.book} /></a>
+          <button
+            type="button"
+            className="block text-left text-sm font-semibold text-[#c9a84c]"
+            onClick={() => {
+              setOpen(false);
+              openJourneyLeadForm('overview', { ctaId: 'header_primary_mobile' });
+            }}
+          >
+            <NavbarFlapLabel label={t.book} />
+          </button>
         </div>
       )}
     </header>
