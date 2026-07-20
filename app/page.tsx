@@ -1324,22 +1324,40 @@ function StudioProfileContent({ lang }: { lang: 'de' | 'en' }) {
     ? {
         kicker: 'DIGITALSTUDIO MARCEL SPAHR · BERN',
         title: 'Persönlich geführt. Ganzheitlich umgesetzt.',
-        intro: 'Ich begleite Schweizer KMUs und Startups persönlich – von der ersten Idee bis zu einer Lösung, die im Alltag funktioniert und mit dem Unternehmen wachsen kann.',
-        statement: 'Ich denke Projekte von A bis Z, lese zwischen den Zeilen und verbinde unterschiedliche Stakeholder. KI nutze ich als Werkzeug – Verantwortung, Entscheidungen und Qualität bleiben persönlich bei mir.',
+        intro: 'Du arbeitest direkt mit mir – von der Analyse bis zur Einführung. So bleiben Ziele, Entscheidungen und Umsetzung verbunden und deine Lösung funktioniert nicht nur technisch, sondern auch im Arbeitsalltag.',
+        statementTitle: 'Was du erwarten kannst',
+        statement: 'Ich höre genau hin, lese zwischen den Zeilen und verbinde unterschiedliche Stakeholder. Die Zusammenarbeit bleibt persönlich, transparent und fair. KI nutze ich gezielt als Werkzeug; Verantwortung, Entscheidungen und Qualität bleiben bei mir.',
+        processTitle: 'So entsteht deine Lösung',
+        process: [
+          ['Verstehen', 'Ziele, Stakeholder und heutige Abläufe klären'],
+          ['Priorisieren', 'Anforderungen, Nutzen und sinnvollen Umfang festlegen'],
+          ['Umsetzen', 'Konzipieren, gestalten, entwickeln und testen'],
+          ['Begleiten', 'Einführen, optimieren und skalierbar weiterentwickeln'],
+        ],
         facts: [
           ['15+ Jahre Erfahrung', 'IT, Projektmanagement, Digitalisierung, Marketing & Verkauf'],
-          ['Zwei Fachrichtungen', 'Wirtschaftsinformatik HF · Werbetechniker-Diplom'],
+          ['Zwei Fachrichtungen', 'Wirtschaftsinformatik HF in Abschlussphase · Werbetechniker-Diplom'],
+          ['A–Z-Verantwortung', 'Ein Ansprechpartner für Analyse, UX/UI, Entwicklung und Einführung'],
           ['Bern', 'Schweizweit und international tätig'],
         ],
       }
     : {
         kicker: 'MARCEL SPAHR DIGITAL STUDIO · BERN',
         title: 'Personally led. Comprehensively delivered.',
-        intro: 'I personally support Swiss SMEs and startups from the first idea to a solution that works in daily operations and can scale with the business.',
-        statement: 'I think projects through from A to Z, read between the lines and connect different stakeholders. I use AI as a tool – responsibility, decisions and quality remain personal.',
+        intro: 'You work directly with me from analysis through implementation. This keeps goals, decisions and delivery connected, so your solution works not only technically but also in daily operations.',
+        statementTitle: 'What you can expect',
+        statement: 'I listen carefully, read between the lines and connect different stakeholders. Our collaboration remains personal, transparent and fair. I use AI deliberately as a tool; responsibility, decisions and quality remain with me.',
+        processTitle: 'How your solution takes shape',
+        process: [
+          ['Understand', 'Clarify goals, stakeholders and current workflows'],
+          ['Prioritize', 'Define requirements, value and a meaningful scope'],
+          ['Deliver', 'Conceive, design, develop and test'],
+          ['Support', 'Launch, optimize and develop for scale'],
+        ],
         facts: [
           ['15+ years of experience', 'IT, project management, digitalization, marketing & sales'],
-          ['Two disciplines', 'Business Information Systems HF · Advertising Technology Diploma'],
+          ['Two disciplines', 'Business Information Technology HF in final phase · Advertising Technology Diploma'],
+          ['End-to-end ownership', 'One contact for analysis, UX/UI, development and implementation'],
           ['Bern', 'Working across Switzerland and internationally'],
         ],
       };
@@ -1364,7 +1382,22 @@ function StudioProfileContent({ lang }: { lang: 'de' | 'en' }) {
             </div>
           ))}
         </div>
-        <p className="studio-profile-statement">{copy.statement}</p>
+        <div className="studio-profile-process">
+          <p>{copy.processTitle}</p>
+          <ol>
+            {copy.process.map(([title, description], index) => (
+              <li key={title}>
+                <i>{String(index + 1).padStart(2, '0')}</i>
+                <strong>{title}</strong>
+                <span>{description}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+        <div className="studio-profile-statement">
+          <strong>{copy.statementTitle}</strong>
+          <p>{copy.statement}</p>
+        </div>
       </div>
     </div>
   );
