@@ -704,11 +704,17 @@ function ValueImpactContent({
               key={diagram.code}
               type="button"
               className="value-diagram"
+              data-value-index={index}
               aria-label={`${diagram.eyebrow}: ${diagram.before} → ${diagram.after}. ${lang === 'de' ? 'Details öffnen' : 'Open details'}`}
               aria-expanded={activeInfoIndex === index}
               tabIndex={activeInfoIndex === null ? 0 : -1}
               style={{ '--value-accent': diagram.accent, '--value-accent-rgb': diagram.accentRgb } as CSSProperties}
               onPointerDown={(event) => event.stopPropagation()}
+              onPointerUp={(event) => {
+                if (event.pointerType === 'mouse' && event.button !== 0) return;
+                event.stopPropagation();
+                setActiveInfoIndex(index);
+              }}
               onClick={(event) => {
                 event.stopPropagation();
                 setActiveInfoIndex(index);
@@ -916,7 +922,10 @@ function ValueImpactWorld({ lang }: { lang: 'de' | 'en' }) {
       // Die Karten bleiben bereits im vollständig lesbaren Bereich anklickbar.
       // Das grössere Toleranzfenster verhindert, dass kleine Restbewegungen der
       // gedämpften Kamera einzelne Klickflächen kurzzeitig deaktivieren.
-      world.style.pointerEvents = hasOpenInfo || (opacity > 0.72 && approachProgress < 0.12) ? 'auto' : 'none';
+      const isInteractive = revealRaw > 0.34
+        && approachProgress < 0.22
+        && referenceTakeover < 0.72;
+      world.style.pointerEvents = hasOpenInfo || isInteractive ? 'auto' : 'none';
       world.setAttribute('aria-hidden', opacity > 0.65 ? 'false' : 'true');
 
       if (!wasVisible && revealRaw > 0.34) {

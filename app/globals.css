@@ -5909,6 +5909,19 @@ body.journey-warp-active .mobile-project-cta {
   }
 }
 
+/* Die quadratische Karte ist die einzige Pointer-Fläche. Besonders die
+   komplexe rote SVG-Grafik darf den Klick in Safari nicht selbst abfangen. */
+.value-diagram {
+  pointer-events: auto;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.value-diagram > * {
+  pointer-events: none;
+}
+
 /* ── Scrollfreie Formulare in der Abschlusskarte ────────────
    Die quadratische Aussenkarte bleibt unverändert. Innerhalb der Karte
    nutzen Projektanfrage und KI-Check die verfügbare Fläche vollständig,
