@@ -3297,8 +3297,17 @@ body.journey-warp-active .mobile-project-cta {
   pointer-events: none;
 }
 
-.spiral-service-stations:not(.is-detail-open) .spiral-service-card {
+.spiral-service-stations:not(.is-detail-open).is-interactive .spiral-service-card {
   pointer-events: auto;
+}
+
+/* Ein unsichtbares Elternelement mit pointer-events:none reicht hier nicht:
+   Kind-Buttons mit pointer-events:auto bleiben weiterhin Trefferziele. Die
+   Sichtbarkeitslogik vergibt deshalb is-interactive explizit und verhindert,
+   dass ausgeblendete Umsetzungskarten die Mehrwertkarten überdecken. */
+.spiral-service-stations:not(.is-interactive) .spiral-service-card,
+.spiral-service-stations:not(.is-interactive) .spiral-detail-panel {
+  pointer-events: none !important;
 }
 
 .spiral-detail-panel {
@@ -7021,98 +7030,74 @@ body.journey-warp-active .mobile-project-cta {
 }
 
 .studio-web-signature {
+  position: relative;
+  isolation: isolate;
   width: min(100%, 22rem);
+  aspect-ratio: 1214 / 603;
   margin-top: clamp(0.55rem, 1vh, 0.85rem);
 }
 
-.studio-web-signature svg {
+.studio-signature-ink {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
   display: block;
-  width: 100%;
-  height: auto;
-  overflow: visible;
-}
-
-.studio-signature-name-shadow,
-.studio-signature-name {
-  font-size: 92px;
-  font-weight: 400;
-  letter-spacing: 1px;
-}
-
-.studio-signature-name-shadow {
-  fill: rgba(231,197,106,0.22);
+  background: linear-gradient(105deg, #b98527 0%, #fff1b2 42%, #e5bd55 72%, #fff0a0 100%);
   opacity: 0;
   clip-path: inset(0 100% 0 0);
-  filter: blur(3px);
+  filter: drop-shadow(0 0 2px rgba(255,239,178,0.92)) drop-shadow(0 0 7px rgba(231,197,106,0.58));
+  -webkit-mask: url('/assets/marcel-spahr-signature.png') center / contain no-repeat;
+  mask: url('/assets/marcel-spahr-signature.png') center / contain no-repeat;
 }
 
-.studio-signature-name {
-  fill: #f2d77e;
+.studio-signature-ink--shadow {
+  z-index: 0;
+  background: rgba(231,197,106,0.42);
+  filter: blur(5px);
+  transform: translateY(2px) scale(1.012);
+}
+
+.studio-signature-pen {
+  position: absolute;
+  top: 76%;
+  left: 1%;
+  z-index: 2;
+  width: clamp(0.22rem, 1.15vw, 0.42rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #fff8d8;
+  box-shadow: 0 0 4px #fff4bf, 0 0 12px rgba(244,206,107,0.92), 0 0 22px rgba(231,197,106,0.58);
   opacity: 0;
-  clip-path: inset(0 100% 0 0);
-  filter: drop-shadow(0 0 4px rgba(231,197,106,0.72)) drop-shadow(0 0 12px rgba(231,197,106,0.3));
+  transform: translate(-50%, -50%) scale(0.7);
 }
 
-.studio-signature-underline {
-  fill: none;
-  stroke: rgba(242,215,126,0.9);
-  stroke-width: 2px;
-  stroke-linecap: round;
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  filter: drop-shadow(0 0 5px rgba(231,197,106,0.62));
+.studio-web-signature.is-writing .studio-signature-ink {
+  animation: studio-signature-reveal 2.9s cubic-bezier(.2,.68,.18,1) 0.2s forwards;
 }
 
-.studio-signature-spark {
-  color: #ffe690;
-  fill: #ffe690;
-  stroke: rgba(255,230,144,0.8);
-  stroke-width: 0.8px;
-  opacity: 0;
-  transform: translate(10px, 68px);
-  filter: drop-shadow(0 0 5px rgba(255,220,105,0.95)) drop-shadow(0 0 12px rgba(231,197,106,0.65));
+.studio-web-signature.is-writing .studio-signature-ink--shadow {
+  animation-duration: 3.05s;
 }
 
-.studio-signature-spark-core {
-  fill: #fff8d8;
-}
-
-.studio-web-signature.is-writing .studio-signature-name {
-  animation: studio-signature-reveal 2.6s cubic-bezier(.22,.68,.18,1) 0.24s forwards;
-}
-
-.studio-web-signature.is-writing .studio-signature-name-shadow {
-  animation: studio-signature-reveal 2.6s cubic-bezier(.22,.68,.18,1) 0.24s forwards;
-}
-
-.studio-web-signature.is-writing .studio-signature-underline {
-  animation: studio-signature-write 0.9s cubic-bezier(.22,.68,.18,1) 2.55s forwards;
-}
-
-.studio-web-signature.is-writing .studio-signature-spark {
-  animation: studio-signature-magic 3.1s cubic-bezier(.22,.68,.18,1) 0.25s both;
-}
-
-@keyframes studio-signature-write {
-  0% { opacity: 1; stroke-dashoffset: 1; }
-  100% { opacity: 1; stroke-dashoffset: 0; }
+.studio-web-signature.is-writing .studio-signature-pen {
+  animation: studio-signature-pen-write 3.05s cubic-bezier(.2,.68,.18,1) 0.2s both;
 }
 
 @keyframes studio-signature-reveal {
   0% { opacity: 0; clip-path: inset(0 100% 0 0); }
-  8% { opacity: 1; }
+  4% { opacity: 1; }
   100% { opacity: 1; clip-path: inset(0 0 0 0); }
 }
 
-@keyframes studio-signature-magic {
-  0% { opacity: 0; transform: translate(10px, 68px) scale(0.72); }
-  5% { opacity: 1; }
-  18% { transform: translate(82px, 36px) scale(1); }
-  36% { transform: translate(158px, 72px) scale(0.82); }
-  54% { transform: translate(238px, 39px) scale(1.08); }
-  72% { transform: translate(320px, 70px) scale(0.86); }
-  88% { opacity: 1; transform: translate(418px, 34px) scale(1); }
-  100% { opacity: 0; transform: translate(430px, 30px) scale(0.25); }
+@keyframes studio-signature-pen-write {
+  0% { top: 76%; left: 1%; opacity: 0; transform: translate(-50%, -50%) scale(0.65); }
+  4% { opacity: 1; }
+  22% { top: 54%; left: 22%; transform: translate(-50%, -50%) scale(1); }
+  43% { top: 51%; left: 43%; transform: translate(-50%, -50%) scale(0.8); }
+  62% { top: 43%; left: 62%; transform: translate(-50%, -50%) scale(1.08); }
+  82% { top: 36%; left: 82%; transform: translate(-50%, -50%) scale(0.86); }
+  94% { opacity: 1; }
+  100% { top: 30%; left: 99%; opacity: 0; transform: translate(-50%, -50%) scale(0.25); }
 }
 
 .studio-profile-facts {
@@ -7256,24 +7241,13 @@ body.journey-warp-active .mobile-project-cta {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .studio-signature-name {
+  .studio-signature-ink {
     opacity: 1 !important;
     clip-path: none !important;
     animation: none !important;
   }
 
-  .studio-signature-name-shadow {
-    opacity: 1 !important;
-    clip-path: none !important;
-    animation: none !important;
-  }
-
-  .studio-signature-underline {
-    stroke-dashoffset: 0 !important;
-    animation: none !important;
-  }
-
-  .studio-signature-spark {
+  .studio-signature-pen {
     display: none;
     animation: none !important;
   }

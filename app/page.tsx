@@ -25,11 +25,10 @@ import {
   type JourneyLeadForm,
 } from './lib/journeyNavigation';
 import { PROJECTS } from './portfolio/data';
-import { Chakra_Petch, Great_Vibes } from 'next/font/google';
+import { Chakra_Petch } from 'next/font/google';
 import { trackWebsiteEvent, type WebsiteFormId } from './lib/analytics';
 
 const chakraPetch = Chakra_Petch({ subsets: ['latin'], weight: '700', display: 'swap' });
-const greatVibes = Great_Vibes({ subsets: ['latin'], weight: '400', display: 'swap' });
 type LeadFormId = JourneyLeadForm;
 
 // Radius, den die reale 3D-Leistungskarte ("Karte 01") in BrainBackground.tsx
@@ -1388,18 +1387,9 @@ function StudioWebSignature() {
 
   return (
     <div ref={signatureRef} className={`studio-web-signature${isWriting ? ' is-writing' : ''}`} aria-hidden="true">
-      <svg viewBox="0 0 620 150" focusable="false">
-        <text x="18" y="108" className={`studio-signature-name-shadow ${greatVibes.className}`}>Marcel Spahr</text>
-        <text x="18" y="108" className={`studio-signature-name ${greatVibes.className}`}>Marcel Spahr</text>
-        <path className="studio-signature-underline" pathLength="1" d="M30 124C168 116 325 118 578 112" />
-        <g className="studio-signature-spark">
-          <circle className="studio-signature-spark-core" cx="0" cy="0" r="4" />
-          <circle cx="-11" cy="-7" r="1.8" />
-          <circle cx="-17" cy="5" r="1.3" />
-          <circle cx="-6" cy="10" r="1.1" />
-          <path d="M -8 -2 L -25 -13 M -7 3 L -27 12 M -2 7 L -10 23" />
-        </g>
-      </svg>
+      <span className="studio-signature-ink studio-signature-ink--shadow" />
+      <span className="studio-signature-ink" />
+      <span className="studio-signature-pen" />
     </div>
   );
 }
@@ -1666,6 +1656,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       if (viewZ <= 0.001 || visibility <= 0) {
         group.style.opacity = '0';
         group.style.pointerEvents = 'none';
+        group.classList.remove('is-interactive');
         return;
       }
 
@@ -1698,7 +1689,9 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       world.style.transform = `translate3d(${screenX.toFixed(2)}px, ${screenY.toFixed(2)}px, 0) scale(${scale.toFixed(4)}) rotateY(${yawDeg.toFixed(3)}deg)`;
 
       group.style.opacity = String(visibility);
-      group.style.pointerEvents = visibility > 0.55 ? 'auto' : 'none';
+      const isInteractive = visibility > 0.55;
+      group.style.pointerEvents = isInteractive ? 'auto' : 'none';
+      group.classList.toggle('is-interactive', isInteractive);
       if (!materialized && visibility > 0.05) {
         materialized = true;
         group.classList.add('is-materialized');
