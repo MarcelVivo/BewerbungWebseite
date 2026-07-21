@@ -5909,6 +5909,239 @@ body.journey-warp-active .mobile-project-cta {
   }
 }
 
+/* ── Einheitliches Farbsystem der drei Anfragewege ──────────
+   Beratung = Weiss/Grün, Projekt = Weiss/Gold, KI = Weiss/Blau. */
+.project-cta-content[data-active-form='consultation'] {
+  --active-form-accent-rgb: 77,191,127;
+}
+
+.project-cta-content[data-active-form='project'] {
+  --active-form-accent-rgb: 200,154,61;
+}
+
+.project-cta-content[data-active-form='ki'] {
+  --active-form-accent-rgb: 77,127,191;
+}
+
+.project-cta-content[data-active-form='consultation'],
+.project-cta-content[data-active-form='project'],
+.project-cta-content[data-active-form='ki'] {
+  border-color: rgba(var(--active-form-accent-rgb),0.42);
+  background:
+    radial-gradient(circle at 50% 8%, rgba(var(--active-form-accent-rgb),0.12), transparent 46%),
+    rgba(1,8,5,0.7);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 22px 70px rgba(0,0,0,0.42),
+    0 0 42px rgba(var(--active-form-accent-rgb),0.1);
+}
+
+.project-form-tabs button[data-form] strong {
+  color: rgba(255,255,255,0.72);
+}
+
+.project-form-tabs button[data-form] small {
+  color: rgba(255,255,255,0.42);
+}
+
+.project-form-tabs button[data-form].is-active strong {
+  color: #fff;
+}
+
+.project-form-tabs button[data-form].is-active small {
+  color: rgba(255,255,255,0.72);
+}
+
+/* Beratung: sämtliche Formularelemente weiss mit grünem Akzent. */
+.project-cta-panel[data-form='consultation'] .project-cta-kicker {
+  color: rgb(var(--form-accent-rgb));
+}
+
+.project-cta-panel[data-form='consultation'] .project-cta-copy,
+.project-cta-panel[data-form='consultation'] .project-consultation-form label > span,
+.project-cta-panel[data-form='consultation'] .project-consultation-form .project-consent > span {
+  color: rgba(255,255,255,0.76);
+}
+
+.project-cta-panel[data-form='consultation'] .project-consultation-form input,
+.project-cta-panel[data-form='consultation'] .project-consultation-form textarea {
+  border-color: rgba(var(--form-accent-rgb),0.34);
+  color: #fff;
+  background: rgba(0,8,4,0.62);
+}
+
+.project-cta-panel[data-form='consultation'] .project-consultation-form input:focus,
+.project-cta-panel[data-form='consultation'] .project-consultation-form textarea:focus {
+  border-color: rgba(var(--form-accent-rgb),0.92);
+  box-shadow: 0 0 0 3px rgba(var(--form-accent-rgb),0.14), 0 0 22px rgba(var(--form-accent-rgb),0.11);
+}
+
+.project-cta-panel[data-form='consultation'] .project-consultation-form textarea::placeholder {
+  color: rgba(255,255,255,0.34);
+}
+
+.project-cta-panel[data-form='consultation'] .project-consultation-form .project-consent input {
+  accent-color: rgb(var(--form-accent-rgb));
+}
+
+.project-cta-panel[data-form='consultation'] .project-consultation-form .project-consent a {
+  color: #7eefb0;
+}
+
+.project-cta-panel[data-form='consultation'] .project-cta-button {
+  border-color: rgba(var(--form-accent-rgb),0.92);
+  color: #fff;
+  background: linear-gradient(135deg, rgba(var(--form-accent-rgb),0.34), rgba(var(--form-accent-rgb),0.12));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), 0 0 28px rgba(var(--form-accent-rgb),0.2);
+}
+
+/* Projektanfrage: weisse Inhalte mit durchgängigen Goldakzenten. */
+.project-cta-panel[data-form='project'] .inquiry-page--embedded {
+  color: #fff !important;
+}
+
+.project-cta-panel[data-form='project'] .inquiry-card,
+.project-cta-panel[data-form='project'] .inquiry-choice,
+.project-cta-panel[data-form='project'] .inquiry-input,
+.project-cta-panel[data-form='project'] .inquiry-consent {
+  border-color: rgba(var(--form-accent-rgb),0.3);
+}
+
+.project-cta-panel[data-form='project'] .inquiry-card h2,
+.project-cta-panel[data-form='project'] .inquiry-card h3,
+.project-cta-panel[data-form='project'] .inquiry-card label,
+.project-cta-panel[data-form='project'] .inquiry-input {
+  color: #fff !important;
+}
+
+.project-cta-panel[data-form='project'] .inquiry-page--embedded [class~="text-[#7a6d5a]"],
+.project-cta-panel[data-form='project'] .inquiry-page--embedded [class~="text-[#a89880]"] {
+  color: rgba(255,255,255,0.62) !important;
+}
+
+.project-cta-panel[data-form='project'] .inquiry-page--embedded [class~="text-[#c9a84c]"],
+.project-cta-panel[data-form='project'] .inquiry-page--embedded [class~="text-[#d4b86a]"] {
+  color: #e7c56a !important;
+}
+
+.project-cta-panel[data-form='project'] .inquiry-step.is-active,
+.project-cta-panel[data-form='project'] .inquiry-choice.is-selected,
+.project-cta-panel[data-form='project'] .inquiry-primary-button {
+  border-color: rgba(var(--form-accent-rgb),0.9);
+  color: #fff;
+  background: rgba(var(--form-accent-rgb),0.15);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 0 22px rgba(var(--form-accent-rgb),0.14);
+}
+
+.project-cta-panel[data-form='project'] .inquiry-navigation > span,
+.project-cta-panel[data-form='project'] .inquiry-step.is-complete {
+  color: #e7c56a;
+}
+
+/* KI-Check: alle früher goldenen Utility-Akzente werden innerhalb der
+   eingebetteten Karte konsequent blau; Fliesstext bleibt weiss. */
+.project-cta-panel[data-form='ki'] .ki-check-embedded {
+  color: #fff !important;
+}
+
+.project-cta-panel[data-form='ki'] .ki-check-badge {
+  border-color: rgba(142,190,242,0.58) !important;
+  color: #8ebef2 !important;
+  background: rgba(var(--form-accent-rgb),0.14) !important;
+}
+
+.project-cta-panel[data-form='ki'] .ki-check-heading,
+.project-cta-panel[data-form='ki'] .ki-check-question h2,
+.project-cta-panel[data-form='ki'] .ki-check-contact h2,
+.project-cta-panel[data-form='ki'] .ki-check-success h2 {
+  color: #fff !important;
+}
+
+.project-cta-panel[data-form='ki'] .ki-check-heading em,
+.project-cta-panel[data-form='ki'] .ki-check-question > p:first-child,
+.project-cta-panel[data-form='ki'] .ki-check-contact > p:first-child {
+  color: #8ebef2 !important;
+}
+
+.project-cta-panel[data-form='ki'] .ki-check-intro-copy,
+.project-cta-panel[data-form='ki'] .ki-check-question > p:nth-child(3),
+.project-cta-panel[data-form='ki'] .ki-check-contact > p,
+.project-cta-panel[data-form='ki'] .ki-check-stats,
+.project-cta-panel[data-form='ki'] .ki-check-counter,
+.project-cta-panel[data-form='ki'] .ki-check-back button,
+.project-cta-panel[data-form='ki'] .ki-check-privacy {
+  color: rgba(255,255,255,0.62) !important;
+}
+
+.project-cta-panel[data-form='ki'] .ki-check-intro-copy span,
+.project-cta-panel[data-form='ki'] .ki-check-stats .text-white {
+  color: #fff !important;
+}
+
+.project-cta-panel[data-form='ki'] .ki-check-start,
+.project-cta-panel[data-form='ki'] .ki-check-contact-form > button,
+.project-cta-panel[data-form='ki'] .ki-check-success-content > button,
+.project-cta-panel[data-form='ki'] .ki-check-embedded [class~="bg-[#c9a84c]"] {
+  border-color: #8ebef2 !important;
+  color: #fff !important;
+  background: linear-gradient(135deg, #5b91d0, #35679f) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), 0 0 26px rgba(var(--form-accent-rgb),0.24) !important;
+}
+
+.project-cta-panel[data-form='ki'] .ki-check-embedded [class*="bg-[#c9a84c]/"] {
+  background-color: rgba(var(--form-accent-rgb),0.16) !important;
+}
+
+.project-cta-panel[data-form='ki'] .ki-check-embedded [class*="border-[#c9a84c]"] {
+  border-color: rgba(142,190,242,0.78) !important;
+}
+
+.project-cta-panel[data-form='ki'] .ki-check-embedded [class~="text-[#c9a84c]"],
+.project-cta-panel[data-form='ki'] .ki-check-embedded [class~="text-[#d4b86a]"] {
+  color: #8ebef2 !important;
+}
+
+.project-cta-panel[data-form='ki'] .ki-check-embedded [class~="text-[#7a6d5a]"],
+.project-cta-panel[data-form='ki'] .ki-check-embedded [class~="text-[#a89880]"],
+.project-cta-panel[data-form='ki'] .ki-check-embedded [class~="text-[#d4c4a8]"] {
+  color: rgba(255,255,255,0.64) !important;
+}
+
+.project-cta-panel[data-form='ki'] .ki-check-options > button,
+.project-cta-panel[data-form='ki'] .ki-check-contact-form > input,
+.project-cta-panel[data-form='ki'] .ki-check-contact-form > label,
+.project-cta-panel[data-form='ki'] .ki-check-success-next {
+  border-color: rgba(142,190,242,0.24) !important;
+  color: rgba(255,255,255,0.82) !important;
+  background: rgba(2,10,19,0.66) !important;
+}
+
+.project-cta-panel[data-form='ki'] .ki-check-options > button:not(:disabled):hover,
+.project-cta-panel[data-form='ki'] .ki-check-contact-form > input:focus {
+  border-color: rgba(142,190,242,0.76) !important;
+  background: rgba(var(--form-accent-rgb),0.12) !important;
+  box-shadow: 0 0 20px rgba(var(--form-accent-rgb),0.12);
+}
+
+.project-cta-panel[data-form='ki'] .ki-check-options > button:disabled {
+  opacity: 0.42;
+}
+
+.project-cta-panel[data-form='ki'] .ki-check-options svg,
+.project-cta-panel[data-form='ki'] .ki-check-contact-form a,
+.project-cta-panel[data-form='ki'] .ki-check-privacy a,
+.project-cta-panel[data-form='ki'] .ki-check-privacy svg {
+  color: #8ebef2 !important;
+}
+
+.project-cta-panel[data-form='ki'] .ki-check-contact-form input[type='checkbox'] {
+  accent-color: #4d7fbf;
+}
+
+.project-cta-panel[data-form='ki'] .ki-check-embedded > .h-1 > div {
+  background: #4d7fbf !important;
+}
+
 /* Die quadratische Karte ist die einzige Pointer-Fläche. Besonders die
    komplexe rote SVG-Grafik darf den Klick in Safari nicht selbst abfangen. */
 .value-diagram {
@@ -6496,13 +6729,13 @@ body.journey-warp-active .mobile-project-cta {
 .project-form-overview-grid button[data-form='consultation'],
 .project-form-tabs button[data-form='consultation'],
 .project-cta-panel[data-form='consultation'] {
-  --form-accent-rgb: 200,154,61;
+  --form-accent-rgb: 77,191,127;
 }
 
 .project-form-overview-grid button[data-form='project'],
 .project-form-tabs button[data-form='project'],
 .project-cta-panel[data-form='project'] {
-  --form-accent-rgb: 166,66,92;
+  --form-accent-rgb: 200,154,61;
 }
 
 .project-form-overview-grid button[data-form='ki'],
@@ -7705,4 +7938,10 @@ body.journey-warp-active .mobile-project-cta {
   .mobile-value-impact .value-info-stages {
     display: none;
   }
+}
+
+/* Die aktive Bezeichnung bleibt weiss; der jeweilige Akzent erscheint über
+   Rahmen, Fläche und Leuchten des Buttons. */
+.project-form-tabs button[data-form].is-active strong {
+  color: #fff;
 }

@@ -1209,7 +1209,7 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
   }
 
   return (
-    <div className={`project-cta-content ${chakraPetch.className}`}>
+    <div className={`project-cta-content ${chakraPetch.className}`} data-active-form={activeForm}>
       <JourneySectionFlapTitle
         label={lang === 'de' ? 'DEINE LÖSUNG' : 'YOUR SOLUTION'}
         className="project-cta-section-flap"
