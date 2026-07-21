@@ -7023,19 +7023,21 @@ body.journey-warp-active .mobile-project-cta {
   width: 100%;
   margin: 0;
   font-size: clamp(0.65rem, 0.98vw, 0.98rem);
-  color: #f1d474;
+  color: #fff;
   text-align: center;
-  text-shadow: 0 0 18px rgba(231, 197, 106, 0.38);
+  text-shadow: 0 0 22px rgba(255, 255, 255, 0.18);
 }
 
 .studio-profile-content {
   --studio-profile-pad: clamp(1.35rem, 2.2vw, 2.15rem);
   position: relative;
   isolation: isolate;
-  display: flex;
-  flex-direction: column;
-  align-content: initial;
-  gap: clamp(0.55rem, 0.9vw, 0.85rem);
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1.55fr) minmax(0, 1.05fr) minmax(0, 0.9fr);
+  align-content: stretch;
+  gap: clamp(0.38rem, 0.62vw, 0.58rem);
   padding: 0 var(--studio-profile-pad) var(--studio-profile-pad);
   overflow: hidden;
   border: 1px solid rgba(231, 197, 106, 0.42);
@@ -7079,9 +7081,8 @@ body.journey-warp-active .mobile-project-cta {
 .studio-profile-top-row {
   position: relative;
   display: block;
-  flex: 0 0 49%;
   width: calc(100% + (2 * var(--studio-profile-pad)));
-  height: auto;
+  height: 100%;
   min-height: 0;
   aspect-ratio: auto;
   margin-right: calc(-1 * var(--studio-profile-pad));
@@ -7161,12 +7162,11 @@ body.journey-warp-active .mobile-project-cta {
   display: grid;
   grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
   gap: clamp(1rem, 2.25vw, 2.25rem);
-  flex: 0 0 auto;
   align-items: center;
   align-self: stretch;
-  min-height: max-content;
-  padding: clamp(0.9rem, 1.4vw, 1.25rem) clamp(0.15rem, 0.4vw, 0.4rem);
-  overflow: visible;
+  min-height: 0;
+  padding: clamp(0.68rem, 1vw, 0.95rem) clamp(0.15rem, 0.4vw, 0.4rem);
+  overflow: hidden;
   border-bottom: 1px solid rgba(231, 197, 106, 0.2);
 }
 
@@ -7176,7 +7176,7 @@ body.journey-warp-active .mobile-project-cta {
 
 .studio-profile-positioning-title .studio-profile-kicker {
   margin: 0 0 clamp(0.35rem, 0.55vw, 0.55rem);
-  font-size: clamp(0.6rem, 0.72vw, 0.74rem);
+  font-size: clamp(0.52rem, 1.1cqw, 0.72rem);
   color: rgba(213, 181, 100, 0.88);
   letter-spacing: 0.16em;
   line-height: 1.3;
@@ -7185,7 +7185,7 @@ body.journey-warp-active .mobile-project-cta {
 .studio-profile-positioning-title h2 {
   margin: 0;
   color: #f9e9b8;
-  font-size: clamp(1.48rem, 1.95vw, 1.98rem);
+  font-size: clamp(1.05rem, 2.7cqw, 1.75rem);
   font-weight: 600;
   letter-spacing: -0.035em;
   line-height: 1.08;
@@ -7196,7 +7196,7 @@ body.journey-warp-active .mobile-project-cta {
   max-width: none;
   margin: 0;
   color: rgba(226, 209, 165, 0.78);
-  font-size: clamp(0.76rem, 0.9vw, 0.92rem);
+  font-size: clamp(0.62rem, 1.25cqw, 0.86rem);
   font-weight: 400;
   line-height: 1.62;
 }
@@ -7205,9 +7205,8 @@ body.journey-warp-active .mobile-project-cta {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0;
-  flex: 1 0 auto;
   align-self: stretch;
-  min-height: clamp(8.5rem, 22%, 11rem);
+  min-height: 0;
   overflow: hidden;
   border: 1px solid rgba(231, 197, 106, 0.2);
   border-radius: clamp(0.65rem, 1vw, 0.9rem);
@@ -7221,7 +7220,7 @@ body.journey-warp-active .mobile-project-cta {
   flex-direction: column;
   justify-content: center;
   min-height: 0;
-  overflow: visible;
+  overflow: hidden;
   aspect-ratio: auto;
   padding: clamp(0.72rem, 1vw, 0.95rem);
   border: 0;
@@ -7236,7 +7235,7 @@ body.journey-warp-active .mobile-project-cta {
 
 .studio-profile-content > .studio-profile-facts .studio-profile-fact strong {
   color: rgba(249, 231, 177, 0.94);
-  font-size: clamp(0.76rem, 0.88vw, 0.9rem);
+  font-size: clamp(0.62rem, 1.2cqw, 0.84rem);
   font-weight: 600;
   letter-spacing: -0.015em;
   line-height: 1.24;
@@ -7246,7 +7245,7 @@ body.journey-warp-active .mobile-project-cta {
 .studio-profile-content > .studio-profile-facts .studio-profile-fact span {
   margin-top: clamp(0.22rem, 0.4vw, 0.4rem);
   color: rgba(209, 190, 143, 0.68);
-  font-size: clamp(0.59rem, 0.67vw, 0.69rem);
+  font-size: clamp(0.5rem, 1cqw, 0.66rem);
   font-weight: 400;
   line-height: 1.45;
 }
@@ -7275,6 +7274,7 @@ body.journey-warp-active .mobile-project-cta {
 
   .mobile-studio-profile .studio-profile-top-row {
     flex: 0 0 44%;
+    height: auto;
     aspect-ratio: 1.65 / 1;
   }
 
