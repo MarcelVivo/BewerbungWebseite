@@ -61,6 +61,13 @@ export const metadata = {
   category: 'business',
 };
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#020303',
+};
+
 const jsonLd = [
   {
     '@context': 'https://schema.org',

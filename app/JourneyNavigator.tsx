@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Chakra_Petch } from 'next/font/google';
+import { ChevronLeft, ChevronRight, List, X } from 'lucide-react';
 import { useLanguage } from './LanguageContext';
 import {
   JOURNEY_CAMERA_WARP_EVENT,
@@ -55,6 +56,7 @@ export default function JourneyNavigator() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [travelTargetIndex, setTravelTargetIndex] = useState<number | null>(null);
   const [travelMode, setTravelMode] = useState<'fast' | 'warp' | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const travelTargetRef = useRef<number | null>(null);
   const cancelTravelRef = useRef<(() => void) | null>(null);
   const trackedStationsRef = useRef(new Set<number>());
@@ -126,6 +128,15 @@ export default function JourneyNavigator() {
   }, []);
 
   useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMobileMenuOpen(false);
+    };
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [mobileMenuOpen]);
+
+  useEffect(() => {
     const interruptTravel = (event: Event) => {
       if (travelTargetRef.current === null) return;
       if (event instanceof KeyboardEvent) {
@@ -161,6 +172,7 @@ export default function JourneyNavigator() {
     const target = document.getElementById(targetId);
     if (!target) return window.scrollY;
     const targetTop = target.getBoundingClientRect().top + window.scrollY;
+    if (window.innerWidth <= 699) return targetTop;
     return targetTop - Math.max(0, (window.innerHeight - target.offsetHeight) / 2);
   }
 
@@ -283,6 +295,7 @@ export default function JourneyNavigator() {
   }
 
   function goToStation(index: number) {
+    setMobileMenuOpen(false);
     trackWebsiteEvent('journey_navigation', {
       station: STATIONS[index].target,
       metadata: {
@@ -292,6 +305,11 @@ export default function JourneyNavigator() {
     });
     if (index === STATIONS.length - 1) {
       openJourneyLeadForm('overview', { navigate: false, ctaId: 'journey_navigation_solution' });
+    }
+
+    if (window.innerWidth <= 699) {
+      startAdaptiveTravel(index, 'warp');
+      return;
     }
 
     const stationDistance = Math.abs(index - activeIndex);
@@ -408,6 +426,100 @@ export default function JourneyNavigator() {
           <span aria-hidden="true">·</span>
           <a href="/impressum">{lang === 'de' ? 'Impressum' : 'Legal notice'}</a>
         </div>
+      </div>
+      <button
+        type="button"
+        className={`journey-mobile-backdrop ${mobileMenuOpen ? 'is-open' : ''}`}
+        aria-label={lang === 'de' ? 'Stationsübersicht schliessen' : 'Close station overview'}
+        tabIndex={mobileMenuOpen ? 0 : -1}
+        onClick={() => setMobileMenuOpen(false)}
+      />
+      <section
+        className={`journey-mobile-sheet ${mobileMenuOpen ? 'is-open' : ''}`}
+        aria-hidden={!mobileMenuOpen}
+        aria-label={lang === 'de' ? 'Alle Stationen' : 'All stations'}
+      >
+        <header>
+          <div>
+            <span>{lang === 'de' ? 'DEINE REISE' : 'YOUR JOURNEY'}</span>
+            <strong>{STATIONS[activeIndex].label[lang]}</strong>
+          </div>
+          <button
+            type="button"
+            tabIndex={mobileMenuOpen ? 0 : -1}
+            aria-label={lang === 'de' ? 'Schliessen' : 'Close'}
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <X size={22} strokeWidth={2} aria-hidden="true" />
+          </button>
+        </header>
+        <div className="journey-mobile-stations">
+          {STATIONS.map((station, index) => (
+            <button
+              key={`mobile-${station.target}`}
+              type="button"
+              className={index === activeIndex ? 'is-active' : ''}
+              tabIndex={mobileMenuOpen ? 0 : -1}
+              aria-current={index === activeIndex ? 'location' : undefined}
+              onClick={() => goToStation(index)}
+            >
+              <span>{String(index + 1).padStart(2, '0')}</span>
+              <strong>{station.label[lang]}</strong>
+              <ChevronRight size={19} strokeWidth={2} aria-hidden="true" />
+            </button>
+          ))}
+        </div>
+        <footer>
+          <div className="journey-mobile-language" aria-label={lang === 'de' ? 'Sprache wählen' : 'Choose language'}>
+            <button type="button" tabIndex={mobileMenuOpen ? 0 : -1} className={lang === 'de' ? 'is-active' : ''} onClick={() => setLang('de')}>DE</button>
+            <span>/</span>
+            <button type="button" tabIndex={mobileMenuOpen ? 0 : -1} className={lang === 'en' ? 'is-active' : ''} onClick={() => setLang('en')}>EN</button>
+          </div>
+          <button
+            type="button"
+            className="journey-mobile-project"
+            tabIndex={mobileMenuOpen ? 0 : -1}
+            onClick={() => {
+              setMobileMenuOpen(false);
+              openJourneyLeadForm('project', { travel: 'warp', ctaId: 'mobile_navigation_project' });
+            }}
+          >
+            {lang === 'de' ? 'Projekt besprechen' : 'Discuss your project'}
+          </button>
+        </footer>
+      </section>
+      <div className="journey-mobile-bar">
+        <button
+          type="button"
+          className="journey-mobile-step"
+          disabled={activeIndex === 0}
+          aria-label={lang === 'de' ? 'Vorherige Station' : 'Previous station'}
+          onClick={() => goToStation(Math.max(0, activeIndex - 1))}
+        >
+          <ChevronLeft size={22} strokeWidth={2.2} aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          className="journey-mobile-current"
+          aria-expanded={mobileMenuOpen}
+          aria-label={lang === 'de' ? 'Stationsübersicht öffnen' : 'Open station overview'}
+          onClick={() => setMobileMenuOpen((open) => !open)}
+        >
+          <List size={18} strokeWidth={2} aria-hidden="true" />
+          <span>
+            <strong>{STATIONS[activeIndex].label[lang]}</strong>
+            <small>{String(activeIndex + 1).padStart(2, '0')} / {String(STATIONS.length).padStart(2, '0')}</small>
+          </span>
+        </button>
+        <button
+          type="button"
+          className="journey-mobile-step"
+          disabled={activeIndex === STATIONS.length - 1}
+          aria-label={lang === 'de' ? 'Nächste Station' : 'Next station'}
+          onClick={() => goToStation(Math.min(STATIONS.length - 1, activeIndex + 1))}
+        >
+          <ChevronRight size={22} strokeWidth={2.2} aria-hidden="true" />
+        </button>
       </div>
       </nav>
     </>

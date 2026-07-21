@@ -8097,3 +8097,803 @@ body.journey-warp-active .mobile-project-cta {
     margin-bottom: 0;
   }
 }
+
+/* ── Mobile Journey 2026 ─────────────────────────────────────
+   Mobile ist eine geführte 3D-Reise: vertikale Vollbild-Stationen,
+   horizontale Karten-Decks und eine feste, daumenfreundliche Navigation. */
+.mobile-deck-controls,
+.journey-mobile-bar,
+.journey-mobile-sheet,
+.journey-mobile-backdrop,
+.mobile-value-info-cta {
+  display: none;
+}
+
+@media (max-width: 699px) {
+  html {
+    scroll-padding-bottom: calc(5.75rem + env(safe-area-inset-bottom));
+    scroll-snap-type: y proximity;
+  }
+
+  body:has(.mobile-solution-info.is-open),
+  body:has(.mobile-value-impact .value-info-card.is-open),
+  body:has(.journey-mobile-sheet.is-open) {
+    overflow: hidden;
+  }
+
+  .home-hero,
+  .spiral-mobile-service-stage,
+  .mobile-value-impact,
+  .mobile-references,
+  .mobile-studio-profile,
+  .mobile-project-cta {
+    scroll-snap-align: start;
+    scroll-snap-stop: normal;
+  }
+
+  /* Die bisherige rechte Desktop-Leiste wird zu einer unteren Touch-Leiste. */
+  .journey-navigator {
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 68;
+    display: block;
+    width: 100%;
+    padding: 0;
+    transform: none;
+    pointer-events: none;
+  }
+
+  .journey-travel-veil {
+    z-index: 90;
+  }
+
+  .journey-navigator > .journey-language,
+  .journey-navigator > .journey-rail,
+  .journey-navigator > .journey-station,
+  .journey-navigator > .journey-count,
+  .journey-navigator > .journey-utility {
+    display: none;
+  }
+
+  .journey-mobile-bar {
+    position: relative;
+    z-index: 3;
+    display: grid;
+    grid-template-columns: 3.25rem minmax(0, 1fr) 3.25rem;
+    gap: 0.45rem;
+    width: min(100% - 1rem, 31rem);
+    min-height: 4.25rem;
+    margin: 0 auto max(0.5rem, env(safe-area-inset-bottom));
+    padding: 0.5rem;
+    border: 1px solid rgba(231, 197, 106, 0.28);
+    border-radius: 1rem;
+    background:
+      linear-gradient(135deg, rgba(231, 197, 106, 0.06), transparent 55%),
+      rgba(3, 4, 5, 0.9);
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.62), 0 0 26px rgba(200, 154, 61, 0.1);
+    -webkit-backdrop-filter: blur(18px) saturate(1.12);
+    backdrop-filter: blur(18px) saturate(1.12);
+    pointer-events: auto;
+  }
+
+  .journey-mobile-step,
+  .journey-mobile-current,
+  .journey-mobile-sheet button,
+  .mobile-deck-arrow {
+    min-width: 3rem;
+    min-height: 3rem;
+    border: 1px solid rgba(231, 197, 106, 0.22);
+    color: #fff;
+    background: rgba(255, 255, 255, 0.035);
+    font: inherit;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .journey-mobile-step {
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border-radius: 0.75rem;
+  }
+
+  .journey-mobile-step:disabled,
+  .mobile-deck-arrow:disabled {
+    opacity: 0.28;
+    cursor: default;
+  }
+
+  .journey-mobile-current {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    min-width: 0;
+    padding: 0.45rem 0.8rem;
+    border-radius: 0.75rem;
+    text-align: left;
+  }
+
+  .journey-mobile-current > svg {
+    flex: 0 0 auto;
+    color: #e7c56a;
+  }
+
+  .journey-mobile-current > span {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.55rem;
+  }
+
+  .journey-mobile-current strong {
+    overflow: hidden;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .journey-mobile-current small {
+    flex: 0 0 auto;
+    color: rgba(231, 197, 106, 0.72);
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+  }
+
+  .journey-mobile-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    display: block;
+    padding: 0;
+    border: 0;
+    opacity: 0;
+    visibility: hidden;
+    background: rgba(0, 0, 0, 0.7);
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
+    transition: opacity 220ms ease, visibility 0s linear 220ms;
+    pointer-events: none;
+  }
+
+  .journey-mobile-backdrop.is-open {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 220ms ease, visibility 0s;
+    pointer-events: auto;
+  }
+
+  .journey-mobile-sheet {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 2;
+    display: block;
+    max-height: min(85dvh, 48rem);
+    padding: 1rem 1rem calc(6rem + env(safe-area-inset-bottom));
+    overflow-y: auto;
+    border: 1px solid rgba(231, 197, 106, 0.28);
+    border-bottom: 0;
+    border-radius: 1.25rem 1.25rem 0 0;
+    opacity: 0;
+    visibility: hidden;
+    background:
+      radial-gradient(circle at 50% 0, rgba(200, 154, 61, 0.14), transparent 34%),
+      rgba(4, 5, 6, 0.97);
+    box-shadow: 0 -28px 72px rgba(0, 0, 0, 0.72);
+    transform: translateY(1.25rem);
+    transition: opacity 220ms ease, transform 280ms cubic-bezier(.2, .72, .28, 1), visibility 0s linear 280ms;
+    pointer-events: none;
+  }
+
+  .journey-mobile-sheet.is-open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    transition: opacity 220ms ease, transform 280ms cubic-bezier(.2, .72, .28, 1), visibility 0s;
+    pointer-events: auto;
+  }
+
+  .journey-mobile-sheet > header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .journey-mobile-sheet > header > div {
+    display: grid;
+    gap: 0.2rem;
+  }
+
+  .journey-mobile-sheet > header span {
+    color: rgba(231, 197, 106, 0.68);
+    font-size: 0.62rem;
+    letter-spacing: 0.16em;
+  }
+
+  .journey-mobile-sheet > header strong {
+    color: #fff;
+    font-size: 1.15rem;
+  }
+
+  .journey-mobile-sheet > header button {
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border-radius: 999px;
+  }
+
+  .journey-mobile-stations {
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .journey-mobile-stations > button {
+    display: grid;
+    grid-template-columns: 2.25rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.7rem 0.85rem;
+    border-radius: 0.75rem;
+    text-align: left;
+  }
+
+  .journey-mobile-stations > button > span {
+    color: rgba(231, 197, 106, 0.62);
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+  }
+
+  .journey-mobile-stations > button > strong {
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .journey-mobile-stations > button.is-active {
+    border-color: rgba(231, 197, 106, 0.68);
+    background: rgba(231, 197, 106, 0.1);
+    box-shadow: 0 0 22px rgba(200, 154, 61, 0.1);
+  }
+
+  .journey-mobile-sheet > footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .journey-mobile-language {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .journey-mobile-language button {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    padding: 0;
+    border: 0;
+    color: rgba(255, 255, 255, 0.48);
+    background: transparent;
+  }
+
+  .journey-mobile-language button.is-active {
+    color: #f6e3a1;
+  }
+
+  .journey-mobile-project {
+    min-height: 3rem;
+    padding: 0.7rem 1rem;
+    border-color: rgba(77, 191, 127, 0.46) !important;
+    border-radius: 999px;
+    color: #effff5 !important;
+    background: rgba(77, 191, 127, 0.1) !important;
+    font-size: 0.7rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* Stationen erhalten einen klaren Bildschirm und lassen die 3D-Szene
+     durch ihre transparente Oberfläche weiterhin sichtbar. */
+  .spiral-mobile {
+    display: block;
+    padding: 150vh 0 calc(6.5rem + env(safe-area-inset-bottom)) !important;
+  }
+
+  .spiral-mobile > div {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+  }
+
+  .spiral-mobile > div > * + * {
+    margin-top: 0;
+  }
+
+  .spiral-mobile-service-stage,
+  .mobile-value-impact,
+  .mobile-references,
+  .mobile-studio-profile,
+  .mobile-project-cta {
+    position: relative;
+    display: flex;
+    width: 100%;
+    min-height: 100svh;
+    margin: 0;
+    padding: clamp(4.5rem, 10svh, 6.5rem) 0 calc(6.5rem + env(safe-area-inset-bottom));
+    flex-direction: column;
+    justify-content: center;
+    scroll-margin: 0;
+  }
+
+  .mobile-value-impact {
+    padding-bottom: calc(6.5rem + env(safe-area-inset-bottom));
+  }
+
+  .mobile-project-cta {
+    justify-content: flex-start;
+  }
+
+  .mobile-solutions-section-flap,
+  .mobile-value-impact .value-impact-flap,
+  .mobile-references .references-heading,
+  .mobile-studio-profile > .studio-profile-content,
+  .mobile-project-cta > .project-cta-content {
+    width: min(100% - 2rem, 32rem);
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .mobile-solutions-section-flap,
+  .mobile-value-impact .value-impact-flap {
+    margin-bottom: 1.25rem;
+    font-size: clamp(1.05rem, 5.2vw, 1.55rem);
+  }
+
+  .mobile-references .references-heading {
+    margin-bottom: 1.25rem;
+  }
+
+  /* Alle Karten-Stationen werden zu horizontalen, einrastenden Decks. */
+  .spiral-mobile-services,
+  .mobile-value-impact .value-diagram-grid,
+  .mobile-references .references-grid {
+    display: flex !important;
+    grid-template-columns: none !important;
+    gap: 1rem !important;
+    width: 100%;
+    padding: 0.4rem max(9vw, calc((100vw - 24rem) / 2)) 1rem;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scroll-padding-inline: max(9vw, calc((100vw - 24rem) / 2));
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
+    touch-action: pan-x pan-y pinch-zoom;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .spiral-mobile-services::-webkit-scrollbar,
+  .mobile-value-impact .value-diagram-grid::-webkit-scrollbar,
+  .mobile-references .references-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .spiral-mobile-services .spiral-service-card,
+  .mobile-value-impact .value-diagram,
+  .mobile-references .reference-card {
+    flex: 0 0 min(82vw, 24rem) !important;
+    width: min(82vw, 24rem) !important;
+    min-width: min(82vw, 24rem) !important;
+    max-width: 24rem !important;
+    min-height: min(58svh, 31rem) !important;
+    height: min(58svh, 31rem) !important;
+    max-height: 31rem !important;
+    aspect-ratio: auto !important;
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+  }
+
+  .spiral-mobile-services .spiral-service-card {
+    padding: clamp(1rem, 5vw, 1.4rem) !important;
+    overflow: hidden !important;
+    text-align: center;
+  }
+
+  .spiral-mobile-services .spiral-service-card .ngp-core {
+    gap: 1rem;
+  }
+
+  .spiral-mobile-services .spiral-service-title {
+    max-width: 18ch;
+    margin-inline: auto;
+    font-size: clamp(1.35rem, 6.6vw, 2rem) !important;
+    line-height: 1 !important;
+  }
+
+  .spiral-mobile-services .spiral-service-body {
+    display: block;
+    max-width: 32ch;
+    margin-inline: auto;
+    overflow: visible;
+    color: rgba(244, 245, 247, 0.78);
+    font-size: clamp(0.9rem, 4vw, 1.05rem) !important;
+    line-height: 1.45 !important;
+    -webkit-line-clamp: unset;
+  }
+
+  .mobile-value-impact .value-diagram {
+    grid-template-rows: auto minmax(0, 1fr) auto !important;
+    padding: 1rem !important;
+  }
+
+  .mobile-value-impact .value-chart-svg {
+    height: 100% !important;
+    max-height: 17rem;
+  }
+
+  .mobile-value-impact .value-diagram-result strong {
+    font-size: clamp(2.5rem, 12vw, 3.8rem) !important;
+  }
+
+  .mobile-value-impact .value-diagram-result > span {
+    font-size: 0.72rem !important;
+  }
+
+  .mobile-references .reference-card {
+    display: grid;
+    grid-template-rows: minmax(12rem, 44%) minmax(0, 56%);
+    padding: 0 !important;
+  }
+
+  .mobile-references .reference-card-image {
+    height: 100%;
+    min-height: 0;
+    aspect-ratio: auto;
+  }
+
+  .mobile-references .reference-card-copy {
+    min-height: 0;
+    padding: 1rem;
+  }
+
+  .mobile-references .reference-card-copy h3 {
+    font-size: clamp(1.25rem, 6vw, 1.7rem);
+  }
+
+  .mobile-references .reference-card-tagline {
+    font-size: clamp(0.82rem, 3.8vw, 0.95rem);
+    line-height: 1.42;
+  }
+
+  .mobile-references .reference-card-role,
+  .mobile-references .reference-card-case-link {
+    font-size: clamp(0.72rem, 3.3vw, 0.84rem);
+  }
+
+  .mobile-references .reference-card-case-link {
+    min-height: 2.75rem;
+  }
+
+  .mobile-references .reference-card-external {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .mobile-deck-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    width: min(100% - 2rem, 24rem);
+    margin: 0.2rem auto 0;
+  }
+
+  .mobile-deck-arrow {
+    display: grid;
+    flex: 0 0 3rem;
+    place-items: center;
+    padding: 0;
+    border-radius: 999px;
+  }
+
+  .mobile-deck-progress {
+    display: grid;
+    min-width: 6.5rem;
+    gap: 0.35rem;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.67rem;
+    letter-spacing: 0.1em;
+    text-align: center;
+  }
+
+  .mobile-deck-dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.35rem;
+  }
+
+  .mobile-deck-dots i {
+    display: block;
+    width: 0.34rem;
+    height: 0.34rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.24);
+    transition: width 180ms ease, background 180ms ease, box-shadow 180ms ease;
+  }
+
+  .mobile-deck-dots i.is-active {
+    width: 1.15rem;
+    background: #e7c56a;
+    box-shadow: 0 0 10px rgba(231, 197, 106, 0.55);
+  }
+
+  /* Detailkarten sind echte mobile Dialoge statt verkleinerter Quadrate. */
+  .mobile-solution-info.value-info-card,
+  .mobile-value-impact .value-info-card {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 82 !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: auto auto !important;
+    align-content: start !important;
+    gap: 1.25rem !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    max-height: 100dvh !important;
+    aspect-ratio: auto !important;
+    padding: max(1rem, env(safe-area-inset-top)) 1rem calc(6.25rem + env(safe-area-inset-bottom)) !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background:
+      radial-gradient(circle at 82% 12%, rgba(var(--unified-card-accent-rgb), 0.2), transparent 31%),
+      linear-gradient(145deg, rgba(var(--unified-card-accent-rgb), 0.08), transparent 42%),
+      rgba(3, 5, 6, 0.985) !important;
+    box-shadow: none !important;
+    scrollbar-width: none;
+  }
+
+  .mobile-solution-info.value-info-card::-webkit-scrollbar,
+  .mobile-value-impact .value-info-card::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mobile-solution-info .value-info-close,
+  .mobile-value-impact .value-info-close {
+    position: fixed;
+    top: max(1rem, env(safe-area-inset-top));
+    right: 1rem;
+    width: 3rem;
+    height: 3rem;
+    background: rgba(3, 5, 6, 0.84);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+
+  .mobile-solution-info .value-info-copy,
+  .mobile-value-impact .value-info-copy {
+    display: flex !important;
+    min-height: 0;
+    padding: 0.5rem 0 0 !important;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+
+  .mobile-solution-info .value-info-meta,
+  .mobile-value-impact .value-info-meta {
+    padding-right: 3.5rem;
+  }
+
+  .mobile-solution-info .value-info-copy h3,
+  .mobile-value-impact .value-info-copy h3 {
+    max-width: calc(100% - 2.5rem) !important;
+    font-size: clamp(1.75rem, 8.5vw, 2.5rem) !important;
+    line-height: 1.02 !important;
+  }
+
+  .mobile-solution-info .value-info-copy > p,
+  .mobile-value-impact .value-info-copy > p {
+    margin-top: 0.9rem !important;
+    color: rgba(255, 255, 255, 0.76);
+    font-size: 1rem !important;
+    line-height: 1.55 !important;
+  }
+
+  .mobile-solution-info .value-info-columns,
+  .mobile-value-impact .value-info-columns {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 1.25rem !important;
+    margin-top: 1.35rem !important;
+    padding-top: 1rem !important;
+  }
+
+  .mobile-solution-info .value-info-columns h4,
+  .mobile-value-impact .value-info-columns h4 {
+    margin-bottom: 0.65rem !important;
+    font-size: 0.72rem !important;
+  }
+
+  .mobile-solution-info .value-info-columns ul,
+  .mobile-value-impact .value-info-columns ul {
+    gap: 0.65rem !important;
+  }
+
+  .mobile-solution-info .value-info-columns li,
+  .mobile-value-impact .value-info-columns li {
+    font-size: 0.92rem !important;
+    line-height: 1.42 !important;
+  }
+
+  .mobile-solution-info .value-info-columns li svg,
+  .mobile-value-impact .value-info-columns li svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .mobile-solution-info .value-info-visual,
+  .mobile-value-impact .value-info-visual {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    grid-template-rows: minmax(0, 1fr) !important;
+    min-height: 8rem !important;
+    padding: 1rem 0 0 !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    border-left: 0;
+  }
+
+  .mobile-solution-info .value-info-svg,
+  .mobile-value-impact .value-info-svg {
+    grid-row: auto !important;
+    height: 8rem !important;
+    max-height: 8rem !important;
+  }
+
+  .mobile-solution-info .value-info-stages,
+  .mobile-value-impact .value-info-stages {
+    display: none !important;
+  }
+
+  .mobile-solution-info .value-info-result,
+  .mobile-value-impact .value-info-result {
+    align-self: center;
+    padding: 0 0.25rem !important;
+  }
+
+  .mobile-solution-info .value-info-cta,
+  .mobile-value-impact .mobile-value-info-cta {
+    position: fixed;
+    right: 1rem;
+    bottom: max(1rem, env(safe-area-inset-bottom));
+    left: 1rem;
+    z-index: 86;
+    display: flex;
+    width: auto;
+    min-height: 3.5rem;
+    margin: 0;
+    padding: 0.8rem 1rem;
+    border-color: rgba(var(--value-accent-rgb), 0.72);
+    background: rgba(5, 12, 8, 0.92);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.56), 0 0 24px rgba(var(--value-accent-rgb), 0.18);
+    font-size: 0.9rem;
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+  }
+
+  .mobile-value-info-cta {
+    display: flex;
+  }
+
+  /* Die beiden textintensiven Schlussstationen dürfen wachsen und werden
+     nicht mehr in ein unlesbares Quadrat gezwungen. */
+  .mobile-studio-profile .studio-profile-content,
+  .mobile-project-cta .project-cta-content {
+    width: min(100% - 2rem, 32rem) !important;
+    height: auto !important;
+    min-height: calc(100svh - 11rem) !important;
+    max-height: none !important;
+    aspect-ratio: auto !important;
+    overflow: visible !important;
+    padding: 1rem !important;
+  }
+
+  .mobile-studio-profile .studio-profile-content {
+    display: flex;
+    gap: 1rem;
+    flex-direction: column;
+  }
+
+  .mobile-studio-profile .studio-profile-copy,
+  .mobile-studio-profile .studio-profile-fact span,
+  .mobile-studio-profile .studio-profile-process li span,
+  .mobile-studio-profile .studio-profile-statement p {
+    font-size: 0.92rem !important;
+    line-height: 1.45 !important;
+  }
+
+  .mobile-project-cta .project-cta-stage {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .mobile-project-cta input,
+  .mobile-project-cta textarea,
+  .mobile-project-cta button,
+  .mobile-project-cta a {
+    min-height: 3rem;
+  }
+
+  .mobile-project-cta .project-form-tabs,
+  .mobile-project-cta .project-form-overview-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .mobile-project-cta .project-form-tabs button,
+  .mobile-project-cta .project-form-overview-grid button {
+    min-height: 4rem;
+  }
+
+  .mobile-project-cta .project-cta-copy,
+  .mobile-project-cta label,
+  .mobile-project-cta input,
+  .mobile-project-cta textarea {
+    font-size: 1rem !important;
+  }
+
+  .home-hero {
+    padding-bottom: calc(5.25rem + env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 380px) {
+  .spiral-mobile-services,
+  .mobile-value-impact .value-diagram-grid,
+  .mobile-references .references-grid {
+    padding-inline: 7vw;
+    scroll-padding-inline: 7vw;
+  }
+
+  .spiral-mobile-services .spiral-service-card,
+  .mobile-value-impact .value-diagram,
+  .mobile-references .reference-card {
+    flex-basis: 86vw !important;
+    width: 86vw !important;
+    min-width: 86vw !important;
+  }
+
+  .journey-mobile-current strong {
+    font-size: 0.68rem;
+  }
+}
+
+@media (max-width: 699px) and (prefers-reduced-motion: reduce) {
+  html {
+    scroll-snap-type: none;
+  }
+
+  .spiral-mobile-services,
+  .mobile-value-impact .value-diagram-grid,
+  .mobile-references .references-grid {
+    scroll-snap-type: none;
+  }
+}

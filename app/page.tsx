@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEven
 import {
   Bot, BarChart3, Workflow, FolderKanban,
   GraduationCap, Globe, Lightbulb,
-  ChevronRight, ChevronDown, ExternalLink, Maximize2, Star, X,
+  ChevronLeft, ChevronRight, ChevronDown, ExternalLink, Maximize2, Star, X,
   CheckCircle, Zap, Users, Award,
   MessageSquare, Search, Compass, Wrench, Heart, ClipboardList,
 } from 'lucide-react';
@@ -143,6 +143,75 @@ function JourneySectionFlapTitle({
       className={`journey-section-flap intro-flap-word ${chakraPetch.className} ${className}`.trim()}
       aria-label={label}
     />
+  );
+}
+
+function getMobileDeckIndex(deck: HTMLElement) {
+  const cards = Array.from(deck.children) as HTMLElement[];
+  if (!cards.length) return 0;
+  const deckCenter = deck.scrollLeft + deck.clientWidth / 2;
+  let closestIndex = 0;
+  let closestDistance = Number.POSITIVE_INFINITY;
+  cards.forEach((card, index) => {
+    const cardCenter = card.offsetLeft + card.offsetWidth / 2;
+    const distance = Math.abs(cardCenter - deckCenter);
+    if (distance < closestDistance) {
+      closestDistance = distance;
+      closestIndex = index;
+    }
+  });
+  return closestIndex;
+}
+
+function scrollMobileDeckTo(deck: HTMLElement | null, index: number) {
+  const card = deck?.children.item(index) as HTMLElement | null;
+  card?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+}
+
+function MobileDeckControls({
+  activeIndex,
+  count,
+  label,
+  lang,
+  onSelect,
+}: {
+  activeIndex: number;
+  count: number;
+  label: string;
+  lang: 'de' | 'en';
+  onSelect: (index: number) => void;
+}) {
+  const previousIndex = Math.max(0, activeIndex - 1);
+  const nextIndex = Math.min(count - 1, activeIndex + 1);
+  return (
+    <div className="mobile-deck-controls" aria-label={label}>
+      <button
+        type="button"
+        className="mobile-deck-arrow"
+        disabled={activeIndex === 0}
+        aria-label={`${lang === 'de' ? 'Zurück' : 'Previous'}: ${label}`}
+        onClick={() => onSelect(previousIndex)}
+      >
+        <ChevronLeft size={20} strokeWidth={2.2} aria-hidden="true" />
+      </button>
+      <div className="mobile-deck-progress">
+        <span>{String(activeIndex + 1).padStart(2, '0')} / {String(count).padStart(2, '0')}</span>
+        <span className="mobile-deck-dots" aria-hidden="true">
+          {Array.from({ length: count }, (_, index) => (
+            <i key={index} className={index === activeIndex ? 'is-active' : ''} />
+          ))}
+        </span>
+      </div>
+      <button
+        type="button"
+        className="mobile-deck-arrow"
+        disabled={activeIndex === count - 1}
+        aria-label={`${lang === 'de' ? 'Weiter' : 'Next'}: ${label}`}
+        onClick={() => onSelect(nextIndex)}
+      >
+        <ChevronRight size={20} strokeWidth={2.2} aria-hidden="true" />
+      </button>
+    </div>
   );
 }
 
@@ -667,9 +736,11 @@ function ValueImpactContent({
   resetToken?: number;
 }) {
   const contentRef = useRef<HTMLDivElement | null>(null);
+  const mobileDeckRef = useRef<HTMLDivElement | null>(null);
   const diagrams = VALUE_DIAGRAMS[lang];
   const infoCards = VALUE_INFO[lang];
   const [activeInfoIndex, setActiveInfoIndex] = useState<number | null>(null);
+  const [mobileDeckIndex, setMobileDeckIndex] = useState(0);
   const activeDiagram = diagrams[activeInfoIndex ?? 0];
   const activeInfo = infoCards[activeInfoIndex ?? 0];
 
@@ -718,7 +789,12 @@ function ValueImpactContent({
         />
       )}
       <div className={`value-diagram-stage ${activeInfoIndex !== null ? 'is-info-open' : ''}`}>
-        <div className="value-diagram-grid" aria-hidden={activeInfoIndex !== null}>
+        <div
+          ref={mobileDeckRef}
+          className="value-diagram-grid"
+          aria-hidden={activeInfoIndex !== null}
+          onScroll={(event) => setMobileDeckIndex(getMobileDeckIndex(event.currentTarget))}
+        >
           {diagrams.map((diagram, index) => (
             <button
               key={diagram.code}
@@ -765,6 +841,18 @@ function ValueImpactContent({
             </button>
           ))}
         </div>
+        {activeInfoIndex === null ? (
+          <MobileDeckControls
+            activeIndex={mobileDeckIndex}
+            count={diagrams.length}
+            label={lang === 'de' ? 'Mehrwertkarten' : 'Value cards'}
+            lang={lang}
+            onSelect={(index) => {
+              setMobileDeckIndex(index);
+              scrollMobileDeckTo(mobileDeckRef.current, index);
+            }}
+          />
+        ) : null}
 
         <section
           className={`value-info-card ${activeInfoIndex !== null ? 'is-open' : ''}`}
@@ -808,6 +896,26 @@ function ValueImpactContent({
                 </ul>
               </div>
             </div>
+            <button
+              type="button"
+              className="value-info-cta mobile-value-info-cta"
+              tabIndex={activeInfoIndex !== null ? 0 : -1}
+              onClick={() => {
+                setActiveInfoIndex(null);
+                openJourneyLeadForm(activeInfoIndex === 3 ? 'ki' : 'project', {
+                  travel: 'warp',
+                  ctaId: `mobile_value_${activeInfoIndex ?? 0}`,
+                });
+              }}
+            >
+              {activeInfoIndex === 3
+                ? <Bot size={18} strokeWidth={2} aria-hidden="true" />
+                : <ClipboardList size={18} strokeWidth={2} aria-hidden="true" />}
+              <span>{activeInfoIndex === 3
+                ? (lang === 'de' ? 'KI-Potenzial prüfen' : 'Assess AI potential')
+                : (lang === 'de' ? 'Projekt besprechen' : 'Discuss your project')}</span>
+              <ChevronRight size={18} strokeWidth={2.2} aria-hidden="true" />
+            </button>
           </div>
 
           <div className="value-info-visual">
@@ -985,13 +1093,20 @@ function ValueImpactWorld({ lang }: { lang: 'de' | 'en' }) {
 }
 
 function ReferenceCardsContent({ lang }: { lang: 'de' | 'en' }) {
+  const mobileDeckRef = useRef<HTMLDivElement | null>(null);
+  const [mobileDeckIndex, setMobileDeckIndex] = useState(0);
+
   return (
     <div className={`references-content ${chakraPetch.className}`}>
       <div className="references-heading">
         <p>{lang === 'de' ? 'AUSGEWÄHLTE ARBEITEN' : 'SELECTED WORK'}</p>
         <JourneySectionFlapTitle label={lang === 'de' ? 'MEINE REFERENZEN' : 'MY WORK'} />
       </div>
-      <div className="references-grid">
+      <div
+        ref={mobileDeckRef}
+        className="references-grid"
+        onScroll={(event) => setMobileDeckIndex(getMobileDeckIndex(event.currentTarget))}
+      >
         {PROJECTS.map((project, index) => {
           const copy = project[lang];
           return (
@@ -1045,6 +1160,16 @@ function ReferenceCardsContent({ lang }: { lang: 'de' | 'en' }) {
           );
         })}
       </div>
+      <MobileDeckControls
+        activeIndex={mobileDeckIndex}
+        count={PROJECTS.length}
+        label={lang === 'de' ? 'Referenzen' : 'References'}
+        lang={lang}
+        onSelect={(index) => {
+          setMobileDeckIndex(index);
+          scrollMobileDeckTo(mobileDeckRef.current, index);
+        }}
+      />
     </div>
   );
 }
@@ -1577,6 +1702,7 @@ function ProjectCtaWorld({ lang }: { lang: 'de' | 'en' }) {
 function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
   const introSequence = INTRO_SEQUENCES[lang];
   const [activeServiceSlug, setActiveServiceSlug] = useState<string | null>(null);
+  const [mobileServiceIndex, setMobileServiceIndex] = useState(0);
   const progressRef = useRef(0);
   const targetProgressRef = useRef(0);
   const frameRef = useRef(0);
@@ -1586,6 +1712,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
   const serviceStationsRef = useRef<HTMLDivElement | null>(null);
   const cardsWorldRef = useRef<HTMLDivElement | null>(null);
   const solutionsFlapRef = useRef<HTMLHeadingElement | null>(null);
+  const mobileServicesRef = useRef<HTMLDivElement | null>(null);
   // Je 1 Ref-Slot pro Intro-Station (worldIndex 0..4, "Deine …") — Arrays
   // statt einzelner Refs, da alle 5 Stationen dieselbe Split-Flap-Logik in
   // derselben Schleife (IntroFlapWorld-Effekt) durchlaufen.
@@ -2638,7 +2765,11 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
               label={lang === 'de' ? 'MEINE UMSETZUNG' : 'MY EXECUTION'}
               className="mobile-solutions-section-flap"
             />
-            <div className="spiral-mobile-services">
+            <div
+              ref={mobileServicesRef}
+              className="spiral-mobile-services"
+              onScroll={(event) => setMobileServiceIndex(getMobileDeckIndex(event.currentTarget))}
+            >
               {serviceCards.map((card, i) => (
                 <button
                   key={`${card.code}-mobile-service-${i}`}
@@ -2668,6 +2799,18 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
                 </button>
               ))}
             </div>
+            {!activeService ? (
+              <MobileDeckControls
+                activeIndex={mobileServiceIndex}
+                count={serviceCards.length}
+                label={lang === 'de' ? 'Umsetzungskarten' : 'Service cards'}
+                lang={lang}
+                onSelect={(index) => {
+                  setMobileServiceIndex(index);
+                  scrollMobileDeckTo(mobileServicesRef.current, index);
+                }}
+              />
+            ) : null}
 
             <section
               className={`mobile-solution-info value-info-card ${chakraPetch.className} ${activeService ? 'is-open' : ''}`}
