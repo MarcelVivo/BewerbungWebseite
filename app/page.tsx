@@ -1399,7 +1399,7 @@ function StudioProfileContent({ lang }: { lang: 'de' | 'en' }) {
         kicker: 'DIGITALSTUDIO MARCEL SPAHR · BERN',
         title: 'Persönlich geführt. Ganzheitlich umgesetzt.',
         intro: 'Du arbeitest direkt mit mir – von der Analyse bis zur Einführung. So bleiben Ziele, Entscheidungen und Umsetzung verbunden.',
-        quote: '„Ich verbinde Empathie, Strategie und Technologie zu digitalen Lösungen, die im Alltag funktionieren und mit deinem Unternehmen wachsen.“',
+        quote: '„Ich verbinde Empathie, Strategie und Technologie – zu digitalen Lösungen, die im Alltag wirken und mit Unternehmen wachsen.“',
         facts: [
           ['15+ Jahre Erfahrung', 'IT, Projekte, Digitalisierung, Marketing & Verkauf'],
           ['Zwei Fachrichtungen', 'Wirtschaftsinformatik HF (Abschlussphase) · Werbetechnik'],
@@ -1411,7 +1411,7 @@ function StudioProfileContent({ lang }: { lang: 'de' | 'en' }) {
         kicker: 'MARCEL SPAHR DIGITAL STUDIO · BERN',
         title: 'Personally led. Comprehensively delivered.',
         intro: 'You work directly with me from analysis through implementation. This keeps goals, decisions and delivery connected.',
-        quote: '“I combine empathy, strategy and technology to create digital solutions that work in daily operations and grow with your business.”',
+        quote: '“I connect empathy, strategy and technology — creating digital solutions that work in everyday business and grow with companies.”',
         facts: [
           ['15+ years of experience', 'IT, projects, digitalization, marketing & sales'],
           ['Two disciplines', 'Business Information Technology HF (final phase) · Advertising Technology'],
