@@ -7008,19 +7008,41 @@ body.journey-warp-active .mobile-project-cta {
 /* ── FINAL: Digitalpartner in exakt drei horizontalen Zeilen ──
    Dieser Block steht bewusst am Dateiende und ist die verbindliche
    Endgeometrie für Desktop, Tablet und Mobile. */
+.studio-profile-composition {
+  position: relative;
+  width: 100%;
+}
+
+.studio-profile-composition > .studio-profile-section-flap {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + clamp(0.55rem, 1.1vw, 0.9rem));
+  left: 0;
+  z-index: 8;
+  justify-content: center;
+  width: 100%;
+  margin: 0;
+  font-size: clamp(0.65rem, 0.98vw, 0.98rem);
+  text-align: center;
+}
+
 .studio-profile-content {
+  --studio-profile-pad: clamp(1.35rem, 2.2vw, 2.15rem);
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto auto auto;
   align-content: space-between;
   gap: clamp(0.75rem, 1.25vw, 1.15rem);
-  padding: clamp(1.35rem, 2.2vw, 2.15rem);
+  padding: 0 var(--studio-profile-pad) var(--studio-profile-pad);
 }
 
 .studio-profile-top-row {
   position: relative;
   display: block;
+  width: calc(100% + (2 * var(--studio-profile-pad)));
   min-height: 0;
-  aspect-ratio: 2.62 / 1;
+  aspect-ratio: 2.32 / 1;
+  margin-right: calc(-1 * var(--studio-profile-pad));
+  margin-left: calc(-1 * var(--studio-profile-pad));
   isolation: isolate;
 }
 
@@ -7064,18 +7086,18 @@ body.journey-warp-active .mobile-project-cta {
 
 .studio-profile-header-copy {
   position: absolute;
-  top: 13%;
-  right: 3.5%;
+  top: 19%;
+  right: 4%;
   z-index: 2;
-  width: 43%;
+  width: 38%;
 }
 
 .studio-profile-header-signature {
   position: absolute;
-  bottom: 3.5%;
-  left: 17%;
+  bottom: 7%;
+  left: 13%;
   z-index: 3;
-  width: 42%;
+  width: 35%;
 }
 
 .studio-profile-header-signature .studio-web-signature {
@@ -7083,26 +7105,17 @@ body.journey-warp-active .mobile-project-cta {
   margin: 0;
 }
 
-.studio-profile-header-copy .studio-profile-section-flap {
-  position: static;
-  justify-content: flex-start;
-  width: auto;
-  margin: 0 0 clamp(0.45rem, 0.8vw, 0.75rem);
-  font-size: clamp(0.6rem, 0.78vw, 0.78rem);
-  text-align: left;
-}
-
 .studio-profile-header-copy blockquote {
   margin: 0;
-  color: rgba(249,241,223,0.96);
+  color: rgba(245,238,223,0.86);
   font-family: 'Iowan Old Style', 'Baskerville', 'Palatino Linotype', Georgia, serif;
-  font-size: clamp(0.9rem, 1.08vw, 1.08rem);
+  font-size: clamp(0.72rem, 0.84vw, 0.84rem);
   font-style: italic;
   font-weight: 400;
-  letter-spacing: 0.005em;
-  line-height: 1.48;
+  letter-spacing: 0.012em;
+  line-height: 1.58;
   text-wrap: balance;
-  text-shadow: 0 4px 24px rgba(0,0,0,0.88), 0 0 20px rgba(231,197,106,0.08);
+  text-shadow: 0 3px 20px rgba(0,0,0,0.96);
 }
 
 .studio-profile-positioning-row {
@@ -7172,8 +7185,9 @@ body.journey-warp-active .mobile-project-cta {
 
 @media (min-width: 901px) and (max-width: 1150px) {
   .studio-profile-header-copy {
-    right: 3%;
-    width: 44%;
+    top: 17%;
+    right: 3.5%;
+    width: 40%;
   }
 
   .studio-profile-content > .studio-profile-facts {
@@ -7183,15 +7197,16 @@ body.journey-warp-active .mobile-project-cta {
 
 @media (max-width: 900px) {
   .mobile-studio-profile .studio-profile-content {
+    --studio-profile-pad: clamp(0.75rem, 3.4vw, 1.15rem);
     grid-template-columns: 1fr;
     grid-template-rows: auto auto auto;
     gap: 0.68rem;
-    padding: clamp(0.75rem, 3.4vw, 1.15rem);
+    padding: 0 var(--studio-profile-pad) var(--studio-profile-pad);
     overflow-y: auto;
   }
 
   .mobile-studio-profile .studio-profile-top-row {
-    aspect-ratio: 1.72 / 1;
+    aspect-ratio: 1.65 / 1;
   }
 
   .mobile-studio-profile .studio-profile-header-image {
@@ -7206,27 +7221,20 @@ body.journey-warp-active .mobile-project-cta {
   }
 
   .mobile-studio-profile .studio-profile-header-copy {
-    top: 10%;
-    right: 2%;
-    width: 48%;
+    top: 15%;
+    right: 3%;
+    width: 43%;
   }
 
   .mobile-studio-profile .studio-profile-header-signature {
-    bottom: 5%;
+    bottom: 7%;
     left: 8%;
-    width: 49%;
-  }
-
-  .mobile-studio-profile .studio-profile-header-copy .studio-profile-section-flap {
-    justify-content: flex-start;
-    margin-bottom: 0.3rem;
-    font-size: clamp(0.48rem, 2.2vw, 0.68rem);
-    text-align: left;
+    width: 37%;
   }
 
   .mobile-studio-profile .studio-profile-header-copy blockquote {
-    font-size: clamp(0.54rem, 2.5vw, 0.76rem);
-    line-height: 1.42;
+    font-size: clamp(0.48rem, 2.05vw, 0.66rem);
+    line-height: 1.5;
   }
 
   .mobile-studio-profile .studio-profile-positioning-row {

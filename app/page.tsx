@@ -1421,36 +1421,38 @@ function StudioProfileContent({ lang }: { lang: 'de' | 'en' }) {
       };
 
   return (
-    <div className={`studio-profile-content ${chakraPetch.className}`}>
-      <div className="studio-profile-top-row">
-        <div className="studio-profile-header-image">
-          <img src="/assets/MarcelSpahrHeader.jpg" alt="Marcel Spahr in einem modernen Arbeits- und Projektraum" />
-        </div>
-        <div className="studio-profile-header-copy">
-          <JourneySectionFlapTitle
-            label={lang === 'de' ? 'DEIN DIGITALPARTNER' : 'YOUR DIGITAL PARTNER'}
-            className="studio-profile-section-flap"
-          />
-          <blockquote>{copy.quote}</blockquote>
-        </div>
-        <div className="studio-profile-header-signature" aria-label="Marcel Spahr">
-          <StudioWebSignature />
-        </div>
-      </div>
-      <div className="studio-profile-positioning-row">
-        <div className="studio-profile-positioning-title">
-          <p className="studio-profile-kicker">{copy.kicker}</p>
-          <h2>{copy.title}</h2>
-        </div>
-        <p className="studio-profile-copy">{copy.intro}</p>
-      </div>
-      <div className="studio-profile-facts">
-        {copy.facts.map(([value, label]) => (
-          <div key={value} className="studio-profile-fact">
-            <strong>{value}</strong>
-            <span>{label}</span>
+    <div className={`studio-profile-composition ${chakraPetch.className}`}>
+      <JourneySectionFlapTitle
+        label={lang === 'de' ? 'DEIN DIGITALPARTNER' : 'YOUR DIGITAL PARTNER'}
+        className="studio-profile-section-flap"
+      />
+      <div className="studio-profile-content">
+        <div className="studio-profile-top-row">
+          <div className="studio-profile-header-image">
+            <img src="/assets/MarcelSpahrHeader.jpg" alt="Marcel Spahr in einem modernen Arbeits- und Projektraum" />
           </div>
-        ))}
+          <div className="studio-profile-header-copy">
+            <blockquote>{copy.quote}</blockquote>
+          </div>
+          <div className="studio-profile-header-signature" aria-label="Marcel Spahr">
+            <StudioWebSignature />
+          </div>
+        </div>
+        <div className="studio-profile-positioning-row">
+          <div className="studio-profile-positioning-title">
+            <p className="studio-profile-kicker">{copy.kicker}</p>
+            <h2>{copy.title}</h2>
+          </div>
+          <p className="studio-profile-copy">{copy.intro}</p>
+        </div>
+        <div className="studio-profile-facts">
+          {copy.facts.map(([value, label]) => (
+            <div key={value} className="studio-profile-fact">
+              <strong>{value}</strong>
+              <span>{label}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
