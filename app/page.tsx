@@ -1391,15 +1391,7 @@ function StudioProfileContent({ lang }: { lang: 'de' | 'en' }) {
         kicker: 'DIGITALSTUDIO MARCEL SPAHR · BERN',
         title: 'Persönlich geführt. Ganzheitlich umgesetzt.',
         intro: 'Du arbeitest direkt mit mir – von der Analyse bis zur Einführung. So bleiben Ziele, Entscheidungen und Umsetzung verbunden.',
-        statementTitle: 'Was du erwarten kannst',
-        statement: 'Ich höre genau hin, verbinde unterschiedliche Stakeholder und kommuniziere transparent und fair. KI beschleunigt gezielt; Verantwortung, Entscheidungen und Qualität bleiben bei mir.',
-        processTitle: 'So entsteht deine Lösung',
-        process: [
-          ['Verstehen', 'Ziele, Stakeholder und Abläufe klären'],
-          ['Priorisieren', 'Anforderungen, Nutzen und Umfang festlegen'],
-          ['Umsetzen', 'Konzipieren, gestalten, entwickeln, testen'],
-          ['Begleiten', 'Einführen, optimieren und weiterentwickeln'],
-        ],
+        quote: '„Ich verbinde Empathie, Strategie und Technologie zu digitalen Lösungen, die im Alltag funktionieren und mit deinem Unternehmen wachsen.“',
         facts: [
           ['15+ Jahre Erfahrung', 'IT, Projekte, Digitalisierung, Marketing & Verkauf'],
           ['Zwei Fachrichtungen', 'Wirtschaftsinformatik HF (Abschlussphase) · Werbetechnik'],
@@ -1411,15 +1403,7 @@ function StudioProfileContent({ lang }: { lang: 'de' | 'en' }) {
         kicker: 'MARCEL SPAHR DIGITAL STUDIO · BERN',
         title: 'Personally led. Comprehensively delivered.',
         intro: 'You work directly with me from analysis through implementation. This keeps goals, decisions and delivery connected.',
-        statementTitle: 'What you can expect',
-        statement: 'I listen carefully, connect different stakeholders and communicate transparently and fairly. AI accelerates where useful; responsibility, decisions and quality remain with me.',
-        processTitle: 'How your solution takes shape',
-        process: [
-          ['Understand', 'Clarify goals, stakeholders and workflows'],
-          ['Prioritize', 'Define requirements, value and scope'],
-          ['Deliver', 'Conceive, design, develop and test'],
-          ['Support', 'Launch, optimize and develop further'],
-        ],
+        quote: '“I combine empathy, strategy and technology to create digital solutions that work in daily operations and grow with your business.”',
         facts: [
           ['15+ years of experience', 'IT, projects, digitalization, marketing & sales'],
           ['Two disciplines', 'Business Information Technology HF (final phase) · Advertising Technology'],
@@ -1430,46 +1414,35 @@ function StudioProfileContent({ lang }: { lang: 'de' | 'en' }) {
 
   return (
     <div className={`studio-profile-content ${chakraPetch.className}`}>
-      <JourneySectionFlapTitle
-        label={lang === 'de' ? 'DEIN DIGITALPARTNER' : 'YOUR DIGITAL PARTNER'}
-        className="studio-profile-section-flap"
-      />
-      <div className="studio-profile-intro">
-        <div className="studio-profile-portrait">
-          <img src="/assets/BewerbungsFotoMarcelSpahr.jpg" alt="Marcel Spahr" />
+      <div className="studio-profile-top-row">
+        <div className="studio-profile-visual">
+          <div className="studio-profile-portrait">
+            <img src="/assets/BewerbungsFotoMarcelSpahr.jpg" alt="Marcel Spahr" />
+          </div>
+          <StudioWebSignature />
         </div>
-        <div className="studio-profile-identity">
+        <div className="studio-profile-quote">
+          <JourneySectionFlapTitle
+            label={lang === 'de' ? 'DEIN DIGITALPARTNER' : 'YOUR DIGITAL PARTNER'}
+            className="studio-profile-section-flap"
+          />
+          <blockquote>{copy.quote}</blockquote>
+        </div>
+      </div>
+      <div className="studio-profile-positioning-row">
+        <div className="studio-profile-positioning-title">
           <p className="studio-profile-kicker">{copy.kicker}</p>
           <h2>{copy.title}</h2>
         </div>
         <p className="studio-profile-copy">{copy.intro}</p>
-        <StudioWebSignature />
       </div>
-      <div className="studio-profile-details">
-        <div className="studio-profile-facts">
-          {copy.facts.map(([value, label]) => (
-            <div key={value} className="studio-profile-fact">
-              <strong>{value}</strong>
-              <span>{label}</span>
-            </div>
-          ))}
-        </div>
-        <div className="studio-profile-process">
-          <p>{copy.processTitle}</p>
-          <ol>
-            {copy.process.map(([title, description], index) => (
-              <li key={title}>
-                <i>{String(index + 1).padStart(2, '0')}</i>
-                <strong>{title}</strong>
-                <span>{description}</span>
-              </li>
-            ))}
-          </ol>
-        </div>
-        <div className="studio-profile-statement">
-          <strong>{copy.statementTitle}</strong>
-          <p>{copy.statement}</p>
-        </div>
+      <div className="studio-profile-facts">
+        {copy.facts.map(([value, label]) => (
+          <div key={value} className="studio-profile-fact">
+            <strong>{value}</strong>
+            <span>{label}</span>
+          </div>
+        ))}
       </div>
     </div>
   );

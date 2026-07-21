@@ -6996,143 +6996,154 @@ body.journey-warp-active .mobile-project-cta {
   }
 }
 
-/* ── FINAL: Digitalpartner ohne Layout-Kollisionen ──────────
-   Dieser Block steht bewusst am Dateiende: Die Digitalpartner-Karte
-   hatte historisch mehrere responsive Layoutstufen. Diese Regeln bilden
-   die verbindliche Endgeometrie und dürfen nicht wieder überschrieben
-   werden. */
+/* ── FINAL: Digitalpartner in exakt drei horizontalen Zeilen ──
+   Dieser Block steht bewusst am Dateiende und ist die verbindliche
+   Endgeometrie für Desktop, Tablet und Mobile. */
 .studio-profile-content {
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto auto minmax(0, 1fr);
-  align-content: start;
-  gap: clamp(0.8rem, 1.25vw, 1.2rem);
-  padding: clamp(1.35rem, 2.2vw, 2.2rem);
+  grid-template-rows: minmax(0, 1.12fr) auto minmax(0, 0.78fr);
+  align-content: stretch;
+  gap: clamp(0.75rem, 1.25vw, 1.15rem);
+  padding: clamp(1.35rem, 2.2vw, 2.15rem);
 }
 
-.studio-profile-section-flap,
-.studio-profile-intro,
-.studio-profile-details {
-  grid-column: 1 / -1;
-}
-
-.studio-profile-intro {
+.studio-profile-top-row {
   display: grid;
-  grid-template-columns: clamp(7rem, 9.5vw, 8.75rem) minmax(0, 0.9fr) minmax(0, 1.1fr);
-  grid-template-areas:
-    'portrait identity copy'
-    'portrait signature copy';
-  gap: 0.3rem clamp(0.9rem, 1.65vw, 1.6rem);
+  grid-template-columns: minmax(17rem, 0.9fr) minmax(0, 1.1fr);
+  gap: clamp(1.15rem, 2.25vw, 2.25rem);
   align-items: center;
+  min-height: 0;
 }
 
-.studio-profile-portrait {
-  grid-area: portrait;
-  width: 100%;
-  max-width: 8.75rem;
+.studio-profile-visual {
+  position: relative;
+  align-self: stretch;
+  min-height: clamp(10.5rem, 18vh, 13.25rem);
 }
 
-.studio-profile-identity {
-  grid-area: identity;
-  align-self: end;
+.studio-profile-visual .studio-profile-portrait {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: clamp(8.5rem, 13vw, 11rem);
+  max-width: none;
+}
+
+.studio-profile-visual .studio-web-signature {
+  position: absolute;
+  top: clamp(6.55rem, 9.4vw, 8.45rem);
+  left: clamp(5.15rem, 7.7vw, 6.65rem);
+  z-index: 2;
+  width: clamp(13.75rem, 21vw, 18.5rem);
+  margin: 0;
+}
+
+.studio-profile-quote {
   min-width: 0;
 }
 
-.studio-profile-copy {
-  grid-area: copy;
-  align-self: center;
-  max-width: 31rem;
+.studio-profile-quote .studio-profile-section-flap {
+  position: static;
+  justify-content: flex-start;
+  width: auto;
+  margin: 0 0 clamp(0.65rem, 1.2vw, 1rem);
+  font-size: clamp(0.65rem, 0.92vw, 0.9rem);
+  text-align: left;
+}
+
+.studio-profile-quote blockquote {
   margin: 0;
-  font-size: clamp(0.82rem, 1vw, 1.04rem);
+  color: #fff;
+  font-size: clamp(1.03rem, 1.48vw, 1.42rem);
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.42;
+  text-wrap: balance;
 }
 
-.studio-web-signature {
-  grid-area: signature;
-  align-self: start;
-  width: min(100%, 18rem);
-  margin-top: 0;
-}
-
-.studio-profile-intro .studio-profile-identity h2 {
-  max-width: 100%;
-  margin: 0;
-  overflow-wrap: break-word;
-  font-size: clamp(1.6rem, 2.35vw, 2.65rem);
-  line-height: 0.98;
-}
-
-.studio-profile-details {
+.studio-profile-positioning-row {
   display: grid;
-  grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
-  grid-template-areas:
-    'facts facts'
-    'process statement';
-  gap: clamp(0.7rem, 1.1vw, 1rem) clamp(0.9rem, 1.6vw, 1.55rem);
-  align-content: start;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  gap: clamp(1rem, 2.25vw, 2.25rem);
+  align-items: center;
+  padding: clamp(0.8rem, 1.35vw, 1.2rem) 0;
+  border-top: 1px solid rgba(126,239,176,0.13);
+  border-bottom: 1px solid rgba(126,239,176,0.13);
 }
 
-.studio-profile-facts {
-  grid-area: facts;
+.studio-profile-positioning-title {
+  min-width: 0;
+}
+
+.studio-profile-positioning-title .studio-profile-kicker {
+  margin: 0 0 clamp(0.35rem, 0.55vw, 0.55rem);
+  font-size: clamp(0.54rem, 0.68vw, 0.7rem);
+  line-height: 1.3;
+}
+
+.studio-profile-positioning-title h2 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(1.55rem, 2.35vw, 2.55rem);
+  letter-spacing: -0.045em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+.studio-profile-positioning-row .studio-profile-copy {
+  max-width: none;
+  margin: 0;
+  color: rgba(241,236,225,0.88);
+  font-size: clamp(0.78rem, 0.98vw, 1rem);
+  line-height: 1.55;
+}
+
+.studio-profile-content > .studio-profile-facts {
+  display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: clamp(0.4rem, 0.65vw, 0.65rem);
-}
-
-.studio-profile-fact {
-  display: block;
-  min-height: clamp(5.25rem, 8.5vh, 6.75rem);
-  padding: clamp(0.65rem, 0.95vw, 0.95rem);
-}
-
-.studio-profile-fact strong {
-  font-size: clamp(0.82rem, 1vw, 1.04rem);
-}
-
-.studio-profile-fact span {
-  font-size: clamp(0.64rem, 0.76vw, 0.8rem);
-}
-
-.studio-profile-process {
-  grid-area: process;
-}
-
-.studio-profile-statement {
-  grid-area: statement;
+  gap: clamp(0.45rem, 0.75vw, 0.72rem);
   align-self: stretch;
+  min-height: 0;
 }
 
-.studio-profile-process,
-.studio-profile-statement {
-  padding-top: clamp(0.65rem, 0.95vw, 0.9rem);
+.studio-profile-content > .studio-profile-facts .studio-profile-fact {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+  padding: clamp(0.68rem, 1vw, 1rem);
 }
 
-.studio-profile-process li strong {
-  font-size: clamp(0.75rem, 0.88vw, 0.92rem);
+.studio-profile-content > .studio-profile-facts .studio-profile-fact strong {
+  font-size: clamp(0.78rem, 0.98vw, 1rem);
+  line-height: 1.22;
+  text-wrap: balance;
 }
 
-.studio-profile-process li span,
-.studio-profile-statement p {
-  font-size: clamp(0.62rem, 0.73vw, 0.77rem);
+.studio-profile-content > .studio-profile-facts .studio-profile-fact span {
+  margin-top: clamp(0.22rem, 0.4vw, 0.4rem);
+  font-size: clamp(0.58rem, 0.7vw, 0.74rem);
+  line-height: 1.4;
 }
 
 @media (min-width: 901px) and (max-width: 1150px) {
-  .studio-profile-intro {
-    grid-template-columns: clamp(6.5rem, 12vw, 8rem) minmax(0, 1fr);
-    grid-template-areas:
-      'portrait identity'
-      'portrait signature'
-      'copy copy';
+  .studio-profile-top-row {
+    grid-template-columns: minmax(14rem, 0.82fr) minmax(0, 1.18fr);
+    gap: 1rem;
   }
 
-  .studio-profile-copy {
-    max-width: none;
-    margin-top: 0.35rem;
+  .studio-profile-visual .studio-profile-portrait {
+    width: clamp(7.5rem, 12vw, 9rem);
   }
 
-  .studio-profile-facts {
+  .studio-profile-visual .studio-web-signature {
+    top: clamp(5.8rem, 9vw, 7rem);
+    left: clamp(4.5rem, 7.2vw, 5.4rem);
+    width: clamp(11.5rem, 19vw, 15rem);
+  }
+
+  .studio-profile-content > .studio-profile-facts {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .studio-profile-fact {
-    min-height: 0;
   }
 }
 
@@ -7140,42 +7151,70 @@ body.journey-warp-active .mobile-project-cta {
   .mobile-studio-profile .studio-profile-content {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto auto;
-    gap: 0.7rem;
-    padding: clamp(0.8rem, 3.6vw, 1.2rem);
+    gap: 0.68rem;
+    padding: clamp(0.75rem, 3.4vw, 1.15rem);
+    overflow-y: auto;
   }
 
-  .mobile-studio-profile .studio-profile-intro {
-    display: grid;
-    grid-template-columns: clamp(4.8rem, 21vw, 6.25rem) minmax(0, 1fr);
-    grid-template-areas:
-      'portrait identity'
-      'copy copy'
-      'signature signature';
-    gap: 0.5rem 0.75rem;
+  .mobile-studio-profile .studio-profile-top-row {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
   }
 
-  .mobile-studio-profile .studio-profile-copy {
-    max-width: none;
+  .mobile-studio-profile .studio-profile-visual {
+    min-height: clamp(7.7rem, 34vw, 10rem);
+  }
+
+  .mobile-studio-profile .studio-profile-visual .studio-profile-portrait {
+    width: clamp(5.7rem, 24vw, 7.5rem);
+  }
+
+  .mobile-studio-profile .studio-profile-visual .studio-web-signature {
+    top: clamp(4.35rem, 18vw, 5.7rem);
+    left: clamp(3.45rem, 14.5vw, 4.5rem);
+    width: clamp(10.5rem, 45vw, 14rem);
+  }
+
+  .mobile-studio-profile .studio-profile-quote .studio-profile-section-flap {
+    justify-content: flex-start;
+    margin-bottom: 0.45rem;
+    font-size: clamp(0.64rem, 3vw, 0.85rem);
+    text-align: left;
+  }
+
+  .mobile-studio-profile .studio-profile-quote blockquote {
+    font-size: clamp(0.78rem, 3.4vw, 1rem);
+    line-height: 1.4;
+  }
+
+  .mobile-studio-profile .studio-profile-positioning-row {
+    grid-template-columns: 1fr;
+    gap: 0.55rem;
+    padding: 0.65rem 0;
+  }
+
+  .mobile-studio-profile .studio-profile-positioning-title h2 {
+    font-size: clamp(1.12rem, 5vw, 1.55rem);
+  }
+
+  .mobile-studio-profile .studio-profile-positioning-row .studio-profile-copy {
     font-size: clamp(0.62rem, 2.7vw, 0.76rem);
   }
 
-  .mobile-studio-profile .studio-web-signature {
-    width: min(72%, 17rem);
-  }
-
-  .mobile-studio-profile .studio-profile-details {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      'facts'
-      'process'
-      'statement';
-  }
-
-  .mobile-studio-profile .studio-profile-facts {
+  .mobile-studio-profile .studio-profile-content > .studio-profile-facts {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.42rem;
   }
 
-  .mobile-studio-profile .studio-profile-fact {
-    min-height: 0;
+  .mobile-studio-profile .studio-profile-content > .studio-profile-facts .studio-profile-fact {
+    padding: 0.52rem;
+  }
+
+  .mobile-studio-profile .studio-profile-content > .studio-profile-facts .studio-profile-fact strong {
+    font-size: clamp(0.62rem, 2.65vw, 0.76rem);
+  }
+
+  .mobile-studio-profile .studio-profile-content > .studio-profile-facts .studio-profile-fact span {
+    font-size: clamp(0.52rem, 2.15vw, 0.64rem);
   }
 }
