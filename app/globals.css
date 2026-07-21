@@ -7017,29 +7017,29 @@ body.journey-warp-active .mobile-project-cta {
 }
 
 .studio-profile-top-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-  gap: clamp(1.15rem, 2.25vw, 2.25rem);
-  align-items: center;
-  min-height: 0;
-}
-
-.studio-profile-visual {
   position: relative;
-  align-self: center;
-  min-width: 0;
-  padding-bottom: clamp(0.75rem, 1.25vw, 1.1rem);
+  display: block;
+  min-height: 0;
+  aspect-ratio: 2.62 / 1;
+  isolation: isolate;
 }
 
 .studio-profile-header-image {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
+  position: absolute;
+  inset: 0;
+  z-index: -1;
   overflow: hidden;
-  border: 1px solid rgba(231,197,106,0.38);
-  border-radius: clamp(0.55rem, 0.9vw, 0.85rem);
-  background: #090b09;
-  box-shadow: 0 14px 36px rgba(0,0,0,0.34), 0 0 24px rgba(231,197,106,0.07);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  -webkit-mask-image:
+    linear-gradient(to bottom, transparent 0%, #000 13%, #000 76%, transparent 100%),
+    linear-gradient(to right, transparent 0%, #000 7%, #000 93%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to bottom, transparent 0%, #000 13%, #000 76%, transparent 100%),
+    linear-gradient(to right, transparent 0%, #000 7%, #000 93%, transparent 100%);
+  mask-composite: intersect;
 }
 
 .studio-profile-header-image::after {
@@ -7047,9 +7047,8 @@ body.journey-warp-active .mobile-project-cta {
   inset: 0;
   content: '';
   background:
-    linear-gradient(90deg, rgba(2,7,4,0.06) 0%, rgba(2,7,4,0) 52%, rgba(2,7,4,0.22) 100%),
-    linear-gradient(0deg, rgba(2,7,4,0.5) 0%, transparent 38%);
-  box-shadow: inset 0 0 28px rgba(0,0,0,0.2);
+    linear-gradient(90deg, rgba(2,8,5,0.82) 0%, rgba(2,8,5,0.12) 8%, transparent 19%, transparent 68%, rgba(2,8,5,0.62) 86%, rgba(2,8,5,0.9) 100%),
+    linear-gradient(180deg, rgba(2,8,5,0.86) 0%, rgba(2,8,5,0.08) 13%, transparent 27%, transparent 67%, rgba(2,8,5,0.48) 84%, rgba(2,8,5,0.94) 100%);
   pointer-events: none;
 }
 
@@ -7058,43 +7057,50 @@ body.journey-warp-active .mobile-project-cta {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 48% 50%;
-  filter: saturate(0.8) contrast(1.06) brightness(0.84);
-  transform: scale(1.015);
+  object-position: 50% 46%;
+  filter: saturate(0.76) contrast(1.07) brightness(0.76);
+  transform: scale(1.025);
 }
 
-.studio-profile-visual .studio-web-signature {
+.studio-profile-header-copy {
   position: absolute;
-  right: -4%;
-  bottom: 0;
-  left: auto;
+  top: 13%;
+  right: 3.5%;
   z-index: 2;
-  width: 66%;
+  width: 43%;
+}
+
+.studio-profile-header-signature {
+  position: absolute;
+  bottom: 3.5%;
+  left: 17%;
+  z-index: 3;
+  width: 42%;
+}
+
+.studio-profile-header-signature .studio-web-signature {
+  width: 100%;
   margin: 0;
 }
 
-.studio-profile-quote {
-  min-width: 0;
-}
-
-.studio-profile-quote .studio-profile-section-flap {
+.studio-profile-header-copy .studio-profile-section-flap {
   position: static;
   justify-content: flex-start;
   width: auto;
-  margin: 0 0 clamp(0.65rem, 1.2vw, 1rem);
-  font-size: clamp(0.65rem, 0.92vw, 0.9rem);
+  margin: 0 0 clamp(0.45rem, 0.8vw, 0.75rem);
+  font-size: clamp(0.6rem, 0.78vw, 0.78rem);
   text-align: left;
 }
 
-.studio-profile-quote blockquote {
+.studio-profile-header-copy blockquote {
   margin: 0;
   color: rgba(249,241,223,0.96);
   font-family: 'Iowan Old Style', 'Baskerville', 'Palatino Linotype', Georgia, serif;
-  font-size: clamp(1rem, 1.28vw, 1.3rem);
+  font-size: clamp(0.9rem, 1.08vw, 1.08rem);
   font-style: italic;
   font-weight: 400;
   letter-spacing: 0.005em;
-  line-height: 1.52;
+  line-height: 1.48;
   text-wrap: balance;
   text-shadow: 0 4px 24px rgba(0,0,0,0.88), 0 0 20px rgba(231,197,106,0.08);
 }
@@ -7165,14 +7171,9 @@ body.journey-warp-active .mobile-project-cta {
 }
 
 @media (min-width: 901px) and (max-width: 1150px) {
-  .studio-profile-top-row {
-    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-    gap: 1rem;
-  }
-
-  .studio-profile-visual .studio-web-signature {
-    right: -2%;
-    width: 64%;
+  .studio-profile-header-copy {
+    right: 3%;
+    width: 44%;
   }
 
   .studio-profile-content > .studio-profile-facts {
@@ -7190,31 +7191,42 @@ body.journey-warp-active .mobile-project-cta {
   }
 
   .mobile-studio-profile .studio-profile-top-row {
-    grid-template-columns: 1fr;
-    gap: 0.65rem;
+    aspect-ratio: 1.72 / 1;
   }
 
-  .mobile-studio-profile .studio-profile-visual {
-    padding-bottom: clamp(0.65rem, 3vw, 0.9rem);
+  .mobile-studio-profile .studio-profile-header-image {
+    -webkit-mask-image:
+      linear-gradient(to bottom, transparent 0%, #000 11%, #000 80%, transparent 100%),
+      linear-gradient(to right, transparent 0%, #000 5%, #000 95%, transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask-image:
+      linear-gradient(to bottom, transparent 0%, #000 11%, #000 80%, transparent 100%),
+      linear-gradient(to right, transparent 0%, #000 5%, #000 95%, transparent 100%);
+    mask-composite: intersect;
   }
 
-  .mobile-studio-profile .studio-profile-visual .studio-web-signature {
-    right: -1%;
-    bottom: 0;
-    left: auto;
-    width: 58%;
+  .mobile-studio-profile .studio-profile-header-copy {
+    top: 10%;
+    right: 2%;
+    width: 48%;
   }
 
-  .mobile-studio-profile .studio-profile-quote .studio-profile-section-flap {
+  .mobile-studio-profile .studio-profile-header-signature {
+    bottom: 5%;
+    left: 8%;
+    width: 49%;
+  }
+
+  .mobile-studio-profile .studio-profile-header-copy .studio-profile-section-flap {
     justify-content: flex-start;
-    margin-bottom: 0.45rem;
-    font-size: clamp(0.64rem, 3vw, 0.85rem);
+    margin-bottom: 0.3rem;
+    font-size: clamp(0.48rem, 2.2vw, 0.68rem);
     text-align: left;
   }
 
-  .mobile-studio-profile .studio-profile-quote blockquote {
-    font-size: clamp(0.84rem, 3.7vw, 1.08rem);
-    line-height: 1.48;
+  .mobile-studio-profile .studio-profile-header-copy blockquote {
+    font-size: clamp(0.54rem, 2.5vw, 0.76rem);
+    line-height: 1.42;
   }
 
   .mobile-studio-profile .studio-profile-positioning-row {
