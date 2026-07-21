@@ -4,14 +4,14 @@ export const T = {
   de: {
     nav: {
       about: 'Dein Digitalpartner', services: 'Meine Umsetzung', portfolio: 'Meine Referenzen',
-      process: 'Ablauf', book: 'Deine Lösung starten',
+      process: 'Ablauf', book: 'Projekt besprechen',
     },
     hero: {
       badge: 'Digitale Gesamtlösungen · Bern',
       tagline: 'Für Schweizer KMU und Start-ups – persönlich von der Analyse bis zum Go-live.',
       title: 'Deine digitale Gesamtlösung.',
       subtitle: 'Ich verbinde Websites, Portale, CRM/ERP, Daten und manuelle Prozesse zu einer skalierbaren Gesamtlösung. KI setze ich dort ein, wo sie im Alltag einen konkreten Nutzen schafft.',
-      cta: 'Deine Lösung starten', more: 'Lösungen ansehen',
+      cta: 'Projekt besprechen', more: 'Lösungen ansehen',
     },
     about: {
       label: 'Ansatz', heading: 'Eine Lösung, die wirklich hält',
@@ -66,7 +66,7 @@ export const T = {
     process: {
       label: 'Ablauf', heading1: 'Vom Problem ', heading2: 'zur kompletten Lösung',
       subheading: 'Schritt für Schritt, transparent und so umgesetzt, dass alles zusammenpasst.',
-      cta: 'Deine Lösung starten',
+      cta: 'Projekt besprechen',
       steps: [
         { num: '01', title: 'Problem verstehen', badge: 'Start', tagline: 'Ziele, Alltag und Engpässe klären', desc: 'Wir besprechen, was heute nicht funktioniert, was besser werden soll und welche Lösung für dein Unternehmen wirklich Sinn ergibt.' },
         { num: '02', title: 'Lösung planen', badge: 'Konzept', tagline: 'Design, Daten und Prozesse verbinden', desc: 'Ich entwerfe den roten Faden: Struktur, Funktionen, Datenmodell, Designrichtung und sinnvolle Etappen.' },
@@ -87,14 +87,14 @@ export const T = {
   en: {
     nav: {
       about: 'Your Digital Partner', services: 'My Execution', portfolio: 'My Work',
-      process: 'Process', book: 'Start your solution',
+      process: 'Process', book: 'Discuss your project',
     },
     hero: {
       badge: 'Complete digital solutions · Bern',
       tagline: 'For Swiss SMEs and startups – personally guided from analysis through go-live.',
       title: 'Your complete digital solution.',
       subtitle: 'I connect websites, portals, CRM/ERP, data and manual processes into one scalable solution. I use AI where it creates concrete value in day-to-day operations.',
-      cta: 'Start your solution', more: 'View solutions',
+      cta: 'Discuss your project', more: 'View solutions',
     },
     about: {
       label: 'Approach', heading: 'A solution that actually holds up',
@@ -149,7 +149,7 @@ export const T = {
     process: {
       label: 'Process', heading1: 'From problem ', heading2: 'to complete solution',
       subheading: 'Step by step, transparent and implemented so everything fits together.',
-      cta: 'Start your solution',
+      cta: 'Discuss your project',
       steps: [
         { num: '01', title: 'Understand the problem', badge: 'Start', tagline: 'Goals, daily work and bottlenecks', desc: 'We clarify what does not work today, what should improve and what kind of solution makes sense for your business.' },
         { num: '02', title: 'Plan the solution', badge: 'Concept', tagline: 'Connect design, data and processes', desc: 'I define the thread: structure, functions, data model, design direction and meaningful delivery stages.' },

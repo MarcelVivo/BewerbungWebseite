@@ -63,7 +63,7 @@ const JOURNEY_LABELS: Record<string, string> = {
   'journey-value': 'Dein Mehrwert',
   'journey-references': 'Meine Referenzen',
   'journey-about': 'Dein Digitalpartner',
-  'journey-contact': 'Deine Lösung',
+  'journey-contact': 'Dein Projekt',
 };
 
 function buildWebAnalytics(events: WebsiteEvent[]): WebAnalytics {
@@ -99,7 +99,7 @@ function buildWebAnalytics(events: WebsiteEvent[]): WebAnalytics {
       label, value: uniqueBy('journey_station_view', 'station', key),
     })),
     forms: [
-      ['consultation', 'Beratung'], ['project', 'Projektanfrage'], ['ki', 'KI-Check'],
+      ['consultation', 'Erstgespräch'], ['project', 'Projektanfrage'], ['ki', 'KI-Check'],
     ].map(([key, label]) => ({
       label,
       starts: uniqueBy('form_start', 'form_id', key),

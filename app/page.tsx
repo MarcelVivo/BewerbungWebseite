@@ -1126,7 +1126,7 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
   const copy = lang === 'de'
     ? {
         kicker: 'PERSÖNLICH · UNVERBINDLICH · AUF AUGENHÖHE',
-        title: 'DEINE BERATUNG.',
+        title: 'PROJEKT BESPRECHEN.',
         text: 'Erzähl mir kurz, was du aufbauen, verbessern oder digitalisieren möchtest. Ich melde mich persönlich bei dir.',
         overviewKicker: 'DREI WEGE · EIN KLARES ZIEL',
         overviewTitle: 'WÄHLE DEINEN EINSTIEG.',
@@ -1135,11 +1135,11 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
         email: 'E-Mail',
         message: 'Worum geht es?',
         placeholder: 'Beschreibe dein Vorhaben in wenigen Sätzen …',
-        submit: 'Beratung anfragen',
-        send: 'Anfrage senden',
+        submit: 'Erstgespräch',
+        send: 'Gespräch anfragen',
         project: 'Projektanfrage',
-        kiCheck: 'Kostenloser KI-Check',
-        consultationHint: 'Für eine erste persönliche Einschätzung.',
+        kiCheck: 'KI-Check',
+        consultationHint: 'Für ein unverbindliches erstes Gespräch.',
         projectHint: 'Für ein bereits konkretes Vorhaben.',
         kiCheckHint: 'Um dein KI-Potenzial schnell einzuordnen.',
         sending: 'Wird gesendet …',
@@ -1160,7 +1160,7 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
       }
     : {
         kicker: 'PERSONAL · NO OBLIGATION · EYE TO EYE',
-        title: 'YOUR CONSULTATION.',
+        title: 'DISCUSS YOUR PROJECT.',
         text: 'Tell me briefly what you want to build, improve or digitize. I will get back to you personally.',
         overviewKicker: 'THREE PATHS · ONE CLEAR GOAL',
         overviewTitle: 'CHOOSE YOUR PATH.',
@@ -1169,11 +1169,11 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
         email: 'Email',
         message: 'What would you like to discuss?',
         placeholder: 'Describe your project in a few sentences …',
-        submit: 'Request a consultation',
-        send: 'Send request',
+        submit: 'Initial conversation',
+        send: 'Request a conversation',
         project: 'Project inquiry',
-        kiCheck: 'Free AI check',
-        consultationHint: 'For an initial personal assessment.',
+        kiCheck: 'AI check',
+        consultationHint: 'For a no-obligation initial conversation.',
         projectHint: 'For a project that is already concrete.',
         kiCheckHint: 'To quickly assess your AI potential.',
         sending: 'Sending …',
@@ -1238,7 +1238,7 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
   return (
     <div className={`project-cta-content ${chakraPetch.className}`} data-active-form={activeForm}>
       <JourneySectionFlapTitle
-        label={lang === 'de' ? 'DEINE LÖSUNG' : 'YOUR SOLUTION'}
+        label={lang === 'de' ? 'DEIN PROJEKT' : 'YOUR PROJECT'}
         className="project-cta-section-flap"
       />
       <div className="project-cta-stage">
@@ -2769,7 +2769,7 @@ export default function HomePage() {
   useEffect(() => {
     const requestedForm = new URLSearchParams(window.location.search).get('lead');
     if (requestedForm !== 'overview' && requestedForm !== 'consultation' && requestedForm !== 'project' && requestedForm !== 'ki') return;
-    const timer = window.setTimeout(() => openJourneyLeadForm(requestedForm), 300);
+    const timer = window.setTimeout(() => openJourneyLeadForm(requestedForm, { travel: 'warp' }), 300);
     return () => window.clearTimeout(timer);
   }, []);
   // Auf schmalen Bildschirmen (<900px, dieselbe Schwelle wie

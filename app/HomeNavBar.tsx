@@ -114,7 +114,10 @@ export default function HomeNavBar() {
           <button
             type="button"
             className="ml-1 px-4 py-1.5 rounded-lg bg-[#c9a84c] hover:bg-[#b8943a] text-[#0c0a06] text-sm font-semibold transition-colors"
-            onClick={() => openJourneyLeadForm('overview', { ctaId: 'header_primary_desktop' })}
+            onClick={() => openJourneyLeadForm('project', {
+              travel: 'warp',
+              ctaId: 'header_primary_desktop',
+            })}
           >
             <NavbarFlapLabel label={t.book} />
           </button>
@@ -141,7 +144,10 @@ export default function HomeNavBar() {
             className="block text-left text-sm font-semibold text-[#c9a84c]"
             onClick={() => {
               setOpen(false);
-              openJourneyLeadForm('overview', { ctaId: 'header_primary_mobile' });
+              openJourneyLeadForm('project', {
+                travel: 'warp',
+                ctaId: 'header_primary_mobile',
+              });
             }}
           >
             <NavbarFlapLabel label={t.book} />

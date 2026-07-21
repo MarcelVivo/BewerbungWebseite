@@ -38,11 +38,11 @@ const PL = {
     exampleLabel: 'Beispiel aus der Praxis',
     processLabel: 'Vorgehen', processHeading: 'So gehe ich vor',
     resultsLabel: 'Ergebnis', resultsHeading: 'Was du bekommst',
-    ctaHeading: 'Kostenlose Erstberatung',
+    ctaHeading: 'Projekt besprechen',
     ctaPrefix: 'Interessiert an ',
     ctaSuffix: '? Schreib mir – ich melde mich innerhalb von 2 Arbeitstagen und wir schauen gemeinsam, was für dich Sinn macht. Unverbindlich.',
     navServices: 'Meine Umsetzung', navPortfolio: 'Meine Referenzen', navAbout: 'Dein Digitalpartner',
-    navCta: 'Deine Lösung starten', backHome: 'Zurück zur Startseite',
+    navCta: 'Projekt besprechen', navCtaAi: 'KI-Potenzial prüfen', backHome: 'Zurück zur Startseite',
     imprint: 'Impressum', privacy: 'Datenschutz',
   },
   en: {
@@ -51,11 +51,11 @@ const PL = {
     exampleLabel: 'Real-world example',
     processLabel: 'Approach', processHeading: 'How I proceed',
     resultsLabel: 'Results', resultsHeading: 'What you get',
-    ctaHeading: 'Free Initial Consultation',
+    ctaHeading: 'Discuss your project',
     ctaPrefix: 'Interested in ',
     ctaSuffix: "? Write to me – I'll respond within 2 business days and we'll see together what makes sense for you. No commitment.",
     navServices: 'My Execution', navPortfolio: 'My Work', navAbout: 'Your Digital Partner',
-    navCta: 'Start your solution', backHome: 'Back to home',
+    navCta: 'Discuss your project', navCtaAi: 'Assess AI potential', backHome: 'Back to home',
     imprint: 'Imprint', privacy: 'Privacy',
   },
 };
@@ -450,7 +450,7 @@ export default function ServicePageContent({ slug }: { slug: string }) {
               <button onClick={() => setLang('en')} className={`px-2.5 py-1 text-xs font-semibold transition-colors ${lang === 'en' ? 'bg-[#c9a84c] text-[#0c0a06]' : 'text-[#a89880] hover:text-[#f4edd8]'}`}>EN</button>
             </div>
             <a href={`/?lead=${service.slug === 'automatisierung-ki-agenten' ? 'ki' : 'project'}`} className="px-4 py-1.5 rounded-lg text-[#0c0a06] text-sm font-semibold transition-colors" style={{ background: metallicGradient(service.color) }}>
-              {pl.navCta}
+              {service.slug === 'automatisierung-ki-agenten' ? pl.navCtaAi : pl.navCta}
             </a>
           </nav>
         </div>

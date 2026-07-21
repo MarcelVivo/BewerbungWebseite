@@ -19,7 +19,7 @@ const STATIONS = [
   { label: { de: 'Dein Mehrwert', en: 'Your Value' }, target: 'journey-value', mobileTarget: 'mobile-journey-value' },
   { label: { de: 'Meine Referenzen', en: 'My Work' }, target: 'journey-references', mobileTarget: 'mobile-journey-references' },
   { label: { de: 'Dein Digitalpartner', en: 'Your Digital Partner' }, target: 'journey-about', mobileTarget: 'mobile-journey-about' },
-  { label: { de: 'Deine Lösung', en: 'Your Solution' }, target: 'journey-contact', mobileTarget: 'mobile-journey-contact' },
+  { label: { de: 'Dein Projekt', en: 'Your Project' }, target: 'journey-contact', mobileTarget: 'mobile-journey-contact' },
 ];
 
 // Dieselben normierten Positionen, an denen die Desktop-Kamera ihre sechs

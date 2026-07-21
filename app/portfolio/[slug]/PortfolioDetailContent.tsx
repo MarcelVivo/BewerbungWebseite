@@ -23,7 +23,7 @@ const PL = {
     ctaEyebrow: 'DEINE IDEE ALS NÄCHSTES PROJEKT',
     ctaTitle: 'Lass uns dein Vorhaben besprechen.',
     ctaText: 'Erzähl mir, was du aufbauen, vereinfachen oder digitalisieren möchtest. Gemeinsam klären wir den sinnvollsten nächsten Schritt.',
-    ctaButton: 'Deine Lösung starten',
+    ctaButton: 'Projekt besprechen',
   },
   en: {
     back: '← Back to references',
@@ -41,7 +41,7 @@ const PL = {
     ctaEyebrow: 'YOUR IDEA AS THE NEXT PROJECT',
     ctaTitle: 'Let’s discuss what you want to build.',
     ctaText: 'Tell me what you want to create, simplify or digitize. Together, we will identify the most useful next step.',
-    ctaButton: 'Start your solution',
+    ctaButton: 'Discuss your project',
   },
 };
 
