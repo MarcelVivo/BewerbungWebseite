@@ -2553,6 +2553,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
                 onClick={() => {
                   setActiveServiceSlug(null);
                   openJourneyLeadForm(detailService.slug === 'ki-automation-prozesse' ? 'ki' : 'project', {
+                    travel: 'warp',
                     ctaId: `desktop_service_${detailService.slug}`,
                   });
                 }}
@@ -2718,6 +2719,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
                   onClick={() => {
                     setActiveServiceSlug(null);
                     openJourneyLeadForm(detailService.slug === 'ki-automation-prozesse' ? 'ki' : 'project', {
+                      travel: 'warp',
                       ctaId: `mobile_service_${detailService.slug}`,
                     });
                   }}

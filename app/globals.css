@@ -8076,3 +8076,24 @@ body.journey-warp-active .mobile-project-cta {
     font-size: clamp(0.44rem, 2.65cqi, 0.62rem);
   }
 }
+
+/* Der CTA bildet den unteren Abschluss der linken Detailspalte. Seine
+   Unterkante endet exakt dort, wo auch der mittlere Vertikaltrenner endet. */
+@media (min-width: 700px) {
+  .spiral-detail-panel .value-info-copy {
+    grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+    align-content: stretch;
+    padding-bottom: 0;
+  }
+
+  .spiral-detail-panel .value-info-columns {
+    align-self: start;
+    margin-bottom: 0;
+  }
+
+  .spiral-detail-panel .value-info-cta {
+    width: 100%;
+    margin-top: clamp(0.55rem, 1.2cqi, 0.9rem);
+    margin-bottom: 0;
+  }
+}
