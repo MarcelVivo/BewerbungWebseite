@@ -2925,17 +2925,27 @@ export default function HomePage() {
                 </p>
               </div>
               <div style={{ animationDelay: '0.18s' }} className="hero-action-row ms-anim mt-7 flex flex-col items-center justify-center gap-3">
-                <button
-                  type="button"
-                  className={`hero-project-cta ${chakraPetch.className}`}
-                  onClick={() => openJourneyLeadForm('overview', { ctaId: 'hero_primary' })}
-                >
-                  <span>{lang === 'de' ? 'Deine Lösung starten' : 'Start your solution'}</span>
-                  <ChevronRight size={16} strokeWidth={2.2} aria-hidden="true" />
-                </button>
+                <div className="hero-cta-buttons flex flex-wrap items-center justify-center gap-3">
+                  <button
+                    type="button"
+                    className={`hero-project-cta ${chakraPetch.className}`}
+                    onClick={() => openJourneyLeadForm('project', { ctaId: 'hero_project' })}
+                  >
+                    <span>{lang === 'de' ? 'Projekt besprechen' : 'Discuss your project'}</span>
+                    <ChevronRight size={16} strokeWidth={2.2} aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    className={`hero-project-cta ${chakraPetch.className}`}
+                    onClick={() => openJourneyLeadForm('ki', { ctaId: 'hero_ai_check' })}
+                  >
+                    <span>{lang === 'de' ? 'KI-Potenzial prüfen' : 'Assess AI potential'}</span>
+                    <ChevronRight size={16} strokeWidth={2.2} aria-hidden="true" />
+                  </button>
+                </div>
                 <a
                   href="#solution-spiral"
-                  className={`group flex flex-col items-center gap-1 text-[#e7c56a] transition-colors hover:text-[#f6e3a1] ${chakraPetch.className}`}
+                  className={`group flex flex-col items-center gap-1 text-white transition-colors hover:text-white ${chakraPetch.className}`}
                   aria-label={lang === 'de' ? 'Nach unten scrollen' : 'Scroll down'}
                 >
                   <span className="hero-scroll-label text-xs font-bold tracking-[0.22em]">{lang === 'de' ? 'SCROLLEN' : 'SCROLL'}</span>
