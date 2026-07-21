@@ -7079,7 +7079,7 @@ body.journey-warp-active .mobile-project-cta {
 .studio-profile-top-row {
   position: relative;
   display: block;
-  flex: 0 0 55%;
+  flex: 0 0 49%;
   width: calc(100% + (2 * var(--studio-profile-pad)));
   height: auto;
   min-height: 0;
@@ -7161,12 +7161,12 @@ body.journey-warp-active .mobile-project-cta {
   display: grid;
   grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
   gap: clamp(1rem, 2.25vw, 2.25rem);
-  flex: 0 0 20%;
+  flex: 0 0 auto;
   align-items: center;
   align-self: stretch;
-  min-height: 0;
+  min-height: max-content;
   padding: clamp(0.9rem, 1.4vw, 1.25rem) clamp(0.15rem, 0.4vw, 0.4rem);
-  overflow: hidden;
+  overflow: visible;
   border-bottom: 1px solid rgba(231, 197, 106, 0.2);
 }
 
@@ -7205,9 +7205,9 @@ body.journey-warp-active .mobile-project-cta {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0;
-  flex: 1 1 0;
+  flex: 1 0 auto;
   align-self: stretch;
-  min-height: 0;
+  min-height: clamp(8.5rem, 22%, 11rem);
   overflow: hidden;
   border: 1px solid rgba(231, 197, 106, 0.2);
   border-radius: clamp(0.65rem, 1vw, 0.9rem);
@@ -7221,7 +7221,7 @@ body.journey-warp-active .mobile-project-cta {
   flex-direction: column;
   justify-content: center;
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
   aspect-ratio: auto;
   padding: clamp(0.72rem, 1vw, 0.95rem);
   border: 0;
