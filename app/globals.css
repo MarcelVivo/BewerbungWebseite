@@ -7340,3 +7340,76 @@ body.journey-warp-active .mobile-project-cta {
     font-size: clamp(0.52rem, 2.15vw, 0.64rem);
   }
 }
+
+/* ── FINAL: Einheitliche Kartenoberfläche für Umsetzung & Mehrwert ──
+   Übersichts- und Detailkarten nutzen dasselbe Glasrezept wie die
+   Mehrwert-Detailkarte. Die individuelle Akzentfarbe bleibt dabei als
+   Orientierung erhalten; Deckkraft, Rahmen und Lichtintensität sind gleich. */
+.spiral-service-card {
+  --unified-card-accent: var(--service-accent);
+  --unified-card-accent-rgb: var(--service-accent-rgb);
+}
+
+.value-diagram,
+.spiral-detail-panel.value-info-card,
+.value-impact-world .value-info-card,
+.mobile-solution-info.value-info-card,
+.mobile-value-impact .value-info-card {
+  --unified-card-accent: var(--value-accent);
+  --unified-card-accent-rgb: var(--value-accent-rgb);
+}
+
+.spiral-service-card,
+.value-diagram,
+.spiral-detail-panel.value-info-card,
+.value-impact-world .value-info-card,
+.mobile-solution-info.value-info-card,
+.mobile-value-impact .value-info-card {
+  border: 1px solid rgba(var(--unified-card-accent-rgb), 0.34);
+  border-radius: 0.55rem;
+  background:
+    radial-gradient(circle at 78% 18%, rgba(var(--unified-card-accent-rgb), 0.14), transparent 34%),
+    linear-gradient(135deg, rgba(var(--unified-card-accent-rgb), 0.07), transparent 44%),
+    rgba(5, 6, 8, 0.9);
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.58),
+    0 0 42px rgba(var(--unified-card-accent-rgb), 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+.spiral-service-card:hover,
+.spiral-service-card:focus-visible,
+.spiral-service-card.is-selected,
+.value-diagram:hover,
+.value-diagram:focus-visible {
+  border-color: rgba(var(--unified-card-accent-rgb), 0.52);
+  background:
+    radial-gradient(circle at 78% 18%, rgba(var(--unified-card-accent-rgb), 0.17), transparent 34%),
+    linear-gradient(135deg, rgba(var(--unified-card-accent-rgb), 0.09), transparent 44%),
+    rgba(5, 6, 8, 0.92);
+  box-shadow:
+    0 26px 84px rgba(0, 0, 0, 0.62),
+    0 0 46px rgba(var(--unified-card-accent-rgb), 0.17),
+    inset 0 1px 0 rgba(255, 255, 255, 0.085);
+}
+
+.spiral-service-card::after,
+.value-diagram::after {
+  display: none;
+}
+
+.spiral-service-card::before,
+.value-diagram::before,
+.spiral-detail-panel.value-info-card::before,
+.value-impact-world .value-info-card::before,
+.mobile-solution-info.value-info-card::before,
+.mobile-value-impact .value-info-card::before {
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--unified-card-accent),
+    rgba(var(--unified-card-accent-rgb), 0.18) 42%,
+    transparent 82%
+  );
+  box-shadow: 0 0 16px rgba(var(--unified-card-accent-rgb), 0.5);
+}
