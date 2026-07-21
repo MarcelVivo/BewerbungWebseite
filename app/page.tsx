@@ -25,10 +25,11 @@ import {
   type JourneyLeadForm,
 } from './lib/journeyNavigation';
 import { PROJECTS } from './portfolio/data';
-import { Chakra_Petch } from 'next/font/google';
+import { Chakra_Petch, Great_Vibes } from 'next/font/google';
 import { trackWebsiteEvent, type WebsiteFormId } from './lib/analytics';
 
 const chakraPetch = Chakra_Petch({ subsets: ['latin'], weight: '700', display: 'swap' });
+const greatVibes = Great_Vibes({ subsets: ['latin'], weight: '400', display: 'swap' });
 type LeadFormId = JourneyLeadForm;
 
 // Radius, den die reale 3D-Leistungskarte ("Karte 01") in BrainBackground.tsx
@@ -1387,17 +1388,10 @@ function StudioWebSignature() {
 
   return (
     <div ref={signatureRef} className={`studio-web-signature${isWriting ? ' is-writing' : ''}`} aria-hidden="true">
-      <svg viewBox="0 0 620 140" focusable="false">
-        <g className="studio-signature-shadow">
-          <path pathLength="1" d="M12 103C21 77 29 43 39 24C44 15 47 20 44 36L31 91C42 67 54 40 65 29C72 22 71 34 67 50L59 79C56 91 61 96 70 87M70 78C73 66 86 61 96 65C105 70 99 84 89 91C79 97 70 91 72 79C74 68 86 63 99 66C96 77 96 89 107 89M108 89C113 79 115 69 116 63C118 72 116 80 117 84C122 70 132 62 142 66M163 69C156 62 144 64 141 75C138 86 150 92 161 84M161 84C171 81 181 72 177 66C173 60 163 67 164 77C165 88 182 92 191 83M191 83C202 65 210 38 209 23C208 14 202 18 201 32C199 55 194 81 190 90C202 91 215 85 226 76" />
-          <path pathLength="1" d="M360 30C348 17 322 18 312 32C301 47 315 57 337 60C360 63 370 74 365 89C359 106 332 109 313 98C302 91 301 81 311 72M365 90C371 76 375 65 376 57C377 75 375 98 372 113C369 128 373 130 379 116C385 101 386 76 396 67C406 57 420 64 421 76C422 90 409 99 398 93C391 89 392 78 398 70C408 58 418 73 423 84C427 93 435 94 442 86M442 78C446 66 459 62 469 66C478 71 472 85 462 92C452 98 443 92 445 80C447 69 459 64 472 67C469 78 469 90 480 90M481 90C490 73 497 48 499 29C500 18 495 19 492 33C487 57 482 78 479 90C484 76 494 64 504 65C515 67 508 83 504 91C513 83 524 65 535 66C545 67 540 84 536 92C547 82 558 68 569 69C581 71 573 89 563 96C552 104 537 100 526 95" />
-          <path pathLength="1" d="M28 115C134 106 236 106 337 108C421 109 505 114 592 101" />
-        </g>
-        <g className="studio-signature-ink">
-          <path className="studio-signature-stroke studio-signature-stroke-a" pathLength="1" d="M12 103C21 77 29 43 39 24C44 15 47 20 44 36L31 91C42 67 54 40 65 29C72 22 71 34 67 50L59 79C56 91 61 96 70 87M70 78C73 66 86 61 96 65C105 70 99 84 89 91C79 97 70 91 72 79C74 68 86 63 99 66C96 77 96 89 107 89M108 89C113 79 115 69 116 63C118 72 116 80 117 84C122 70 132 62 142 66M163 69C156 62 144 64 141 75C138 86 150 92 161 84M161 84C171 81 181 72 177 66C173 60 163 67 164 77C165 88 182 92 191 83M191 83C202 65 210 38 209 23C208 14 202 18 201 32C199 55 194 81 190 90C202 91 215 85 226 76" />
-          <path className="studio-signature-stroke studio-signature-stroke-b" pathLength="1" d="M360 30C348 17 322 18 312 32C301 47 315 57 337 60C360 63 370 74 365 89C359 106 332 109 313 98C302 91 301 81 311 72M365 90C371 76 375 65 376 57C377 75 375 98 372 113C369 128 373 130 379 116C385 101 386 76 396 67C406 57 420 64 421 76C422 90 409 99 398 93C391 89 392 78 398 70C408 58 418 73 423 84C427 93 435 94 442 86M442 78C446 66 459 62 469 66C478 71 472 85 462 92C452 98 443 92 445 80C447 69 459 64 472 67C469 78 469 90 480 90M481 90C490 73 497 48 499 29C500 18 495 19 492 33C487 57 482 78 479 90C484 76 494 64 504 65C515 67 508 83 504 91C513 83 524 65 535 66C545 67 540 84 536 92C547 82 558 68 569 69C581 71 573 89 563 96C552 104 537 100 526 95" />
-          <path className="studio-signature-stroke studio-signature-stroke-c" pathLength="1" d="M28 115C134 106 236 106 337 108C421 109 505 114 592 101" />
-        </g>
+      <svg viewBox="0 0 620 150" focusable="false">
+        <text x="18" y="108" className={`studio-signature-name-shadow ${greatVibes.className}`}>Marcel Spahr</text>
+        <text x="18" y="108" className={`studio-signature-name ${greatVibes.className}`}>Marcel Spahr</text>
+        <path className="studio-signature-underline" pathLength="1" d="M30 124C168 116 325 118 578 112" />
         <g className="studio-signature-spark">
           <circle className="studio-signature-spark-core" cx="0" cy="0" r="4" />
           <circle cx="-11" cy="-7" r="1.8" />
