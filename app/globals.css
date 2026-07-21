@@ -7382,8 +7382,8 @@ body.journey-warp-active .mobile-project-cta {
 
 .studio-profile-header-signature {
   position: absolute;
-  bottom: 8%;
-  left: 11%;
+  bottom: 3%;
+  left: 20.5%;
   z-index: 3;
   width: 29%;
 }
@@ -7539,8 +7539,8 @@ body.journey-warp-active .mobile-project-cta {
   }
 
   .mobile-studio-profile .studio-profile-header-signature {
-    bottom: 7%;
-    left: 8%;
+    bottom: 2.5%;
+    left: 18%;
     width: 31%;
   }
 
