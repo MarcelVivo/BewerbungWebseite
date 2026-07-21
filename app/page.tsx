@@ -1718,7 +1718,13 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
 
       world.style.transform = `translate3d(${screenX.toFixed(2)}px, ${screenY.toFixed(2)}px, 0) scale(${scale.toFixed(4)}) rotateY(${yawDeg.toFixed(3)}deg)`;
 
-      group.style.opacity = String(visibility);
+      // Die rohe 3D-Sichtbarkeit steuert weiterhin den Ein-/Ausflug. Sobald
+      // die Karten jedoch ihren interaktiven Stationsbereich erreichen,
+      // muss die DOM-Ebene vollständig deckend sein; andernfalls wird selbst
+      // eine nahezu opake Glasfläche durch die Eltern-Opacity transparent.
+      const visualOpacityRaw = Math.max(0, Math.min(1, (visibility - 0.05) / 0.5));
+      const visualOpacity = visualOpacityRaw * visualOpacityRaw * (3 - 2 * visualOpacityRaw);
+      group.style.opacity = visualOpacity.toFixed(3);
       const isInteractive = visibility > 0.55;
       group.style.pointerEvents = isInteractive ? 'auto' : 'none';
       group.classList.toggle('is-interactive', isInteractive);
