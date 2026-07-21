@@ -1370,9 +1370,17 @@ function StudioWebSignature() {
 
   return (
     <div ref={signatureRef} className={`studio-web-signature${isWriting ? ' is-writing' : ''}`} aria-hidden="true">
-      <svg viewBox="0 0 440 105" focusable="false">
-        <text className="studio-signature-shadow" x="12" y="72">Marcel Spahr</text>
-        <text className="studio-signature-ink" x="12" y="72">Marcel Spahr</text>
+      <svg viewBox="0 0 520 126" focusable="false">
+        <g className="studio-signature-shadow">
+          <path pathLength="1" d="M14 101C26 82 41 53 55 24C61 12 68 13 67 29C65 49 48 77 39 96C51 75 68 48 84 36C93 29 96 38 90 51C83 65 75 75 80 79C87 85 103 67 111 57C118 49 124 52 120 63C115 76 106 83 113 85C124 87 140 66 149 58C157 51 163 54 158 66C154 76 145 83 153 85C166 87 181 68 190 58C196 52 203 55 198 65C194 75 186 83 193 85C204 88 220 70 230 57C239 46 246 31 251 17" />
+          <path pathLength="1" d="M306 27C291 13 263 19 264 39C266 58 301 53 304 70C308 91 279 103 261 89C248 79 253 67 266 64C285 59 314 69 330 81C338 87 344 88 350 81C359 70 363 55 371 56C379 58 374 74 369 85C377 74 388 57 398 57C408 57 402 75 397 84C406 76 416 57 425 58C434 59 429 75 425 84C434 77 445 58 455 59C465 60 460 76 456 85C467 75 478 60 488 62C499 65 491 82 483 89C473 99 457 97 443 93" />
+          <path pathLength="1" d="M31 108C126 101 221 99 311 101C376 103 436 106 502 96" />
+        </g>
+        <g className="studio-signature-ink">
+          <path className="studio-signature-stroke studio-signature-stroke-a" pathLength="1" d="M14 101C26 82 41 53 55 24C61 12 68 13 67 29C65 49 48 77 39 96C51 75 68 48 84 36C93 29 96 38 90 51C83 65 75 75 80 79C87 85 103 67 111 57C118 49 124 52 120 63C115 76 106 83 113 85C124 87 140 66 149 58C157 51 163 54 158 66C154 76 145 83 153 85C166 87 181 68 190 58C196 52 203 55 198 65C194 75 186 83 193 85C204 88 220 70 230 57C239 46 246 31 251 17" />
+          <path className="studio-signature-stroke studio-signature-stroke-b" pathLength="1" d="M306 27C291 13 263 19 264 39C266 58 301 53 304 70C308 91 279 103 261 89C248 79 253 67 266 64C285 59 314 69 330 81C338 87 344 88 350 81C359 70 363 55 371 56C379 58 374 74 369 85C377 74 388 57 398 57C408 57 402 75 397 84C406 76 416 57 425 58C434 59 429 75 425 84C434 77 445 58 455 59C465 60 460 76 456 85C467 75 478 60 488 62C499 65 491 82 483 89C473 99 457 97 443 93" />
+          <path className="studio-signature-stroke studio-signature-stroke-c" pathLength="1" d="M31 108C126 101 221 99 311 101C376 103 436 106 502 96" />
+        </g>
         <g className="studio-signature-spark">
           <circle className="studio-signature-spark-core" cx="0" cy="0" r="4" />
           <circle cx="-11" cy="-7" r="1.8" />
@@ -1416,8 +1424,8 @@ function StudioProfileContent({ lang }: { lang: 'de' | 'en' }) {
     <div className={`studio-profile-content ${chakraPetch.className}`}>
       <div className="studio-profile-top-row">
         <div className="studio-profile-visual">
-          <div className="studio-profile-portrait">
-            <img src="/assets/BewerbungsFotoMarcelSpahr.jpg" alt="Marcel Spahr" />
+          <div className="studio-profile-header-image">
+            <img src="/assets/MarcelSpahrHeader.jpg" alt="Marcel Spahr in einem modernen Arbeits- und Projektraum" />
           </div>
           <StudioWebSignature />
         </div>

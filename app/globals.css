@@ -6784,25 +6784,26 @@ body.journey-warp-active .mobile-project-cta {
 
 .studio-signature-shadow,
 .studio-signature-ink {
-  font-family: 'Snell Roundhand', 'Segoe Script', 'Brush Script MT', cursive;
-  font-size: 62px;
-  font-weight: 500;
-  letter-spacing: -1.5px;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .studio-signature-shadow {
-  fill: transparent;
-  stroke: rgba(231,197,106,0.14);
-  stroke-width: 0.8px;
+  stroke: rgba(231,197,106,0.2);
+  stroke-width: 2.2px;
 }
 
 .studio-signature-ink {
-  fill: #e7c56a;
-  stroke: #fff0b0;
-  stroke-width: 0.22px;
-  opacity: 0;
-  clip-path: inset(0 100% 0 0);
+  stroke: #efd478;
+  stroke-width: 2.4px;
   filter: drop-shadow(0 0 4px rgba(231,197,106,0.7)) drop-shadow(0 0 12px rgba(231,197,106,0.28));
+}
+
+.studio-signature-stroke {
+  opacity: 0;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
 }
 
 .studio-signature-spark {
@@ -6819,8 +6820,16 @@ body.journey-warp-active .mobile-project-cta {
   fill: #fff8d8;
 }
 
-.studio-web-signature.is-writing .studio-signature-ink {
-  animation: studio-signature-write 2.8s cubic-bezier(.22,.68,.18,1) 0.35s both;
+.studio-web-signature.is-writing .studio-signature-stroke-a {
+  animation: studio-signature-write 1.55s cubic-bezier(.22,.68,.18,1) 0.28s forwards;
+}
+
+.studio-web-signature.is-writing .studio-signature-stroke-b {
+  animation: studio-signature-write 1.45s cubic-bezier(.22,.68,.18,1) 1.64s forwards;
+}
+
+.studio-web-signature.is-writing .studio-signature-stroke-c {
+  animation: studio-signature-write 0.8s cubic-bezier(.22,.68,.18,1) 2.76s forwards;
 }
 
 .studio-web-signature.is-writing .studio-signature-spark {
@@ -6828,8 +6837,8 @@ body.journey-warp-active .mobile-project-cta {
 }
 
 @keyframes studio-signature-write {
-  0% { opacity: 1; clip-path: inset(0 100% 0 0); }
-  86%, 100% { opacity: 1; clip-path: inset(0 0 0 0); }
+  0% { opacity: 1; stroke-dashoffset: 1; }
+  100% { opacity: 1; stroke-dashoffset: 0; }
 }
 
 @keyframes studio-signature-magic {
@@ -6984,9 +6993,9 @@ body.journey-warp-active .mobile-project-cta {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .studio-signature-ink {
+  .studio-signature-stroke {
     opacity: 1 !important;
-    clip-path: inset(0 0 0 0) !important;
+    stroke-dashoffset: 0 !important;
     animation: none !important;
   }
 
@@ -7009,7 +7018,7 @@ body.journey-warp-active .mobile-project-cta {
 
 .studio-profile-top-row {
   display: grid;
-  grid-template-columns: minmax(15.5rem, 0.82fr) minmax(0, 1.18fr);
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
   gap: clamp(1.15rem, 2.25vw, 2.25rem);
   align-items: center;
   min-height: 0;
@@ -7017,24 +7026,50 @@ body.journey-warp-active .mobile-project-cta {
 
 .studio-profile-visual {
   position: relative;
-  align-self: stretch;
-  min-height: clamp(9.5rem, 16vh, 11.5rem);
+  align-self: center;
+  min-width: 0;
+  padding-bottom: clamp(0.75rem, 1.25vw, 1.1rem);
 }
 
-.studio-profile-visual .studio-profile-portrait {
+.studio-profile-header-image {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid rgba(231,197,106,0.38);
+  border-radius: clamp(0.55rem, 0.9vw, 0.85rem);
+  background: #090b09;
+  box-shadow: 0 14px 36px rgba(0,0,0,0.34), 0 0 24px rgba(231,197,106,0.07);
+}
+
+.studio-profile-header-image::after {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: clamp(7.75rem, 11vw, 9.5rem);
-  max-width: none;
+  inset: 0;
+  content: '';
+  background:
+    linear-gradient(90deg, rgba(2,7,4,0.06) 0%, rgba(2,7,4,0) 52%, rgba(2,7,4,0.22) 100%),
+    linear-gradient(0deg, rgba(2,7,4,0.5) 0%, transparent 38%);
+  box-shadow: inset 0 0 28px rgba(0,0,0,0.2);
+  pointer-events: none;
+}
+
+.studio-profile-header-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 48% 50%;
+  filter: saturate(0.8) contrast(1.06) brightness(0.84);
+  transform: scale(1.015);
 }
 
 .studio-profile-visual .studio-web-signature {
   position: absolute;
-  top: clamp(5.65rem, 7.9vw, 6.85rem);
-  left: clamp(4.35rem, 6.25vw, 5.35rem);
+  right: -4%;
+  bottom: 0;
+  left: auto;
   z-index: 2;
-  width: clamp(11.75rem, 16.5vw, 14.25rem);
+  width: 66%;
   margin: 0;
 }
 
@@ -7053,12 +7088,15 @@ body.journey-warp-active .mobile-project-cta {
 
 .studio-profile-quote blockquote {
   margin: 0;
-  color: #fff;
-  font-size: clamp(0.88rem, 1.05vw, 1.08rem);
-  font-weight: 650;
-  letter-spacing: -0.02em;
-  line-height: 1.48;
+  color: rgba(249,241,223,0.96);
+  font-family: 'Iowan Old Style', 'Baskerville', 'Palatino Linotype', Georgia, serif;
+  font-size: clamp(1rem, 1.28vw, 1.3rem);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: 0.005em;
+  line-height: 1.52;
   text-wrap: balance;
+  text-shadow: 0 4px 24px rgba(0,0,0,0.88), 0 0 20px rgba(231,197,106,0.08);
 }
 
 .studio-profile-positioning-row {
@@ -7128,18 +7166,13 @@ body.journey-warp-active .mobile-project-cta {
 
 @media (min-width: 901px) and (max-width: 1150px) {
   .studio-profile-top-row {
-    grid-template-columns: minmax(13rem, 0.78fr) minmax(0, 1.22fr);
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
     gap: 1rem;
   }
 
-  .studio-profile-visual .studio-profile-portrait {
-    width: clamp(6.8rem, 10.5vw, 8rem);
-  }
-
   .studio-profile-visual .studio-web-signature {
-    top: clamp(5rem, 7.8vw, 5.9rem);
-    left: clamp(3.9rem, 5.9vw, 4.6rem);
-    width: clamp(10.5rem, 15vw, 12.5rem);
+    right: -2%;
+    width: 64%;
   }
 
   .studio-profile-content > .studio-profile-facts {
@@ -7162,17 +7195,14 @@ body.journey-warp-active .mobile-project-cta {
   }
 
   .mobile-studio-profile .studio-profile-visual {
-    min-height: clamp(7.7rem, 34vw, 10rem);
-  }
-
-  .mobile-studio-profile .studio-profile-visual .studio-profile-portrait {
-    width: clamp(5.7rem, 24vw, 7.5rem);
+    padding-bottom: clamp(0.65rem, 3vw, 0.9rem);
   }
 
   .mobile-studio-profile .studio-profile-visual .studio-web-signature {
-    top: clamp(4.35rem, 18vw, 5.7rem);
-    left: clamp(3.45rem, 14.5vw, 4.5rem);
-    width: clamp(10.5rem, 45vw, 14rem);
+    right: -1%;
+    bottom: 0;
+    left: auto;
+    width: 58%;
   }
 
   .mobile-studio-profile .studio-profile-quote .studio-profile-section-flap {
@@ -7183,8 +7213,8 @@ body.journey-warp-active .mobile-project-cta {
   }
 
   .mobile-studio-profile .studio-profile-quote blockquote {
-    font-size: clamp(0.78rem, 3.4vw, 1rem);
-    line-height: 1.4;
+    font-size: clamp(0.84rem, 3.7vw, 1.08rem);
+    line-height: 1.48;
   }
 
   .mobile-studio-profile .studio-profile-positioning-row {
