@@ -1034,12 +1034,12 @@ body.journey-warp-active .mobile-project-cta {
    Sichtbarkeit folgt ausschliesslich dem echten Anflug zum grünen Gehirn. */
 .project-cta-world {
   position: absolute;
-  bottom: clamp(1rem, 2.8vh, 2.5rem);
+  top: 50%;
   left: 50%;
   z-index: 1310;
   width: min(94vw, 70rem);
   opacity: 0;
-  transform-origin: 50% 100%;
+  transform-origin: 50% 50%;
   will-change: transform, opacity;
   pointer-events: none;
 }

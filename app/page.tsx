@@ -1534,7 +1534,7 @@ function ProjectCtaWorld({ lang }: { lang: 'de' | 'en' }) {
       const scale = 0.965 + reveal * 0.035;
 
       world.style.opacity = reveal.toFixed(3);
-      world.style.transform = `translate3d(-50%, ${translateY.toFixed(2)}px, 0) scale(${scale.toFixed(4)})`;
+      world.style.transform = `translate3d(-50%, calc(-50% + ${translateY.toFixed(2)}px), 0) scale(${scale.toFixed(4)})`;
       world.style.pointerEvents = reveal > 0.92 ? 'auto' : 'none';
       world.setAttribute('aria-hidden', reveal > 0.65 ? 'false' : 'true');
     };
