@@ -660,10 +660,13 @@ function ValueInfoGraphic({ index }: { index: number }) {
 function ValueImpactContent({
   lang,
   titleRef,
+  resetToken = 0,
 }: {
   lang: 'de' | 'en';
   titleRef?: (element: HTMLHeadingElement | null) => void;
+  resetToken?: number;
 }) {
+  const contentRef = useRef<HTMLDivElement | null>(null);
   const diagrams = VALUE_DIAGRAMS[lang];
   const infoCards = VALUE_INFO[lang];
   const [activeInfoIndex, setActiveInfoIndex] = useState<number | null>(null);
@@ -672,7 +675,24 @@ function ValueImpactContent({
 
   useEffect(() => {
     setActiveInfoIndex(null);
-  }, [lang]);
+  }, [lang, resetToken]);
+
+  useEffect(() => {
+    const content = contentRef.current;
+    if (!content?.closest('.mobile-value-impact')) return;
+
+    let wasVisible = false;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const isVisible = entry.isIntersecting && entry.intersectionRatio >= 0.15;
+        if (wasVisible && !isVisible) setActiveInfoIndex(null);
+        wasVisible = isVisible;
+      },
+      { threshold: [0, 0.15, 0.5] },
+    );
+    observer.observe(content);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     if (activeInfoIndex === null) return;
@@ -684,7 +704,7 @@ function ValueImpactContent({
   }, [activeInfoIndex]);
 
   return (
-    <div className={`value-impact-content ${chakraPetch.className}`}>
+    <div ref={contentRef} className={`value-impact-content ${chakraPetch.className}`}>
       {titleRef ? (
         <h2
           ref={titleRef}
@@ -840,6 +860,7 @@ function ValueImpactWorld({ lang }: { lang: 'de' | 'en' }) {
   const worldRef = useRef<HTMLDivElement | null>(null);
   const valueTitleRef = useRef<HTMLHeadingElement | null>(null);
   const flapTriggerRef = useRef<() => void>(() => {});
+  const [resetToken, setResetToken] = useState(0);
 
   // Exakt dieselbe Split-Flap-Mechanik wie beim Titel "MEINE UMSETZUNG": kurz
   // durchlaufen, danach sauber auf dem Zieltext einrasten und den Effekt im
@@ -879,6 +900,7 @@ function ValueImpactWorld({ lang }: { lang: 'de' | 'en' }) {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let rafId = 0;
     let wasVisible = false;
+    let wasInteractive = false;
     let cancelNumberAnimation = () => {};
 
     const frame = () => {
@@ -925,6 +947,10 @@ function ValueImpactWorld({ lang }: { lang: 'de' | 'en' }) {
       const isInteractive = revealRaw > 0.34
         && approachProgress < 0.22
         && referenceTakeover < 0.72;
+      if (wasInteractive && !isInteractive) {
+        setResetToken((token) => token + 1);
+      }
+      wasInteractive = isInteractive;
       world.style.pointerEvents = hasOpenInfo || isInteractive ? 'auto' : 'none';
       world.setAttribute('aria-hidden', opacity > 0.65 ? 'false' : 'true');
 
@@ -951,6 +977,7 @@ function ValueImpactWorld({ lang }: { lang: 'de' | 'en' }) {
     <div ref={worldRef} className="value-impact-world" aria-hidden="true">
       <ValueImpactContent
         lang={lang}
+        resetToken={resetToken}
         titleRef={(element) => { valueTitleRef.current = element; }}
       />
     </div>
@@ -1604,6 +1631,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
     let materialized = false;
     let referenceViewZ: number | null = null;
     let rafId = 0;
+    let wasInteractive = false;
 
     const frame = () => {
       rafId = requestAnimationFrame(frame);
@@ -1657,6 +1685,8 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
         group.style.opacity = '0';
         group.style.pointerEvents = 'none';
         group.classList.remove('is-interactive');
+        if (wasInteractive) setActiveServiceSlug(null);
+        wasInteractive = false;
         return;
       }
 
@@ -1692,6 +1722,8 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       const isInteractive = visibility > 0.55;
       group.style.pointerEvents = isInteractive ? 'auto' : 'none';
       group.classList.toggle('is-interactive', isInteractive);
+      if (wasInteractive && !isInteractive) setActiveServiceSlug(null);
+      wasInteractive = isInteractive;
       if (!materialized && visibility > 0.05) {
         materialized = true;
         group.classList.add('is-materialized');
@@ -2127,6 +2159,23 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activeServiceSlug]);
+
+  useEffect(() => {
+    const mobileStage = document.getElementById('mobile-solutions');
+    if (!mobileStage) return;
+
+    let wasVisible = false;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const isVisible = entry.isIntersecting && entry.intersectionRatio >= 0.15;
+        if (wasVisible && !isVisible) setActiveServiceSlug(null);
+        wasVisible = isVisible;
+      },
+      { threshold: [0, 0.15, 0.5] },
+    );
+    observer.observe(mobileStage);
+    return () => observer.disconnect();
+  }, []);
 
   const cards = [
     {
