@@ -2294,6 +2294,9 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
   const detailServiceIndex = Math.max(0, serviceCards.findIndex((card) => card.slug === detailService.slug));
   const detailValueInfo = VALUE_INFO[lang][detailServiceIndex];
   const detailValueDiagram = VALUE_DIAGRAMS[lang][detailServiceIndex];
+  const detailCtaLabel = detailService.slug === 'ki-automation-prozesse'
+    ? (lang === 'de' ? 'KI-Potenzial prüfen' : 'Assess AI potential')
+    : (lang === 'de' ? 'Projekt besprechen' : 'Discuss your project');
   const totalTravel = introCards.length * verticalStep + 780;
   const radius = 520;
   const spiralAngleStep = 58;
@@ -2551,7 +2554,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
                 {detailService.slug === 'ki-automation-prozesse'
                   ? <Bot size={15} strokeWidth={2} aria-hidden="true" />
                   : <ClipboardList size={15} strokeWidth={2} aria-hidden="true" />}
-                <span>{lang === 'de' ? 'Deine Lösung starten' : 'Start your solution'}</span>
+                <span>{detailCtaLabel}</span>
                 <ChevronRight size={14} strokeWidth={2.2} aria-hidden="true" />
               </button>
             </div>
@@ -2716,7 +2719,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
                   {detailService.slug === 'ki-automation-prozesse'
                     ? <Bot size={15} strokeWidth={2} aria-hidden="true" />
                     : <ClipboardList size={15} strokeWidth={2} aria-hidden="true" />}
-                  <span>{lang === 'de' ? 'Deine Lösung starten' : 'Start your solution'}</span>
+                  <span>{detailCtaLabel}</span>
                   <ChevronRight size={14} strokeWidth={2.2} aria-hidden="true" />
                 </button>
               </div>
