@@ -3,7 +3,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { Chakra_Petch } from 'next/font/google';
 import { useLanguage } from './LanguageContext';
-import { JOURNEY_CAMERA_WARP_EVENT, openJourneyLeadForm } from './lib/journeyNavigation';
+import {
+  JOURNEY_CAMERA_WARP_EVENT,
+  JOURNEY_DESTINATION_WARP_EVENT,
+  openJourneyLeadForm,
+  type JourneyDestination,
+} from './lib/journeyNavigation';
 import { trackWebsiteEvent } from './lib/analytics';
 
 const chakraPetch = Chakra_Petch({ subsets: ['latin'], weight: '700', display: 'swap' });
@@ -313,6 +318,16 @@ export default function JourneyNavigator() {
     document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
+  useEffect(() => {
+    const warpToDestination = (event: Event) => {
+      const destination = (event as CustomEvent<JourneyDestination>).detail;
+      const targetIndex = destination === 'references' ? 3 : STATIONS.length - 1;
+      startAdaptiveTravel(targetIndex, 'warp');
+    };
+    window.addEventListener(JOURNEY_DESTINATION_WARP_EVENT, warpToDestination);
+    return () => window.removeEventListener(JOURNEY_DESTINATION_WARP_EVENT, warpToDestination);
+  }, [activeIndex]);
+
   return (
     <>
       <div
@@ -381,9 +396,12 @@ export default function JourneyNavigator() {
         <button
           type="button"
           className="journey-utility-contact"
-          onClick={() => goToStation(STATIONS.length - 1)}
+          onClick={() => openJourneyLeadForm('project', {
+            travel: 'warp',
+            ctaId: 'journey_navigation_project',
+          })}
         >
-          {lang === 'de' ? 'Deine Lösung starten' : 'Start your solution'}
+          {lang === 'de' ? 'Projekt besprechen' : 'Discuss your project'}
         </button>
         <div className="journey-utility-legal">
           <a href="/datenschutz">{lang === 'de' ? 'Datenschutz' : 'Privacy'}</a>
