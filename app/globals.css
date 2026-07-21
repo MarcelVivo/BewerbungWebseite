@@ -7023,28 +7023,32 @@ body.journey-warp-active .mobile-project-cta {
   width: 100%;
   margin: 0;
   font-size: clamp(0.65rem, 0.98vw, 0.98rem);
+  color: #f1d474;
   text-align: center;
+  text-shadow: 0 0 18px rgba(231, 197, 106, 0.38);
 }
 
 .studio-profile-content {
   --studio-profile-pad: clamp(1.35rem, 2.2vw, 2.15rem);
   position: relative;
   isolation: isolate;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto minmax(0, 1fr) auto;
-  align-content: stretch;
+  display: flex;
+  flex-direction: column;
+  align-content: initial;
   gap: clamp(0.55rem, 0.9vw, 0.85rem);
   padding: 0 var(--studio-profile-pad) var(--studio-profile-pad);
   overflow: hidden;
-  border: 1px solid rgba(191, 222, 204, 0.2);
+  border: 1px solid rgba(231, 197, 106, 0.42);
   background:
-    radial-gradient(circle at 84% 8%, rgba(202, 168, 82, 0.09), transparent 26%),
-    linear-gradient(145deg, rgba(8, 24, 18, 0.98) 0%, rgba(3, 15, 11, 0.985) 48%, rgba(1, 8, 6, 0.995) 100%);
+    radial-gradient(circle at 84% 8%, rgba(244, 206, 107, 0.14), transparent 29%),
+    radial-gradient(circle at 10% 68%, rgba(181, 133, 41, 0.08), transparent 32%),
+    linear-gradient(145deg, rgba(28, 20, 7, 0.99) 0%, rgba(15, 11, 4, 0.995) 48%, rgba(5, 4, 2, 1) 100%);
   box-shadow:
     0 34px 90px rgba(0, 0, 0, 0.62),
     0 10px 28px rgba(0, 0, 0, 0.38),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    inset 0 -1px 0 rgba(92, 220, 151, 0.08);
+    0 0 42px rgba(193, 143, 42, 0.08),
+    inset 0 1px 0 rgba(255, 239, 190, 0.15),
+    inset 0 -1px 0 rgba(231, 197, 106, 0.1);
 }
 
 .studio-profile-content::before {
@@ -7067,21 +7071,23 @@ body.journey-warp-active .mobile-project-cta {
   border-radius: inherit;
   content: '';
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.045), transparent 16%),
-    linear-gradient(112deg, transparent 48%, rgba(211, 181, 105, 0.026) 57%, transparent 68%);
+    linear-gradient(180deg, rgba(255, 239, 190, 0.065), transparent 16%),
+    linear-gradient(112deg, transparent 43%, rgba(231, 197, 106, 0.045) 55%, transparent 68%);
   pointer-events: none;
 }
 
 .studio-profile-top-row {
   position: relative;
   display: block;
+  flex: 0 0 55%;
   width: calc(100% + (2 * var(--studio-profile-pad)));
+  height: auto;
   min-height: 0;
-  aspect-ratio: 1.78 / 1;
+  aspect-ratio: auto;
   margin-right: calc(-1 * var(--studio-profile-pad));
   margin-left: calc(-1 * var(--studio-profile-pad));
   isolation: isolate;
-  border-bottom: 1px solid rgba(210, 177, 91, 0.22);
+  border-bottom: 1px solid rgba(231, 197, 106, 0.38);
 }
 
 .studio-profile-header-image {
@@ -7111,7 +7117,7 @@ body.journey-warp-active .mobile-project-cta {
   height: 100%;
   object-fit: cover;
   object-position: 50% 46%;
-  filter: saturate(0.72) contrast(1.1) brightness(0.72);
+  filter: sepia(0.12) saturate(0.82) contrast(1.1) brightness(0.72);
   transform: scale(1.012);
 }
 
@@ -7140,7 +7146,7 @@ body.journey-warp-active .mobile-project-cta {
 
 .studio-profile-header-copy blockquote {
   margin: 0;
-  color: rgba(244, 239, 227, 0.8);
+  color: rgba(247, 226, 169, 0.84);
   font-family: 'Iowan Old Style', 'Baskerville', 'Palatino Linotype', Georgia, serif;
   font-size: clamp(0.76rem, 0.9vw, 0.92rem);
   font-style: italic;
@@ -7155,10 +7161,13 @@ body.journey-warp-active .mobile-project-cta {
   display: grid;
   grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
   gap: clamp(1rem, 2.25vw, 2.25rem);
+  flex: 0 0 20%;
   align-items: center;
   align-self: stretch;
+  min-height: 0;
   padding: clamp(0.9rem, 1.4vw, 1.25rem) clamp(0.15rem, 0.4vw, 0.4rem);
-  border-bottom: 1px solid rgba(191, 222, 204, 0.12);
+  overflow: hidden;
+  border-bottom: 1px solid rgba(231, 197, 106, 0.2);
 }
 
 .studio-profile-positioning-title {
@@ -7175,7 +7184,7 @@ body.journey-warp-active .mobile-project-cta {
 
 .studio-profile-positioning-title h2 {
   margin: 0;
-  color: #fff;
+  color: #f9e9b8;
   font-size: clamp(1.48rem, 1.95vw, 1.98rem);
   font-weight: 600;
   letter-spacing: -0.035em;
@@ -7186,7 +7195,7 @@ body.journey-warp-active .mobile-project-cta {
 .studio-profile-positioning-row .studio-profile-copy {
   max-width: none;
   margin: 0;
-  color: rgba(226, 228, 221, 0.78);
+  color: rgba(226, 209, 165, 0.78);
   font-size: clamp(0.76rem, 0.9vw, 0.92rem);
   font-weight: 400;
   line-height: 1.62;
@@ -7196,12 +7205,15 @@ body.journey-warp-active .mobile-project-cta {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0;
+  flex: 1 1 0;
   align-self: stretch;
   min-height: 0;
   overflow: hidden;
-  border: 1px solid rgba(191, 222, 204, 0.12);
+  border: 1px solid rgba(231, 197, 106, 0.2);
   border-radius: clamp(0.65rem, 1vw, 0.9rem);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.026), rgba(255, 255, 255, 0.008));
+  background:
+    linear-gradient(180deg, rgba(231, 197, 106, 0.065), rgba(117, 80, 17, 0.025)),
+    rgba(7, 5, 2, 0.54);
 }
 
 .studio-profile-content > .studio-profile-facts .studio-profile-fact {
@@ -7209,6 +7221,7 @@ body.journey-warp-active .mobile-project-cta {
   flex-direction: column;
   justify-content: center;
   min-height: 0;
+  overflow: hidden;
   aspect-ratio: auto;
   padding: clamp(0.72rem, 1vw, 0.95rem);
   border: 0;
@@ -7218,11 +7231,11 @@ body.journey-warp-active .mobile-project-cta {
 }
 
 .studio-profile-content > .studio-profile-facts .studio-profile-fact + .studio-profile-fact {
-  border-left: 1px solid rgba(191, 222, 204, 0.12);
+  border-left: 1px solid rgba(231, 197, 106, 0.18);
 }
 
 .studio-profile-content > .studio-profile-facts .studio-profile-fact strong {
-  color: rgba(255, 255, 255, 0.92);
+  color: rgba(249, 231, 177, 0.94);
   font-size: clamp(0.76rem, 0.88vw, 0.9rem);
   font-weight: 600;
   letter-spacing: -0.015em;
@@ -7232,7 +7245,7 @@ body.journey-warp-active .mobile-project-cta {
 
 .studio-profile-content > .studio-profile-facts .studio-profile-fact span {
   margin-top: clamp(0.22rem, 0.4vw, 0.4rem);
-  color: rgba(210, 213, 204, 0.62);
+  color: rgba(209, 190, 143, 0.68);
   font-size: clamp(0.59rem, 0.67vw, 0.69rem);
   font-weight: 400;
   line-height: 1.45;
@@ -7253,14 +7266,15 @@ body.journey-warp-active .mobile-project-cta {
 @media (max-width: 900px) {
   .mobile-studio-profile .studio-profile-content {
     --studio-profile-pad: clamp(0.75rem, 3.4vw, 1.15rem);
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
+    display: flex;
+    flex-direction: column;
     gap: 0.68rem;
     padding: 0 var(--studio-profile-pad) var(--studio-profile-pad);
     overflow-y: auto;
   }
 
   .mobile-studio-profile .studio-profile-top-row {
+    flex: 0 0 44%;
     aspect-ratio: 1.65 / 1;
   }
 
@@ -7288,6 +7302,7 @@ body.journey-warp-active .mobile-project-cta {
   }
 
   .mobile-studio-profile .studio-profile-positioning-row {
+    flex: 0 0 auto;
     grid-template-columns: 1fr;
     gap: 0.55rem;
     padding: 0.65rem 0;
@@ -7302,6 +7317,7 @@ body.journey-warp-active .mobile-project-cta {
   }
 
   .mobile-studio-profile .studio-profile-content > .studio-profile-facts {
+    flex: 0 0 auto;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.42rem;
     border: 0;
@@ -7311,9 +7327,9 @@ body.journey-warp-active .mobile-project-cta {
 
   .mobile-studio-profile .studio-profile-content > .studio-profile-facts .studio-profile-fact {
     padding: 0.52rem;
-    border: 1px solid rgba(191, 222, 204, 0.12);
+    border: 1px solid rgba(231, 197, 106, 0.18);
     border-radius: 0.65rem;
-    background: rgba(255, 255, 255, 0.015);
+    background: rgba(231, 197, 106, 0.035);
   }
 
   .mobile-studio-profile .studio-profile-content > .studio-profile-facts .studio-profile-fact strong {
