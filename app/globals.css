@@ -5957,17 +5957,16 @@ body.journey-warp-active .mobile-project-cta {
   color: #fff;
 }
 
-/* Die Umsetzungskarten stehen am Kamerastopp mit voller Ebenen-Deckkraft,
-   während die Mehrwert-Welt leicht eingeblendet bleibt. Eine entsprechend
-   transparentere Glasbasis gleicht diesen Unterschied aus, sodass beide
-   2×2-Gruppen im sichtbaren Endzustand denselben Glaseindruck besitzen. */
+/* Die Umsetzungskarten werden als komplette 3D-Gruppe zusätzlich über ihre
+   Szenen-Opacity eingeblendet. Die leicht dichtere Glasbasis kompensiert
+   diese Ebenentransparenz und entspricht sichtbar den Mehrwertkarten. */
 @media (min-width: 700px) {
   .spiral-service-stations .spiral-service-card,
   .spiral-service-stations .spiral-detail-panel.value-info-card {
     background:
       radial-gradient(circle at 78% 18%, rgba(var(--unified-card-accent-rgb), 0.14), transparent 34%),
       linear-gradient(135deg, rgba(var(--unified-card-accent-rgb), 0.07), transparent 44%),
-      rgba(5, 6, 8, 0.68);
+      rgba(5, 6, 8, 0.96);
     -webkit-backdrop-filter: blur(2px) saturate(1.05);
     backdrop-filter: blur(2px) saturate(1.05);
   }
@@ -5978,7 +5977,7 @@ body.journey-warp-active .mobile-project-cta {
     background:
       radial-gradient(circle at 78% 18%, rgba(var(--unified-card-accent-rgb), 0.17), transparent 34%),
       linear-gradient(135deg, rgba(var(--unified-card-accent-rgb), 0.09), transparent 44%),
-      rgba(5, 6, 8, 0.74);
+      rgba(5, 6, 8, 0.98);
   }
 }
 
