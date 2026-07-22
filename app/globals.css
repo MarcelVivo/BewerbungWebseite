@@ -9014,3 +9014,35 @@ body.journey-warp-active .mobile-project-cta {
     font-size: clamp(1.35rem, 7vw, 2rem) !important;
   }
 }
+
+/* ── Mobile Detailkarten: Inhalt vor CTA ────────────────────────────────
+   Die Dialoghöhe bleibt auf den Viewport begrenzt und scrollt. Ihre beiden
+   Grid-Zeilen müssen sich dabei jedoch nach dem echten Inhalt bemessen;
+   andernfalls schrumpft die Textzeile und Illustration sowie CTA liegen über
+   den Listen. Der CTA ist auf Mobile bewusst Teil des Leseflusses und folgt
+   erst nach Leistungsumfang und Nutzen. */
+@media (max-width: 699px) {
+  .mobile-solution-info.value-info-card,
+  .mobile-value-impact .value-info-card {
+    grid-template-rows: max-content max-content !important;
+  }
+
+  .mobile-solution-info .value-info-copy,
+  .mobile-value-impact .value-info-copy {
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+  }
+
+  .mobile-solution-info .value-info-cta,
+  .mobile-value-impact .mobile-value-info-cta {
+    position: relative !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    z-index: 2;
+    flex: 0 0 auto;
+    width: 100% !important;
+    margin: 1.5rem 0 0 !important;
+  }
+}
