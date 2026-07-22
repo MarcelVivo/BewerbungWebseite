@@ -34,9 +34,11 @@ const MOBILE_TARGET: Record<JourneyDestination, string> = {
   contact: 'mobile-journey-contact',
 };
 
+// Muss mit DESKTOP_STATION_PROGRESS in JourneyNavigator.tsx übereinstimmen
+// (dortiger Kommentar erklärt die Kalibrierung von 0.40 für "solutions").
 const DESKTOP_PROGRESS: Record<JourneyDestination, number> = {
   start: 0,
-  solutions: 26 / 55.5,
+  solutions: 0.40,
   value: 0.56,
   references: 0.7,
   about: 0.93,

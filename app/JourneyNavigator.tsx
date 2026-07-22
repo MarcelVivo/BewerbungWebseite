@@ -37,12 +37,23 @@ const STATION_INDEX = new Map<JourneyDestination, number>(
 // Dieselben normierten Positionen, an denen die Desktop-Kamera ihre sechs
 // inhaltlichen Stationen zeigt. So stimmen Klickziel, sichtbarer Inhalt und
 // aktive Beschriftung der rechten Navigation immer miteinander überein.
-const DESKTOP_STATION_PROGRESS = [0, 26 / 55.5, 0.56, 0.7, 0.93, 1];
+// "Meine Umsetzung" lag ursprünglich bei 26/55.5 (~0.468). Messung zeigt:
+// die "Dein Mehrwert"-Welt wird real schon ab ~0.454-0.46 vollständig
+// sichtbar (aria-hidden="false", opacity 1) - der alte Zielwert lag also
+// bereits HINTER diesem Umschlagpunkt. Ein Klick auf "Meine Umsetzung"
+// landete dadurch auf einer Scrollposition, an der "Dein Mehrwert" die
+// Bühne schon übernommen hatte; die Navigation blieb sichtbar auf "Dein
+// Mehrwert" hängen, "Meine Umsetzung" wurde nie sauber gezeigt. 0.40 liegt
+// mit klarem Abstand vor diesem Umschlagpunkt.
+const DESKTOP_STATION_PROGRESS = [0, 0.40, 0.56, 0.7, 0.93, 1];
 // Die Schwellen markieren den sichtbaren Kapitelwechsel, nicht erst den
 // mathematischen Mittelpunkt der jeweiligen Kamerastation. Die DOM-Welten
 // unten haben Vorrang; diese Werte überbrücken lediglich die kurzen Momente,
 // in denen zwei Kapitel während einer Kamerafahrt gleichzeitig ausblenden.
-const DESKTOP_ACTIVE_THRESHOLDS = [0.452, 0.515, 0.625, 0.91, 0.9748];
+// Der erste Wert (0.452) lag zu nah am realen "Dein Mehrwert"-Umschlagpunkt
+// (~0.454-0.46) und liess praktisch kein stabiles Zeitfenster für "Meine
+// Umsetzung" - auf 0.30 abgesenkt, passend zum neuen Klickziel oben.
+const DESKTOP_ACTIVE_THRESHOLDS = [0.30, 0.515, 0.625, 0.91, 0.9748];
 
 // Die grossen Inhaltsebenen veröffentlichen ihren echten Sichtbarkeitsstatus
 // über aria-hidden. Von hinten nach vorne geprüft gewinnt bei einer weichen
@@ -386,8 +397,51 @@ export default function JourneyNavigator() {
       const journey = document.getElementById('solution-spiral');
       if (journey) {
         writeJourneyHistory(index, 'push');
+
+        // Ohne diese Sperre lief `update()` während der nativen Scroll-
+        // Animation ungebremst weiter mit und konnte den Zielindex noch
+        // mittendrin überschreiben. Grund: die 3D-Kamera in
+        // BrainBackground.tsx folgt der Scrollposition nicht direkt, sondern
+        // über eine gedämpfte Feder-Simulation (cameraProgress), die einem
+        // grossen Sprung erst über mehrere Sekunden "nachzieht". Die Sperre
+        // darf deshalb nicht nach fester Zeit fallen, sondern erst, wenn
+        // cameraProgress tatsächlich beim Klickziel angekommen ist – sonst
+        // liest update() unmittelbar danach noch den alten, alten Wert und
+        // springt auf die falsche (meist die aktuell näherliegende) Station
+        // zurück. Der Warp-Pfad (>=2 Stationen) umgeht das Problem, indem er
+        // cameraProgress per JOURNEY_CAMERA_WARP_EVENT hart auf das Ziel
+        // setzt; hier soll die Kamera aber sichtbar weich nachschwingen,
+        // daher wird stattdessen auf Konvergenz gewartet statt sie zu
+        // erzwingen.
+        travelTargetRef.current = index;
+        setTravelTargetIndex(index);
+
+        const targetProgress = DESKTOP_STATION_PROGRESS[index];
+        const pollStartedAt = performance.now();
+        let pollId = 0;
+
+        const finish = () => {
+          window.cancelAnimationFrame(pollId);
+          travelTargetRef.current = null;
+          cancelTravelRef.current = null;
+          setTravelTargetIndex(null);
+          setActiveIndex(index);
+        };
+        cancelTravelRef.current = finish;
+
+        const pollCameraConvergence = () => {
+          if (window.innerWidth <= 699) { finish(); return; }
+          const cameraState = (window as any).__cardsCameraState;
+          const progress = typeof cameraState?.cameraProgress === 'number' ? cameraState.cameraProgress : null;
+          const converged = progress !== null && Math.abs(progress - targetProgress) < 0.015;
+          const timedOut = performance.now() - pollStartedAt > 5000;
+          if (converged || timedOut) { finish(); return; }
+          pollId = window.requestAnimationFrame(pollCameraConvergence);
+        };
+        pollCameraConvergence();
+
         window.scrollTo({
-          top: journey.offsetTop - window.innerHeight + journey.offsetHeight * DESKTOP_STATION_PROGRESS[index],
+          top: getStationTop(index),
           behavior: 'smooth',
         });
         return;
