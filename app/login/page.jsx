@@ -8,6 +8,12 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
+  function getSafeDestination() {
+    const requested = new URLSearchParams(window.location.search).get('next');
+    if (requested === '/bewerbungsprofil' || requested === '/expertise') return requested;
+    return '/bewerbungsprofil';
+  }
+
   async function onSubmit(e) {
     e.preventDefault();
     setError("");
@@ -18,8 +24,7 @@ export default function LoginPage() {
         body: JSON.stringify({ username, password }),
       });
       if (!res.ok) throw new Error(await res.text());
-      const next = new URLSearchParams(window.location.search).get('next') || '/';
-      window.location.href = next;
+      window.location.assign(getSafeDestination());
     } catch (err) {
       setError('Ungültige Anmeldedaten');
     }

@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import {
   ArrowUpRight,
   Award,
@@ -244,7 +243,6 @@ function DocumentLink({
 }
 
 export default function BewerbungsprofilPage() {
-  const router = useRouter();
   const [activeSection, setActiveSection] = useState('profil');
 
   useEffect(() => {
@@ -268,8 +266,7 @@ export default function BewerbungsprofilPage() {
 
   async function handleLogout() {
     await fetch('/api/logout', { method: 'POST' });
-    router.push('/login');
-    router.refresh();
+    window.location.replace('/login?next=%2Fbewerbungsprofil');
   }
 
   function scrollTo(id: string) {

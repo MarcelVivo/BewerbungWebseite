@@ -10,7 +10,7 @@ import { createServerClient } from '@supabase/ssr';
 
 const ALWAYS_ALLOW_PREFIXES = ['/_next', '/static', '/favicon', '/robots'];
 const ALWAYS_ALLOW_ASSETS   = ['/assets/portrait'];
-const PUBLIC_PATHS           = ['/', '/login', '/bewerbungsprofil', '/expertise', '/api/login', '/api/logout'];
+const PUBLIC_PATHS           = ['/', '/login', '/api/login', '/api/logout'];
 const API_PUBLIC_PREFIXES    = ['/api/auth', '/api/kalender/buchen', '/api/kontakt'];
 
 // ── Hilfsfunktionen für den alten HMAC-Token ──────────────
@@ -136,8 +136,7 @@ export async function middleware(req: NextRequest) {
     return handleRecruiterAuth(req);
   }
 
-  // Direkt teilbare öffentliche Seiten dürfen keine bestehende Sitzung
-  // voraussetzen. Geschützte Bereiche werden oben separat behandelt.
+  // Nur ausdrücklich öffentliche Seiten umgehen die HMAC-Prüfung.
   if (PUBLIC_PATHS.includes(pathname)) return NextResponse.next();
   return handleOldAuth(req);
 }
