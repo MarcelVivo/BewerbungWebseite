@@ -1507,10 +1507,26 @@ function StudioProfileContent({ lang }: { lang: 'de' | 'en' }) {
             <button
               type="button"
               className="studio-profile-cta"
-              onClick={() => openJourneyLeadForm('project', {
-                travel: 'warp',
-                ctaId: 'digital_partner_project',
-              })}
+              onClick={(event) => {
+                event.currentTarget.blur();
+                openJourneyLeadForm('project', {
+                  navigate: false,
+                  ctaId: 'digital_partner_project',
+                });
+
+                const openProjectStation = () => navigateToJourneyDestination('contact');
+                if (window.innerWidth <= 699) {
+                  // Erst das Projektformular rendern, dann dessen neue mobile
+                  // Zielposition bestimmen. So verwirft Safari den Sprung
+                  // nicht während desselben Touch-/Layout-Zyklus.
+                  window.requestAnimationFrame(() => {
+                    window.requestAnimationFrame(openProjectStation);
+                  });
+                  return;
+                }
+
+                openProjectStation();
+              }}
             >
               <ClipboardList size={16} strokeWidth={2} aria-hidden="true" />
               <span>{lang === 'de' ? 'Projekt besprechen' : 'Discuss your project'}</span>

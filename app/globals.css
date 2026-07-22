@@ -9829,4 +9829,16 @@ body.journey-warp-active .mobile-project-cta {
     hyphens: auto;
     text-wrap: pretty;
   }
+
+  .mobile-studio-profile .studio-profile-action,
+  .mobile-studio-profile .studio-profile-cta {
+    position: relative;
+    z-index: 6;
+    pointer-events: auto;
+  }
+
+  .mobile-studio-profile .studio-profile-cta {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
 }
