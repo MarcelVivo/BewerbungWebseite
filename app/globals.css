@@ -9145,3 +9145,28 @@ body.journey-warp-active .mobile-project-cta {
   outline: 2px solid currentColor;
   outline-offset: 3px;
 }
+
+/* Der KI-Kontaktblock liegt in einer animierten 3D-Welt. Eine eigene
+   Hit-Test-Ebene verhindert, dass Canvas-, Kamera- oder Scroll-Flächen
+   einzelne Eingabefelder abfangen. */
+.project-cta-panel[data-form='ki'] .ki-check-contact,
+.project-cta-panel[data-form='ki'] .ki-check-contact-form {
+  position: relative;
+  z-index: 5;
+  isolation: isolate;
+  pointer-events: auto !important;
+}
+
+.project-cta-panel[data-form='ki'] .ki-check-contact-form > input,
+.project-cta-panel[data-form='ki'] .ki-check-contact-form > label,
+.project-cta-panel[data-form='ki'] .ki-check-contact-form > button {
+  position: relative;
+  z-index: 1;
+  pointer-events: auto !important;
+  touch-action: manipulation;
+}
+
+.project-cta-panel[data-form='ki'] .ki-check-contact-form > input {
+  -webkit-user-select: text;
+  user-select: text;
+}

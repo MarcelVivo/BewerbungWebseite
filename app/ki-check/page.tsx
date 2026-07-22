@@ -495,37 +495,52 @@ export default function KiCheckPage() {
             <p className="text-[#a89880] text-sm mb-8 leading-relaxed">
               {copy.formIntro}
             </p>
-            <form onSubmit={handleSubmit} className="ki-check-contact-form space-y-4" noValidate>
+            <form
+              onSubmit={handleSubmit}
+              onPointerDown={(event) => event.stopPropagation()}
+              onTouchStart={(event) => event.stopPropagation()}
+              className="ki-check-contact-form space-y-4"
+              noValidate
+            >
               <input
                 ref={nameInputRef}
+                name="name"
+                autoComplete="name"
                 required type="text" placeholder={copy.name}
                 value={form.name}
-                onChange={e => { setForm(f => ({ ...f, name: e.target.value })); setError(null); }}
+                onChange={e => { const value = e.currentTarget.value; setForm(f => ({ ...f, name: value })); setError(null); }}
                 className={INPUT}
               />
               <input
                 ref={emailInputRef}
+                name="email"
+                autoComplete="email"
                 required type="email" placeholder="name@firma.ch"
                 value={form.email}
-                onChange={e => { setForm(f => ({ ...f, email: e.target.value })); setError(null); }}
+                onChange={e => { const value = e.currentTarget.value; setForm(f => ({ ...f, email: value })); setError(null); }}
                 className={INPUT}
               />
               <input
                 ref={companyInputRef}
+                name="organization"
+                autoComplete="organization"
                 required type="text" placeholder={copy.company}
                 value={form.firma}
-                onChange={e => { setForm(f => ({ ...f, firma: e.target.value })); setError(null); }}
+                onChange={e => { const value = e.currentTarget.value; setForm(f => ({ ...f, firma: value })); setError(null); }}
                 className={INPUT}
               />
               <input
+                name="tel"
+                autoComplete="tel"
                 type="tel" placeholder={copy.phone}
                 value={form.telefon}
-                onChange={e => { setForm(f => ({ ...f, telefon: e.target.value })); setError(null); }}
+                onChange={e => { const value = e.currentTarget.value; setForm(f => ({ ...f, telefon: value })); setError(null); }}
                 className={INPUT}
               />
               <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#2d2820] bg-[#100d09] px-4 py-3 text-xs leading-relaxed text-[#a89880]">
                 <input
                   ref={consentInputRef}
+                  name="consent"
                   type="checkbox"
                   checked={consent}
                   onChange={e => { setConsent(e.target.checked); setError(null); }}
