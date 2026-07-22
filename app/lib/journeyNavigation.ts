@@ -117,9 +117,25 @@ export function openJourneyLeadForm(
   window.dispatchEvent(new CustomEvent<JourneyLeadForm>(OPEN_LEAD_FORM_EVENT, { detail: form }));
   if (options.navigate === false) return;
 
-  if (options.travel === 'smooth') {
-    resolveJourneyPosition('contact', 'smooth');
+  const navigateToForm = () => {
+    if (options.travel === 'smooth') {
+      resolveJourneyPosition('contact', 'smooth');
+      return;
+    }
+    navigateToJourneyDestination('contact');
+  };
+
+  // Mobile Detailkarten sind Vollbild-Overlays und sperren den Body-Scroll.
+  // Ihre CTA-Handler schliessen die Karte im selben React-Zyklus. Erst zwei
+  // Frames später sind das Overlay entfernt, :has(...is-open) neu berechnet
+  // und der Scroll in Mobile Safari wieder freigegeben. Der Zielpunkt wird
+  // deshalb erst danach ermittelt und angefahren.
+  if (document.querySelector('.value-info-card.is-open')) {
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(navigateToForm);
+    });
     return;
   }
-  navigateToJourneyDestination('contact');
+
+  navigateToForm();
 }
