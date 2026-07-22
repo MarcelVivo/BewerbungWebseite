@@ -72,6 +72,7 @@ export default function JourneyNavigator() {
   const cancelTravelRef = useRef<(() => void) | null>(null);
   const trackedStationsRef = useRef(new Set<number>());
   const historyNavigationFrameRef = useRef(0);
+  const mobileNavigationFrameRef = useRef(0);
   const initialHistoryResolvedRef = useRef(false);
   const { lang, setLang } = useLanguage();
 
@@ -181,6 +182,7 @@ export default function JourneyNavigator() {
       window.removeEventListener('wheel', interruptTravel);
       window.removeEventListener('touchstart', interruptTravel);
       window.removeEventListener('keydown', interruptTravel);
+      window.cancelAnimationFrame(mobileNavigationFrameRef.current);
       cancelTravelRef.current?.();
     };
   }, []);
@@ -337,6 +339,7 @@ export default function JourneyNavigator() {
   }
 
   function goToStation(index: number) {
+    const mobileMenuWasOpen = mobileMenuOpen;
     setMobileMenuOpen(false);
     setActiveIndex(index);
     trackWebsiteEvent('journey_navigation', {
@@ -351,7 +354,23 @@ export default function JourneyNavigator() {
     }
 
     if (window.innerWidth <= 699) {
-      startAdaptiveTravel(index, 'warp', 'push');
+      const activeElement = document.activeElement;
+      if (activeElement instanceof HTMLElement) activeElement.blur();
+
+      window.cancelAnimationFrame(mobileNavigationFrameRef.current);
+      if (!mobileMenuWasOpen) {
+        startAdaptiveTravel(index, 'warp', 'push');
+        return;
+      }
+
+      // Die geöffnete mobile Stationsliste sperrt den Body via :has(...).
+      // React muss zuerst die is-open-Klasse entfernen und Mobile Safari die
+      // Scroll-Sperre neu berechnen, bevor das Ziel zuverlässig gesetzt wird.
+      mobileNavigationFrameRef.current = window.requestAnimationFrame(() => {
+        mobileNavigationFrameRef.current = window.requestAnimationFrame(() => {
+          startAdaptiveTravel(index, 'warp', 'push');
+        });
+      });
       return;
     }
 
