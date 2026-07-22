@@ -72,16 +72,15 @@ const INTRO_SEQUENCES = {
     'Deine Herausforderung.',
     'Deine Vision.',
     'Deine Lösung.',
-    'Deine Erfolgsgeschichte.',
   ],
   en: [
     'Your Idea.',
     'Your Challenge.',
     'Your Vision.',
     'Your Solution.',
-    'Your Success Story.',
   ],
 } as const;
+const INTRO_STOP_COUNT = INTRO_SEQUENCES.de.length;
 
 function getMobileDeckIndex(deck: HTMLElement) {
   const cards = Array.from(deck.children) as HTMLElement[];
@@ -1607,7 +1606,7 @@ function ProjectCtaWorld({ lang }: { lang: 'de' | 'en' }) {
   );
 }
 
-// Split-Flap-Buchstaben-Zerhacker für alle 5 "Deine …"-Intro-Textstationen:
+// Split-Flap-Buchstaben-Zerhacker für alle 4 "Deine …"-Intro-Textstationen:
 // jeder Buchstabe klappt unabhängig von seinen Nachbarn (eigenes Tempo,
 // eigene Pausen) endlos durch zufällige Zeichen — kein Split-Flap-Kästchen
 // im Hintergrund, nur der weisse Buchstabe selbst kollabiert vertikal
@@ -1633,8 +1632,8 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
   const serviceStationsRef = useRef<HTMLDivElement | null>(null);
   const cardsWorldRef = useRef<HTMLDivElement | null>(null);
   const mobileServicesRef = useRef<HTMLDivElement | null>(null);
-  // Je 1 Ref-Slot pro Intro-Station (worldIndex 0..4, "Deine …") — Arrays
-  // statt einzelner Refs, da alle 5 Stationen dieselbe Split-Flap-Logik in
+  // Je 1 Ref-Slot pro Intro-Station (worldIndex 0..3, "Deine …") — Arrays
+  // statt einzelner Refs, da alle 4 Stationen dieselbe Split-Flap-Logik in
   // derselben Schleife (IntroFlapWorld-Effekt) durchlaufen.
   const introFlapWorldRefs = useRef<(HTMLDivElement | null)[]>([]);
   const introFlapSmallRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -1642,9 +1641,9 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
 
   // Neural Glass Panels: die vier Karten bilden EIN zusammenstehendes
   // 2×2-Element (CardsHelixGroup), fixiert an EINER festen Helix-Position
-  // (worldIndex 5, exakt derselbe Weltkoordinaten-Stopp wie zuvor die
+  // (worldIndex 4, exakt derselbe Weltkoordinaten-Stopp wie zuvor die
   // erste echte 3D-Leistungskarte in BrainBackground.tsx: nach dem
-  // 5. Intro-Text, vor der ersten echten 3D-Leistungskarte, Radius 1.68 — also
+  // 4. Intro-Text, vor der ersten echten 3D-Leistungskarte, Radius 1.68 — also
   // derselbe Stationsabstand wie zwischen den vorherigen Texten, da
   // HELIX_STEP zwischen allen Stopps konstant ist).
   //
@@ -1662,7 +1661,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
     const group = serviceStationsRef.current;
     if (!world || !group) return;
 
-    const introStopCount = 5;
+    const introStopCount = INTRO_STOP_COUNT;
     const totalWorldStops = introStopCount + 4 + 4;
     const cameraTravel = computeCameraTravel(totalWorldStops);
     const worldIndex = introStopCount;
@@ -1787,20 +1786,20 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
     return () => cancelAnimationFrame(rafId);
   }, []);
 
-  // IntroFlapWorld: ersetzt die WebGL-Textebenen ALLER 5 Intro-Stationen
-  // ("Deine Idee.", "Deine Herausforderung.", "Deine Vision.", "Deine
-  // Lösung.", "Deine Erfolgsgeschichte." — worldIndex 0..4, in
+  // IntroFlapWorld: ersetzt die WebGL-Textebenen ALLER 4 Intro-Stationen
+  // ("Deine Idee.", "Deine Herausforderung.", "Deine Vision." und "Deine
+  // Lösung." — worldIndex 0..3, in
   // BrainBackground.tsx wird deren Mesh-Erzeugung übersprungen) durch
   // dieselben Textstationen als DOM-Overlay in Chakra Petch mit
   // unabhängigem Split-Flap-Effekt pro Buchstabe. Position, Kamerafahrt,
   // Helix, Sichtbarkeitsfenster und Perspektiv-Projektion sind exakt
   // dieselbe Technik wie bei CardsHelixWorld oben — nur Schriftart/
   // Darstellungseffekt sind neu. Eine gemeinsame requestAnimationFrame-
-  // Schleife bedient alle 5 Stationen; der Scroll-Idle-Zustand ist global
+  // Schleife bedient alle 4 Stationen; der Scroll-Idle-Zustand ist global
   // (ein Scroll-Stopp lässt alle sichtbaren Stationen gleichzeitig stehen).
   useEffect(() => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const totalWorldStops = 5 + 4 + 4;
+    const totalWorldStops = INTRO_STOP_COUNT + 4 + 4;
     const cameraTravel = computeCameraTravel(totalWorldStops);
     const fadeWindow = HELIX_STEP * 1.35;
 
@@ -1904,8 +1903,8 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       const vh = window.innerHeight;
 
       // Beim Verlassen der Kartenstation bleibt die Kamera auf der Höhe der
-      // letzten Intro-Station. Ohne einen Ausfahr-Fade blieb deshalb "Deine
-      // Erfolgsgeschichte." über der neuen Mehrwert-Szene stehen. Noch bevor
+      // letzten Intro-Station. Ohne einen Ausfahr-Fade bliebe deshalb "Deine
+      // Lösung." über der neuen Mehrwert-Szene stehen. Noch bevor
       // deren Split-Flap-Titel erscheint, wird die Intro-Ebene vollständig
       // ausgeblendet; beim Zurückscrollen läuft der Übergang reversibel.
       const exitProgress = Math.max(0, Math.min(1, cam.exitProgress || 0));
@@ -2222,12 +2221,6 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       code: 'INTRO 04',
       title: introSequence[3],
       icon: Lightbulb,
-    },
-    {
-      kind: 'intro',
-      code: 'INTRO 05',
-      title: introSequence[4],
-      icon: Workflow,
     },
     {
       kind: 'service',

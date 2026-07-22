@@ -3199,12 +3199,9 @@ body.journey-warp-active .mobile-project-cta {
 
 .intro-flap-word--big {
   margin-top: 0.18em;
-  /* clamp() statt fixem rem-Wert: die längeren Wörter ("Herausforderung.",
-     "Erfolgsgeschichte.") liefen auf schmalen Bildschirmen aus dem Bild —
-     ab ~900px Breite bleibt es beim ursprünglichen 4.05rem (Desktop
-     unverändert), darunter schrumpft es proportional zur Viewportbreite,
-     damit auch das längste Wort ("Erfolgsgeschichte.") auf einem
-     schmalen Smartphone-Bildschirm lesbar bleibt. */
+  /* clamp() statt fixem rem-Wert: "Herausforderung." lief auf schmalen
+     Bildschirmen aus dem Bild. Ab ~900px Breite bleibt es beim ursprünglichen
+     4.05rem, darunter schrumpft es proportional zur Viewportbreite. */
   font-size: clamp(1.3rem, 6.2vw, 4.05rem);
 }
 
@@ -3962,9 +3959,9 @@ body.journey-warp-active .mobile-project-cta {
 
   .spiral-mobile {
     display: block;
-    /* Erst nach dem vollständigen Sichtbarkeitsfenster der fünften
+    /* Erst nach dem vollständigen Sichtbarkeitsfenster der vierten
        Split-Flap-Station in den normalen Kartenfluss wechseln. */
-    padding-top: 150vh;
+    padding-top: 120vh;
   }
 
   .spiral-cards-world {
@@ -8457,7 +8454,7 @@ body.journey-warp-active .mobile-project-cta {
      durch ihre transparente Oberfläche weiterhin sichtbar. */
   .spiral-mobile {
     display: block;
-    padding: 150vh 0 calc(6.5rem + env(safe-area-inset-bottom)) !important;
+    padding: 120vh 0 calc(6.5rem + env(safe-area-inset-bottom)) !important;
   }
 
   .spiral-mobile > div {

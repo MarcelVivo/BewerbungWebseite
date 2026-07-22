@@ -206,8 +206,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     introSprites.push(textSprite);
   }
 
-  // Alle 5 Intro-Stationen ("Deine Idee.", "Deine Herausforderung.", "Deine
-  // Vision.", "Deine Lösung.", "Deine Erfolgsgeschichte.") werden hier
+  // Alle 4 Intro-Stationen ("Deine Idee.", "Deine Herausforderung.", "Deine
+  // Vision." und "Deine Lösung.") werden hier
   // bewusst übersprungen: sie werden stattdessen als DOM-Overlay mit
   // Chakra-Petch-Split-Flap-Effekt gerendert (IntroFlapWorld in page.tsx) —
   // exakt dieselbe Helix-Position/Kamerafahrt, nur andere Darstellung.
