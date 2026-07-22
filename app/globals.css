@@ -9186,7 +9186,8 @@ body.journey-warp-active .mobile-project-cta {
   min-height: 100svh;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   padding: clamp(2.25rem, 5vw, 5rem) clamp(1rem, 3vw, 2.5rem);
   color: #f4edd8;
   background:
@@ -9627,6 +9628,98 @@ body.journey-warp-active .mobile-project-cta {
 
   .recruiter-login-actions p {
     text-align: center;
+  }
+}
+
+/* Breite Laptop-Displays besitzen bei 100 % Browserzoom häufig nur rund
+   700–800 CSS-Pixel Höhe. Die Komposition wird dort als Ganzes kompakter,
+   damit Foto, Felder, CTA und Zugangshinweis gleichzeitig sichtbar bleiben. */
+@media (min-width: 701px) and (max-height: 820px) {
+  .recruiter-login-page {
+    align-items: flex-start;
+    padding: 0.85rem 1.5rem;
+  }
+
+  .recruiter-login-shell {
+    width: min(100%, 58rem);
+    margin: auto;
+  }
+
+  .recruiter-login-heading {
+    margin-bottom: 0.75rem;
+  }
+
+  .recruiter-login-heading p {
+    margin-bottom: 0.25rem;
+    font-size: 0.58rem;
+  }
+
+  .recruiter-login-heading h1 {
+    font-size: clamp(1.4rem, 2.2vw, 1.85rem);
+  }
+
+  .recruiter-login-portrait {
+    aspect-ratio: 1672 / 610;
+  }
+
+  .recruiter-login-quote blockquote {
+    font-size: clamp(0.7rem, 1.08vw, 0.9rem);
+    line-height: 1.48;
+  }
+
+  .recruiter-login-form-panel {
+    gap: 0.75rem;
+    padding: 1rem 1.5rem 1.1rem;
+  }
+
+  .recruiter-login-intro {
+    gap: 0.75rem;
+  }
+
+  .recruiter-login-lock {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .recruiter-login-intro p {
+    margin-bottom: 0.2rem;
+    font-size: 0.58rem;
+  }
+
+  .recruiter-login-intro h2 {
+    font-size: clamp(1.1rem, 1.75vw, 1.45rem);
+  }
+
+  .recruiter-login-intro span {
+    margin-top: 0.35rem;
+    font-size: 0.72rem;
+    line-height: 1.4;
+  }
+
+  .recruiter-login-fields label > span:first-child {
+    margin-bottom: 0.3rem;
+    font-size: 0.68rem;
+  }
+
+  .recruiter-login-fields input {
+    min-height: 2.65rem;
+    padding: 0.62rem 0.85rem;
+    font-size: 0.78rem;
+  }
+
+  .recruiter-login-actions {
+    gap: 0.42rem;
+  }
+
+  .recruiter-login-actions > button {
+    width: min(100%, 27rem);
+    min-height: 2.8rem;
+    padding: 0.62rem 1rem;
+    font-size: 0.78rem;
+  }
+
+  .recruiter-login-actions p {
+    font-size: 0.64rem;
   }
 }
 
