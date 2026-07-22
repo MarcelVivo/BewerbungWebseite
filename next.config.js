@@ -23,17 +23,20 @@ const nextConfig = {
     // No inline-script nonce infrastructure exists yet, so Next.js's own
     // hydration/bootstrap scripts need 'unsafe-inline'/'unsafe-eval' in
     // script-src. Everything else (frames, objects, forms, base) is locked
-    // to 'self' — the site loads no third-party scripts, iframes, or
-    // browser-side calls to Supabase (all Supabase access happens server-
-    // side in API routes / middleware), so this is not a meaningful
-    // loosening in practice.
+    // to 'self'. The public site itself makes no third-party calls, but
+    // /dashboard/* pages talk to Supabase directly from the browser
+    // (createBrowserClient in lib/supabase/client.ts — REST + realtime
+    // websocket), so that origin has to be explicitly allowed in
+    // connect-src or every dashboard data fetch gets silently blocked.
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    const supabaseWsUrl = supabaseUrl.replace(/^https:/, 'wss:');
     const csp = [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob:",
       "font-src 'self' data:",
-      "connect-src 'self'",
+      `connect-src 'self'${supabaseUrl ? ` ${supabaseUrl} ${supabaseWsUrl}` : ''}`,
       "frame-ancestors 'none'",
       "object-src 'none'",
       "base-uri 'self'",
