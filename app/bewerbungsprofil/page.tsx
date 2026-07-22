@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import {
   ArrowUpRight,
   Award,
@@ -305,12 +306,13 @@ export default function BewerbungsprofilPage() {
         <aside className="min-w-0 lg:self-start">
           <Surface accent className="p-5">
             <div className="flex items-center gap-4 lg:block">
-              <div className="h-24 w-24 flex-none overflow-hidden rounded-full border-2 border-[#8fb8dc] bg-[#f8fafc] shadow-[0_10px_30px_rgba(47,111,173,.16)] lg:mx-auto lg:h-44 lg:w-44">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+              <div className="relative h-24 w-24 flex-none overflow-hidden rounded-full border-2 border-[#8fb8dc] bg-[#f8fafc] shadow-[0_10px_30px_rgba(47,111,173,.16)] lg:mx-auto lg:h-44 lg:w-44">
+                <Image
                   src="/assets/BewerbungsFotoMarcelSpahr.jpg"
                   alt="Marcel Spahr"
-                  className="h-full w-full scale-[1.1] object-cover object-[center_18%]"
+                  fill
+                  sizes="176px"
+                  className="scale-[1.1] object-cover object-[center_18%]"
                 />
               </div>
               <div className="min-w-0 lg:mt-5">

@@ -1,14 +1,26 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
+import { escapeHtml, isSpamSubmission, tooLong } from '../../lib/spamGuard';
 
 export async function POST(request: Request) {
   try {
-    const { name, email, message, consent } = await request.json();
+    const { name, email, message, consent, hpWebsite, startedAt } = await request.json();
 
     if (!name || !email || !message || consent !== true) {
       return NextResponse.json({ error: 'Fehlende Felder' }, { status: 400 });
     }
+    if (tooLong(name, 200) || tooLong(email, 200) || tooLong(message)) {
+      return NextResponse.json({ error: 'Eingabe zu lang' }, { status: 400 });
+    }
+    if (isSpamSubmission(hpWebsite, startedAt)) {
+      // Bots get a fake success response so they don't adapt/retry.
+      return NextResponse.json({ ok: true });
+    }
+
+    const safeName = escapeHtml(name);
+    const safeEmail = escapeHtml(email);
+    const safeMessage = escapeHtml(message);
 
     // Supabase-Insert mit Service Role Key (umgeht RLS)
     let insertedId: string | undefined;
@@ -55,19 +67,19 @@ export async function POST(request: Request) {
                 <table style="width:100%;border-collapse:collapse;margin-bottom:24px">
                   <tr>
                     <td style="padding:8px 0;color:#94a3b8;font-size:13px;width:100px">Name</td>
-                    <td style="padding:8px 0;color:#f1f5f9;font-size:13px;font-weight:600">${name}</td>
+                    <td style="padding:8px 0;color:#f1f5f9;font-size:13px;font-weight:600">${safeName}</td>
                   </tr>
                   <tr>
                     <td style="padding:8px 0;color:#94a3b8;font-size:13px">E-Mail</td>
-                    <td style="padding:8px 0;font-size:13px"><a href="mailto:${email}" style="color:#818cf8">${email}</a></td>
+                    <td style="padding:8px 0;font-size:13px"><a href="mailto:${safeEmail}" style="color:#818cf8">${safeEmail}</a></td>
                   </tr>
                 </table>
                 <div style="background:#1e2235;border-radius:8px;padding:20px;border-left:3px solid #6366f1">
                   <p style="margin:0 0 8px;color:#94a3b8;font-size:12px;text-transform:uppercase;letter-spacing:0.05em">Nachricht</p>
-                  <p style="margin:0;color:#e2e8f0;font-size:14px;line-height:1.7;white-space:pre-wrap">${message}</p>
+                  <p style="margin:0;color:#e2e8f0;font-size:14px;line-height:1.7;white-space:pre-wrap">${safeMessage}</p>
                 </div>
                 <div style="margin-top:28px">
-                  <a href="mailto:${email}?subject=Re: Ihre Anfrage auf marcelspahr.ch"
+                  <a href="mailto:${safeEmail}?subject=Re: Ihre Anfrage auf marcelspahr.ch"
                      style="background:#6366f1;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600;display:inline-block">
                     Direkt antworten
                   </a>
@@ -96,12 +108,12 @@ export async function POST(request: Request) {
           html: `
             <div style="font-family:sans-serif;max-width:600px;margin:0 auto;background:#ffffff;color:#1e293b;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0">
               <div style="background:#6366f1;padding:28px 32px">
-                <h1 style="margin:0;color:white;font-size:22px;font-weight:700">Vielen Dank, ${name}!</h1>
+                <h1 style="margin:0;color:white;font-size:22px;font-weight:700">Vielen Dank, ${safeName}!</h1>
                 <p style="margin:6px 0 0;color:#c7d2fe;font-size:14px">Ihre Anfrage ist bei mir eingegangen.</p>
               </div>
               <div style="padding:32px">
                 <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#334155">
-                  Guten Tag ${name},
+                  Guten Tag ${safeName},
                 </p>
                 <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#334155">
                   vielen Dank für Ihre Nachricht. Ich habe Ihre Anfrage erhalten und melde mich innerhalb von
@@ -109,7 +121,7 @@ export async function POST(request: Request) {
                 </p>
                 <div style="background:#f8fafc;border-radius:8px;padding:20px;border-left:3px solid #6366f1;margin:24px 0">
                   <p style="margin:0 0 8px;color:#64748b;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;font-weight:600">Ihre Nachricht</p>
-                  <p style="margin:0;color:#475569;font-size:14px;line-height:1.7;white-space:pre-wrap">${message}</p>
+                  <p style="margin:0;color:#475569;font-size:14px;line-height:1.7;white-space:pre-wrap">${safeMessage}</p>
                 </div>
                 <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#334155">
                   Bei dringenden Anliegen können Sie mich direkt unter

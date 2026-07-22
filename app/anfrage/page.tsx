@@ -224,6 +224,8 @@ export default function AnfragePage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError]         = useState('');
+  const [hpWebsite, setHpWebsite] = useState('');
+  const formOpenedAtRef = useRef(Date.now());
   const startedRef = useRef(false);
   const openedRef = useRef(false);
   const consentRef = useRef<HTMLInputElement | null>(null);
@@ -318,6 +320,8 @@ export default function AnfragePage() {
           zeitrahmen:      form.zeitrahmen,
           notizen:         form.notizen,
           consent:         form.consent,
+          hpWebsite,
+          startedAt:       formOpenedAtRef.current,
         }),
       });
       if (!res.ok) throw new Error('Fehler beim Senden');
@@ -474,6 +478,13 @@ export default function AnfragePage() {
             <div className="space-y-6">
               <div>
                 <h2 className="text-lg font-bold text-white mb-5">{copy.aboutTitle}</h2>
+                {/* Honeypot: unsichtbar für Menschen, wird von den meisten
+                    Formular-Spam-Bots automatisch ausgefüllt. */}
+                <div style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }} aria-hidden="true">
+                  <label>Website
+                    <input type="text" name="hp_website" tabIndex={-1} autoComplete="off" value={hpWebsite} onChange={e => setHpWebsite(e.target.value)} />
+                  </label>
+                </div>
                 <div className="inquiry-contact-grid grid sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs text-[#7a6d5a] mb-1.5 flex items-center gap-1.5"><User size={11} /> {copy.name}</label>

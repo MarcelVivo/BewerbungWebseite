@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronRight, Database, ExternalLink, FileText, Globe2, ShieldCheck } from 'lucide-react';
 import { useLanguage } from '../../LanguageContext';
@@ -127,11 +128,11 @@ export default function PortfolioDetailContent({ slug }: { slug: string }) {
           </div>
 
           <div
-            className="relative overflow-hidden rounded-2xl border bg-black/30 shadow-2xl"
+            className="relative aspect-[8/5] overflow-hidden rounded-2xl border bg-black/30 shadow-2xl"
             style={{ borderColor: `${project.color}33`, boxShadow: `0 30px 90px rgba(${project.colorRgb},0.12)` }}
           >
             <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/35 via-transparent to-white/[0.03] pointer-events-none" />
-            <img src={project.image} alt={`${p.title} – Projektansicht`} className="block w-full aspect-[8/5] object-cover object-top" />
+            <Image src={project.image} alt={`${p.title} – Projektansicht`} fill sizes="(min-width: 1024px) 60vw, 100vw" className="object-cover object-top" />
           </div>
         </section>
 
@@ -246,14 +247,16 @@ export default function PortfolioDetailContent({ slug }: { slug: string }) {
                       href={item.image}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block relative overflow-hidden bg-[#edf1f5]"
+                      className="block relative aspect-[16/9] overflow-hidden bg-[#edf1f5]"
                       aria-label={`${copy.title} – ${pl.enlarge}`}
                     >
-                      <img
+                      <Image
                         src={item.image}
                         alt={`${p.title}: ${copy.title}`}
+                        fill
                         loading={index > 1 ? 'lazy' : 'eager'}
-                        className="block w-full aspect-[16/9] object-cover object-top transition-transform duration-700 group-hover:scale-[1.015]"
+                        sizes="(min-width: 768px) 45vw, 100vw"
+                        className="object-cover object-top transition-transform duration-700 group-hover:scale-[1.015]"
                       />
                       <span
                         className="absolute right-3 bottom-3 rounded-full border px-3 py-1.5 text-[0.65rem] font-bold tracking-wide text-[#07090b] opacity-0 translate-y-1 transition-all group-hover:opacity-100 group-hover:translate-y-0"

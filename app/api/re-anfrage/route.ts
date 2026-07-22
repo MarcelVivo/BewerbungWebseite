@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { createClient } from '@supabase/supabase-js';
+import { escapeHtml, isSpamSubmission, tooLong } from '../../lib/spamGuard';
 
 type Anforderung = { text: string; prio: 'must' | 'nice' };
 
@@ -19,6 +20,8 @@ type Payload = {
   zeitrahmen: string;
   notizen: string;
   consent: boolean;
+  hpWebsite?: string;
+  startedAt?: number;
 };
 
 function pill(items: string[], color = '#1e2235', text = '#e2e8f0') {
@@ -32,14 +35,40 @@ export async function POST(req: Request) {
     const body = (await req.json()) as Payload;
     const { name, email, firma, telefon, branche, projekttyp,
             istSituation, schmerzpunkte, anforderungen, nfAnforderungen,
-            budget, zeitrahmen, notizen, consent } = body;
+            budget, zeitrahmen, notizen, consent, hpWebsite, startedAt } = body;
 
     if (!name?.trim() || !email?.trim() || !branche || !projekttyp || consent !== true) {
       return NextResponse.json({ error: 'Fehlende Pflichtfelder' }, { status: 400 });
     }
+    if (tooLong(name, 200) || tooLong(email, 200) || tooLong(firma, 200) || tooLong(notizen)) {
+      return NextResponse.json({ error: 'Eingabe zu lang' }, { status: 400 });
+    }
+    if (isSpamSubmission(hpWebsite, startedAt)) {
+      // Bots get a fake success response so they don't adapt/retry.
+      return NextResponse.json({ ok: true });
+    }
 
     const must = anforderungen.filter(a => a.prio === 'must');
     const nice = anforderungen.filter(a => a.prio === 'nice');
+
+    // Escaped copies für die HTML-E-Mails (Rohwerte bleiben für die
+    // Supabase-Ablage unverändert).
+    const safe = {
+      name: escapeHtml(name),
+      email: escapeHtml(email),
+      firma: firma ? escapeHtml(firma) : '',
+      telefon: telefon ? escapeHtml(telefon) : '',
+      branche: escapeHtml(branche),
+      projekttyp: escapeHtml(projekttyp),
+      budget: budget ? escapeHtml(budget) : '',
+      zeitrahmen: zeitrahmen ? escapeHtml(zeitrahmen) : '',
+      notizen: notizen ? escapeHtml(notizen) : '',
+      istSituation: istSituation.map(escapeHtml),
+      schmerzpunkte: schmerzpunkte.map(escapeHtml),
+      nfAnforderungen: nfAnforderungen.map(escapeHtml),
+      must: must.map(a => ({ ...a, text: escapeHtml(a.text) })),
+      nice: nice.map(a => ({ ...a, text: escapeHtml(a.text) })),
+    };
 
     // ── Supabase: Anfrage speichern ──────────────────────────────
     let insertedId: string | undefined;
@@ -78,14 +107,14 @@ export async function POST(req: Request) {
       const resend = new Resend(process.env.RESEND_API_KEY);
 
       // 1. Benachrichtigung an Marcel
-      const mustHtml = must.length
-        ? must.map(a => `<li style="padding:3px 0;color:#86efac;font-size:13px">✓ ${a.text}</li>`).join('')
+      const mustHtml = safe.must.length
+        ? safe.must.map(a => `<li style="padding:3px 0;color:#86efac;font-size:13px">✓ ${a.text}</li>`).join('')
         : '<li style="color:#64748b;font-size:13px">–</li>';
-      const niceHtml = nice.length
-        ? nice.map(a => `<li style="padding:3px 0;color:#fde68a;font-size:13px">◇ ${a.text}</li>`).join('')
+      const niceHtml = safe.nice.length
+        ? safe.nice.map(a => `<li style="padding:3px 0;color:#fde68a;font-size:13px">◇ ${a.text}</li>`).join('')
         : '';
-      const nfHtml = nfAnforderungen.length
-        ? nfAnforderungen.map(n => `<li style="padding:2px 0;color:#a5b4fc;font-size:13px">– ${n}</li>`).join('')
+      const nfHtml = safe.nfAnforderungen.length
+        ? safe.nfAnforderungen.map(n => `<li style="padding:2px 0;color:#a5b4fc;font-size:13px">– ${n}</li>`).join('')
         : '';
 
       resend.emails.send({
@@ -102,27 +131,27 @@ export async function POST(req: Request) {
             <div style="padding:28px 32px">
 
               <table style="width:100%;border-collapse:collapse;margin-bottom:24px">
-                <tr><td style="padding:5px 0;color:#94a3b8;font-size:13px;width:110px">Name</td><td style="color:#f1f5f9;font-size:13px;font-weight:600">${name}</td></tr>
-                <tr><td style="padding:5px 0;color:#94a3b8;font-size:13px">E-Mail</td><td><a href="mailto:${email}" style="color:#c9a84c;font-size:13px">${email}</a></td></tr>
-                ${firma ? `<tr><td style="padding:5px 0;color:#94a3b8;font-size:13px">Firma</td><td style="color:#f1f5f9;font-size:13px">${firma}</td></tr>` : ''}
-                ${telefon ? `<tr><td style="padding:5px 0;color:#94a3b8;font-size:13px">Telefon</td><td style="color:#f1f5f9;font-size:13px">${telefon}</td></tr>` : ''}
-                <tr><td style="padding:5px 0;color:#94a3b8;font-size:13px">Branche</td><td style="color:#f1f5f9;font-size:13px">${branche}</td></tr>
-                <tr><td style="padding:5px 0;color:#94a3b8;font-size:13px">Projekttyp</td><td style="color:#f1f5f9;font-size:13px">${projekttyp}</td></tr>
-                ${budget ? `<tr><td style="padding:5px 0;color:#94a3b8;font-size:13px">Budget</td><td style="color:#f1f5f9;font-size:13px">${budget}</td></tr>` : ''}
-                ${zeitrahmen ? `<tr><td style="padding:5px 0;color:#94a3b8;font-size:13px">Zeitrahmen</td><td style="color:#f1f5f9;font-size:13px">${zeitrahmen}</td></tr>` : ''}
+                <tr><td style="padding:5px 0;color:#94a3b8;font-size:13px;width:110px">Name</td><td style="color:#f1f5f9;font-size:13px;font-weight:600">${safe.name}</td></tr>
+                <tr><td style="padding:5px 0;color:#94a3b8;font-size:13px">E-Mail</td><td><a href="mailto:${safe.email}" style="color:#c9a84c;font-size:13px">${safe.email}</a></td></tr>
+                ${safe.firma ? `<tr><td style="padding:5px 0;color:#94a3b8;font-size:13px">Firma</td><td style="color:#f1f5f9;font-size:13px">${safe.firma}</td></tr>` : ''}
+                ${safe.telefon ? `<tr><td style="padding:5px 0;color:#94a3b8;font-size:13px">Telefon</td><td style="color:#f1f5f9;font-size:13px">${safe.telefon}</td></tr>` : ''}
+                <tr><td style="padding:5px 0;color:#94a3b8;font-size:13px">Branche</td><td style="color:#f1f5f9;font-size:13px">${safe.branche}</td></tr>
+                <tr><td style="padding:5px 0;color:#94a3b8;font-size:13px">Projekttyp</td><td style="color:#f1f5f9;font-size:13px">${safe.projekttyp}</td></tr>
+                ${safe.budget ? `<tr><td style="padding:5px 0;color:#94a3b8;font-size:13px">Budget</td><td style="color:#f1f5f9;font-size:13px">${safe.budget}</td></tr>` : ''}
+                ${safe.zeitrahmen ? `<tr><td style="padding:5px 0;color:#94a3b8;font-size:13px">Zeitrahmen</td><td style="color:#f1f5f9;font-size:13px">${safe.zeitrahmen}</td></tr>` : ''}
               </table>
 
-              ${istSituation.length ? `<p style="margin:0 0 6px;color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-weight:600">Ist-Situation</p><div style="margin-bottom:16px">${pill(istSituation)}</div>` : ''}
-              ${schmerzpunkte.length ? `<p style="margin:0 0 6px;color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-weight:600">Schmerzpunkte</p><div style="margin-bottom:16px">${pill(schmerzpunkte, '#3b1a1a', '#fca5a5')}</div>` : ''}
+              ${safe.istSituation.length ? `<p style="margin:0 0 6px;color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-weight:600">Ist-Situation</p><div style="margin-bottom:16px">${pill(safe.istSituation)}</div>` : ''}
+              ${safe.schmerzpunkte.length ? `<p style="margin:0 0 6px;color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-weight:600">Schmerzpunkte</p><div style="margin-bottom:16px">${pill(safe.schmerzpunkte, '#3b1a1a', '#fca5a5')}</div>` : ''}
 
               <p style="margin:0 0 8px;color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-weight:600">Must-have Anforderungen</p>
               <ul style="margin:0 0 16px;padding-left:16px">${mustHtml}</ul>
               ${niceHtml ? `<p style="margin:0 0 8px;color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-weight:600">Nice-to-have</p><ul style="margin:0 0 16px;padding-left:16px">${niceHtml}</ul>` : ''}
               ${nfHtml ? `<p style="margin:0 0 8px;color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-weight:600">Nicht-funktionale Anforderungen</p><ul style="margin:0 0 16px;padding-left:16px">${nfHtml}</ul>` : ''}
-              ${notizen ? `<div style="background:#1e2235;border-radius:8px;padding:14px 18px;margin-bottom:16px;border-left:3px solid #c9a84c"><p style="margin:0 0 6px;color:#c9a84c;font-size:11px;text-transform:uppercase;font-weight:700">Notizen</p><p style="margin:0;color:#e2e8f0;font-size:13px;line-height:1.6;white-space:pre-wrap">${notizen}</p></div>` : ''}
+              ${safe.notizen ? `<div style="background:#1e2235;border-radius:8px;padding:14px 18px;margin-bottom:16px;border-left:3px solid #c9a84c"><p style="margin:0 0 6px;color:#c9a84c;font-size:11px;text-transform:uppercase;font-weight:700">Notizen</p><p style="margin:0;color:#e2e8f0;font-size:13px;line-height:1.6;white-space:pre-wrap">${safe.notizen}</p></div>` : ''}
 
               <div style="margin-top:24px;display:flex;gap:12px">
-                <a href="mailto:${email}?subject=Ihre Projektanfrage – Marcel Spahr"
+                <a href="mailto:${safe.email}?subject=Ihre Projektanfrage – Marcel Spahr"
                    style="background:#c9a84c;color:#0c0a06;padding:11px 22px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:700;display:inline-block">
                   Direkt antworten
                 </a>
@@ -139,11 +168,11 @@ export async function POST(req: Request) {
       }).catch(e => console.error('[re-anfrage] Resend Marcel:', e));
 
       // 2. Bestätigung an Kunden
-      const mustListHtml = must.length
-        ? `<ul style="margin:8px 0 0;padding-left:20px">${must.map(a => `<li style="padding:3px 0;color:#166534;font-size:13px">${a.text}</li>`).join('')}</ul>`
+      const mustListHtml = safe.must.length
+        ? `<ul style="margin:8px 0 0;padding-left:20px">${safe.must.map(a => `<li style="padding:3px 0;color:#166534;font-size:13px">${a.text}</li>`).join('')}</ul>`
         : '';
-      const niceListHtml = nice.length
-        ? `<p style="margin:16px 0 4px;color:#334155;font-size:13px;font-weight:600">Nice-to-have:</p><ul style="margin:4px 0 0;padding-left:20px">${nice.map(a => `<li style="padding:3px 0;color:#713f12;font-size:13px">${a.text}</li>`).join('')}</ul>`
+      const niceListHtml = safe.nice.length
+        ? `<p style="margin:16px 0 4px;color:#334155;font-size:13px;font-weight:600">Nice-to-have:</p><ul style="margin:4px 0 0;padding-left:20px">${safe.nice.map(a => `<li style="padding:3px 0;color:#713f12;font-size:13px">${a.text}</li>`).join('')}</ul>`
         : '';
 
       resend.emails.send({
@@ -157,7 +186,7 @@ export async function POST(req: Request) {
               <p style="margin:6px 0 0;color:#7a6d5a;font-size:13px">Marcel Spahr · marcelspahr.ch</p>
             </div>
             <div style="padding:32px">
-              <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#334155">Guten Tag ${name},</p>
+              <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#334155">Guten Tag ${safe.name},</p>
               <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#334155">
                 vielen Dank für Ihre Projektanfrage! Ich habe alle Ihre Angaben erhalten und melde
                 mich <strong>innerhalb von 24 Stunden</strong> persönlich bei Ihnen.
@@ -165,11 +194,11 @@ export async function POST(req: Request) {
 
               <div style="background:#f0fdf4;border-radius:10px;padding:20px 24px;margin-bottom:20px;border:1px solid #bbf7d0">
                 <p style="margin:0 0 4px;color:#166534;font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Ihr Projekt</p>
-                <p style="margin:0 0 2px;color:#14532d;font-size:16px;font-weight:700">${projekttyp}</p>
-                <p style="margin:0;color:#166534;font-size:13px">Branche: ${branche}${budget ? ` · Budget: ${budget}` : ''}${zeitrahmen ? ` · Zeitrahmen: ${zeitrahmen}` : ''}</p>
+                <p style="margin:0 0 2px;color:#14532d;font-size:16px;font-weight:700">${safe.projekttyp}</p>
+                <p style="margin:0;color:#166534;font-size:13px">Branche: ${safe.branche}${safe.budget ? ` · Budget: ${safe.budget}` : ''}${safe.zeitrahmen ? ` · Zeitrahmen: ${safe.zeitrahmen}` : ''}</p>
               </div>
 
-              ${must.length ? `
+              ${safe.must.length ? `
               <div style="background:#f8fafc;border-radius:8px;padding:16px 20px;margin-bottom:16px;border-left:3px solid #c9a84c">
                 <p style="margin:0 0 4px;color:#92400e;font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Ihre Must-have Anforderungen</p>
                 ${mustListHtml}

@@ -8,20 +8,40 @@ export type FlapLetter = {
   running: boolean;
 };
 
+function appendFlapLetter(parent: HTMLElement, character: string, letters: FlapLetter[]): void {
+  const wrap = document.createElement('span');
+  wrap.className = 'intro-flap-letter';
+  const glyph = document.createElement('span');
+  glyph.className = 'intro-flap-glyph';
+  glyph.textContent = character;
+  wrap.appendChild(glyph);
+  parent.appendChild(wrap);
+  letters.push({ wrap, glyph, target: character, mode: 'spin', running: false });
+}
+
+// Letters used to be appended flat, one flex item per character. Combined
+// with .intro-flap-word's `display:flex` (nowrap by default), that gave the
+// browser no valid line-break point at all — long headings simply overflowed
+// and got clipped by the page's overflow-x:hidden on narrow viewports (e.g.
+// the /anfrage hero title). Grouping each word's letters into their own
+// inline-flex wrapper lets .intro-flap-word turn on flex-wrap: the word
+// group wraps as a single unit at spaces, exactly like normal text, while
+// each letter inside it stays individually animatable.
 export function buildFlapWord(container: HTMLElement, text: string): FlapLetter[] {
   container.innerHTML = '';
   const letters: FlapLetter[] = [];
-  for (let index = 0; index < text.length; index++) {
-    const character = text[index];
-    const wrap = document.createElement('span');
-    wrap.className = 'intro-flap-letter';
-    const glyph = document.createElement('span');
-    glyph.className = 'intro-flap-glyph';
-    glyph.textContent = character;
-    wrap.appendChild(glyph);
-    container.appendChild(wrap);
-    letters.push({ wrap, glyph, target: character, mode: 'spin', running: false });
-  }
+  const words = text.split(' ');
+
+  words.forEach((word, wordIndex) => {
+    if (word.length > 0) {
+      const wordGroup = document.createElement('span');
+      wordGroup.className = 'intro-flap-word-group';
+      for (const character of word) appendFlapLetter(wordGroup, character, letters);
+      container.appendChild(wordGroup);
+    }
+    if (wordIndex < words.length - 1) appendFlapLetter(container, ' ', letters);
+  });
+
   return letters;
 }
 

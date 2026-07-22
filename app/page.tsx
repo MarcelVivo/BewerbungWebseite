@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from 'react';
 import {
   Bot, BarChart3, Workflow, FolderKanban,
@@ -1010,7 +1011,7 @@ function ReferenceCardsContent({ lang }: { lang: 'de' | 'en' }) {
               } as CSSProperties}
             >
               <div className="reference-card-image">
-                <img src={project.image} alt={`${copy.title} – ${copy.tag}`} />
+                <Image src={project.image} alt={`${copy.title} – ${copy.tag}`} fill sizes="(min-width: 1024px) 25vw, 90vw" />
                 <span className="reference-card-status">{copy.cardStatus ?? copy.status}</span>
               </div>
               <div className="reference-card-copy">
@@ -1111,9 +1112,11 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [consent, setConsent] = useState(false);
+  const [hpWebsite, setHpWebsite] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
+  const formOpenedAtRef = useRef(Date.now());
   const consultationStartedRef = useRef(false);
   const consultationNameRef = useRef<HTMLInputElement | null>(null);
   const consultationEmailRef = useRef<HTMLInputElement | null>(null);
@@ -1252,7 +1255,7 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
       const response = await fetch('/api/kontakt', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, message, consent }),
+        body: JSON.stringify({ name, email, message, consent, hpWebsite, startedAt: formOpenedAtRef.current }),
       });
       if (!response.ok) throw new Error('submit failed');
       trackWebsiteEvent('form_success', { formId: 'consultation', step: 1 });
@@ -1332,6 +1335,19 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
             <>
               <p className="project-cta-copy">{copy.text}</p>
               <form className="project-consultation-form" onSubmit={handleSubmit} onFocusCapture={markConsultationStarted} noValidate>
+                {/* Honeypot: unsichtbar für Menschen, wird von den meisten
+                    Formular-Spam-Bots automatisch ausgefüllt. */}
+                <label style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }} aria-hidden="true">
+                  <span>Website</span>
+                  <input
+                    type="text"
+                    name="hp_website"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={hpWebsite}
+                    onChange={(event) => setHpWebsite(event.target.value)}
+                  />
+                </label>
                 <label>
                   <span>{copy.name}</span>
                   <input ref={consultationNameRef} value={name} onChange={(event) => { setName(event.target.value); setError(''); }} autoComplete="name" required />
@@ -1488,7 +1504,7 @@ function StudioProfileContent({ lang }: { lang: 'de' | 'en' }) {
       <div className="studio-profile-content">
         <div className="studio-profile-top-row">
           <div className="studio-profile-header-image">
-            <img src="/assets/MarcelSpahrHeader.jpg" alt="Marcel Spahr in einem modernen Arbeits- und Projektraum" />
+            <Image src="/assets/MarcelSpahrHeader.jpg" alt="Marcel Spahr in einem modernen Arbeits- und Projektraum" fill sizes="(min-width: 1024px) 50vw, 100vw" priority={false} />
           </div>
           <div className="studio-profile-header-copy">
             <blockquote>{copy.quote}</blockquote>

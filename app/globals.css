@@ -3186,6 +3186,13 @@ body.journey-warp-active .mobile-project-cta {
      vertikal auf die Zeilenhöhe gedehnt/gestaucht — explizit auf baseline
      gesetzt, damit jeder Buchstabe seine eigene, unangetastete Höhe behält. */
   align-items: baseline;
+  /* flex-wrap:wrap statt (impliziertem) nowrap: ohne das gab es auf schmalen
+     Viewports keine gültige Umbruchstelle mehr, lange Überschriften liefen
+     einzeilig aus dem Rahmen und wurden vom overflow-x:hidden der Seite
+     abgeschnitten (z.B. Hero-Titel auf /anfrage). Die Wort-Gruppierung in
+     buildFlapWord() sorgt dafür, dass hier nur zwischen Wörtern umgebrochen
+     wird, nie mitten im Wort. */
+  flex-wrap: wrap;
   white-space: pre;
   color: #ffffff;
   font-weight: 700;
@@ -3203,6 +3210,11 @@ body.journey-warp-active .mobile-project-cta {
      Bildschirmen aus dem Bild. Ab ~900px Breite bleibt es beim ursprünglichen
      4.05rem, darunter schrumpft es proportional zur Viewportbreite. */
   font-size: clamp(1.3rem, 6.2vw, 4.05rem);
+}
+
+.intro-flap-word-group {
+  display: inline-flex;
+  align-items: baseline;
 }
 
 .intro-flap-letter {
