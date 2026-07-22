@@ -9258,7 +9258,7 @@ body.journey-warp-active .mobile-project-cta {
 .recruiter-login-heading h1 {
   margin: 0;
   color: #fff;
-  font-size: clamp(1.8rem, 4vw, 3.25rem);
+  font-size: clamp(1.45rem, 2.65vw, 2.3rem);
   font-weight: 600;
   letter-spacing: -0.035em;
   line-height: 1;
@@ -9481,15 +9481,17 @@ body.journey-warp-active .mobile-project-cta {
 }
 
 .recruiter-login-actions {
-  display: grid;
-  grid-template-columns: minmax(16rem, 0.72fr) minmax(0, 1fr);
-  gap: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
   align-items: center;
+  justify-content: center;
 }
 
 .recruiter-login-actions > button {
   display: grid;
   grid-template-columns: auto 1fr auto;
+  width: min(100%, 32rem);
   gap: 0.7rem;
   align-items: center;
   min-height: 3.5rem;
@@ -9521,7 +9523,7 @@ body.journey-warp-active .mobile-project-cta {
   color: rgba(168, 152, 128, 0.64);
   font-size: 0.75rem;
   line-height: 1.5;
-  text-align: right;
+  text-align: center;
 }
 
 .recruiter-login-actions a {
@@ -9561,7 +9563,7 @@ body.journey-warp-active .mobile-project-cta {
   }
 
   .recruiter-login-heading h1 {
-    font-size: clamp(1.45rem, 7.3vw, 1.8rem);
+    font-size: clamp(1.25rem, 6.4vw, 1.55rem);
     white-space: nowrap;
   }
 

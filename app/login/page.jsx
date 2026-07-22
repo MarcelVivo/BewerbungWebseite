@@ -54,8 +54,9 @@ export default function LoginPage() {
             <div className="recruiter-login-portrait-shade" aria-hidden="true" />
             <div className="recruiter-login-quote">
               <blockquote>
-                „Ich verbinde Empathie, Strategie und Technologie – zu digitalen Lösungen,
-                die im Alltag wirken und mit Unternehmen wachsen.“
+                „Ich verbinde 16 Jahre Praxiserfahrung mit Wirtschaftsinformatik,
+                analytischer Klarheit und Empathie – und übersetze komplexe Anforderungen
+                in Lösungen, die Teams mittragen und Unternehmen messbar voranbringen.“
               </blockquote>
             </div>
             <div className="recruiter-login-signature" aria-label="Marcel Spahr">
