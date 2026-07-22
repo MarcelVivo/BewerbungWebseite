@@ -3,6 +3,8 @@
 import { useEffect, useRef } from 'react';
 import { buildFlapWord, setFlapWordMode } from './lib/splitFlap';
 
+const CARD_FLAP_REPEAT_MS = 10_000;
+
 export default function PublicFlapHeading({
   label,
   as = 'h2',
@@ -36,16 +38,31 @@ export default function PublicFlapHeading({
       settleTimer = window.setTimeout(() => setFlapWordMode(letters, 'settle', false), 720);
     };
 
+    const scheduleNextFlap = (): void => {
+      window.clearTimeout(repeatTimer);
+      if (reduced || !isVisible) return;
+      repeatTimer = window.setTimeout(() => {
+        triggerFlap();
+        scheduleNextFlap();
+      }, CARD_FLAP_REPEAT_MS);
+    };
+
+    const setVisibility = (nextVisible: boolean) => {
+      if (nextVisible === isVisible) return;
+      isVisible = nextVisible;
+      if (isVisible) {
+        triggerFlap();
+        scheduleNextFlap();
+        return;
+      }
+      window.clearTimeout(repeatTimer);
+    };
+
     const visibilityHost = title.closest('[aria-hidden]');
     if (visibilityHost) {
       const updateVisibility = () => {
         const nextVisible = visibilityHost.getAttribute('aria-hidden') === 'false';
-        if (nextVisible && !isVisible) {
-          isVisible = true;
-          triggerFlap();
-          return;
-        }
-        isVisible = nextVisible;
+        setVisibility(nextVisible);
       };
       visibilityObserver = new MutationObserver(updateVisibility);
       visibilityObserver.observe(visibilityHost, { attributes: true, attributeFilter: ['aria-hidden'] });
@@ -54,24 +71,18 @@ export default function PublicFlapHeading({
       intersectionObserver = new IntersectionObserver(
         ([entry]) => {
           const nextVisible = entry.isIntersecting && entry.intersectionRatio >= 0.35;
-          if (nextVisible && !isVisible) {
-            isVisible = true;
-            triggerFlap();
-            return;
-          }
-          isVisible = nextVisible;
+          setVisibility(nextVisible);
         },
         { threshold: [0, 0.35, 0.75] },
       );
       intersectionObserver.observe(title);
     }
 
-    repeatTimer = window.setInterval(triggerFlap, 5000);
     return () => {
       visibilityObserver?.disconnect();
       intersectionObserver?.disconnect();
       window.clearTimeout(settleTimer);
-      window.clearInterval(repeatTimer);
+      window.clearTimeout(repeatTimer);
       setFlapWordMode(letters, 'settle', true);
     };
   }, [label]);

@@ -44,6 +44,8 @@ const CARD_GROUP_RADIUS = 1.68;
 // (buildIntroSprite: textRadius=2.65) — dieselbe Weltkoordinate, damit die
 // DOM-Ersatzdarstellung exakt an derselben Helix-Position sitzt.
 const INTRO_TEXT_RADIUS = 2.65;
+const HERO_TITLE_FLAP_REPEAT_MS = 10_000;
+const HERO_SUPPORT_FLAP_REPEAT_MS = 15_000;
 
 export const dynamic = 'force-static';
 
@@ -2847,7 +2849,7 @@ export default function HomePage() {
     };
 
     replay();
-    const replayInterval = window.setInterval(replay, 5000);
+    const replayInterval = window.setInterval(replay, HERO_TITLE_FLAP_REPEAT_MS);
     return () => {
       window.clearTimeout(settleTimer);
       window.clearInterval(replayInterval);
@@ -2883,7 +2885,7 @@ export default function HomePage() {
     };
 
     replay();
-    const replayInterval = window.setInterval(replay, 10000);
+    const replayInterval = window.setInterval(replay, HERO_SUPPORT_FLAP_REPEAT_MS);
     return () => {
       window.clearTimeout(settleTimer);
       window.clearInterval(replayInterval);
