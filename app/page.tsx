@@ -27,6 +27,7 @@ import {
 import { PROJECTS } from './portfolio/data';
 import { Chakra_Petch } from 'next/font/google';
 import { trackWebsiteEvent, type WebsiteFormId } from './lib/analytics';
+import PublicFlapHeading from './PublicFlapHeading';
 
 const chakraPetch = Chakra_Petch({ subsets: ['latin'], weight: '700', display: 'swap' });
 type LeadFormId = JourneyLeadForm;
@@ -76,75 +77,6 @@ const INTRO_SEQUENCES = {
     'Your Success Story.',
   ],
 } as const;
-
-function JourneySectionFlapTitle({
-  label,
-  className = '',
-}: {
-  label: string;
-  className?: string;
-}) {
-  const titleRef = useRef<HTMLHeadingElement | null>(null);
-
-  useEffect(() => {
-    const title = titleRef.current;
-    if (!title) return;
-
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const letters = buildFlapWord(title, label);
-    setFlapWordMode(letters, 'settle', true);
-
-    let settleTimer = 0;
-    let visibilityObserver: MutationObserver | null = null;
-    let intersectionObserver: IntersectionObserver | null = null;
-    let wasVisible = false;
-    const triggerFlap = () => {
-      if (reduced) return;
-      window.clearTimeout(settleTimer);
-      setFlapWordMode(letters, 'spin', false);
-      settleTimer = window.setTimeout(() => {
-        setFlapWordMode(letters, 'settle', false);
-      }, 720);
-    };
-
-    const visibilityHost = title.closest('[aria-hidden]');
-    if (visibilityHost) {
-      const updateVisibility = () => {
-        const isVisible = visibilityHost.getAttribute('aria-hidden') === 'false';
-        if (isVisible && !wasVisible) triggerFlap();
-        wasVisible = isVisible;
-      };
-      visibilityObserver = new MutationObserver(updateVisibility);
-      visibilityObserver.observe(visibilityHost, { attributes: true, attributeFilter: ['aria-hidden'] });
-      updateVisibility();
-    } else {
-      intersectionObserver = new IntersectionObserver(
-        ([entry]) => {
-          const isVisible = entry.isIntersecting && entry.intersectionRatio >= 0.4;
-          if (isVisible && !wasVisible) triggerFlap();
-          wasVisible = isVisible;
-        },
-        { threshold: [0, 0.4, 0.75] },
-      );
-      intersectionObserver.observe(title);
-    }
-
-    return () => {
-      visibilityObserver?.disconnect();
-      intersectionObserver?.disconnect();
-      window.clearTimeout(settleTimer);
-      setFlapWordMode(letters, 'settle', true);
-    };
-  }, [label]);
-
-  return (
-    <h2
-      ref={titleRef}
-      className={`journey-section-flap intro-flap-word ${chakraPetch.className} ${className}`.trim()}
-      aria-label={label}
-    />
-  );
-}
 
 function getMobileDeckIndex(deck: HTMLElement) {
   const cards = Array.from(deck.children) as HTMLElement[];
@@ -728,11 +660,9 @@ function ValueInfoGraphic({ index }: { index: number }) {
 
 function ValueImpactContent({
   lang,
-  titleRef,
   resetToken = 0,
 }: {
   lang: 'de' | 'en';
-  titleRef?: (element: HTMLHeadingElement | null) => void;
   resetToken?: number;
 }) {
   const contentRef = useRef<HTMLDivElement | null>(null);
@@ -776,18 +706,10 @@ function ValueImpactContent({
 
   return (
     <div ref={contentRef} className={`value-impact-content ${chakraPetch.className}`}>
-      {titleRef ? (
-        <h2
-          ref={titleRef}
-          className={`journey-section-flap value-impact-flap intro-flap-word ${chakraPetch.className}`}
-          aria-label={lang === 'de' ? 'Dein Mehrwert' : 'Your Value'}
-        />
-      ) : (
-        <JourneySectionFlapTitle
-          label={lang === 'de' ? 'DEIN MEHRWERT' : 'YOUR VALUE'}
-          className="value-impact-flap"
-        />
-      )}
+      <PublicFlapHeading
+        label={lang === 'de' ? 'DEIN MEHRWERT' : 'YOUR VALUE'}
+        className="value-impact-flap"
+      />
       <div className={`value-diagram-stage ${activeInfoIndex !== null ? 'is-info-open' : ''}`}>
         <div
           ref={mobileDeckRef}
@@ -966,41 +888,7 @@ function MobileValueImpact({ lang }: { lang: 'de' | 'en' }) {
 
 function ValueImpactWorld({ lang }: { lang: 'de' | 'en' }) {
   const worldRef = useRef<HTMLDivElement | null>(null);
-  const valueTitleRef = useRef<HTMLHeadingElement | null>(null);
-  const flapTriggerRef = useRef<() => void>(() => {});
   const [resetToken, setResetToken] = useState(0);
-
-  // Exakt dieselbe Split-Flap-Mechanik wie beim Titel "MEINE UMSETZUNG": kurz
-  // durchlaufen, danach sauber auf dem Zieltext einrasten und den Effekt im
-  // gleichen 5-Sekunden-Rhythmus wiederholen.
-  useEffect(() => {
-    const title = valueTitleRef.current;
-    if (!title) return;
-
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const label = lang === 'de' ? 'DEIN MEHRWERT' : 'YOUR VALUE';
-    const letters = buildFlapWord(title, label);
-    setFlapWordMode(letters, 'settle', true);
-
-    let settleTimer = 0;
-    const triggerFlap = () => {
-      if (reduced) return;
-      window.clearTimeout(settleTimer);
-      setFlapWordMode(letters, 'spin', false);
-      settleTimer = window.setTimeout(() => {
-        setFlapWordMode(letters, 'settle', false);
-      }, 720);
-    };
-
-    flapTriggerRef.current = triggerFlap;
-    const flapInterval = window.setInterval(triggerFlap, 5000);
-    return () => {
-      window.clearInterval(flapInterval);
-      window.clearTimeout(settleTimer);
-      flapTriggerRef.current = () => {};
-      setFlapWordMode(letters, 'settle', true);
-    };
-  }, [lang]);
 
   useEffect(() => {
     const world = worldRef.current;
@@ -1065,7 +953,6 @@ function ValueImpactWorld({ lang }: { lang: 'de' | 'en' }) {
       if (!wasVisible && revealRaw > 0.34) {
         wasVisible = true;
         world.classList.add('is-revealed');
-        flapTriggerRef.current();
         cancelNumberAnimation();
         cancelNumberAnimation = animateValueNumbers(world, lang, reduced);
       } else if (wasVisible && revealRaw <= 0.02) {
@@ -1086,7 +973,6 @@ function ValueImpactWorld({ lang }: { lang: 'de' | 'en' }) {
       <ValueImpactContent
         lang={lang}
         resetToken={resetToken}
-        titleRef={(element) => { valueTitleRef.current = element; }}
       />
     </div>
   );
@@ -1100,7 +986,7 @@ function ReferenceCardsContent({ lang }: { lang: 'de' | 'en' }) {
     <div className={`references-content ${chakraPetch.className}`}>
       <div className="references-heading">
         <p>{lang === 'de' ? 'AUSGEWÄHLTE ARBEITEN' : 'SELECTED WORK'}</p>
-        <JourneySectionFlapTitle label={lang === 'de' ? 'MEINE REFERENZEN' : 'MY WORK'} />
+        <PublicFlapHeading label={lang === 'de' ? 'MEINE REFERENZEN' : 'MY WORK'} />
       </div>
       <div
         ref={mobileDeckRef}
@@ -1362,7 +1248,7 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
 
   return (
     <div className={`project-cta-content ${chakraPetch.className}`} data-active-form={activeForm}>
-      <JourneySectionFlapTitle
+      <PublicFlapHeading
         label={lang === 'de' ? 'DEIN PROJEKT' : 'YOUR PROJECT'}
         className="project-cta-section-flap"
       />
@@ -1575,7 +1461,7 @@ function StudioProfileContent({ lang }: { lang: 'de' | 'en' }) {
 
   return (
     <div className={`studio-profile-composition ${chakraPetch.className}`}>
-      <JourneySectionFlapTitle
+      <PublicFlapHeading
         label={lang === 'de' ? 'DEIN DIGITALPARTNER' : 'YOUR DIGITAL PARTNER'}
         className="studio-profile-section-flap"
       />
@@ -1711,7 +1597,6 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
   const viewportRef = useRef({ width: 0, height: 0 });
   const serviceStationsRef = useRef<HTMLDivElement | null>(null);
   const cardsWorldRef = useRef<HTMLDivElement | null>(null);
-  const solutionsFlapRef = useRef<HTMLHeadingElement | null>(null);
   const mobileServicesRef = useRef<HTMLDivElement | null>(null);
   // Je 1 Ref-Slot pro Intro-Station (worldIndex 0..4, "Deine …") — Arrays
   // statt einzelner Refs, da alle 5 Stationen dieselbe Split-Flap-Logik in
@@ -1866,38 +1751,6 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
     rafId = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(rafId);
   }, []);
-
-  // Die Kartenüberschrift ist Teil desselben projizierten DOM-Weltobjekts
-  // wie die vier Karten. Sie besitzt deshalb keine eigene Scroll- oder
-  // Kameralogik, sondern folgt deren Position, Skalierung und Drehung exakt.
-  // Lediglich der Split-Flap-Lauf wird in einem festen 5-Sekunden-Takt kurz
-  // aktiviert und anschliessend wieder auf den Zieltext gesetzt.
-  useEffect(() => {
-    const title = solutionsFlapRef.current;
-    if (!title) return;
-
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const label = lang === 'de' ? 'MEINE UMSETZUNG' : 'MY EXECUTION';
-    const letters = buildFlapWord(title, label);
-    setFlapWordMode(letters, 'settle', true);
-
-    let settleTimer = 0;
-    const triggerFlap = () => {
-      if (reduced) return;
-      window.clearTimeout(settleTimer);
-      setFlapWordMode(letters, 'spin', false);
-      settleTimer = window.setTimeout(() => {
-        setFlapWordMode(letters, 'settle', false);
-      }, 720);
-    };
-
-    const flapInterval = window.setInterval(triggerFlap, 5000);
-    return () => {
-      window.clearInterval(flapInterval);
-      window.clearTimeout(settleTimer);
-      setFlapWordMode(letters, 'settle', true);
-    };
-  }, [lang]);
 
   // IntroFlapWorld: ersetzt die WebGL-Textebenen ALLER 5 Intro-Stationen
   // ("Deine Idee.", "Deine Herausforderung.", "Deine Vision.", "Deine
@@ -2579,10 +2432,9 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
           className={`spiral-service-stations ${activeService ? 'is-detail-open' : ''}`}
           aria-label={lang === 'de' ? 'Meine Umsetzung' : 'My Execution'}
         >
-          <h2
-            ref={solutionsFlapRef}
-            className={`spiral-solutions-flap intro-flap-word ${chakraPetch.className}`}
-            aria-label={lang === 'de' ? 'Meine Umsetzung' : 'My Execution'}
+          <PublicFlapHeading
+            label={lang === 'de' ? 'MEINE UMSETZUNG' : 'MY EXECUTION'}
+            className="spiral-solutions-flap"
           />
           {serviceCards.map((card, i) => {
             return (
@@ -2761,7 +2613,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
             id="mobile-solutions"
             className={`spiral-mobile-service-stage scroll-mt-24 ${activeService ? 'is-info-open' : ''}`}
           >
-            <JourneySectionFlapTitle
+            <PublicFlapHeading
               label={lang === 'de' ? 'MEINE UMSETZUNG' : 'MY EXECUTION'}
               className="mobile-solutions-section-flap"
             />

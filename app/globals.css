@@ -8897,3 +8897,120 @@ body.journey-warp-active .mobile-project-cta {
     scroll-snap-type: none;
   }
 }
+
+/* ── Verbindliche öffentliche Karten-/Formularüberschriften ──────────────
+   „Meine Referenzen“ ist die einzige Quelle für Grösse und Rhythmus.
+   Jede Hauptkarte und jedes öffentliche Hauptformular verwendet dieselbe
+   Chakra-Petch-Split-Flap-Zeile oberhalb und ausserhalb seiner Fläche. */
+:root {
+  --public-card-heading-gap: clamp(0.8rem, 1.8vh, 1.25rem);
+}
+
+.public-card-heading {
+  position: relative;
+  z-index: 8;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  width: 100%;
+  margin: 0;
+  color: #fff;
+  font-family: var(--font-chakra-petch), sans-serif !important;
+  font-size: clamp(1.05rem, 1.7vw, 1.75rem) !important;
+  font-weight: 700;
+  letter-spacing: -0.025em !important;
+  line-height: 1 !important;
+  text-align: center;
+  text-shadow: 0 0 24px rgba(255, 255, 255, 0.14), 0 4px 22px rgba(0, 0, 0, 0.9);
+  white-space: pre;
+  pointer-events: none;
+}
+
+.value-impact-content > .public-card-heading,
+.mobile-solutions-section-flap,
+.public-form-heading {
+  margin-bottom: var(--public-card-heading-gap);
+}
+
+.references-heading {
+  margin-bottom: var(--public-card-heading-gap);
+}
+
+.references-heading .public-card-heading {
+  margin: 0;
+}
+
+.spiral-solutions-flap.public-card-heading {
+  position: absolute;
+  top: auto;
+  right: 0;
+  bottom: calc(100% + var(--public-card-heading-gap));
+  left: 0;
+  width: 100%;
+  transform: none;
+}
+
+.studio-profile-composition > .studio-profile-section-flap.public-card-heading {
+  position: absolute;
+  top: auto;
+  right: 0;
+  bottom: calc(100% + var(--public-card-heading-gap));
+  left: 0;
+  width: 100%;
+  margin: 0;
+}
+
+.project-cta-content {
+  position: relative;
+  overflow: visible;
+}
+
+.project-cta-content > .project-cta-section-flap.public-card-heading {
+  position: absolute;
+  top: auto;
+  right: 0;
+  bottom: calc(100% + var(--public-card-heading-gap));
+  left: 0;
+  width: 100%;
+  margin: 0;
+}
+
+.inquiry-intro .public-form-heading,
+.ki-check-intro .public-form-heading {
+  max-width: 100%;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+@media (max-width: 699px) {
+  :root {
+    --public-card-heading-gap: 1.25rem;
+  }
+
+  .public-card-heading,
+  .spiral-solutions-flap.public-card-heading,
+  .mobile-value-impact .value-impact-flap.public-card-heading,
+  .references-heading .public-card-heading,
+  .studio-profile-section-flap.public-card-heading,
+  .project-cta-section-flap.public-card-heading,
+  .mobile-solutions-section-flap.public-card-heading {
+    font-size: clamp(1.35rem, 7vw, 2rem) !important;
+    letter-spacing: -0.025em !important;
+  }
+
+  .mobile-studio-profile .studio-profile-composition,
+  .mobile-project-cta > .project-cta-content {
+    width: min(100% - 2rem, 32rem);
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .mobile-project-cta > .project-cta-content {
+    margin-top: calc(1.35rem + var(--public-card-heading-gap));
+  }
+
+  .inquiry-intro .public-form-heading,
+  .ki-check-intro .public-form-heading {
+    font-size: clamp(1.35rem, 7vw, 2rem) !important;
+  }
+}

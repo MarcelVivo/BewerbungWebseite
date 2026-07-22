@@ -7,6 +7,7 @@ import { useLanguage } from '../LanguageContext';
 import { useEmbeddedForm } from '../EmbeddedFormContext';
 import { scrollToJourneyDestination } from '../lib/journeyNavigation';
 import { trackWebsiteEvent } from '../lib/analytics';
+import PublicFlapHeading from '../PublicFlapHeading';
 
 // ─── Types & Data ────────────────────────────────────────────────────────────
 
@@ -358,11 +359,18 @@ export default function KiCheckPage() {
             <div className="ki-check-badge inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#c9a84c]/40 bg-[#c9a84c]/10 text-[#d4b86a] text-sm font-medium mb-8">
               <Bot size={14} /> {copy.badge}
             </div>
-            <h1 className="ki-check-heading text-5xl sm:text-6xl font-bold text-white leading-tight mb-5" style={SITE_FONT}>
+            {!embedded ? (
+              <PublicFlapHeading
+                label={lang === 'de' ? 'KI-POTENZIAL PRÜFEN' : 'ASSESS AI POTENTIAL'}
+                as="h1"
+                className="public-form-heading"
+              />
+            ) : null}
+            <p className="ki-check-heading text-5xl sm:text-6xl font-bold text-white leading-tight mb-5" style={SITE_FONT}>
               {copy.headingA}{' '}
               <em className="not-italic text-[#c9a84c]">{copy.headingB}</em>{' '}
               {copy.headingC}
-            </h1>
+            </p>
             <p className="ki-check-intro-copy text-lg text-[#a89880] leading-relaxed mb-10 max-w-md mx-auto">
               {copy.introA}{' '}
               <span className="text-[#f4edd8]">{copy.introB}</span>{' '}

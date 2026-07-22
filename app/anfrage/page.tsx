@@ -15,6 +15,7 @@ import { useLanguage } from '../LanguageContext';
 import { useEmbeddedForm } from '../EmbeddedFormContext';
 import { scrollToJourneyDestination } from '../lib/journeyNavigation';
 import { trackWebsiteEvent } from '../lib/analytics';
+import PublicFlapHeading from '../PublicFlapHeading';
 
 // ── Data ─────────────────────────────────────────────────────
 
@@ -431,7 +432,11 @@ export default function AnfragePage() {
         {/* Title */}
         <div className="inquiry-intro text-center mb-10">
           <p className="inquiry-kicker inquiry-display">{copy.kicker}</p>
-          <h1 className="inquiry-display font-bold text-white mb-3">{copy.title}</h1>
+          {embedded ? (
+            <h1 className="inquiry-display font-bold text-white mb-3">{copy.title}</h1>
+          ) : (
+            <PublicFlapHeading label={copy.title.toUpperCase()} as="h1" className="public-form-heading" />
+          )}
           <p className="text-[#a89880] leading-relaxed">
             {copy.intro}
           </p>
