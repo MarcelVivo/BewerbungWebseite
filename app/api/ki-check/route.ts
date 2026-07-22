@@ -32,6 +32,12 @@ const QUESTION_LABELS: Record<string, string> = {
 
 type Rec = { title: string; reason: string; url: string };
 
+const PUBLIC_SITE_URL = 'https://www.marcelspahr.ch';
+
+function serviceUrl(slug: string) {
+  return `${PUBLIC_SITE_URL}/leistungen/${slug}`;
+}
+
 function generateReport(answers: Record<string, string | string[]>) {
   const timeWasters = (answers['time-wasters'] as string[]) ?? [];
   const aiStatus    = (answers['ai-status']    as string)   ?? '';
@@ -64,49 +70,49 @@ function generateReport(answers: Record<string, string | string[]>) {
 
   if (maturity === 'starter') {
     recs.push({
-      title: 'KI-Beratung für KMU',
+      title: 'Analyse & KI-Konzept',
       reason: 'Ihr persönlicher KI-Fahrplan: Welche Tools passen wirklich zu Ihnen, welche Schritte bringen sofort Ergebnisse – und was können Sie später angehen.',
-      url: 'https://www.marcelspahr.ch/leistungen/ki-beratung-kmu',
+      url: serviceUrl('analyse-konzept'),
     });
   }
 
   if (barriers.some(b => b.includes('skeptisch') || b.includes('anfangen'))) {
     recs.push({
-      title: 'Workshops & Schulungen',
+      title: 'KI-Einführung & Schulung',
       reason: 'Ein massgeschneiderter Workshop holt Ihr Team ab und macht KI greifbar – mit echten Aufgaben aus Ihrem Alltag, nicht mit abstrakten Beispielen.',
-      url: 'https://www.marcelspahr.ch/leistungen/workshops',
+      url: serviceUrl('automatisierung-ki-agenten'),
     });
   }
 
   if (timeWasters.some(t => t.includes('E-Mail') || t.includes('Kundenanfragen') || t.includes('Daten'))) {
     recs.push({
-      title: 'KI-Agenten & Automatisierung',
+      title: 'KI-Automation & KI-Unterstützung',
       reason: 'Genau für diese Aufgaben lassen sich KI-Agenten bauen, die 24/7 für Sie arbeiten – ohne zusätzliche Mitarbeitende.',
-      url: 'https://www.marcelspahr.ch/leistungen/ki-agenten',
+      url: serviceUrl('automatisierung-ki-agenten'),
     });
   }
 
   if (timeWasters.some(t => t.includes('Offerten') || t.includes('Dokumente') || t.includes('Daten zwischen'))) {
     recs.push({
-      title: 'Prozessoptimierung (BPMN)',
+      title: 'ERP- & Geschäftsprozesse',
       reason: 'Diese Abläufe können digitalisiert und automatisiert werden – mit messbarer Zeitersparnis und klarer Vorher/Nachher-Kalkulation.',
-      url: 'https://www.marcelspahr.ch/leistungen/prozessoptimierung',
+      url: serviceUrl('erp-prozesse'),
     });
   }
 
   if (timeWasters.some(t => t.includes('Vertrieb') || t.includes('Lead')) || priority.includes('Umsatz')) {
     recs.push({
-      title: 'Digital Marketing & Social Media',
-      reason: 'KI-unterstützte Content-Strategie und LinkedIn-Aufbau für mehr Sichtbarkeit, mehr qualifizierte Leads – ohne bezahltes Advertising.',
-      url: 'https://www.marcelspahr.ch/leistungen/digital-marketing',
+      title: 'CRM-Lösungen',
+      reason: 'Leads, Kontakte, Aufgaben und nächste Schritte werden zentral geführt, damit aus Sichtbarkeit verlässlich neue Kundenbeziehungen entstehen.',
+      url: serviceUrl('crm-loesungen'),
     });
   }
 
   if (maturity !== 'starter' || timeWasters.length >= 4) {
     recs.push({
-      title: 'Business Analyse & Requirements',
+      title: 'Analyse & Konzept',
       reason: 'Prozesse systematisch analysieren, Prioritäten setzen und Lösungen sauber spezifizieren – bevor etwas gebaut wird.',
-      url: 'https://www.marcelspahr.ch/leistungen/business-analyse',
+      url: serviceUrl('analyse-konzept'),
     });
   }
 
@@ -212,7 +218,7 @@ export async function POST(req: Request) {
         <div style="background:#f8fafc;border-radius:8px;padding:16px 20px;margin-bottom:12px;border-left:3px solid #c9a84c">
           <p style="margin:0 0 4px;font-weight:700;color:#1e293b;font-size:14px">${r.title}</p>
           <p style="margin:0 0 8px;color:#475569;font-size:13px;line-height:1.6">${r.reason}</p>
-          <a href="${r.url}" style="color:#b8943a;font-size:13px;text-decoration:none;font-weight:600">Mehr erfahren →</a>
+          <a href="${r.url}" target="_blank" rel="noopener noreferrer" style="color:#b8943a;font-size:13px;text-decoration:none;font-weight:600;display:inline-block">Mehr erfahren →</a>
         </div>`).join('');
 
       resend.emails.send({
@@ -253,7 +259,7 @@ export async function POST(req: Request) {
                 ohne Buzzwords.
               </p>
               <div style="text-align:center;margin:28px 0">
-                <a href="mailto:kontakt@marcelspahr.ch?subject=Erstgespräch nach KI-Check – ${encodeURIComponent(firma)}"
+                <a href="${PUBLIC_SITE_URL}/?lead=consultation#journey-contact" target="_blank" rel="noopener noreferrer"
                    style="background:#c9a84c;color:#0c0a06;padding:14px 32px;border-radius:10px;text-decoration:none;font-size:15px;font-weight:700;display:inline-block">
                   Kostenloses Erstgespräch vereinbaren
                 </a>
@@ -266,8 +272,8 @@ export async function POST(req: Request) {
               </p>
             </div>
             <div style="padding:14px 32px;background:#f8fafc;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center">
-              <a href="https://www.marcelspahr.ch" style="color:#c9a84c;font-size:13px;text-decoration:none;font-weight:600">www.marcelspahr.ch</a>
-              <a href="https://www.marcelspahr.ch/datenschutz" style="color:#94a3b8;font-size:12px;text-decoration:none">Datenschutz</a>
+              <a href="${PUBLIC_SITE_URL}" target="_blank" rel="noopener noreferrer" style="color:#c9a84c;font-size:13px;text-decoration:none;font-weight:600">www.marcelspahr.ch</a>
+              <a href="${PUBLIC_SITE_URL}/datenschutz" target="_blank" rel="noopener noreferrer" style="color:#94a3b8;font-size:12px;text-decoration:none">Datenschutz</a>
             </div>
           </div>`,
       }).catch(e => console.error('[ki-check] Resend User:', e));

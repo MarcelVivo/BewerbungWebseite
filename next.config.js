@@ -26,6 +26,38 @@ const nextConfig = {
         destination: '/bewerbungsprofil',
         permanent: true,
       },
+      // Legacy targets used in KI-check emails. Keep these redirects so links
+      // in reports that have already been delivered continue to work.
+      {
+        source: '/leistungen/ki-beratung-kmu',
+        destination: '/leistungen/analyse-konzept',
+        permanent: true,
+      },
+      {
+        source: '/leistungen/workshops',
+        destination: '/leistungen/automatisierung-ki-agenten',
+        permanent: true,
+      },
+      {
+        source: '/leistungen/ki-agenten',
+        destination: '/leistungen/automatisierung-ki-agenten',
+        permanent: true,
+      },
+      {
+        source: '/leistungen/prozessoptimierung',
+        destination: '/leistungen/erp-prozesse',
+        permanent: true,
+      },
+      {
+        source: '/leistungen/digital-marketing',
+        destination: '/leistungen/corporate-design',
+        permanent: true,
+      },
+      {
+        source: '/leistungen/business-analyse',
+        destination: '/leistungen/analyse-konzept',
+        permanent: true,
+      },
     ];
   },
   webpack: (config, { dev }) => {
