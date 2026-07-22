@@ -28,7 +28,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     // Viewports erweitert sich nur der Bildausschnitt, damit alle Gehirne
     // im gleichen Größenverhältnis wie auf dem Desktop sichtbar bleiben.
     var MOBILE_RADIUS_SCALE = isMobile ? 1.9 : 1;
-    var MOBILE_BRAIN_Y_OFFSET = isMobile ? 1.65 : 0;
+    // Im hohen Mobile-Viewport sitzt die Hero-Typografie oben und unten.
+    // Die drei Hero-Gehirne werden deshalb in den freien Mittelraum gehoben,
+    // statt mit Beschreibung, CTA und der Touch-Navigation zu kollidieren.
+    // Nur die Startgruppe wird versetzt; Helix, grünes Gehirn und sämtliche
+    // späteren Reisestationen behalten ihre bisherigen Weltpositionen.
+    var MOBILE_BRAIN_Y_OFFSET = isMobile ? 2.85 : 0;
     var renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'high-performance' });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
