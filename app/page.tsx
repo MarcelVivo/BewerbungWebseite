@@ -823,7 +823,7 @@ function ValueImpactContent({
             </div>
             <button
               type="button"
-              className="value-info-cta mobile-value-info-cta"
+              className="value-info-cta"
               tabIndex={activeInfoIndex !== null ? 0 : -1}
               onClick={() => {
                 setActiveInfoIndex(null);
@@ -1501,7 +1501,21 @@ function StudioProfileContent({ lang }: { lang: 'de' | 'en' }) {
             <p className="studio-profile-kicker">{copy.kicker}</p>
             <h2>{copy.title}</h2>
           </div>
-          <p className="studio-profile-copy">{copy.intro}</p>
+          <div className="studio-profile-action">
+            <p className="studio-profile-copy">{copy.intro}</p>
+            <button
+              type="button"
+              className="studio-profile-cta"
+              onClick={() => openJourneyLeadForm('project', {
+                travel: 'warp',
+                ctaId: 'digital_partner_project',
+              })}
+            >
+              <ClipboardList size={16} strokeWidth={2} aria-hidden="true" />
+              <span>{lang === 'de' ? 'Projekt besprechen' : 'Discuss your project'}</span>
+              <ChevronRight size={16} strokeWidth={2.2} aria-hidden="true" />
+            </button>
+          </div>
         </div>
         <div className="studio-profile-facts">
           {copy.facts.map(([value, label]) => (

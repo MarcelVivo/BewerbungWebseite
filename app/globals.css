@@ -5444,7 +5444,7 @@ body.journey-warp-active .mobile-project-cta {
 .value-info-copy,
 .spiral-detail-panel .value-info-copy {
   display: grid;
-  grid-template-rows: auto auto auto minmax(0, 1fr);
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
   align-content: stretch;
   justify-content: stretch;
   padding: clamp(1rem, 3.2vh, 2.75rem) 0 clamp(0.65rem, 1.8vh, 1.5rem);
@@ -7473,6 +7473,43 @@ body.journey-warp-active .mobile-project-cta {
   line-height: 1.62;
 }
 
+.studio-profile-action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.studio-profile-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.48rem;
+  min-height: clamp(2rem, 2.6vw, 2.5rem);
+  margin-top: clamp(0.48rem, 0.75vw, 0.72rem);
+  padding: 0.48rem 0.8rem;
+  border: 1px solid rgba(231, 197, 106, 0.62);
+  border-radius: 999px;
+  color: rgba(255, 242, 202, 0.96);
+  background: rgba(193, 143, 42, 0.12);
+  box-shadow: 0 0 20px rgba(193, 143, 42, 0.09);
+  font: inherit;
+  font-size: clamp(0.58rem, 1.08cqw, 0.74rem);
+  font-weight: 700;
+  letter-spacing: 0.035em;
+  cursor: pointer;
+  transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.studio-profile-cta:hover,
+.studio-profile-cta:focus-visible {
+  border-color: rgba(255, 222, 132, 0.96);
+  background: rgba(193, 143, 42, 0.22);
+  box-shadow: 0 0 28px rgba(193, 143, 42, 0.18);
+  outline: none;
+  transform: translateY(-1px);
+}
+
 .studio-profile-content > .studio-profile-facts {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -7586,6 +7623,13 @@ body.journey-warp-active .mobile-project-cta {
 
   .mobile-studio-profile .studio-profile-positioning-row .studio-profile-copy {
     font-size: clamp(0.62rem, 2.7vw, 0.76rem);
+  }
+
+  .mobile-studio-profile .studio-profile-cta {
+    width: 100%;
+    min-height: 3rem;
+    margin-top: 0.65rem;
+    font-size: clamp(0.72rem, 3vw, 0.86rem);
   }
 
   .mobile-studio-profile .studio-profile-content > .studio-profile-facts {
@@ -8080,17 +8124,20 @@ body.journey-warp-active .mobile-project-cta {
 /* Der CTA bildet den unteren Abschluss der linken Detailspalte. Seine
    Unterkante endet exakt dort, wo auch der mittlere Vertikaltrenner endet. */
 @media (min-width: 700px) {
+  .value-impact-world .value-info-copy,
   .spiral-detail-panel .value-info-copy {
     grid-template-rows: auto auto auto minmax(0, 1fr) auto;
     align-content: stretch;
     padding-bottom: 0;
   }
 
+  .value-impact-world .value-info-columns,
   .spiral-detail-panel .value-info-columns {
     align-self: start;
     margin-bottom: 0;
   }
 
+  .value-impact-world .value-info-cta,
   .spiral-detail-panel .value-info-cta {
     width: 100%;
     margin-top: clamp(0.55rem, 1.2cqi, 0.9rem);
@@ -8104,8 +8151,7 @@ body.journey-warp-active .mobile-project-cta {
 .mobile-deck-controls,
 .journey-mobile-bar,
 .journey-mobile-sheet,
-.journey-mobile-backdrop,
-.mobile-value-info-cta {
+.journey-mobile-backdrop {
   display: none;
 }
 
@@ -8780,7 +8826,7 @@ body.journey-warp-active .mobile-project-cta {
   }
 
   .mobile-solution-info .value-info-cta,
-  .mobile-value-impact .mobile-value-info-cta {
+  .mobile-value-impact .value-info-cta {
     position: fixed;
     right: 1rem;
     bottom: max(1rem, env(safe-area-inset-bottom));
@@ -8797,10 +8843,6 @@ body.journey-warp-active .mobile-project-cta {
     font-size: 0.9rem;
     -webkit-backdrop-filter: blur(16px);
     backdrop-filter: blur(16px);
-  }
-
-  .mobile-value-info-cta {
-    display: flex;
   }
 
   /* Die beiden textintensiven Schlussstationen dürfen wachsen und werden
@@ -9101,7 +9143,7 @@ body.journey-warp-active .mobile-project-cta {
   }
 
   .mobile-solution-info .value-info-cta,
-  .mobile-value-impact .mobile-value-info-cta {
+  .mobile-value-impact .value-info-cta {
     position: relative !important;
     right: auto !important;
     bottom: auto !important;
