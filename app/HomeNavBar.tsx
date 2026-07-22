@@ -5,7 +5,12 @@ import { Menu, X } from 'lucide-react';
 import { Chakra_Petch } from 'next/font/google';
 import { useLanguage } from './LanguageContext';
 import { buildFlapWord, setFlapWordMode, type FlapLetter } from './lib/splitFlap';
-import { openJourneyLeadForm } from './lib/journeyNavigation';
+import {
+  getJourneyHref,
+  navigateToJourneyDestination,
+  openJourneyLeadForm,
+  type JourneyDestination,
+} from './lib/journeyNavigation';
 import { T } from '../lib/translations';
 
 const chakraPetch = Chakra_Petch({ subsets: ['latin'], weight: '700', display: 'swap' });
@@ -50,38 +55,14 @@ export default function HomeNavBar() {
   const t = T[lang].nav;
 
   const NAV_LINKS = [
-    { href: '#journey-about', label: t.about },
-    { href: '#services',  label: t.services },
-    { href: '#portfolio', label: t.portfolio },
+    { destination: 'about' as const, label: t.about },
+    { destination: 'solutions' as const, label: t.services },
+    { destination: 'references' as const, label: t.portfolio },
   ];
 
-  function scrollToAbout(behavior: ScrollBehavior = 'smooth') {
-    if (window.innerWidth <= 699) {
-      document.getElementById('mobile-journey-about')?.scrollIntoView({ behavior, block: 'center' });
-      return;
-    }
-
-    const journey = document.getElementById('solution-spiral');
-    if (!journey) return;
-    // Exakter Kamerastand: approachProgress ≈ 0.61. Die Kamera hält hier
-    // frontal vor dem grünen Gehirn und das Profil ist vollständig sichtbar.
-    const profileCameraProgress = 0.93;
-    window.scrollTo({
-      top: journey.offsetTop - window.innerHeight + journey.offsetHeight * profileCameraProgress,
-      behavior,
-    });
-  }
-
-  useEffect(() => {
-    if (window.location.hash !== '#journey-about') return;
-    const timer = window.setTimeout(() => scrollToAbout('auto'), 120);
-    return () => window.clearTimeout(timer);
-  }, []);
-
-  function handleNavClick(event: ReactMouseEvent<HTMLAnchorElement>, href: string) {
-    if (href !== '#journey-about') return;
+  function handleNavClick(event: ReactMouseEvent<HTMLAnchorElement>, destination: JourneyDestination) {
     event.preventDefault();
-    scrollToAbout();
+    navigateToJourneyDestination(destination);
     setOpen(false);
   }
 
@@ -98,7 +79,7 @@ export default function HomeNavBar() {
         </a>
         <nav className={`hidden lg:flex items-center gap-6 ${chakraPetch.className}`}>
           {NAV_LINKS.map(l => (
-            <a key={l.href} href={l.href} onClick={(event) => handleNavClick(event, l.href)} className="text-sm text-[#a89880] hover:text-[#f4edd8] transition-colors"><NavbarFlapLabel label={l.label} /></a>
+            <a key={l.destination} href={getJourneyHref(l.destination)} onClick={(event) => handleNavClick(event, l.destination)} className="text-sm text-[#a89880] hover:text-[#f4edd8] transition-colors"><NavbarFlapLabel label={l.label} /></a>
           ))}
           {/* Language toggle */}
           <div className="flex items-center gap-1 ml-1 rounded-lg border border-[#2d2820] overflow-hidden">
@@ -137,7 +118,7 @@ export default function HomeNavBar() {
       {open && (
         <div className={`home-navbar-mobile-menu lg:hidden px-4 py-4 space-y-3 ms-anim pointer-events-auto ${chakraPetch.className}`}>
           {NAV_LINKS.map(l => (
-            <a key={l.href} href={l.href} className="block text-sm text-[#d4c4a8] hover:text-[#f4edd8]" onClick={(event) => { handleNavClick(event, l.href); if (l.href !== '#journey-about') setOpen(false); }}><NavbarFlapLabel label={l.label} /></a>
+            <a key={l.destination} href={getJourneyHref(l.destination)} className="block text-sm text-[#d4c4a8] hover:text-[#f4edd8]" onClick={(event) => handleNavClick(event, l.destination)}><NavbarFlapLabel label={l.label} /></a>
           ))}
           <button
             type="button"

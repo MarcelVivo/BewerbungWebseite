@@ -442,14 +442,14 @@ export default function ServicePageContent({ slug }: { slug: string }) {
             Marcel Spahr
           </Link>
           <nav className="hidden md:flex items-center gap-6">
-            <Link href="/#services"  className="text-sm text-[#a89880] hover:text-white transition-colors">{pl.navServices}</Link>
-            <Link href="/#portfolio" className="text-sm text-[#a89880] hover:text-white transition-colors">{pl.navPortfolio}</Link>
+            <Link href="/#journey-solutions"  className="text-sm text-[#a89880] hover:text-white transition-colors">{pl.navServices}</Link>
+            <Link href="/#journey-references" className="text-sm text-[#a89880] hover:text-white transition-colors">{pl.navPortfolio}</Link>
             <Link href="/#journey-about" className="text-sm text-[#a89880] hover:text-white transition-colors">{pl.navAbout}</Link>
             <div className="flex items-center gap-0.5 rounded-lg border border-[#2d2820] overflow-hidden">
               <button onClick={() => setLang('de')} className={`px-2.5 py-1 text-xs font-semibold transition-colors ${lang === 'de' ? 'bg-[#c9a84c] text-[#0c0a06]' : 'text-[#a89880] hover:text-[#f4edd8]'}`}>DE</button>
               <button onClick={() => setLang('en')} className={`px-2.5 py-1 text-xs font-semibold transition-colors ${lang === 'en' ? 'bg-[#c9a84c] text-[#0c0a06]' : 'text-[#a89880] hover:text-[#f4edd8]'}`}>EN</button>
             </div>
-            <a href={`/?lead=${service.slug === 'automatisierung-ki-agenten' ? 'ki' : 'project'}`} className="px-4 py-1.5 rounded-lg text-[#0c0a06] text-sm font-semibold transition-colors" style={{ background: metallicGradient(service.color) }}>
+            <a href={`/?lead=${service.slug === 'automatisierung-ki-agenten' ? 'ki' : 'project'}#journey-contact`} className="px-4 py-1.5 rounded-lg text-[#0c0a06] text-sm font-semibold transition-colors" style={{ background: metallicGradient(service.color) }}>
               {service.slug === 'automatisierung-ki-agenten' ? pl.navCtaAi : pl.navCta}
             </a>
           </nav>
@@ -462,7 +462,7 @@ export default function ServicePageContent({ slug }: { slug: string }) {
           background: `radial-gradient(ellipse 50% 40% at 20% 30%, ${service.color}12 0%, transparent 70%)`
         }} />
         <div className="relative max-w-4xl mx-auto">
-          <Link href="/#services" className="inline-flex items-center gap-1.5 text-sm text-[#a89880] hover:text-white transition-colors mb-8 group">
+          <Link href="/#journey-solutions" className="inline-flex items-center gap-1.5 text-sm text-[#a89880] hover:text-white transition-colors mb-8 group">
             <ArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform" />
             {pl.allServices}
           </Link>

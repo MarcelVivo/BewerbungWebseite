@@ -5,6 +5,8 @@ import { Chakra_Petch } from 'next/font/google';
 import { ChevronLeft, ChevronRight, List, X } from 'lucide-react';
 import { useLanguage } from './LanguageContext';
 import {
+  getJourneyDestinationFromHash,
+  JOURNEY_DESTINATION_HASH,
   JOURNEY_CAMERA_WARP_EVENT,
   JOURNEY_DESTINATION_WARP_EVENT,
   openJourneyLeadForm,
@@ -15,13 +17,22 @@ import { trackWebsiteEvent } from './lib/analytics';
 const chakraPetch = Chakra_Petch({ subsets: ['latin'], weight: '700', display: 'swap' });
 
 const STATIONS = [
-  { label: { de: 'Deine Idee', en: 'Your Idea' }, target: 'journey-start' },
-  { label: { de: 'Meine Umsetzung', en: 'My Execution' }, target: 'journey-solutions', mobileTarget: 'mobile-solutions' },
-  { label: { de: 'Dein Mehrwert', en: 'Your Value' }, target: 'journey-value', mobileTarget: 'mobile-journey-value' },
-  { label: { de: 'Meine Referenzen', en: 'My Work' }, target: 'journey-references', mobileTarget: 'mobile-journey-references' },
-  { label: { de: 'Dein Digitalpartner', en: 'Your Digital Partner' }, target: 'journey-about', mobileTarget: 'mobile-journey-about' },
-  { label: { de: 'Dein Projekt', en: 'Your Project' }, target: 'journey-contact', mobileTarget: 'mobile-journey-contact' },
-];
+  { destination: 'start', label: { de: 'Deine Idee', en: 'Your Idea' }, target: 'journey-start' },
+  { destination: 'solutions', label: { de: 'Meine Umsetzung', en: 'My Execution' }, target: 'journey-solutions', mobileTarget: 'mobile-solutions' },
+  { destination: 'value', label: { de: 'Dein Mehrwert', en: 'Your Value' }, target: 'journey-value', mobileTarget: 'mobile-journey-value' },
+  { destination: 'references', label: { de: 'Meine Referenzen', en: 'My Work' }, target: 'journey-references', mobileTarget: 'mobile-journey-references' },
+  { destination: 'about', label: { de: 'Dein Digitalpartner', en: 'Your Digital Partner' }, target: 'journey-about', mobileTarget: 'mobile-journey-about' },
+  { destination: 'contact', label: { de: 'Dein Projekt', en: 'Your Project' }, target: 'journey-contact', mobileTarget: 'mobile-journey-contact' },
+] satisfies Array<{
+  destination: JourneyDestination;
+  label: { de: string; en: string };
+  target: string;
+  mobileTarget?: string;
+}>;
+
+const STATION_INDEX = new Map<JourneyDestination, number>(
+  STATIONS.map((station, index) => [station.destination, index]),
+);
 
 // Dieselben normierten Positionen, an denen die Desktop-Kamera ihre sechs
 // inhaltlichen Stationen zeigt. So stimmen Klickziel, sichtbarer Inhalt und
@@ -60,6 +71,8 @@ export default function JourneyNavigator() {
   const travelTargetRef = useRef<number | null>(null);
   const cancelTravelRef = useRef<(() => void) | null>(null);
   const trackedStationsRef = useRef(new Set<number>());
+  const historyNavigationFrameRef = useRef(0);
+  const initialHistoryResolvedRef = useRef(false);
   const { lang, setLang } = useLanguage();
 
   useEffect(() => {
@@ -127,6 +140,21 @@ export default function JourneyNavigator() {
     };
   }, []);
 
+  // Manuelles Scrollen ersetzt nur den aktuellen History-Eintrag. Verlässt
+  // man danach eine Karte, führt Browser-Zurück dadurch exakt zu der Station,
+  // die zuvor sichtbar war, ohne für jeden Scrollpixel History anzulegen.
+  useEffect(() => {
+    if (!initialHistoryResolvedRef.current || window.location.pathname !== '/' || travelTargetRef.current !== null) return;
+    const destination = STATIONS[activeIndex].destination;
+    const hash = JOURNEY_DESTINATION_HASH[destination];
+    if (window.location.hash === hash) return;
+    window.history.replaceState(
+      { ...(window.history.state ?? {}), journeyDestination: destination },
+      '',
+      hash,
+    );
+  }, [activeIndex]);
+
   useEffect(() => {
     if (!mobileMenuOpen) return;
     const closeOnEscape = (event: KeyboardEvent) => {
@@ -186,9 +214,23 @@ export default function JourneyNavigator() {
     return Math.max(0, Math.min(1, (scrollTop - start) / distance));
   }
 
-  function startAdaptiveTravel(index: number, mode: 'fast' | 'warp') {
+  function writeJourneyHistory(index: number, mode: 'push' | 'replace') {
+    const destination = STATIONS[index].destination;
+    const hash = JOURNEY_DESTINATION_HASH[destination];
+    if (window.location.hash === hash) return;
+    const state = { ...(window.history.state ?? {}), journeyDestination: destination };
+    if (mode === 'push') window.history.pushState(state, '', hash);
+    else window.history.replaceState(state, '', hash);
+  }
+
+  function startAdaptiveTravel(
+    index: number,
+    mode: 'fast' | 'warp',
+    historyMode: 'push' | 'replace' | 'none' = 'none',
+  ) {
     cancelTravelRef.current?.();
     window.scrollTo({ top: window.scrollY, behavior: 'auto' });
+    if (historyMode !== 'none') writeJourneyHistory(index, historyMode);
 
     const startY = window.scrollY;
     const maxY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
@@ -296,6 +338,7 @@ export default function JourneyNavigator() {
 
   function goToStation(index: number) {
     setMobileMenuOpen(false);
+    setActiveIndex(index);
     trackWebsiteEvent('journey_navigation', {
       station: STATIONS[index].target,
       metadata: {
@@ -308,13 +351,13 @@ export default function JourneyNavigator() {
     }
 
     if (window.innerWidth <= 699) {
-      startAdaptiveTravel(index, 'warp');
+      startAdaptiveTravel(index, 'warp', 'push');
       return;
     }
 
     const stationDistance = Math.abs(index - activeIndex);
     if (stationDistance >= 2) {
-      startAdaptiveTravel(index, 'warp');
+      startAdaptiveTravel(index, 'warp', 'push');
       return;
     }
 
@@ -323,6 +366,7 @@ export default function JourneyNavigator() {
     if (window.innerWidth > 699 && index > 0) {
       const journey = document.getElementById('solution-spiral');
       if (journey) {
+        writeJourneyHistory(index, 'push');
         window.scrollTo({
           top: journey.offsetTop - window.innerHeight + journey.offsetHeight * DESKTOP_STATION_PROGRESS[index],
           behavior: 'smooth',
@@ -333,18 +377,66 @@ export default function JourneyNavigator() {
     const targetId = window.innerWidth <= 699 && station.mobileTarget
       ? station.mobileTarget
       : station.target;
+    writeJourneyHistory(index, 'push');
     document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
   useEffect(() => {
     const warpToDestination = (event: Event) => {
       const destination = (event as CustomEvent<JourneyDestination>).detail;
-      const targetIndex = destination === 'references' ? 3 : STATIONS.length - 1;
-      startAdaptiveTravel(targetIndex, 'warp');
+      const targetIndex = STATION_INDEX.get(destination);
+      if (targetIndex === undefined) return;
+      setActiveIndex(targetIndex);
+      startAdaptiveTravel(targetIndex, 'warp', 'push');
     };
     window.addEventListener(JOURNEY_DESTINATION_WARP_EVENT, warpToDestination);
     return () => window.removeEventListener(JOURNEY_DESTINATION_WARP_EVENT, warpToDestination);
-  }, [activeIndex]);
+  }, []);
+
+  // Direkte Hash-Links sowie Browser-Zurück/Vorwärts werden erst hier auf
+  // das echte responsive Ziel aufgelöst. Dadurch scrollt beispielsweise
+  // #journey-references auf Mobile zur mobilen Referenzstation und nicht zum
+  // unsichtbaren Desktop-Anker mit demselben Kapitel-Namen.
+  useEffect(() => {
+    const previousScrollRestoration = window.history.scrollRestoration;
+    window.history.scrollRestoration = 'manual';
+
+    const navigateFromHistory = () => {
+      window.cancelAnimationFrame(historyNavigationFrameRef.current);
+      historyNavigationFrameRef.current = window.requestAnimationFrame(() => {
+        const destination = getJourneyDestinationFromHash(window.location.hash);
+        initialHistoryResolvedRef.current = true;
+        if (!destination) {
+          writeJourneyHistory(0, 'replace');
+          return;
+        }
+        const targetIndex = STATION_INDEX.get(destination);
+        if (targetIndex === undefined) return;
+        const canonicalHash = JOURNEY_DESTINATION_HASH[destination];
+        if (window.location.hash !== canonicalHash) {
+          window.history.replaceState(
+            { ...(window.history.state ?? {}), journeyDestination: destination },
+            '',
+            canonicalHash,
+          );
+        }
+        setMobileMenuOpen(false);
+        setActiveIndex(targetIndex);
+        startAdaptiveTravel(targetIndex, 'warp', 'none');
+      });
+    };
+
+    const initialTimer = window.setTimeout(navigateFromHistory, 80);
+    window.addEventListener('popstate', navigateFromHistory);
+    window.addEventListener('hashchange', navigateFromHistory);
+    return () => {
+      window.clearTimeout(initialTimer);
+      window.cancelAnimationFrame(historyNavigationFrameRef.current);
+      window.removeEventListener('popstate', navigateFromHistory);
+      window.removeEventListener('hashchange', navigateFromHistory);
+      window.history.scrollRestoration = previousScrollRestoration;
+    };
+  }, []);
 
   return (
     <>

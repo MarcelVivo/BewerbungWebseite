@@ -281,7 +281,7 @@ export default function PortfolioDetailContent({ slug }: { slug: string }) {
           <h2 className="mt-4 text-2xl sm:text-4xl font-bold text-white tracking-[-0.035em]">{pl.ctaTitle}</h2>
           <p className="mt-4 max-w-2xl mx-auto text-[#a89880] leading-relaxed">{pl.ctaText}</p>
           <Link
-            href="/?lead=project"
+            href="/?lead=project#journey-contact"
             className="mt-7 inline-flex items-center gap-2 rounded-full px-6 py-3 font-bold text-[#07090b] transition-transform hover:-translate-y-0.5"
             style={{ background: project.color }}
           >

@@ -20,6 +20,8 @@ import { T } from '../lib/translations';
 import { HELIX_STEP, computeCameraTravel, helixAngleForWorldIndex, helixPositionForWorldIndex } from './lib/helixGeometry';
 import { getEffectiveViewport, REF_WIDTH, REF_HEIGHT } from './lib/viewport';
 import {
+  getJourneyHref,
+  navigateToJourneyDestination,
   OPEN_LEAD_FORM_EVENT,
   openJourneyLeadForm,
   scrollToJourneyDestination,
@@ -2947,9 +2949,13 @@ export default function HomePage() {
                   <ChevronRight size={16} strokeWidth={2.2} aria-hidden="true" />
                 </button>
                 <a
-                  href="#solution-spiral"
+                  href={getJourneyHref('solutions')}
                   className={`group flex flex-col items-center gap-1 text-white transition-colors hover:text-white ${chakraPetch.className}`}
                   aria-label={lang === 'de' ? 'Nach unten scrollen' : 'Scroll down'}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    navigateToJourneyDestination('solutions');
+                  }}
                 >
                   <span className="hero-scroll-label text-xs font-bold tracking-[0.22em]">{lang === 'de' ? 'SCROLLEN' : 'SCROLL'}</span>
                   <ChevronDown size={28} strokeWidth={1.8} className="hero-scroll-chevron transition-transform duration-300 group-hover:translate-y-1" aria-hidden="true" />
