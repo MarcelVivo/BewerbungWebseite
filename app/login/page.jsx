@@ -1,12 +1,14 @@
 "use client";
+
 import { useState } from 'react';
-import { Eye, EyeOff, User } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail, ShieldCheck } from 'lucide-react';
 
 export default function LoginPage() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   function getSafeDestination() {
     const requested = new URLSearchParams(window.location.search).get('next');
@@ -14,75 +16,124 @@ export default function LoginPage() {
     return '/bewerbungsprofil';
   }
 
-  async function onSubmit(e) {
-    e.preventDefault();
-    setError("");
+  async function onSubmit(event) {
+    event.preventDefault();
+    setError('');
+    setSubmitting(true);
+
     try {
-      const res = await fetch('/api/login', {
+      const response = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
-      if (!res.ok) throw new Error(await res.text());
+      if (!response.ok) throw new Error(await response.text());
       window.location.assign(getSafeDestination());
-    } catch (err) {
-      setError('Ungültige Anmeldedaten');
+    } catch {
+      setError('Benutzername oder Passwort ist nicht korrekt.');
+      setSubmitting(false);
     }
   }
 
-  const inputCls = 'w-full rounded-lg bg-[#1c1912] border border-[#2d2820] focus:border-[#c9a84c] focus:ring-1 focus:ring-[#c9a84c] outline-none px-3 py-2 text-[#f4edd8] placeholder-[#7a6d5a] text-sm transition-colors';
-
   return (
-    <main className="min-h-screen flex items-center justify-center p-4 bg-[#0c0a06]">
-      <form onSubmit={onSubmit} className="border border-[#2d2820] bg-[#1c1912] shadow-xl rounded-2xl p-8 w-full max-w-md space-y-4">
-        <div className="flex flex-col items-center text-center space-y-3">
-          <div className="w-20 h-20 rounded-full border-2 border-[#c9a84c]/40 bg-[#c9a84c]/10 flex items-center justify-center">
-            <User size={40} className="text-[#c9a84c]" />
-          </div>
-          <div className="text-lg font-semibold text-[#f4edd8]">Marcel Spahr</div>
-          <div className="text-sm text-[#a89880]">Herzlich willkommen</div>
-        </div>
-        <div className="space-y-1 text-center">
-          <div className="text-base font-semibold text-[#f4edd8]">Geschützter Bereich</div>
-          <div className="text-sm text-[#a89880]">Bitte mit den Logindaten anmelden, um Lebenslauf, Diplome und Projektdokumente einzusehen.</div>
-        </div>
-        <div className="space-y-3">
-          <label className="block text-sm font-medium text-[#d4c4a8]">Benutzername</label>
-          <input className={inputCls} value={username} onChange={(e) => setUsername(e.target.value)} required />
-          <label className="block text-sm font-medium text-[#d4c4a8]">Passwort</label>
-          <div className="relative">
-            <input
-              type={showPassword ? 'text' : 'password'}
-              className={`${inputCls} pr-11`}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
-              required
+    <main className="recruiter-login-page">
+      <div className="recruiter-login-aurora" aria-hidden="true" />
+      <section className="recruiter-login-shell" aria-labelledby="recruiter-login-title">
+        <header className="recruiter-login-heading">
+          <p>VERTRAULICH · PERSÖNLICH · DIREKT</p>
+          <h1 id="recruiter-login-title">RECRUITER-ZUGANG</h1>
+        </header>
+
+        <form onSubmit={onSubmit} className="recruiter-login-card">
+          <div className="recruiter-login-portrait">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/assets/MarcelSpahrHeader.jpg"
+              alt="Marcel Spahr in einem modernen Arbeits- und Projektraum"
             />
-            <button
-              type="button"
-              onClick={() => setShowPassword((visible) => !visible)}
-              aria-label={showPassword ? 'Passwort ausblenden' : 'Passwort anzeigen'}
-              aria-pressed={showPassword}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7a6d5a] transition-colors hover:text-[#c9a84c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c9a84c] rounded"
-            >
-              {showPassword ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
-            </button>
+            <div className="recruiter-login-portrait-shade" aria-hidden="true" />
+            <div className="recruiter-login-quote">
+              <blockquote>
+                „Ich verbinde Empathie, Strategie und Technologie – zu digitalen Lösungen,
+                die im Alltag wirken und mit Unternehmen wachsen.“
+              </blockquote>
+            </div>
+            <div className="recruiter-login-signature" aria-label="Marcel Spahr">
+              <div className="studio-web-signature is-writing" aria-hidden="true">
+                <span className="studio-signature-ink studio-signature-ink--shadow" />
+                <span className="studio-signature-ink" />
+                <span className="studio-signature-pen" />
+              </div>
+            </div>
           </div>
-        </div>
-        {error && <div className="text-[#a6425c] text-sm bg-[#a6425c]/10 rounded-lg px-3 py-2">{error}</div>}
-        <button
-          className="w-full rounded-lg bg-[#c9a84c] hover:bg-[#b8943a] text-[#0c0a06] py-3 font-bold shadow-lg shadow-[#c9a84c]/20 transition-all"
-          type="submit"
-        >
-          Einloggen
-        </button>
-        <div className="text-xs text-[#7a6d5a] text-center">
-          Falls nicht bekannt, können Zugangsdaten unter{' '}
-          <a className="underline text-[#c9a84c]" href="mailto:kontakt@marcelspahr.ch">kontakt@marcelspahr.ch</a>{' '}
-          angefordert werden.
-        </div>
-      </form>
+
+          <div className="recruiter-login-form-panel">
+            <div className="recruiter-login-intro">
+              <div className="recruiter-login-lock" aria-hidden="true">
+                <ShieldCheck size={22} strokeWidth={1.7} />
+              </div>
+              <div>
+                <p>BEWERBUNGSPROFIL · MARCEL SPAHR</p>
+                <h2>Willkommen im geschützten Bereich.</h2>
+                <span>Lebenslauf, Diplome, Arbeitszeugnisse und Projektdokumente – persönlich für ausgewählte Empfänger bereitgestellt.</span>
+              </div>
+            </div>
+
+            <div className="recruiter-login-fields">
+              <label>
+                <span>Benutzername</span>
+                <input
+                  name="username"
+                  type="text"
+                  value={username}
+                  onChange={(event) => setUsername(event.target.value)}
+                  autoComplete="username"
+                  placeholder="Admin"
+                  required
+                />
+              </label>
+              <label>
+                <span>Passwort</span>
+                <span className="recruiter-login-password">
+                  <input
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    autoComplete="current-password"
+                    placeholder="Passwort eingeben"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((visible) => !visible)}
+                    aria-label={showPassword ? 'Passwort ausblenden' : 'Passwort anzeigen'}
+                    aria-pressed={showPassword}
+                  >
+                    {showPassword ? <EyeOff size={19} aria-hidden="true" /> : <Eye size={19} aria-hidden="true" />}
+                  </button>
+                </span>
+              </label>
+            </div>
+
+            {error && <div className="recruiter-login-error" role="alert">{error}</div>}
+
+            <div className="recruiter-login-actions">
+              <button type="submit" disabled={submitting}>
+                <LockKeyhole size={18} aria-hidden="true" />
+                <span>{submitting ? 'Zugang wird geprüft …' : 'Bewerbungsprofil öffnen'}</span>
+                <ArrowRight size={18} aria-hidden="true" />
+              </button>
+              <p>
+                Keine Zugangsdaten?{' '}
+                <a href="mailto:kontakt@marcelspahr.ch?subject=Zugang%20zum%20Bewerbungsprofil">
+                  <Mail size={14} aria-hidden="true" /> Zugang anfragen
+                </a>
+              </p>
+            </div>
+          </div>
+        </form>
+      </section>
     </main>
   );
 }

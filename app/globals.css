@@ -9170,3 +9170,472 @@ body.journey-warp-active .mobile-project-cta {
   -webkit-user-select: text;
   user-select: text;
 }
+
+/* ── Recruiter-Login · Digitalpartner-Komposition ─────────────────────
+   Zitat und tiefster Startpunkt des Signatur-M teilen sich in der
+   öffentlichen Profilkarte und im Login dieselbe optische Grundlinie. */
+.studio-profile-header-copy {
+  top: auto;
+  bottom: 3.5%;
+}
+
+.recruiter-login-page {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  min-height: 100svh;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: clamp(2.25rem, 5vw, 5rem) clamp(1rem, 3vw, 2.5rem);
+  color: #f4edd8;
+  background:
+    radial-gradient(circle at 15% 12%, rgba(77, 127, 191, 0.2), transparent 26%),
+    radial-gradient(circle at 86% 82%, rgba(166, 66, 92, 0.12), transparent 27%),
+    radial-gradient(circle at 54% 38%, rgba(200, 154, 61, 0.09), transparent 34%),
+    #030403;
+}
+
+.recruiter-login-page::before,
+.recruiter-login-page::after {
+  position: absolute;
+  z-index: -2;
+  width: min(48rem, 72vw);
+  height: min(48rem, 72vw);
+  border-radius: 50%;
+  content: '';
+  opacity: 0.3;
+  filter: blur(90px);
+  pointer-events: none;
+}
+
+.recruiter-login-page::before {
+  top: -34rem;
+  left: -20rem;
+  background: rgba(77, 127, 191, 0.22);
+}
+
+.recruiter-login-page::after {
+  right: -24rem;
+  bottom: -34rem;
+  background: rgba(200, 154, 61, 0.18);
+}
+
+.recruiter-login-aurora {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.72;
+  background-image:
+    radial-gradient(circle at 7% 18%, rgba(244, 206, 107, 0.9) 0 1px, transparent 2px),
+    radial-gradient(circle at 22% 72%, rgba(142, 190, 242, 0.82) 0 1px, transparent 2px),
+    radial-gradient(circle at 61% 9%, rgba(217, 120, 138, 0.82) 0 1px, transparent 2px),
+    radial-gradient(circle at 86% 30%, rgba(244, 206, 107, 0.72) 0 1px, transparent 2px),
+    radial-gradient(circle at 74% 83%, rgba(142, 190, 242, 0.72) 0 1px, transparent 2px);
+  background-size: 19rem 19rem, 23rem 23rem, 27rem 27rem, 31rem 31rem, 37rem 37rem;
+  mask-image: linear-gradient(180deg, #000, rgba(0,0,0,.42) 70%, transparent);
+  pointer-events: none;
+}
+
+.recruiter-login-shell {
+  width: min(100%, 70rem);
+  min-width: 0;
+}
+
+.recruiter-login-heading {
+  margin-bottom: clamp(1.1rem, 2.2vw, 1.8rem);
+  text-align: center;
+}
+
+.recruiter-login-heading p {
+  margin: 0 0 0.45rem;
+  color: rgba(213, 181, 100, 0.82);
+  font-size: clamp(0.62rem, 0.85vw, 0.76rem);
+  font-weight: 600;
+  letter-spacing: 0.24em;
+}
+
+.recruiter-login-heading h1 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(1.8rem, 4vw, 3.25rem);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  text-shadow: 0 0 28px rgba(255, 255, 255, 0.12);
+}
+
+.recruiter-login-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(231, 197, 106, 0.44);
+  border-radius: clamp(1rem, 1.7vw, 1.4rem);
+  background:
+    radial-gradient(circle at 84% 5%, rgba(244, 206, 107, 0.11), transparent 27%),
+    linear-gradient(145deg, rgba(28, 20, 7, 0.985), rgba(9, 8, 5, 0.995) 62%, #030403);
+  box-shadow:
+    0 38px 100px rgba(0, 0, 0, 0.7),
+    0 0 46px rgba(193, 143, 42, 0.08),
+    inset 0 1px rgba(255, 239, 190, 0.14);
+}
+
+.recruiter-login-portrait {
+  --recruiter-signature-baseline: 3.5%;
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  aspect-ratio: 1672 / 720;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(231, 197, 106, 0.38);
+}
+
+.recruiter-login-portrait > img {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 19%;
+  filter: sepia(0.1) saturate(0.83) contrast(1.08) brightness(0.73);
+}
+
+.recruiter-login-portrait-shade {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(90deg, rgba(1, 7, 5, 0.2), transparent 18%, transparent 62%, rgba(1, 7, 5, 0.7)),
+    linear-gradient(180deg, rgba(2, 10, 7, 0.08), transparent 48%, rgba(2, 10, 7, 0.58) 82%, rgba(2, 9, 6, 0.92)),
+    linear-gradient(115deg, rgba(255, 255, 255, 0.05), transparent 28%);
+}
+
+.recruiter-login-quote {
+  position: absolute;
+  right: 5%;
+  bottom: var(--recruiter-signature-baseline);
+  width: 35%;
+  padding-left: clamp(0.75rem, 1.4vw, 1.2rem);
+  border-left: 1px solid rgba(214, 183, 105, 0.6);
+}
+
+.recruiter-login-quote blockquote {
+  margin: 0;
+  color: rgba(247, 226, 169, 0.88);
+  font-family: 'Iowan Old Style', 'Baskerville', 'Palatino Linotype', Georgia, serif;
+  font-size: clamp(0.86rem, 1.35vw, 1.18rem);
+  font-style: italic;
+  letter-spacing: 0.018em;
+  line-height: 1.58;
+  text-wrap: balance;
+  text-shadow: 0 3px 22px rgba(0, 0, 0, 0.98);
+}
+
+.recruiter-login-signature {
+  position: absolute;
+  bottom: 3%;
+  left: 20.5%;
+  width: 29%;
+}
+
+.recruiter-login-signature .studio-web-signature {
+  width: 100%;
+  margin: 0;
+}
+
+.recruiter-login-form-panel {
+  display: grid;
+  min-width: 0;
+  gap: clamp(1.1rem, 2vw, 1.55rem);
+  padding: clamp(1.4rem, 3.1vw, 2.65rem);
+}
+
+.recruiter-login-intro {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.recruiter-login-lock {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  border: 1px solid rgba(231, 197, 106, 0.42);
+  border-radius: 50%;
+  color: #e7c56a;
+  background: rgba(200, 154, 61, 0.08);
+  box-shadow: inset 0 0 18px rgba(231, 197, 106, 0.05);
+}
+
+.recruiter-login-intro p {
+  margin: 0 0 0.35rem;
+  color: rgba(213, 181, 100, 0.88);
+  font-size: clamp(0.62rem, 0.82vw, 0.74rem);
+  font-weight: 600;
+  letter-spacing: 0.17em;
+}
+
+.recruiter-login-intro h2 {
+  margin: 0;
+  color: #f9e9b8;
+  font-size: clamp(1.28rem, 2.3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+}
+
+.recruiter-login-intro span {
+  display: block;
+  max-width: 52rem;
+  margin-top: 0.6rem;
+  color: rgba(214, 204, 181, 0.72);
+  font-size: clamp(0.8rem, 1.05vw, 0.95rem);
+  line-height: 1.55;
+}
+
+.recruiter-login-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(0.85rem, 1.6vw, 1.25rem);
+}
+
+.recruiter-login-fields label,
+.recruiter-login-fields input,
+.recruiter-login-password,
+.recruiter-login-actions {
+  min-width: 0;
+}
+
+.recruiter-login-fields label > span:first-child {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: rgba(244, 237, 216, 0.84);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.045em;
+}
+
+.recruiter-login-fields input {
+  width: 100%;
+  min-height: 3.35rem;
+  border: 1px solid rgba(231, 197, 106, 0.22);
+  border-radius: 0.8rem;
+  outline: none;
+  padding: 0.85rem 1rem;
+  color: #f8edce;
+  background: rgba(3, 5, 4, 0.68);
+  box-shadow: inset 0 1px 14px rgba(0, 0, 0, 0.3);
+  transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+.recruiter-login-fields input::placeholder {
+  color: rgba(168, 152, 128, 0.46);
+}
+
+.recruiter-login-fields input:focus {
+  border-color: rgba(231, 197, 106, 0.72);
+  background: rgba(8, 9, 6, 0.9);
+  box-shadow: 0 0 0 3px rgba(200, 154, 61, 0.11), inset 0 1px 14px rgba(0, 0, 0, 0.3);
+}
+
+.recruiter-login-password {
+  position: relative;
+  display: block;
+}
+
+.recruiter-login-password input {
+  padding-right: 3.25rem;
+}
+
+.recruiter-login-password button {
+  position: absolute;
+  top: 50%;
+  right: 0.95rem;
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border-radius: 50%;
+  color: rgba(212, 196, 168, 0.56);
+  transform: translateY(-50%);
+  transition: color 180ms ease, background 180ms ease;
+}
+
+.recruiter-login-password button:hover,
+.recruiter-login-password button:focus-visible {
+  color: #f2d983;
+  background: rgba(200, 154, 61, 0.1);
+  outline: none;
+}
+
+.recruiter-login-error {
+  border: 1px solid rgba(217, 120, 138, 0.42);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: #f3b0b9;
+  background: rgba(106, 38, 59, 0.22);
+  font-size: 0.8rem;
+}
+
+.recruiter-login-actions {
+  display: grid;
+  grid-template-columns: minmax(16rem, 0.72fr) minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: center;
+}
+
+.recruiter-login-actions > button {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.7rem;
+  align-items: center;
+  min-height: 3.5rem;
+  border: 1px solid rgba(255, 236, 170, 0.52);
+  border-radius: 999px;
+  padding: 0.8rem 1.25rem;
+  color: #090806;
+  background: linear-gradient(105deg, #f6e3a1, #d6a43b 52%, #9b6b15);
+  box-shadow: 0 12px 32px rgba(184, 134, 43, 0.22), inset 0 1px rgba(255,255,255,.54);
+  font-size: 0.9rem;
+  font-weight: 700;
+  transition: transform 180ms ease, filter 180ms ease, box-shadow 180ms ease;
+}
+
+.recruiter-login-actions > button:hover:not(:disabled),
+.recruiter-login-actions > button:focus-visible:not(:disabled) {
+  outline: none;
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+  box-shadow: 0 16px 38px rgba(184, 134, 43, 0.3), 0 0 0 3px rgba(231, 197, 106, 0.1);
+}
+
+.recruiter-login-actions > button:disabled {
+  opacity: 0.68;
+}
+
+.recruiter-login-actions p {
+  margin: 0;
+  color: rgba(168, 152, 128, 0.64);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  text-align: right;
+}
+
+.recruiter-login-actions a {
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: center;
+  color: #e7c56a;
+  text-decoration: none;
+}
+
+.recruiter-login-actions a:hover,
+.recruiter-login-actions a:focus-visible {
+  color: #fff1b2;
+  text-decoration: underline;
+  text-underline-offset: 0.22em;
+}
+
+@media (max-width: 700px) {
+  .mobile-studio-profile .studio-profile-header-copy {
+    top: auto;
+    bottom: 3.5%;
+  }
+
+  .recruiter-login-page {
+    align-items: flex-start;
+    padding: max(1.5rem, env(safe-area-inset-top)) 0.75rem max(1.5rem, env(safe-area-inset-bottom));
+    overflow-y: auto;
+  }
+
+  .recruiter-login-heading {
+    margin-bottom: 1rem;
+  }
+
+  .recruiter-login-heading p {
+    font-size: 0.56rem;
+    letter-spacing: 0.18em;
+  }
+
+  .recruiter-login-heading h1 {
+    font-size: clamp(1.45rem, 7.3vw, 1.8rem);
+    white-space: nowrap;
+  }
+
+  .recruiter-login-card {
+    border-radius: 1rem;
+  }
+
+  .recruiter-login-portrait {
+    --recruiter-signature-baseline: 3.5%;
+    aspect-ratio: 1.15 / 1;
+  }
+
+  .recruiter-login-portrait > img {
+    object-position: 45% center;
+  }
+
+  .recruiter-login-quote {
+    right: 3.5%;
+    width: 42%;
+    padding-left: 0.55rem;
+  }
+
+  .recruiter-login-quote blockquote {
+    font-size: clamp(0.56rem, 2.65vw, 0.72rem);
+    line-height: 1.5;
+  }
+
+  .recruiter-login-signature {
+    bottom: 2.5%;
+    left: 15%;
+    width: 36%;
+  }
+
+  .recruiter-login-form-panel {
+    gap: 1.15rem;
+    padding: 1.15rem;
+  }
+
+  .recruiter-login-intro {
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+    gap: 0.75rem;
+  }
+
+  .recruiter-login-lock {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .recruiter-login-intro h2 {
+    font-size: 1.22rem;
+  }
+
+  .recruiter-login-fields,
+  .recruiter-login-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .recruiter-login-actions {
+    gap: 0.8rem;
+  }
+
+  .recruiter-login-actions p {
+    text-align: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .recruiter-login-signature .studio-signature-ink {
+    animation: none !important;
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+
+  .recruiter-login-signature .studio-signature-pen {
+    display: none;
+  }
+}
