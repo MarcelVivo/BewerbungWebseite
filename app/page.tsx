@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import JourneyNavigator from './JourneyNavigator';
 import BrainBackground from './BrainBackground';
+import MobileHeroBrainPoster from './MobileHeroBrainPoster';
 import ProjectInquiryPage from './anfrage/page';
 import KiCheckPage from './ki-check/page';
 import { EmbeddedForm } from './EmbeddedFormContext';
@@ -2874,13 +2875,19 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#0c0a06] text-[#f4edd8]">
+      <script
+        dangerouslySetInnerHTML={{
+          __html: "document.documentElement.style.setProperty('--hero-mobile-scale',String(Math.min(1,window.innerWidth/1512)))",
+        }}
+      />
+      <MobileHeroBrainPoster />
       <JourneyNavigator />
       <BrainBackground introTexts={introWorldTexts} serviceCards={serviceWorldCards} />
 
       {/* ── Hero ── */}
       <section id="journey-start" className="home-hero relative z-10 min-h-screen overflow-hidden">
         <div
-          className={heroScale !== 1 ? 'absolute left-0' : undefined}
+          className={`hero-reference-stage${heroScale !== 1 ? ' absolute left-0' : ''}`}
           style={heroScale !== 1 ? {
             top: 0,
             width: `${REF_WIDTH}px`,

@@ -8865,6 +8865,72 @@ body.journey-warp-active .mobile-project-cta {
   }
 }
 
+/* ── Hero ohne Mobile-Startsprung ───────────────────────────────────────
+   Die Referenzbühne erhält ihre mobile Skalierung bereits beim Parsen des
+   HTML-Dokuments. Sie wartet damit nicht mehr auf React-Hydration und kann
+   auf langsamen Geräten nie für einen Frame in 1512 px Breite erscheinen. */
+@media (max-width: 899px) {
+  .home-hero > .hero-reference-stage {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1512px;
+    height: 826px;
+    transform: scale(var(--hero-mobile-scale, 0.258));
+    transform-origin: top left;
+  }
+}
+
+/* Sofort sichtbare Mobile-Grundszene aus denselben Brain-Walk-Daten wie
+   WebGL. Der Canvas folgt im DOM und deckt dieses Poster mit seinem ersten
+   opaken Frame automatisch ab. */
+.mobile-hero-brain-poster {
+  display: none;
+}
+
+@media (max-width: 699px) {
+  .mobile-hero-brain-poster {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    display: block;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 18% 22%, rgba(168, 66, 92, 0.09), transparent 17%),
+      radial-gradient(circle at 82% 24%, rgba(77, 127, 191, 0.1), transparent 18%),
+      radial-gradient(circle at 50% 37%, rgba(200, 154, 61, 0.12), transparent 27%),
+      #000;
+    pointer-events: none;
+  }
+
+  .mobile-hero-brain-poster svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .mobile-poster-brain {
+    fill: none;
+    stroke-width: 0.007;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .mobile-poster-brain--gold {
+    stroke: rgba(231, 190, 83, 0.78);
+    filter: url(#mobile-poster-gold-glow);
+  }
+
+  .mobile-poster-brain--red {
+    stroke: rgba(207, 68, 112, 0.6);
+  }
+
+  .mobile-poster-brain--blue {
+    stroke: rgba(80, 153, 229, 0.64);
+  }
+}
+
 @media (max-width: 380px) {
   .spiral-mobile-services,
   .mobile-value-impact .value-diagram-grid,
