@@ -17,7 +17,7 @@ import { EmbeddedForm } from './EmbeddedFormContext';
 import { buildFlapWord, setFlapWordMode, type FlapLetter } from './lib/splitFlap';
 import { useLanguage } from './LanguageContext';
 import { T } from '../lib/translations';
-import { HELIX_STEP, computeCameraTravel, helixAngleForWorldIndex, helixPositionForWorldIndex } from './lib/helixGeometry';
+import { HELIX_STEP, TEXT_START_Y, computeCameraTravel, helixAngleForWorldIndex, helixPositionForWorldIndex } from './lib/helixGeometry';
 import { getEffectiveViewport, REF_WIDTH, REF_HEIGHT } from './lib/viewport';
 import {
   getJourneyHref,
@@ -1868,6 +1868,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       document.fonts.ready.then(alignAll);
     }
     window.addEventListener('resize', alignAll);
+    const mobileSolutionsStage = document.getElementById('mobile-solutions');
 
     let rafId = 0;
     const frame = () => {
@@ -1901,6 +1902,14 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       const tanHalfFovY = Math.tan((cam.fov * Math.PI) / 360);
       const vw = window.innerWidth;
       const vh = window.innerHeight;
+      const mobileIntroIndex = vw <= 699
+        ? Math.round((TEXT_START_Y - cam.cameraLookY) / HELIX_STEP)
+        : -1;
+      const mobileSolutionsTop = vw <= 699
+        ? mobileSolutionsStage?.getBoundingClientRect().top
+        : undefined;
+      const mobileCardsEntered = typeof mobileSolutionsTop === 'number'
+        && mobileSolutionsTop <= vh * 0.9;
 
       // Beim Verlassen der Kartenstation bleibt die Kamera auf der Höhe der
       // letzten Intro-Station. Ohne einen Ausfahr-Fade bliebe deshalb "Deine
@@ -1911,7 +1920,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       const introExitRaw = Math.max(0, Math.min(1, (exitProgress - 0.01) / 0.06));
       const introExitOpacity = 1 - introExitRaw * introExitRaw * (3 - 2 * introExitRaw);
 
-      stations.forEach((s) => {
+      stations.forEach((s, stationIndex) => {
         if (!s.settled && scrollIdle) {
           s.settled = true;
           setFlapWordMode(s.smallLetters, 'settle', reduced);
@@ -1932,7 +1941,16 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
 
         const distance = Math.abs(cam.cameraLookY - s.stationPos.y);
         const visibility = Math.max(0, Math.min(1, 1 - distance / fadeWindow));
-        const inWindow = viewZ > 0.001 && visibility > 0 && introExitOpacity > 0;
+        // Auf schmalen Viewports darf immer nur die räumlich nächste
+        // Intro-Station sichtbar sein. So verschwindet "Deine Lösung"
+        // bereits vor dem Stopp der ersten Umsetzungskarte und kann deren
+        // Kapitelüberschrift nicht mehr überlagern.
+        const isNearestMobileStation = vw > 699 || stationIndex === mobileIntroIndex;
+        const inWindow = viewZ > 0.001
+          && visibility > 0
+          && introExitOpacity > 0
+          && isNearestMobileStation
+          && !mobileCardsEntered;
 
         if (!inWindow) {
           s.world.style.opacity = '0';
@@ -1945,7 +1963,7 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
 
         const ndcX = viewX / (viewZ * tanHalfFovY * cam.aspect);
         const ndcY = viewY / (viewZ * tanHalfFovY);
-        const screenX = (ndcX * 0.5 + 0.5) * vw;
+        const projectedX = (ndcX * 0.5 + 0.5) * vw;
         const projectedY = 1 - (ndcY * 0.5 + 0.5);
         // iPhone: in den tatsächlich sichtbaren Bereich unter der Safe Area
         // projizieren, damit grosse Flap-Texte oben nicht am
@@ -1953,7 +1971,27 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
         const mobileTopInset = vw <= 699 ? Math.max(48, vh * 0.07) : 0;
         const mobileBottomInset = vw <= 699 ? Math.max(24, vh * 0.04) : 0;
         const screenY = mobileTopInset + projectedY * (vh - mobileTopInset - mobileBottomInset);
-        const scale = Math.max(0.4, Math.min(1.6, s.referenceViewZ / viewZ));
+        let scale = Math.max(0.4, Math.min(1.6, s.referenceViewZ / viewZ));
+        let screenX = projectedX;
+
+        // Die seitliche Helix-Projektion darf auf Mobile erhalten bleiben,
+        // aber nie Buchstaben aus dem sichtbaren Bereich schieben. Lange
+        // Wörter werden zuerst auf die sichere Viewportbreite skaliert und
+        // danach mitsamt ihrem echten gerenderten Halbmesser eingeklemmt.
+        if (vw <= 699) {
+          const composition = s.world.firstElementChild as HTMLElement | null;
+          const naturalWidth = composition?.offsetWidth || 0;
+          const sideInset = 16;
+          const availableWidth = Math.max(1, vw - sideInset * 2);
+          if (naturalWidth > 0) {
+            scale = Math.min(scale, availableWidth / naturalWidth);
+            const renderedHalfWidth = Math.min(availableWidth / 2, (naturalWidth * scale) / 2);
+            screenX = Math.max(
+              sideInset + renderedHalfWidth,
+              Math.min(vw - sideInset - renderedHalfWidth, projectedX),
+            );
+          }
+        }
 
         // Im "settled"-Zustand (Scroll steht still) immer frontal (0°)
         // anzeigen: der Foreshortening-Yaw hängt vom exakten Kamerawinkel
