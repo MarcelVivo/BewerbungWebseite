@@ -267,6 +267,21 @@ export default function KiCheckPage() {
   const [error, setError]     = useState<string | null>(null);
   const startedRef = useRef(false);
   const openedRef = useRef(false);
+  const nameInputRef = useRef<HTMLInputElement | null>(null);
+  const emailInputRef = useRef<HTMLInputElement | null>(null);
+  const companyInputRef = useRef<HTMLInputElement | null>(null);
+  const consentInputRef = useRef<HTMLInputElement | null>(null);
+
+  function showFormError(
+    message: string,
+    target: { readonly current: HTMLElement | null },
+  ) {
+    setError(message);
+    window.requestAnimationFrame(() => {
+      target.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      target.current?.focus({ preventScroll: true });
+    });
+  }
 
   function trackStep(nextStep: number) {
     if (!startedRef.current) {
@@ -307,23 +322,23 @@ export default function KiCheckPage() {
     e.preventDefault();
     setError(null);
     if (!form.name.trim()) {
-      setError(copy.requiredName);
+      showFormError(copy.requiredName, nameInputRef);
       return;
     }
     if (!form.email.trim()) {
-      setError(copy.requiredEmail);
+      showFormError(copy.requiredEmail, emailInputRef);
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
-      setError(copy.invalidEmail);
+      showFormError(copy.invalidEmail, emailInputRef);
       return;
     }
     if (!form.firma.trim()) {
-      setError(copy.requiredCompany);
+      showFormError(copy.requiredCompany, companyInputRef);
       return;
     }
     if (!consent) {
-      setError(copy.requiredConsent);
+      showFormError(copy.requiredConsent, consentInputRef);
       return;
     }
     setSubmitting(true);
@@ -482,18 +497,21 @@ export default function KiCheckPage() {
             </p>
             <form onSubmit={handleSubmit} className="ki-check-contact-form space-y-4" noValidate>
               <input
+                ref={nameInputRef}
                 required type="text" placeholder={copy.name}
                 value={form.name}
                 onChange={e => { setForm(f => ({ ...f, name: e.target.value })); setError(null); }}
                 className={INPUT}
               />
               <input
+                ref={emailInputRef}
                 required type="email" placeholder="name@firma.ch"
                 value={form.email}
                 onChange={e => { setForm(f => ({ ...f, email: e.target.value })); setError(null); }}
                 className={INPUT}
               />
               <input
+                ref={companyInputRef}
                 required type="text" placeholder={copy.company}
                 value={form.firma}
                 onChange={e => { setForm(f => ({ ...f, firma: e.target.value })); setError(null); }}
@@ -507,6 +525,7 @@ export default function KiCheckPage() {
               />
               <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#2d2820] bg-[#100d09] px-4 py-3 text-xs leading-relaxed text-[#a89880]">
                 <input
+                  ref={consentInputRef}
                   type="checkbox"
                   checked={consent}
                   onChange={e => { setConsent(e.target.checked); setError(null); }}
@@ -518,7 +537,7 @@ export default function KiCheckPage() {
                 </span>
               </label>
               {error && (
-                <p className="text-sm text-[#d9788a] bg-[#a6425c]/10 rounded-xl px-4 py-3">{error}</p>
+                <p role="alert" aria-live="assertive" className="text-sm text-[#d9788a] bg-[#a6425c]/10 rounded-xl px-4 py-3">{error}</p>
               )}
               <button
                 type="submit"

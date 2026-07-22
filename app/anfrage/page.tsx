@@ -226,6 +226,7 @@ export default function AnfragePage() {
   const [error, setError]         = useState('');
   const startedRef = useRef(false);
   const openedRef = useRef(false);
+  const consentRef = useRef<HTMLInputElement | null>(null);
 
   function markStarted() {
     if (startedRef.current) return;
@@ -290,6 +291,10 @@ export default function AnfragePage() {
     setError('');
     if (!form.consent) {
       setError(copy.requiredConsent);
+      window.requestAnimationFrame(() => {
+        consentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        consentRef.current?.focus({ preventScroll: true });
+      });
       return;
     }
     setSubmitting(true);
@@ -691,6 +696,7 @@ export default function AnfragePage() {
 
               <label className="inquiry-consent">
                 <input
+                  ref={consentRef}
                   type="checkbox"
                   checked={form.consent}
                   onChange={e => { set('consent', e.target.checked); setError(''); }}
@@ -702,7 +708,7 @@ export default function AnfragePage() {
               </label>
 
               {error && (
-                <p className="text-sm text-red-400 bg-red-400/10 rounded-lg px-4 py-3">{error}</p>
+                <p role="alert" aria-live="assertive" className="text-sm text-red-400 bg-red-400/10 rounded-lg px-4 py-3">{error}</p>
               )}
             </div>
           )}
@@ -730,6 +736,7 @@ export default function AnfragePage() {
             </button>
           ) : (
             <button
+              type="button"
               onClick={handleSubmit}
               disabled={submitting}
               className={goldBtn}

@@ -9112,3 +9112,36 @@ body.journey-warp-active .mobile-project-cta {
     margin: 1.5rem 0 0 !important;
   }
 }
+
+/* ── Formular-Submit: alle Pflichtfelder und Rückmeldungen erreichbar ──
+   Die Abschlusskarte behält ihre feste Aussenhöhe. Der Inhalt darf jedoch
+   innerhalb der Karte scrollen, damit Datenschutz-Zustimmung, Fehlermeldung
+   und Absende-Button bei jeder Viewport-Höhe erreichbar bleiben. */
+.project-cta-stage {
+  overflow-x: hidden;
+  overflow-y: auto;
+  scroll-padding-block: 1rem;
+  scrollbar-gutter: stable;
+}
+
+.project-cta-embedded .inquiry-page--embedded .inquiry-card {
+  overflow-x: hidden;
+  overflow-y: auto;
+  scroll-padding-block: 0.75rem;
+  scrollbar-gutter: stable;
+}
+
+.project-cta-embedded .ki-check-contact-shell {
+  justify-content: flex-start;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scroll-padding-block: 0.75rem;
+  scrollbar-gutter: stable;
+}
+
+.project-consent:has(input:focus-visible),
+.inquiry-consent:has(input:focus-visible),
+.ki-check-contact-form > label:has(input:focus-visible) {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}

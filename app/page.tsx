@@ -1114,6 +1114,21 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
   const consultationStartedRef = useRef(false);
+  const consultationNameRef = useRef<HTMLInputElement | null>(null);
+  const consultationEmailRef = useRef<HTMLInputElement | null>(null);
+  const consultationMessageRef = useRef<HTMLTextAreaElement | null>(null);
+  const consultationConsentRef = useRef<HTMLInputElement | null>(null);
+
+  function showConsultationError(
+    message: string,
+    target: { readonly current: HTMLElement | null },
+  ) {
+    setError(message);
+    window.requestAnimationFrame(() => {
+      target.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      target.current?.focus({ preventScroll: true });
+    });
+  }
 
   function selectForm(form: LeadFormId, ctaId: string) {
     setActiveForm(form);
@@ -1211,23 +1226,23 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
     event.preventDefault();
     setError('');
     if (!name.trim()) {
-      setError(copy.requiredName);
+      showConsultationError(copy.requiredName, consultationNameRef);
       return;
     }
     if (!email.trim()) {
-      setError(copy.requiredEmail);
+      showConsultationError(copy.requiredEmail, consultationEmailRef);
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      setError(copy.invalidEmail);
+      showConsultationError(copy.invalidEmail, consultationEmailRef);
       return;
     }
     if (!message.trim()) {
-      setError(copy.requiredMessage);
+      showConsultationError(copy.requiredMessage, consultationMessageRef);
       return;
     }
     if (!consent) {
-      setError(copy.requiredConsent);
+      showConsultationError(copy.requiredConsent, consultationConsentRef);
       return;
     }
     setSubmitting(true);
@@ -1318,18 +1333,19 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
               <form className="project-consultation-form" onSubmit={handleSubmit} onFocusCapture={markConsultationStarted} noValidate>
                 <label>
                   <span>{copy.name}</span>
-                  <input value={name} onChange={(event) => { setName(event.target.value); setError(''); }} autoComplete="name" required />
+                  <input ref={consultationNameRef} value={name} onChange={(event) => { setName(event.target.value); setError(''); }} autoComplete="name" required />
                 </label>
                 <label>
                   <span>{copy.email}</span>
-                  <input type="email" value={email} onChange={(event) => { setEmail(event.target.value); setError(''); }} autoComplete="email" required />
+                  <input ref={consultationEmailRef} type="email" value={email} onChange={(event) => { setEmail(event.target.value); setError(''); }} autoComplete="email" required />
                 </label>
                 <label className="project-consultation-message">
                   <span>{copy.message}</span>
-                  <textarea value={message} onChange={(event) => { setMessage(event.target.value); setError(''); }} placeholder={copy.placeholder} rows={3} required />
+                  <textarea ref={consultationMessageRef} value={message} onChange={(event) => { setMessage(event.target.value); setError(''); }} placeholder={copy.placeholder} rows={3} required />
                 </label>
                 <label className="project-consent">
                   <input
+                    ref={consultationConsentRef}
                     type="checkbox"
                     checked={consent}
                     onChange={(event) => { setConsent(event.target.checked); setError(''); }}
@@ -1339,7 +1355,7 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
                     {copy.consentLead}<a href="/datenschutz" target="_blank" rel="noreferrer">{copy.privacyLink}</a>{copy.consentTail}
                   </span>
                 </label>
-                {error && <p className="project-consultation-error" role="alert">{error}</p>}
+                {error && <p className="project-consultation-error" role="alert" aria-live="assertive">{error}</p>}
                 <div className="project-consultation-actions">
                   <button type="submit" className="project-cta-button" disabled={submitting}>
                     <span>{submitting ? copy.sending : copy.send}</span>
