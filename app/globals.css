@@ -9773,3 +9773,60 @@ body.journey-warp-active .mobile-project-cta {
     display: none;
   }
 }
+
+/* ── Mobile Feinschliff: Projekt-Tabs & Digitalpartner-Fakten ─────────
+   Die drei Einstiegswege bleiben als grosse Auswahlkarten erhalten. Die
+   eigentliche Formular-Umschaltung darunter bildet eine kompakte Reihe. */
+@media (max-width: 699px) {
+  .mobile-project-cta .project-form-tabs {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0.4rem;
+  }
+
+  .mobile-project-cta .project-form-tabs button {
+    min-width: 0;
+    min-height: 3.75rem;
+    padding: 0.55rem 0.25rem;
+    border-radius: 0.8rem;
+  }
+
+  .mobile-project-cta .project-form-tabs button strong {
+    width: 100%;
+    font-size: clamp(0.58rem, 2.55vw, 0.7rem);
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+    text-align: center;
+  }
+
+  .mobile-project-cta .project-form-tabs button small {
+    display: none;
+  }
+
+  .mobile-studio-profile .studio-profile-content > .studio-profile-facts {
+    gap: 0.6rem;
+  }
+
+  .mobile-studio-profile .studio-profile-content > .studio-profile-facts .studio-profile-fact {
+    justify-content: flex-start;
+    min-width: 0;
+    min-height: clamp(8.6rem, 39vw, 10rem);
+    padding: clamp(0.8rem, 3.6vw, 1rem);
+  }
+
+  .mobile-studio-profile .studio-profile-content > .studio-profile-facts .studio-profile-fact strong {
+    font-size: clamp(0.72rem, 3vw, 0.82rem) !important;
+    line-height: 1.28;
+    letter-spacing: -0.015em;
+    text-wrap: pretty;
+  }
+
+  .mobile-studio-profile .studio-profile-content > .studio-profile-facts .studio-profile-fact span {
+    margin-top: 0.58rem;
+    font-size: clamp(0.66rem, 2.8vw, 0.76rem) !important;
+    line-height: 1.48 !important;
+    letter-spacing: -0.012em;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+    text-wrap: pretty;
+  }
+}
