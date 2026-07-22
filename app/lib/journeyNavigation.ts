@@ -110,7 +110,10 @@ export function openJourneyLeadForm(
   }
 
   if (options.navigate !== false && !isJourneyHome()) {
-    window.location.assign(`/?lead=${encodeURIComponent(form)}${JOURNEY_DESTINATION_HASH.contact}`);
+    // Der Query-Parameter öffnet das Formular nach der Hydration und löst den
+    // direkten Journey-Warp aus. Ein zusätzlicher Hash würde vorher das
+    // native Browser-Scrolling durch alle Zwischenstationen starten.
+    window.location.assign(`/?lead=${encodeURIComponent(form)}`);
     return;
   }
 

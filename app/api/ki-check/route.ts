@@ -259,7 +259,7 @@ export async function POST(req: Request) {
                 ohne Buzzwords.
               </p>
               <div style="text-align:center;margin:28px 0">
-                <a href="${PUBLIC_SITE_URL}/?lead=consultation#journey-contact" target="_blank" rel="noopener noreferrer"
+                <a href="${PUBLIC_SITE_URL}/?lead=consultation" target="_blank" rel="noopener noreferrer"
                    style="background:#c9a84c;color:#0c0a06;padding:14px 32px;border-radius:10px;text-decoration:none;font-size:15px;font-weight:700;display:inline-block">
                   Kostenloses Erstgespräch vereinbaren
                 </a>
