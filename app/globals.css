@@ -1004,7 +1004,7 @@ body.agency-is-loading {
   padding-bottom: clamp(7rem, 11vh, 10rem);
 }
 .agency-references .references-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: clamp(.8rem, 1.4vw, 1.3rem);
 }
 .agency-references .reference-card {
@@ -1244,11 +1244,11 @@ body.agency-is-loading {
 
 @media (min-width: 1100px) {
   .agency-value .value-diagram-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .agency-value .value-diagram {
-    aspect-ratio: 1 / 1;
+    aspect-ratio: auto;
   }
 }
 
