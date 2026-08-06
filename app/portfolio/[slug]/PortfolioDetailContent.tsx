@@ -132,7 +132,7 @@ export default function PortfolioDetailContent({ slug }: { slug: string }) {
             style={{ borderColor: `${project.color}33`, boxShadow: `0 30px 90px rgba(${project.colorRgb},0.12)` }}
           >
             <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/35 via-transparent to-white/[0.03] pointer-events-none" />
-            <Image src={project.image} alt={`${p.title} – Projektansicht`} fill sizes="(min-width: 1024px) 60vw, 100vw" className="object-cover object-top" />
+            <Image src={project.image} alt={`${p.title}. Projektansicht.`} fill sizes="(min-width: 1024px) 60vw, 100vw" className="object-cover object-top" />
           </div>
         </section>
 
@@ -248,7 +248,7 @@ export default function PortfolioDetailContent({ slug }: { slug: string }) {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="block relative aspect-[16/9] overflow-hidden bg-[#edf1f5]"
-                      aria-label={`${copy.title} – ${pl.enlarge}`}
+                      aria-label={`${copy.title}. ${pl.enlarge}`}
                     >
                       <Image
                         src={item.image}

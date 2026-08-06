@@ -277,7 +277,7 @@ export default function StatistikenPage() {
   if (loading) {
     return (
       <div className="p-6 flex items-center gap-3 text-slate-400">
-        <BarChart2 size={20} className="animate-pulse" /> Statistiken werden geladen…
+        <BarChart2 size={20} className="animate-pulse" /> Die Statistiken werden geladen.
       </div>
     );
   }
@@ -489,12 +489,12 @@ export default function StatistikenPage() {
           <div className="space-y-2">
             {stats.rechnungen.ueberfaellig > 0 && (
               <p className="text-orange-200/80 text-sm">
-                • {stats.rechnungen.ueberfaellig} überfällige Rechnung{stats.rechnungen.ueberfaellig > 1 ? 'n' : ''} — Mahnungen versenden
+                • {stats.rechnungen.ueberfaellig} überfällige Rechnung{stats.rechnungen.ueberfaellig > 1 ? 'n' : ''}. Mahnungen versenden.
               </p>
             )}
             {stats.anfragen.neu > 0 && (
               <p className="text-orange-200/80 text-sm">
-                • {stats.anfragen.neu} ungelesene Recruiter-Anfrage{stats.anfragen.neu > 1 ? 'n' : ''} — unter Bewerbungen prüfen
+                • {stats.anfragen.neu} ungelesene Recruiter-Anfrage{stats.anfragen.neu > 1 ? 'n' : ''}. Unter Bewerbungen prüfen.
               </p>
             )}
           </div>

@@ -11,7 +11,7 @@ import {
 // ── Data ──────────────────────────────────────────────────
 
 const SKILLS_TECH = [
-  { name: 'KI-Integration & Agenten',     level: 90 },
+  { name: 'KI Integration und Assistenten', level: 90 },
   { name: 'Next.js / React',              level: 80 },
   { name: 'Supabase / PostgreSQL',        level: 75 },
   { name: 'Python (Scripting / AI)',      level: 65 },
@@ -32,25 +32,25 @@ const EXPERIENCE = [
   {
     firma:     'Swisscom AG',
     rolle:     'Informatiker / Digitalisierung',
-    zeitraum:  '2022 – 2025',
+    zeitraum:  '2022 bis 2025',
     ort:       'Bern, Schweiz',
     punkte: [
-      'Mitarbeit bei der Digitalisierung interner Prozesse und Tools',
-      'Requirements Engineering für neue IT-Projekte',
-      'Enge Zusammenarbeit mit Entwicklungsteams im agilen Umfeld (SAFe)',
-      'Erstellung von Fachkonzepten, Spezifikationen und User Stories',
+      'Ich arbeitete an der Digitalisierung interner Prozesse und Werkzeuge mit.',
+      'Ich erhob Anforderungen für neue IT Projekte.',
+      'Ich arbeitete eng mit Entwicklungsteams im SAFe Umfeld zusammen.',
+      'Ich erstellte Fachkonzepte, Spezifikationen und User Stories.',
     ],
     zeugnis: '/assets/ArbeitszeugnisSwisscomMarcelSpahr2025.pdf',
   },
   {
     firma:     'Roth Malerei',
     rolle:     'Maler / Vorarbeiter',
-    zeitraum:  '2016 – 2022',
+    zeitraum:  '2016 bis 2022',
     ort:       'Region Bern',
     punkte: [
-      'Ausführung anspruchsvoller Malerarbeiten und Renovationen',
-      'Koordination von Kleinteams und Qualitätskontrolle',
-      'Kundenkommunikation und Projektabwicklung vor Ort',
+      'Ich führte anspruchsvolle Malerarbeiten und Renovationen aus.',
+      'Ich koordinierte kleine Teams und kontrollierte die Qualität.',
+      'Ich betreute Kunden und wickelte Projekte vor Ort ab.',
     ],
     zeugnis: '/assets/ArbeitszeugnisRothMalerei.pdf',
   },
@@ -59,22 +59,22 @@ const EXPERIENCE = [
 const EDUCATION = [
   {
     abschluss: 'Wirtschaftsinformatik (HF)',
-    schule:    'WISS – Schule für Wirtschaft, Informatik und Immobilien',
-    zeitraum:  '2022 – 2025',
-    detail:    'Schwerpunkte: Software Engineering, Business Analysis, Datenbankdesign, IT-Projektmanagement',
+    schule:    'WISS. Schule für Wirtschaft, Informatik und Immobilien.',
+    zeitraum:  '2022 bis 2025',
+    detail:    'Meine Schwerpunkte waren Software Engineering, Business Analysis, Datenbankdesign und IT Projektmanagement.',
   },
   {
     abschluss: 'Werbetechniker EFZ',
     schule:    'Berufsfachschule',
-    zeitraum:  '2013 – 2016',
-    detail:    'Grafik, Kommunikation, Digitalmedien, Drucktechnik',
+    zeitraum:  '2013 bis 2016',
+    detail:    'Ich lernte Grafik, Kommunikation, Digitalmedien und Drucktechnik.',
     zeugnis:   '/assets/FaehigkeitszeugnisWerbetechniker.pdf',
   },
   {
     abschluss: 'Maler EFZ',
     schule:    'Berufsfachschule',
-    zeitraum:  '2010 – 2013',
-    detail:    'Fachpraxis, Materialkunde, Kundenprojekte',
+    zeitraum:  '2010 bis 2013',
+    detail:    'Ich lernte Fachpraxis, Materialkunde und die Arbeit in Kundenprojekten.',
     zeugnis:   '/assets/FaehigkeitszeugnisMaler.pdf',
   },
 ];
@@ -91,42 +91,42 @@ const CERTS = [
 const PORTFOLIO = [
   {
     titel:       'Swiss COVID-19 Certificate App',
-    beschreibung:'Softwarearchitektur-Dokumentation für die offizielle Swiss COVID Zertifikats-App. Analyse der Systemkomponenten, Schnittstellen und Sicherheitsanforderungen.',
+    beschreibung:'Ich dokumentierte die Softwarearchitektur der offiziellen Swiss COVID Zertifikats App und untersuchte Komponenten, Schnittstellen und Sicherheitsanforderungen.',
     tags:        ['Software Architektur', 'Requirements', 'Sicherheit'],
     file:        '/assets/SWISS_COVID_CERT_APP_SoftwareArchitektur.pdf',
     emoji:       '🏥',
   },
   {
     titel:       'Software & Requirements Engineering',
-    beschreibung:'Abschlussarbeit mit vollständigen Anforderungsspezifikationen, Use Cases, Datenmodellen und Prozessdokumentation für ein reales IT-Projekt.',
+    beschreibung:'In dieser Abschlussarbeit erstellte ich Anforderungsspezifikationen, Use Cases, Datenmodelle und eine Prozessdokumentation für ein reales IT Projekt.',
     tags:        ['Requirements Engineering', 'UML', 'Analyse'],
     file:        '/assets/FinalArbeitSoftwareundRequirementsEngineering.pdf',
     emoji:       '📋',
   },
   {
-    titel:       'Digital Marketing – 90s Love Mobile',
-    beschreibung:'Projektarbeit im Digital Marketing: Konzeption und Umsetzung einer Mobile-Kampagne mit Social Media, Content-Strategie und KPI-Messung.',
+    titel:       'Digital Marketing für 90s Love Mobile',
+    beschreibung:'Für diese Projektarbeit plante und entwickelte ich eine mobile Kampagne mit Social Media, Inhalten und einer Auswertung der wichtigsten Kennzahlen.',
     tags:        ['Digital Marketing', 'Social Media', 'Analyse'],
     file:        '/assets/90sLoveMobileProjektarbeit_Digital Marketing-Final.pdf',
     emoji:       '📱',
   },
   {
-    titel:       "Olivia's Olivenpaste – Brand & Marketing",
-    beschreibung:'Branding und Marketingkonzept für ein Start-up-Lebensmittelprodukt: Markenentwicklung, Verpackungsdesign-Strategie und Absatzkonzept.',
+    titel:       "Marke und Marketing für Olivia's Olivenpaste",
+    beschreibung:'Ich entwickelte die Marke, das Konzept für die Verpackung und den geplanten Verkauf eines neuen Lebensmittelprodukts.',
     tags:        ['Branding', 'Marketing', 'Konzept'],
     file:        '/assets/OliviasOlivenpaste_MarcelSpahr.pdf',
     emoji:       '🫒',
   },
   {
     titel:       'Persönliches Führungshandbuch',
-    beschreibung:'Reflexion und Entwicklung des eigenen Führungsstils: Werte, Prinzipien und konkrete Führungsinstrumente für Teamarbeit und Projektleitung.',
+    beschreibung:'In diesem Dokument beschreibe ich meinen Führungsstil, meine Werte und konkrete Werkzeuge für Teamarbeit und Projektleitung.',
     tags:        ['Leadership', 'Selbstreflexion', 'Management'],
     file:        '/assets/Personliches_Fuhrungshandbuch_MarcelSpahr.pdf',
     emoji:       '🎯',
   },
   {
     titel:       'Transferbericht AILA',
-    beschreibung:'Transferbericht aus dem AI Leadership Accelerator: Anwendung von KI-Methoden im beruflichen Kontext und Lessons Learned.',
+    beschreibung:'In diesem Transferbericht halte ich fest, wie ich Methoden aus dem AI Leadership Accelerator im beruflichen Alltag angewendet habe und was ich daraus gelernt habe.',
     tags:        ['KI', 'Leadership', 'Transfer'],
     file:        '/assets/TransferberichtMarcelSpahrAILA.pdf',
     emoji:       '🤖',
@@ -272,7 +272,7 @@ export default function RecruiterPage() {
               <div className="space-y-2 text-sm">
                 {[
                   { label: 'Verfügbar ab',    value: 'Nach Vereinbarung' },
-                  { label: 'Arbeitspensum',   value: '80–100%' },
+                  { label: 'Arbeitspensum',   value: '80 bis 100 Prozent' },
                   { label: 'Arbeitsort',      value: 'Bern + Remote' },
                   { label: 'Sprachen',        value: 'Deutsch (C2), Englisch (A2+)' },
                 ].map(s => (
@@ -293,20 +293,13 @@ export default function RecruiterPage() {
           <Section id="profil" icon={Star} title="Über mich">
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
               <p className="text-slate-700 leading-relaxed mb-4">
-                Ich bin Wirtschaftsinformatiker (HF) mit Abschluss 2025 und bringe eine ungewöhnliche Kombination mit:
-                technisches IT-Know-how, unternehmerisches Denken und kreatives Designverständnis aus meiner
-                Ausbildung als Werbetechniker.
+                Ich bin Wirtschaftsinformatiker HF und verbinde technisches Wissen mit unternehmerischer Erfahrung. Durch meine Ausbildung als Werbetechniker bringe ich zusätzlich ein gutes Verständnis für Gestaltung und Kommunikation mit.
               </p>
               <p className="text-slate-700 leading-relaxed mb-4">
-                Mein Fokus liegt auf der praktischen Anwendung von KI-Technologien im Unternehmenskontext –
-                von der Prozessanalyse über die Auswahl geeigneter Tools bis zur konkreten Implementierung
-                von KI-Agenten und Automatisierungslösungen für Schweizer KMU.
+                Ich setze KI dort ein, wo sie im Unternehmen eine konkrete Aufgabe löst. Dafür analysiere ich zuerst den Ablauf, wähle danach ein passendes Werkzeug und begleite die Umsetzung bis zur nutzbaren Lösung.
               </p>
               <p className="text-slate-700 leading-relaxed">
-                Bei Swisscom konnte ich zuletzt Erfahrungen in der Digitalisierung, im Requirements Engineering
-                und in der agilen Projektarbeit (SAFe) sammeln. Ich suche jetzt eine Stelle, in der ich
-                dieses Wissen einsetzen und weiterentwickeln kann – idealerweise an der Schnittstelle
-                zwischen Business und Technologie.
+                Bei Swisscom sammelte ich Erfahrung in Digitalisierung, Requirements Engineering und agiler Projektarbeit mit SAFe. Jetzt suche ich eine Stelle, in der ich dieses Wissen zwischen Fachbereich und Technik einsetzen und weiterentwickeln kann.
               </p>
 
               <div className="mt-6 flex flex-wrap gap-2">
@@ -461,7 +454,7 @@ export default function RecruiterPage() {
           </div>
 
           <p className="text-center text-xs text-slate-400 pb-6">
-            © {new Date().getFullYear()} Marcel Spahr · Vertraulich – nur für autorisierte Recruiter
+            © {new Date().getFullYear()} Marcel Spahr. Vertraulich. Nur für autorisierte Recruiter.
           </p>
         </main>
       </div>

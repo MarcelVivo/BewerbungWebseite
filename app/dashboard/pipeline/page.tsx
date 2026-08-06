@@ -17,7 +17,7 @@ const COLUMNS: { status: DealStatus; label: string; color: string }[] = [
 ];
 
 function formatCHF(v?: number) {
-  if (!v) return '–';
+  if (!v) return 'Keine Angabe.';
   return `CHF ${v.toLocaleString('de-CH')}`;
 }
 
@@ -82,7 +82,7 @@ function DealModal({ deal, kunden, onClose, onSaved }: {
             <div>
               <label className="block text-xs text-slate-500 mb-1">Kunde</label>
               <select value={form.kunden_id ?? ''} onChange={e => set('kunden_id', e.target.value || undefined)} className={inputCls}>
-                <option value="">– Kein Kunde –</option>
+                <option value="">Kein Kunde.</option>
                 {kunden.map(k => <option key={k.id} value={k.id}>{k.firmenname || k.kontaktperson}</option>)}
               </select>
             </div>
@@ -118,7 +118,7 @@ function DealModal({ deal, kunden, onClose, onSaved }: {
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-slate-400 hover:text-white border border-[#2d3144] hover:border-slate-500 transition-colors">Abbrechen</button>
             <button type="submit" disabled={saving} className="px-4 py-2 rounded-lg text-sm font-medium bg-[#6366f1] hover:bg-[#5254cc] disabled:opacity-50 text-white transition-colors">
-              {saving ? 'Speichern…' : 'Speichern'}
+              {saving ? 'Ich speichere den Eintrag.' : 'Speichern'}
             </button>
           </div>
         </form>
@@ -228,7 +228,7 @@ export default function PipelinePage() {
 
       {/* Kanban */}
       {loading ? (
-        <div className="flex-1 flex items-center justify-center text-slate-500 text-sm">Lädt…</div>
+        <div className="flex-1 flex items-center justify-center text-slate-500 text-sm">Die Einträge werden geladen.</div>
       ) : (
         <div className="flex-1 overflow-x-auto">
           <div className="flex gap-4 h-full min-w-max pb-4">

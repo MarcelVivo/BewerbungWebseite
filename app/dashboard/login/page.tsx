@@ -158,7 +158,7 @@ function LoginForm() {
             {loading ? (
               <span className="flex items-center justify-center gap-2">
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Wird angemeldet…
+                Die Anmeldung wird geprüft.
               </span>
             ) : (
               'Anmelden'

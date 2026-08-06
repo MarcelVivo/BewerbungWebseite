@@ -97,7 +97,7 @@ function AgentModal({ agent, onClose, onSaved }: {
           <div>
             <label className="block text-xs text-slate-500 mb-1">Name *</label>
             <input value={form.name ?? ''} onChange={e => set('name', e.target.value)}
-              className={inputCls} placeholder="Max – Analyse Assistent" autoFocus />
+              className={inputCls} placeholder="Max. Assistent für Analysen." autoFocus />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -125,12 +125,12 @@ function AgentModal({ agent, onClose, onSaved }: {
           <div>
             <label className="block text-xs text-slate-500 mb-1">Webhook URL <span className="text-slate-600">(optional)</span></label>
             <input value={form.webhook_url ?? ''} onChange={e => set('webhook_url', e.target.value)}
-              className={inputCls} placeholder="https://…" />
+              className={inputCls} placeholder="Füge hier die vollständige Adresse ein." />
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-slate-400 hover:text-white border border-[#2d3144] transition-colors">Abbrechen</button>
             <button type="submit" disabled={saving} className="px-4 py-2 rounded-lg text-sm font-medium bg-[#6366f1] hover:bg-[#5254cc] disabled:opacity-50 text-white transition-colors">
-              {saving ? 'Speichern…' : 'Speichern'}
+              {saving ? 'Ich speichere den Assistenten.' : 'Speichern'}
             </button>
           </div>
         </form>
@@ -198,14 +198,14 @@ function AgentChat({ agent, onBack }: { agent: KiAgent; onBack: () => void }) {
         'Ich habe die Anfrage analysiert. Die wichtigsten Erkenntnisse: Marktpotenzial vorhanden, Timing ist gut, Ressourcenbedarf überschaubar.',
       ],
       content: [
-        'Hier ist ein Entwurf für deinen Content:\n\n**Headline:** Entdecken Sie die Kraft der KI für Ihr Unternehmen\n\n**Lead:** Immer mehr Schweizer KMU setzen auf KI-Lösungen – und die Ergebnisse sprechen für sich.',
-        'Für den LinkedIn-Post schlage ich vor: "KI ist kein Trend – sie ist Realität. Heute habe ich einem KMU gezeigt, wie sie 4 Stunden täglich einsparen. Was könnte das für Ihr Unternehmen bedeuten?"',
+        'Hier ist ein erster Entwurf.\n\n**Titel:** Wo KI Ihrem Unternehmen tatsächlich Arbeit abnehmen kann.\n\n**Einstieg:** Viele Schweizer KMU testen KI bereits. Entscheidend ist nicht das Werkzeug, sondern die konkrete Aufgabe, die damit einfacher wird.',
+        'Für den Beitrag schlage ich diesen Einstieg vor. Heute habe ich mit einem KMU geprüft, welche wiederkehrende Aufgabe sich sinnvoll automatisieren lässt. Erst nach der Messung wissen wir, wie viel Zeit wirklich eingespart wird.',
         'Content-Idee: Eine Case-Study-Serie über erfolgreiche KI-Implementierungen bei Schweizer KMU. Format: kurze Videos + Blog-Artikel.',
       ],
       sales: [
         'Für diesen Lead empfehle ich: Erstgespräch innerhalb von 48h, Fokus auf Schmerzpunkte, konkreten ROI aufzeigen.',
         'Follow-up Strategie: 1. E-Mail mit Case Study (Tag 3), 2. LinkedIn Connect (Tag 5), 3. Anruf mit Agenda (Tag 10).',
-        'Das Angebot sollte 3 Optionen enthalten: Basis (3.5k), Standard (7k), Premium (15k). Erfahrungsgemäss wählen 60% die mittlere Option.',
+        'Das Angebot sollte drei nachvollziehbare Optionen enthalten. Eine günstige Variante deckt das Nötigste ab. Die mittlere Variante enthält den empfohlenen Umfang. Die umfangreiche Variante ergänzt zusätzliche Leistungen.',
       ],
       admin: [
         'Ich habe die Aufgabe notiert. Priorität: mittel. Deadline: Ende der Woche. Soll ich einen Kalender-Eintrag erstellen?',
@@ -276,7 +276,7 @@ function AgentChat({ agent, onBack }: { agent: KiAgent; onBack: () => void }) {
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }}}
-            placeholder={`Nachricht an ${agent.name}…`}
+            placeholder={`Schreibe eine Nachricht an ${agent.name}.`}
             className="flex-1 rounded-xl bg-[#0f1117] border border-[#2d3144] focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1] outline-none px-4 py-3 text-white text-sm placeholder-slate-600 transition-colors"
             disabled={loading}
           />
@@ -347,7 +347,7 @@ export default function KiAgentenPage() {
       </div>
 
       {loading ? (
-        <div className="py-16 text-center text-slate-500 text-sm">Lädt…</div>
+        <div className="py-16 text-center text-slate-500 text-sm">Die Assistenten werden geladen.</div>
       ) : agenten.length === 0 ? (
         <div className="py-16 text-center">
           <Bot size={40} className="mx-auto mb-3 text-slate-600" />

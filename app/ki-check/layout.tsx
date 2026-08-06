@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'KI-Readiness Check – Wie KI-ready ist Ihr Unternehmen?',
-  description: '10 Fragen, 3 Minuten – Ihr persönlicher KI-Fahrplan von Marcel Spahr, KI-Berater in Bern, Schweiz.',
+  title: 'KI Check. Wie setzt Ihr Unternehmen KI heute ein?',
+  description: 'Beantworten Sie zehn Fragen in drei Minuten. Marcel Spahr prüft Ihre Angaben persönlich und sendet Ihnen eine konkrete Einschätzung.',
   robots: { index: false, follow: false },
 };
 

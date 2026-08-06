@@ -262,7 +262,7 @@ export default function DashboardPage() {
         <button onClick={load} disabled={loading}
           className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#6366f1] text-white text-sm font-semibold hover:bg-[#5558e8] transition-colors shadow-lg shadow-indigo-500/25 disabled:opacity-70">
           {loading ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
-          {loading ? 'Lade…' : 'Aktualisieren'}
+          {loading ? 'Die Daten werden geladen.' : 'Aktualisieren'}
         </button>
       </div>
 
@@ -334,7 +334,7 @@ export default function DashboardPage() {
         {/* Offene Tasks */}
         <Widget title="Offene Tasks" icon={CheckSquare} href="/dashboard/projekte" count={tasks.length}>
           {tasks.length === 0 ? (
-            <p className="text-slate-500 text-sm text-center py-4">Keine offenen Tasks — gut gemacht!</p>
+            <p className="text-slate-500 text-sm text-center py-4">Es sind keine Aufgaben offen.</p>
           ) : (
             <div className="space-y-2">
               {tasks.map((t) => (
@@ -344,7 +344,7 @@ export default function DashboardPage() {
                   </span>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm text-white font-medium truncate">{t.titel}</div>
-                    <div className="text-xs text-slate-400">{(t.projekte as any)?.name || '–'}</div>
+                    <div className="text-xs text-slate-400">{(t.projekte as any)?.name || 'Kein Projekt.'}</div>
                   </div>
                   {t.faellig_am && (
                     <div className="flex items-center gap-1 text-xs text-slate-500 flex-shrink-0">
@@ -365,7 +365,7 @@ export default function DashboardPage() {
             <div className="space-y-2">
               {rechnungen.map((inv) => {
                 const s = INVOICE_STATUS[inv.status] || INVOICE_STATUS.entwurf;
-                const client = (inv.kunden as any)?.firmenname || (inv.kunden as any)?.kontaktperson || '–';
+                const client = (inv.kunden as any)?.firmenname || (inv.kunden as any)?.kontaktperson || 'Kein Kunde.';
                 return (
                   <div key={inv.id} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-[#0f1117]/60 transition-colors">
                     <div className="flex-1 min-w-0">

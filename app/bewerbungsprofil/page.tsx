@@ -43,67 +43,67 @@ const ROLE_PROFILES = [
   {
     icon: Target,
     title: 'Business Analysis',
-    text: 'Geschäftsziele, Nutzerbedürfnisse und technische Rahmenbedingungen zu einem verständlichen Zielbild verbinden.',
-    evidence: ['Stakeholder- und Prozessanalyse', 'Fachliche Konzepte und Priorisierung', 'Übersetzung zwischen Business und IT'],
+    text: 'Ich bringe Geschäftsziele, Bedürfnisse der Nutzer und technische Rahmenbedingungen in ein verständliches Zielbild.',
+    evidence: ['Ich analysiere Stakeholder und Prozesse.', 'Ich erstelle fachliche Konzepte und setze Prioritäten.', 'Ich vermittle zwischen Business und IT.'],
   },
   {
     icon: ClipboardCheck,
     title: 'Requirements Engineering',
-    text: 'Anforderungen strukturiert erheben, dokumentieren, validieren und bis zur testbaren Lösung begleiten.',
-    evidence: ['IREB CPRE Foundation Level', 'User Stories und Akzeptanzkriterien', 'Testfälle, manuelle Tests und Fehlerdokumentation'],
+    text: 'Ich erhebe Anforderungen strukturiert, dokumentiere und prüfe sie und begleite sie bis zur testbaren Lösung.',
+    evidence: ['Ich habe das IREB CPRE Foundation Level bestanden.', 'Ich arbeite mit User Stories und Akzeptanzkriterien.', 'Ich erstelle Testfälle, führe manuelle Tests durch und dokumentiere Fehler.'],
   },
   {
     icon: Workflow,
     title: 'Prozessdigitalisierung',
-    text: 'Abläufe zuerst verstehen, gezielt vereinfachen und anschliessend wirkungsvoll digital unterstützen.',
-    evidence: ['End-to-End-Denken', 'BPMN und Prozessoptimierung', 'Produktiver Rollout im Swisscom-Shopnetz'],
+    text: 'Ich verstehe einen Ablauf zuerst, vereinfache ihn gezielt und unterstütze ihn danach mit der passenden Technik.',
+    evidence: ['Ich betrachte Abläufe von Anfang bis Ende.', 'Ich nutze BPMN für Analyse und Verbesserung.', 'Ich habe einen produktiven Rollout im Swisscom Shopnetz begleitet.'],
   },
 ];
 
 const COMPETENCY_GROUPS = [
   {
-    title: 'Analyse & Anforderungen',
+    title: 'Analyse und Anforderungen',
     icon: Target,
     items: [
-      'Stakeholder-Analyse und Interviewführung',
-      'Funktionale und nicht-funktionale Anforderungen',
-      'Priorisierung, MVP-Abgrenzung und Akzeptanzkriterien',
-      'Use Cases, User Stories und nachvollziehbare Dokumentation',
+      'Ich analysiere Stakeholder und führe Interviews.',
+      'Ich unterscheide funktionale und nicht funktionale Anforderungen.',
+      'Ich setze Prioritäten und grenze einen sinnvollen MVP ab.',
+      'Ich dokumentiere Use Cases und User Stories nachvollziehbar.',
     ],
-    proof: 'Belegt durch IREB-Zertifizierung, Diplomarbeit und X-ITE.',
+    proof: 'Diese Kenntnisse belege ich mit meiner IREB Zertifizierung, meiner Diplomarbeit und dem Projekt X-ITE.',
   },
   {
-    title: 'Prozesse & Projekte',
+    title: 'Prozesse und Projekte',
     icon: Workflow,
     items: [
-      'Prozessaufnahme, Analyse und Optimierung',
-      'BPMN, Scrum, SAFe und iterative Umsetzung',
-      'Workshop-Begleitung und Stakeholder-Abstimmung',
-      'Testing, Fehleranalyse und Wissenstransfer',
+      'Ich nehme Prozesse auf, analysiere sie und verbessere sie.',
+      'Ich arbeite mit BPMN, Scrum, SAFe und schrittweiser Umsetzung.',
+      'Ich begleite Workshops und stimme mich mit Stakeholdern ab.',
+      'Ich teste, analysiere Fehler und vermittle Wissen.',
     ],
-    proof: 'Belegt durch Swisscom-Praxis, PSM I und SAFe 6 Agilist.',
+    proof: 'Diese Erfahrung stammt aus meiner Arbeit bei Swisscom und wird durch PSM I und SAFe 6 Agilist ergänzt.',
   },
   {
     title: 'Technische Umsetzung',
     icon: Network,
     items: [
-      'SQL, Datenmodelle und relationale Datenbanken',
-      'Webanwendungen mit Next.js/React und Supabase/PostgreSQL',
-      'Schnittstellen, Automatisierung und KI-Werkzeuge',
-      'UX-Konzeption und responsive Benutzeroberflächen',
+      'Ich arbeite mit SQL, Datenmodellen und relationalen Datenbanken.',
+      'Ich entwickle Webanwendungen mit Next.js, React, Supabase und PostgreSQL.',
+      'Ich verbinde Schnittstellen, Automatisierungen und KI Werkzeuge.',
+      'Ich plane UX und entwickle Oberflächen für verschiedene Bildschirmgrössen.',
     ],
-    proof: 'Praktisch angewendet in eigenen und beauftragten Digitalprojekten.',
+    proof: 'Ich habe diese Kenntnisse in eigenen und beauftragten Digitalprojekten praktisch angewendet.',
   },
   {
-    title: 'Werkzeuge & Zusammenarbeit',
+    title: 'Werkzeuge und Zusammenarbeit',
     icon: Users,
     items: [
-      'Jira, Confluence und Trello aus Studium und Projektarbeiten',
-      'Microsoft 365 und strukturierte Arbeitsdokumentation',
-      'Adobe Illustrator und Photoshop',
-      'Empathische Kommunikation auf Augenhöhe',
+      'Ich nutze Jira, Confluence und Trello aus Studium und Projektarbeiten.',
+      'Ich dokumentiere meine Arbeit strukturiert mit Microsoft 365.',
+      'Ich arbeite mit Adobe Illustrator und Photoshop.',
+      'Ich kommuniziere klar, respektvoll und direkt.',
     ],
-    proof: 'Werkzeuge werden dem Kontext angepasst — nicht zum Selbstzweck eingesetzt.',
+    proof: 'Ich wähle Werkzeuge passend zur Aufgabe und nicht, weil sie gerade im Trend liegen.',
   },
 ];
 
@@ -287,7 +287,7 @@ export default function BewerbungsprofilPage() {
               <ShieldCheck size={17} aria-hidden="true" />
             </div>
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-[#102a43]">Marcel Spahr · Bewerbungsprofil</p>
+              <p className="truncate text-sm font-semibold text-[#102a43]">Marcel Spahr. Bewerbungsprofil.</p>
               <p className="hidden text-[11px] text-[#65788c] sm:block">Vertraulicher Bereich für autorisierte Empfänger</p>
             </div>
           </div>
@@ -317,7 +317,7 @@ export default function BewerbungsprofilPage() {
               </div>
               <div className="min-w-0 lg:mt-5">
                 <p className="text-xl font-bold tracking-[-.03em] text-[#102a43]">Marcel Spahr</p>
-                <p className="mt-1 text-sm font-semibold leading-5 text-[#245f98]">Wirtschaftsinformatik HF · Abschlussphase</p>
+                <p className="mt-1 text-sm font-semibold leading-5 text-[#245f98]">Wirtschaftsinformatik HF. Abschlussphase.</p>
                 <p className="mt-2 flex items-center gap-1.5 text-xs text-[#52677d]">
                   <MapPin size={12} aria-hidden="true" /> Bern · Schweiz
                 </p>
@@ -382,8 +382,8 @@ export default function BewerbungsprofilPage() {
                   <span className="rounded-full border border-[#2f6fad]/35 bg-[#2f6fad]/10 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[.14em] text-[#1f5685]">
                     Ab sofort verfügbar
                   </span>
-                  <span className="rounded-full border border-[#d7e1ec] bg-[#f8fafc] px-3 py-1.5 text-[11px] font-semibold text-[#334b62]">80–100 %</span>
-                  <span className="rounded-full border border-[#d7e1ec] bg-[#f8fafc] px-3 py-1.5 text-[11px] font-semibold text-[#334b62]">Bern · Hybrid · Remote</span>
+                  <span className="rounded-full border border-[#d7e1ec] bg-[#f8fafc] px-3 py-1.5 text-[11px] font-semibold text-[#334b62]">80 bis 100 Prozent.</span>
+                  <span className="rounded-full border border-[#d7e1ec] bg-[#f8fafc] px-3 py-1.5 text-[11px] font-semibold text-[#334b62]">Bern. Hybrid. Remote.</span>
                 </div>
 
                 <p className="mt-8 text-xs font-bold uppercase tracking-[.22em] text-[#245f98]">Business und IT wirksam verbinden</p>
@@ -484,7 +484,7 @@ export default function BewerbungsprofilPage() {
 
           <section id="xite" className="scroll-mt-24">
             <SectionHeading
-              eyebrow="Praxisnachweis · Swisscom · 2023–2024"
+              eyebrow="Praxisnachweis. Swisscom. 2023 bis 2024."
               title="X-ITE: Vom Pilotbetrieb zum schweizweiten Einsatz"
               intro="Projektmitarbeit in Requirements Engineering und Testing für eine heute produktiv eingesetzte Supportlösung."
             />
@@ -492,21 +492,21 @@ export default function BewerbungsprofilPage() {
               <div className="grid gap-8 xl:grid-cols-[minmax(0,.85fr)_minmax(320px,1.15fr)]">
                 <div>
                   <div className="inline-flex items-center gap-2 rounded-full border border-[#2f6fad]/30 bg-[#2f6fad]/10 px-3 py-1.5 text-xs font-semibold text-[#1f5685]">
-                    <Rocket size={13} aria-hidden="true" /> 5 Pilotshops → alle Swisscom Shops der Schweiz
+                    <Rocket size={13} aria-hidden="true" /> Von fünf Pilotshops in alle Swisscom Shops der Schweiz.
                   </div>
                   <h3 className="mt-5 text-2xl font-bold tracking-[-.04em] text-[#102a43]">Technische Hilfe ohne Hotline-Wartezeit</h3>
                   <p className="mt-4 text-sm leading-7 text-[#334b62]">
-                    Shop-Mitarbeitende erfassten die technische Kundenanfrage auf einem Tablet mit wenigen strukturierten Angaben. Das zentrale CRM routete den Fall automatisiert an den nächsten freien Tech-Support-Mitarbeitenden, der sich vorbereitet beim Kunden meldete.
+                    Die Mitarbeitenden im Shop erfassten die technische Anfrage auf einem Tablet. Das CRM leitete den Fall an einen freien Mitarbeiter im technischen Support weiter. Dieser konnte sich vor dem Rückruf auf das Problem vorbereiten.
                   </p>
                   <div className="mt-6 rounded-xl border border-[#d7e1ec] bg-[#f8fafc] p-5">
                     <p className="text-[10px] font-bold uppercase tracking-[.2em] text-[#65788c]">Meine Rolle</p>
-                    <p className="mt-2 font-semibold text-[#102a43]">Projektmitarbeit Requirements Engineering & Testing</p>
+                    <p className="mt-2 font-semibold text-[#102a43]">Ich arbeitete im Requirements Engineering und Testing mit.</p>
                     <ul className="mt-4 space-y-2">
                       {[
-                        'Anforderungen erheben und dokumentieren',
-                        'User Stories und Akzeptanzkriterien ausarbeiten',
-                        'Testfälle entwickeln und Anwendung manuell testen',
-                        'Fehler dokumentieren sowie Abstimmungen begleiten',
+                        'Ich erhob und dokumentierte Anforderungen.',
+                        'Ich arbeitete User Stories und Akzeptanzkriterien aus.',
+                        'Ich entwickelte Testfälle und testete die Anwendung manuell.',
+                        'Ich dokumentierte Fehler und begleitete Abstimmungen.',
                       ].map((item) => <Bullet key={item}>{item}</Bullet>)}
                     </ul>
                   </div>
@@ -546,7 +546,7 @@ export default function BewerbungsprofilPage() {
                   <div className="mt-3 rounded-xl border border-[#2f6fad]/30 bg-[#2f6fad]/10 p-5">
                     <p className="text-sm font-semibold text-[#1f5685]">Ergebnis</p>
                     <p className="mt-2 text-sm leading-6 text-[#385a78]">
-                      Nach intensiver Erprobung in fünf Pilotshops wurde die Lösung schweizweit ausgerollt und ist produktiv im Einsatz. Shop-Teams konnten sich stärker auf Beratung und Verkauf konzentrieren; Support-Mitarbeitende erhielten besser vorbereitete Fälle.
+                      Nach der Erprobung in fünf Pilotshops wurde die Lösung in der ganzen Schweiz eingeführt und wird weiterhin genutzt. Die Teams im Shop konnten sich stärker auf Beratung und Verkauf konzentrieren. Der Support erhielt besser vorbereitete Fälle.
                     </p>
                   </div>
                 </div>
@@ -556,7 +556,7 @@ export default function BewerbungsprofilPage() {
 
           <section id="diplomarbeit" className="scroll-mt-24">
             <SectionHeading
-              eyebrow="Leitprojekt · Wirtschaftsinformatik HF · Juni 2026"
+              eyebrow="Leitprojekt. Wirtschaftsinformatik HF. Juni 2026."
               title="Diplomarbeit: LIQUODA"
               intro="Ein praxisnahes Detailkonzept mit validierten Anforderungen und klarer MVP-Abgrenzung."
             />
@@ -565,8 +565,8 @@ export default function BewerbungsprofilPage() {
                 <div>
                   <div className="flex flex-wrap gap-2">
                     <span className="rounded-full border border-[#d7e1ec] bg-[#f8fafc] px-3 py-1.5 text-xs text-[#334b62]">Einzelarbeit</span>
-                    <span className="rounded-full border border-[#d7e1ec] bg-[#f8fafc] px-3 py-1.5 text-xs text-[#334b62]">9 Experten- und Stakeholder-Interviews</span>
-                    <span className="rounded-full border border-[#d7e1ec] bg-[#f8fafc] px-3 py-1.5 text-xs text-[#334b62]">IREB-orientiert</span>
+                    <span className="rounded-full border border-[#d7e1ec] bg-[#f8fafc] px-3 py-1.5 text-xs text-[#334b62]">Ich führte neun Interviews mit Experten und Stakeholdern.</span>
+                    <span className="rounded-full border border-[#d7e1ec] bg-[#f8fafc] px-3 py-1.5 text-xs text-[#334b62]">Ich orientierte mich am IREB Standard.</span>
                   </div>
                   <h3 className="mt-5 max-w-3xl text-2xl font-bold leading-tight tracking-[-.04em] text-[#102a43] sm:text-3xl">
                     «Detailkonzept und Anforderungsanalyse der tokenisierten Vermittlungsplattform LIQUODA»
@@ -593,7 +593,7 @@ export default function BewerbungsprofilPage() {
                     <Lightbulb size={19} className="text-[#1f5685]" aria-hidden="true" />
                     <p className="mt-3 text-sm font-bold text-[#102a43]">Konkretes Ergebnis</p>
                     <p className="mt-2 text-sm leading-6 text-[#385a78]">
-                      Ein priorisierter Anforderungskatalog, eine daraus abgeleitete MVP-Definition und ein am Fallbeispiel LIQUODA validiertes Detailkonzept — als Grundlage für den geplanten realen Aufbau der Plattform.
+                      Ich erstellte einen priorisierten Anforderungskatalog, leitete daraus einen MVP ab und prüfte das Detailkonzept am Fallbeispiel LIQUODA. Diese Arbeit bildet die Grundlage für den geplanten Aufbau der Plattform.
                     </p>
                   </div>
                   <div className="rounded-xl border border-[#d7e1ec] bg-[#f8fafc] p-5">
@@ -615,16 +615,16 @@ export default function BewerbungsprofilPage() {
           <section id="laufbahn" className="scroll-mt-24">
             <SectionHeading
               eyebrow="Berufliche Laufbahn"
-              title="Berufspraxis, Unternehmergeist und End-to-End-Verantwortung"
-              intro="Meine aktuelle studienbegleitende Selbständigkeit und die langjährige Swisscom-Praxis sind chronologisch und klar voneinander abgegrenzt."
+              title="Berufspraxis, Selbständigkeit und persönliche Verantwortung"
+              intro="Hier zeige ich meine studienbegleitende Selbständigkeit und meine langjährige Arbeit bei Swisscom in zeitlicher Reihenfolge."
             />
             <div className="space-y-4">
               <Surface accent className="p-6 sm:p-8">
                 <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-[.18em] text-[#245f98]">2025 – heute · Bern · studienbegleitend</p>
-                    <h3 className="mt-2 text-2xl font-bold tracking-[-.03em] text-[#102a43]">Selbständig · Digitalstudio Marcel Spahr</h3>
-                    <p className="mt-1 text-sm text-[#52677d]">Eigen- und Kundenprojekte · parallel zum HF-Studium aufgebaut</p>
+                    <p className="text-xs font-bold uppercase tracking-[.18em] text-[#245f98]">Seit 2025. Bern. Studienbegleitend.</p>
+                    <h3 className="mt-2 text-2xl font-bold tracking-[-.03em] text-[#102a43]">Ich bin mit dem Digitalstudio Marcel Spahr selbständig.</h3>
+                    <p className="mt-1 text-sm text-[#52677d]">Ich habe eigene Projekte und Kundenprojekte parallel zum HF Studium aufgebaut.</p>
                   </div>
                   <a
                     href="https://www.marcelspahr.ch"
@@ -637,10 +637,10 @@ export default function BewerbungsprofilPage() {
                 </div>
                 <div className="mt-7 grid gap-4 md:grid-cols-2">
                   {[
-                    'Digitale Lösungen von der Anforderungsanalyse über UX/UI bis zu Frontend, Backend, Datenmodell, Testing und Betrieb',
-                    'Direkte Zusammenarbeit mit Auftraggebenden und Übersetzung fachlicher Bedürfnisse in verständliche, skalierbare Lösungen',
-                    'Projektverantwortung für Websites, Webanwendungen, Portale, Datenbanken und Automatisierungen',
-                    'Ausgewählte Arbeiten: VeraHome, GiGi Beauty und die eigene Plattform LIQUODA',
+                    'Ich entwickle digitale Lösungen von der Anforderungsanalyse über UX und UI bis zu Frontend, Backend, Datenmodell, Tests und Betrieb.',
+                    'Ich arbeite direkt mit Auftraggebenden zusammen und übertrage fachliche Bedürfnisse in verständliche Lösungen.',
+                    'Ich trage die Verantwortung für Websites, Webanwendungen, Portale, Datenbanken und Automatisierungen.',
+                    'Zu meinen ausgewählten Arbeiten gehören VeraHome, GiGi Beauty und meine eigene Plattform LIQUODA.',
                   ].map((item) => (
                     <div key={item} className="flex gap-3 rounded-xl border border-[#d7e1ec] bg-[#f8fafc] p-4">
                       <CheckCircle2 size={17} className="mt-0.5 flex-none text-[#245f98]" aria-hidden="true" />
@@ -651,7 +651,7 @@ export default function BewerbungsprofilPage() {
                 <div className="mt-5 rounded-xl border border-[#2f6fad]/25 bg-[#2f6fad]/10 p-5">
                   <p className="text-xs font-bold uppercase tracking-[.18em] text-[#2f6fad]">Einordnung für Arbeitgeber</p>
                   <p className="mt-3 text-sm leading-6 text-[#2e536f]">
-                    Das Digitalstudio wurde parallel zum HF-Studium aufgebaut. Für eine Festanstellung bin ich ab sofort mit einem Pensum von 80–100 % verfügbar.
+                    Ich habe das Digitalstudio parallel zum HF Studium aufgebaut. Für eine Festanstellung bin ich ab sofort mit einem Pensum von 80 bis 100 Prozent verfügbar.
                   </p>
                 </div>
               </Surface>
@@ -659,9 +659,9 @@ export default function BewerbungsprofilPage() {
               <Surface accent className="p-6 sm:p-8">
                 <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-[.18em] text-[#245f98]">Swisscom Schweiz AG · Bern</p>
+                    <p className="text-xs font-bold uppercase tracking-[.18em] text-[#245f98]">Swisscom Schweiz AG. Bern.</p>
                     <h3 className="mt-2 text-2xl font-bold tracking-[-.03em] text-[#102a43]">Customer Consultant, Bereich Specials</h3>
-                    <p className="mt-1 text-sm text-[#52677d]">Offizielle Funktion seit August 2016 · Gesamtanstellung September 2008 bis April 2025</p>
+                    <p className="mt-1 text-sm text-[#52677d]">Diese Funktion hatte ich seit August 2016. Insgesamt war ich von September 2008 bis April 2025 bei Swisscom angestellt.</p>
                   </div>
                   <a
                     href="/api/expertise-documents/swisscom-reference"
@@ -674,10 +674,10 @@ export default function BewerbungsprofilPage() {
                 </div>
                 <div className="mt-7 grid gap-4 md:grid-cols-2">
                   {[
-                    'Selbständige Bearbeitung komplexer Kundenanliegen über Telefon, E-Mail, Brief und Chat',
-                    'End-to-End-Verantwortung im Wissensgebiet sowie individuelle Lösungen und Workarounds',
-                    'Fehleranalyse in der Prozess- und Systemlandschaft und aktive Umsetzung von Verbesserungen',
-                    'Unterstützung operativer Einheiten in Projekt- und Prozessmanagement sowie strukturierter Wissenstransfer',
+                    'Ich bearbeitete komplexe Kundenanliegen selbständig über Telefon, E-Mail, Brief und Chat.',
+                    'Ich trug in meinem Wissensgebiet die Verantwortung von Anfang bis Ende und entwickelte individuelle Lösungen.',
+                    'Ich analysierte Fehler in Prozessen und Systemen und setzte Verbesserungen um.',
+                    'Ich unterstützte operative Einheiten im Projektmanagement und Prozessmanagement und vermittelte Wissen strukturiert.',
                   ].map((item) => (
                     <div key={item} className="flex gap-3 rounded-xl border border-[#d7e1ec] bg-[#f8fafc] p-4">
                       <CheckCircle2 size={17} className="mt-0.5 flex-none text-[#245f98]" aria-hidden="true" />
@@ -688,24 +688,24 @@ export default function BewerbungsprofilPage() {
                 <div className="mt-5 rounded-xl border border-[#2f6fad]/25 bg-[#2f6fad]/10 p-5">
                   <p className="text-xs font-bold uppercase tracking-[.18em] text-[#2f6fad]">Aus dem Arbeitszeugnis 2025</p>
                   <p className="mt-3 text-sm leading-6 text-[#2e536f]">
-                    Hervorgehoben werden überdurchschnittliche Erfahrung, Eigeninitiative, vernetztes und wirtschaftliches Denken, fundierte Entscheidungen, klarer Wissenstransfer sowie empathische Kommunikation mit Kunden und Stakeholdern.
+                    Mein Arbeitszeugnis hebt meine Erfahrung, Eigeninitiative, mein vernetztes und wirtschaftliches Denken, fundierte Entscheidungen und meinen klaren Wissenstransfer hervor. Ebenfalls erwähnt wird meine respektvolle Kommunikation mit Kunden und Stakeholdern.
                   </p>
                 </div>
               </Surface>
 
               <div className="grid gap-4 md:grid-cols-2">
                 <Surface className="p-6">
-                  <p className="text-xs font-bold uppercase tracking-[.16em] text-[#65788c]">September 2008 – Juli 2016</p>
+                  <p className="text-xs font-bold uppercase tracking-[.16em] text-[#65788c]">September 2008 bis Juli 2016.</p>
                   <h3 className="mt-2 font-bold text-[#102a43]">Frühere Funktionen bei Swisscom</h3>
                   <p className="mt-3 text-sm leading-6 text-[#52677d]">
-                    Unterschiedliche Aufgaben im Kundenservice und technischen Support. Aufbau einer breiten Praxisbasis in Fehleranalyse, Eskalationsbearbeitung, Kundenkommunikation und nachhaltiger Problemlösung.
+                    In dieser Zeit arbeitete ich in verschiedenen Funktionen im Kundenservice und im technischen Support. Dabei sammelte ich viel Erfahrung mit Fehleranalysen, Eskalationen, Kundenkommunikation und dauerhaften Lösungen.
                   </p>
                 </Surface>
                 <Surface className="p-6">
-                  <p className="text-xs font-bold uppercase tracking-[.16em] text-[#65788c]">2007 – 2008</p>
-                  <h3 className="mt-2 font-bold text-[#102a43]">Werbetechnik · Frontwork Zürich / Seka Thun</h3>
+                  <p className="text-xs font-bold uppercase tracking-[.16em] text-[#65788c]">2007 bis 2008.</p>
+                  <h3 className="mt-2 font-bold text-[#102a43]">Werbetechnik bei Frontwork Zürich und Seka Thun.</h3>
                   <p className="mt-3 text-sm leading-6 text-[#52677d]">
-                    Umsetzung zeitkritischer Marken- und Beschriftungsprojekte, darunter Arbeiten rund um die EURO 2008 und das Redesign von Swisscom Shops.
+                    Ich setzte zeitkritische Markenprojekte und Beschriftungen um. Dazu gehörten Arbeiten rund um die EURO 2008 und das Redesign von Swisscom Shops.
                   </p>
                 </Surface>
               </div>
@@ -713,12 +713,12 @@ export default function BewerbungsprofilPage() {
               <Surface className="p-6">
                 <div className="grid gap-5 md:grid-cols-[200px_minmax(0,1fr)] md:items-center">
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-[.16em] text-[#65788c]">2018 – 2020</p>
+                    <p className="text-xs font-bold uppercase tracking-[.16em] text-[#65788c]">2018 bis 2020.</p>
                     <h3 className="mt-2 font-bold text-[#102a43]">Cube Club Bern</h3>
                     <p className="mt-1 text-xs text-[#52677d]">Inhaber und Geschäftsführer</p>
                   </div>
                   <p className="text-sm leading-6 text-[#334b62]">
-                    Operative Leitung mit Verantwortung für Organisation, Personal, Finanzen, Partnerkommunikation und einen zuverlässigen Veranstaltungsbetrieb — zeitweise mit bis zu 18 Mitarbeitenden.
+                    Ich leitete den Betrieb und war für Organisation, Personal, Finanzen und die Kommunikation mit Partnern verantwortlich. Zeitweise führte ich bis zu 18 Mitarbeitende.
                   </p>
                 </div>
               </Surface>
@@ -727,9 +727,9 @@ export default function BewerbungsprofilPage() {
 
           <section id="ausbildung" className="scroll-mt-24">
             <SectionHeading
-              eyebrow="Ausbildung & Abschlussstatus"
+              eyebrow="Ausbildung und Abschlussstatus"
               title="Wirtschaftsinformatik HF in der Abschlussphase"
-              intro="Der Diplomstatus wird transparent dargestellt: Arbeit eingereicht, Abschlussprüfung terminiert, Diplom noch nicht vorweggenommen."
+              intro="Meine Diplomarbeit ist eingereicht und die Abschlussprüfung ist terminiert. Das Diplom führe ich erst nach dem erfolgreichen Abschluss."
             />
             <Surface accent className="p-6 sm:p-8">
               <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_340px]">
@@ -738,9 +738,9 @@ export default function BewerbungsprofilPage() {
                     <GraduationCap size={23} aria-hidden="true" />
                   </div>
                   <h3 className="mt-5 text-2xl font-bold tracking-[-.04em] text-[#102a43]">Wirtschaftsinformatik HF</h3>
-                  <p className="mt-1 font-semibold text-[#245f98]">HF Feusi Bildungszentrum · Bern · 2023–2026</p>
+                  <p className="mt-1 font-semibold text-[#245f98]">HF Feusi Bildungszentrum in Bern. 2023 bis 2026.</p>
                   <p className="mt-5 max-w-3xl text-sm leading-7 text-[#334b62]">
-                    Schwerpunkte: Requirements Engineering, Prozessmanagement und BPMN, SQL und Datenbanken, Projektmanagement mit Scrum, digitale Transformation, IT-Architekturen, Informationssysteme, Datenanalyse und Reporting sowie IT-Service-Management.
+                    Meine Schwerpunkte sind Requirements Engineering, Prozessmanagement mit BPMN, SQL, Datenbanken, Projektmanagement mit Scrum, digitale Transformation, IT Architekturen, Informationssysteme, Datenanalyse, Reporting und IT Service Management.
                   </p>
                   <div className="mt-6 flex flex-wrap gap-2">
                     {['Notendurchschnitt aktuell 5,6', 'Diplomarbeit eingereicht', 'Ab sofort verfügbar'].map((item) => (
@@ -775,7 +775,7 @@ export default function BewerbungsprofilPage() {
               <Surface className="p-6">
                 <BookOpenCheck size={19} className="text-[#2f6fad]" aria-hidden="true" />
                 <h3 className="mt-3 font-bold text-[#102a43]">Werbetechniker EFZ · 2007</h3>
-                <p className="mt-2 text-sm leading-6 text-[#52677d]">Gestaltung, Marketing, Produktion und präzise Umsetzung visueller Kommunikationslösungen.</p>
+                <p className="mt-2 text-sm leading-6 text-[#52677d]">In dieser Ausbildung lernte ich Gestaltung, Marketing, Produktion und die genaue Umsetzung visueller Kommunikation.</p>
                 <a
                   href="/api/expertise-documents/werbetechniker"
                   target="_blank"
@@ -788,7 +788,7 @@ export default function BewerbungsprofilPage() {
               <Surface className="p-6">
                 <BookOpenCheck size={19} className="text-[#2f6fad]" aria-hidden="true" />
                 <h3 className="mt-3 font-bold text-[#102a43]">Maler EFZ · 2004</h3>
-                <p className="mt-2 text-sm leading-6 text-[#52677d]">Fundament für Qualitätsbewusstsein, handwerkliche Präzision und verlässliche Ausführung.</p>
+                <p className="mt-2 text-sm leading-6 text-[#52677d]">Diese Ausbildung legte die Grundlage für mein Qualitätsbewusstsein, meine handwerkliche Genauigkeit und meine verlässliche Arbeitsweise.</p>
                 <a
                   href="/api/expertise-documents/maler"
                   target="_blank"
@@ -803,9 +803,9 @@ export default function BewerbungsprofilPage() {
 
           <section id="nachweise" className="scroll-mt-24">
             <SectionHeading
-              eyebrow="Nachweise & Arbeitsproben"
-              title="Kompetenz transparent belegt"
-              intro="Die wichtigsten Unterlagen sind priorisiert. Weitere Nachweise bleiben kompakt und gezielt zugänglich."
+              eyebrow="Nachweise und Arbeitsproben"
+              title="Hier findest du meine wichtigsten Nachweise."
+              intro="Die wichtigsten Unterlagen sind direkt zugänglich. Weitere Nachweise stelle ich kompakt und geordnet zur Verfügung."
             />
 
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
@@ -849,7 +849,7 @@ export default function BewerbungsprofilPage() {
                   <p className="text-xs font-bold uppercase tracking-[.18em] text-[#245f98]">Bereit für den nächsten Schritt</p>
                   <h3 className="mt-2 text-2xl font-bold tracking-[-.04em] text-[#102a43]">Lernen wir uns persönlich kennen.</h3>
                   <p className="mt-3 max-w-2xl text-sm leading-6 text-[#52677d]">
-                    Ich bin ab sofort für eine Position mit 80–100 % verfügbar — in Bern und Umgebung vor Ort sowie schweizweit hybrid oder remote.
+                    Ich bin ab sofort für eine Position mit einem Pensum von 80 bis 100 Prozent verfügbar. In Bern und Umgebung arbeite ich vor Ort. Schweizweit ist auch eine hybride oder vollständig digitale Zusammenarbeit möglich.
                   </p>
                 </div>
                 <a
@@ -863,7 +863,7 @@ export default function BewerbungsprofilPage() {
           </section>
 
           <footer className="border-t border-[#d7e1ec] py-6 text-center text-xs leading-5 text-[#65788c]">
-            © {new Date().getFullYear()} Marcel Spahr · Vertrauliches Bewerbungsprofil ·{' '}
+            © {new Date().getFullYear()} Marcel Spahr. Vertrauliches Bewerbungsprofil.{' '}
             <a href="mailto:kontakt@marcelspahr.ch" className="text-[#334b62] hover:text-[#245f98]">kontakt@marcelspahr.ch</a>
           </footer>
         </main>

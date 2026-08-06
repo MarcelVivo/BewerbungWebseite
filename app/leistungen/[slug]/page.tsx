@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     description: s.de.metaDesc,
     alternates: { canonical: `https://www.marcelspahr.ch/leistungen/${s.slug}` },
     openGraph: {
-      title: `${s.de.title} – Marcel Spahr`,
+      title: `${s.de.title}. Marcel Spahr.`,
       description: s.de.metaDesc,
       url: `https://www.marcelspahr.ch/leistungen/${s.slug}`,
       type: 'website',

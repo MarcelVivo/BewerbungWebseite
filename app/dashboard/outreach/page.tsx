@@ -50,7 +50,7 @@ const ERGEBNIS_CFG: Record<Ergebnis, { label: string; cls: string }> = {
 };
 
 function formatDate(iso?: string | null) {
-  if (!iso) return '–';
+  if (!iso) return 'Keine Angabe.';
   return new Date(iso).toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
@@ -125,10 +125,10 @@ function OutreachModal({ entry, kunden, onClose, onSaved }: ModalProps) {
               onChange={e => set('kunden_id', e.target.value || undefined)}
               className="w-full bg-[#2d3144] border border-[#3d4460] rounded-lg px-3 py-2 text-white text-sm"
             >
-              <option value="">— Kein Kunde —</option>
+              <option value="">Kein Kunde.</option>
               {kunden.map(k => (
                 <option key={k.id} value={k.id}>
-                  {k.firmenname ? `${k.firmenname} – ${k.kontaktperson}` : k.kontaktperson}
+                  {k.firmenname ? `${k.firmenname}. ${k.kontaktperson}.` : k.kontaktperson}
                 </option>
               ))}
             </select>
@@ -142,7 +142,7 @@ function OutreachModal({ entry, kunden, onClose, onSaved }: ModalProps) {
                 onChange={e => set('kanal', e.target.value || undefined)}
                 className="w-full bg-[#2d3144] border border-[#3d4460] rounded-lg px-3 py-2 text-white text-sm"
               >
-                <option value="">— Wählen —</option>
+                <option value="">Bitte wählen.</option>
                 {(Object.keys(KANAL_CFG) as Kanal[]).map(k => (
                   <option key={k} value={k}>{KANAL_CFG[k].label}</option>
                 ))}
@@ -155,7 +155,7 @@ function OutreachModal({ entry, kunden, onClose, onSaved }: ModalProps) {
                 onChange={e => set('kontakt_typ', e.target.value || undefined)}
                 className="w-full bg-[#2d3144] border border-[#3d4460] rounded-lg px-3 py-2 text-white text-sm"
               >
-                <option value="">— Wählen —</option>
+                <option value="">Bitte wählen.</option>
                 {(Object.keys(KONTAKT_CFG) as KontaktTyp[]).map(k => (
                   <option key={k} value={k}>{KONTAKT_CFG[k].label}</option>
                 ))}
@@ -170,7 +170,7 @@ function OutreachModal({ entry, kunden, onClose, onSaved }: ModalProps) {
               onChange={e => set('ergebnis', e.target.value || undefined)}
               className="w-full bg-[#2d3144] border border-[#3d4460] rounded-lg px-3 py-2 text-white text-sm"
             >
-              <option value="">— Noch offen —</option>
+              <option value="">Noch offen.</option>
               {(Object.keys(ERGEBNIS_CFG) as Ergebnis[]).map(k => (
                 <option key={k} value={k}>{ERGEBNIS_CFG[k].label}</option>
               ))}
@@ -214,7 +214,7 @@ function OutreachModal({ entry, kunden, onClose, onSaved }: ModalProps) {
               </button>
               <button type="submit" disabled={saving}
                 className="px-4 py-2 bg-ms-500 hover:bg-ms-600 text-white rounded-lg text-sm disabled:opacity-50">
-                {saving ? 'Speichern…' : 'Speichern'}
+                {saving ? 'Ich speichere den Eintrag.' : 'Speichern'}
               </button>
             </div>
           </div>
@@ -295,7 +295,7 @@ export default function OutreachPage() {
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
           <input
             type="text"
-            placeholder="Notiz oder Kunde suchen…"
+            placeholder="Suche nach einer Notiz oder einem Kunden."
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="w-full bg-[#1e2235] border border-[#2d3144] rounded-xl pl-9 pr-3 py-2.5 text-white text-sm placeholder-slate-500 focus:border-ms-500 outline-none"
@@ -315,7 +315,7 @@ export default function OutreachPage() {
 
       {/* Table */}
       {loading ? (
-        <div className="text-slate-400 text-sm">Lade Daten…</div>
+        <div className="text-slate-400 text-sm">Die Daten werden geladen.</div>
       ) : filtered.length === 0 ? (
         <div className="bg-[#1e2235] border border-[#2d3144] rounded-2xl p-12 text-center">
           <MessageSquare size={40} className="mx-auto text-slate-600 mb-3" />
@@ -347,7 +347,7 @@ export default function OutreachPage() {
                     </td>
                     <td className="px-4 py-3">
                       <p className="text-white font-medium">
-                        {e.kunden?.firmenname || e.kunden?.kontaktperson || <span className="text-slate-500">–</span>}
+                        {e.kunden?.firmenname || e.kunden?.kontaktperson || <span className="text-slate-500">Kein Kunde.</span>}
                       </p>
                       {e.kunden?.firmenname && (
                         <p className="text-slate-500 text-xs">{e.kunden.kontaktperson}</p>
@@ -358,12 +358,12 @@ export default function OutreachPage() {
                         <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs ${kanal.cls}`}>
                           <KanalIcon size={11} /> {kanal.label}
                         </span>
-                      ) : <span className="text-slate-500">–</span>}
+                      ) : <span className="text-slate-500">Keine Angabe.</span>}
                     </td>
                     <td className="px-4 py-3">
                       {typ ? (
                         <span className={`text-xs font-medium ${typ.cls}`}>{typ.label}</span>
-                      ) : <span className="text-slate-500">–</span>}
+                      ) : <span className="text-slate-500">Keine Angabe.</span>}
                     </td>
                     <td className="px-4 py-3">
                       {ergebnis ? (
@@ -377,7 +377,7 @@ export default function OutreachPage() {
                         <span className={overdue ? 'text-red-400 font-medium' : 'text-slate-300'}>
                           {overdue && '⚠ '}{formatDate(e.naechste_aktion)}
                         </span>
-                      ) : <span className="text-slate-500">–</span>}
+                      ) : <span className="text-slate-500">Keine Angabe.</span>}
                     </td>
                     <td className="px-4 py-3">
                       <button

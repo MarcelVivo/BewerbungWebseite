@@ -123,7 +123,7 @@ function KundeModal({ kunde, kunden, onClose, onSaved }: {
               Abbrechen
             </button>
             <button type="submit" disabled={saving} className="px-4 py-2 rounded-lg text-sm font-medium bg-[#6366f1] hover:bg-[#5254cc] disabled:opacity-50 text-white transition-colors">
-              {saving ? 'Speichern…' : 'Speichern'}
+              {saving ? 'Ich speichere den Kunden.' : 'Speichern'}
             </button>
           </div>
         </form>
@@ -184,7 +184,7 @@ export default function KundenPage() {
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
           <input
             value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Suchen nach Name, Firma, E-Mail…"
+            placeholder="Suche nach Name, Firma oder E-Mail."
             className="w-full pl-9 pr-4 py-2 rounded-lg bg-[#1a1d27] border border-[#2d3144] focus:border-[#6366f1] outline-none text-white text-sm placeholder-slate-500 transition-colors"
           />
         </div>
@@ -201,7 +201,7 @@ export default function KundenPage() {
       {/* Table */}
       <div className="rounded-xl border border-[#2d3144] bg-[#1a1d27] overflow-hidden">
         {loading ? (
-          <div className="py-16 text-center text-slate-500 text-sm">Lädt…</div>
+          <div className="py-16 text-center text-slate-500 text-sm">Die Kunden werden geladen.</div>
         ) : filtered.length === 0 ? (
           <div className="py-16 text-center">
             <User size={32} className="mx-auto mb-3 text-slate-600" />
@@ -236,10 +236,10 @@ export default function KundenPage() {
                     </div>
                   </td>
                   <td className="px-4 py-3 hidden md:table-cell text-slate-400">
-                    {k.email ? <a href={`mailto:${k.email}`} className="hover:text-white transition-colors">{k.email}</a> : '–'}
+                    {k.email ? <a href={`mailto:${k.email}`} className="hover:text-white transition-colors">{k.email}</a> : 'Keine Angabe.'}
                   </td>
-                  <td className="px-4 py-3 hidden lg:table-cell text-slate-400">{k.telefon || '–'}</td>
-                  <td className="px-4 py-3 hidden sm:table-cell text-slate-400">{k.branche || '–'}</td>
+                  <td className="px-4 py-3 hidden lg:table-cell text-slate-400">{k.telefon || 'Keine Angabe.'}</td>
+                  <td className="px-4 py-3 hidden sm:table-cell text-slate-400">{k.branche || 'Keine Angabe.'}</td>
                   <td className="px-4 py-3">
                     <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUS_COLOR[k.status]}`}>
                       {STATUS_LABEL[k.status]}

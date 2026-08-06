@@ -29,12 +29,12 @@ const PRIO_COLOR: Record<TaskPrioritaet, string> = {
 };
 
 function formatCHF(v?: number) {
-  if (!v) return '–';
+  if (!v) return 'Keine Angabe.';
   return `CHF ${v.toLocaleString('de-CH')}`;
 }
 
 function formatDate(iso?: string) {
-  if (!iso) return '–';
+  if (!iso) return 'Keine Angabe.';
   return new Date(iso).toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: '2-digit' });
 }
 
@@ -101,7 +101,7 @@ function ProjektModal({ projekt, kunden, onClose, onSaved }: {
             <div>
               <label className="block text-xs text-slate-500 mb-1">Kunde</label>
               <select value={form.kunden_id ?? ''} onChange={e => set('kunden_id', e.target.value || undefined)} className={inputCls}>
-                <option value="">– Kein Kunde –</option>
+                <option value="">Kein Kunde.</option>
                 {kunden.map(k => <option key={k.id} value={k.id}>{k.firmenname || k.kontaktperson}</option>)}
               </select>
             </div>
@@ -146,7 +146,7 @@ function ProjektModal({ projekt, kunden, onClose, onSaved }: {
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-slate-400 hover:text-white border border-[#2d3144] hover:border-slate-500 transition-colors">Abbrechen</button>
             <button type="submit" disabled={saving} className="px-4 py-2 rounded-lg text-sm font-medium bg-[#6366f1] hover:bg-[#5254cc] disabled:opacity-50 text-white transition-colors">
-              {saving ? 'Speichern…' : 'Speichern'}
+              {saving ? 'Ich speichere das Projekt.' : 'Speichern'}
             </button>
           </div>
         </form>
@@ -204,7 +204,7 @@ function TaskModal({ task, projektId, onClose, onSaved }: {
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
             <label className="block text-xs text-slate-500 mb-1">Titel *</label>
-            <input value={form.titel ?? ''} onChange={e => set('titel', e.target.value)} className={inputCls} placeholder="Task beschreiben…" autoFocus />
+            <input value={form.titel ?? ''} onChange={e => set('titel', e.target.value)} className={inputCls} placeholder="Beschreibe die Aufgabe." autoFocus />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -234,7 +234,7 @@ function TaskModal({ task, projektId, onClose, onSaved }: {
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-slate-400 hover:text-white border border-[#2d3144] hover:border-slate-500 transition-colors">Abbrechen</button>
             <button type="submit" disabled={saving} className="px-4 py-2 rounded-lg text-sm font-medium bg-[#6366f1] hover:bg-[#5254cc] disabled:opacity-50 text-white transition-colors">
-              {saving ? 'Speichern…' : 'Speichern'}
+              {saving ? 'Ich speichere die Aufgabe.' : 'Speichern'}
             </button>
           </div>
         </form>
@@ -299,7 +299,7 @@ function TaskKanban({ projekt, onBack }: { projekt: Projekt; onBack: () => void 
       </div>
 
       {loading ? (
-        <div className="flex-1 flex items-center justify-center text-slate-500 text-sm">Lädt…</div>
+        <div className="flex-1 flex items-center justify-center text-slate-500 text-sm">Das Projekt wird geladen.</div>
       ) : (
         <div className="flex-1 overflow-x-auto">
           <div className="flex gap-4 h-full min-w-max pb-4">
@@ -404,7 +404,7 @@ export default function ProjektePage() {
       </div>
 
       {loading ? (
-        <div className="py-16 text-center text-slate-500 text-sm">Lädt…</div>
+        <div className="py-16 text-center text-slate-500 text-sm">Die Projekte werden geladen.</div>
       ) : projekte.length === 0 ? (
         <div className="py-16 text-center">
           <p className="text-slate-400 text-sm">Noch keine Projekte.</p>
@@ -427,7 +427,7 @@ export default function ProjektePage() {
                 </div>
                 {p.beschreibung && <p className="text-sm text-slate-400 mb-3 line-clamp-2">{p.beschreibung}</p>}
                 <div className="flex items-center justify-between text-xs text-slate-500 mb-4">
-                  <span className="flex items-center gap-1"><Calendar size={11} /> {formatDate(p.start_datum)} – {formatDate(p.end_datum)}</span>
+                  <span className="flex items-center gap-1"><Calendar size={11} /> {formatDate(p.start_datum)} bis {formatDate(p.end_datum)}</span>
                   {p.budget && <span className="font-medium text-slate-300">{formatCHF(p.budget)}</span>}
                 </div>
                 <div className="flex items-center gap-2">

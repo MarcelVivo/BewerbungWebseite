@@ -47,7 +47,7 @@ const C = {
       {
         heading: 'Urheberrecht',
         content: [
-          'Alle Inhalte dieser Website (Texte, Bilder, Grafiken, Dokumente) sind urheberrechtlich geschützt. Eine Vervielfältigung, Verbreitung oder öffentliche Wiedergabe – auch auszugsweise – ist ohne ausdrückliche schriftliche Genehmigung von Marcel Spahr nicht gestattet.',
+          'Alle Inhalte dieser Website, darunter Texte, Bilder, Grafiken und Dokumente, sind urheberrechtlich geschützt. Eine Vervielfältigung, Verbreitung oder öffentliche Wiedergabe ist auch in Auszügen nur mit der ausdrücklichen schriftlichen Genehmigung von Marcel Spahr gestattet.',
         ],
       },
       {
@@ -104,7 +104,7 @@ const C = {
       {
         heading: 'Copyright',
         content: [
-          'All content on this website (texts, images, graphics, documents) is protected by copyright. Reproduction, distribution, or public disclosure – even in part – is not permitted without the express written consent of Marcel Spahr.',
+          'All content on this website, including text, images, graphics and documents, is protected by copyright. Reproduction, distribution or public disclosure, including in part, requires the express written consent of Marcel Spahr.',
         ],
       },
       {

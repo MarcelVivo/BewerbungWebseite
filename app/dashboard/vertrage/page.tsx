@@ -43,7 +43,7 @@ const TEMPLATE_CFG: Record<TemplateTyp, string> = {
 };
 
 function formatDate(iso?: string | null) {
-  if (!iso) return '–';
+  if (!iso) return 'Keine Angabe.';
   return new Date(iso).toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
@@ -137,10 +137,10 @@ function VertragModal({ vertrag, kunden, projekte, onClose, onSaved }: {
                   <label className="block text-xs text-slate-400 mb-1">Kunde</label>
                   <select value={form.kunden_id || ''} onChange={e => set('kunden_id', e.target.value || undefined)}
                     className="w-full bg-[#2d3144] border border-[#3d4460] rounded-lg px-3 py-2 text-white text-sm">
-                    <option value="">— Kein Kunde —</option>
+                    <option value="">Kein Kunde.</option>
                     {kunden.map(k => (
                       <option key={k.id} value={k.id}>
-                        {k.firmenname ? `${k.firmenname} – ${k.kontaktperson}` : k.kontaktperson}
+                        {k.firmenname ? `${k.firmenname}. ${k.kontaktperson}.` : k.kontaktperson}
                       </option>
                     ))}
                   </select>
@@ -149,7 +149,7 @@ function VertragModal({ vertrag, kunden, projekte, onClose, onSaved }: {
                   <label className="block text-xs text-slate-400 mb-1">Projekt</label>
                   <select value={form.projekt_id || ''} onChange={e => set('projekt_id', e.target.value || undefined)}
                     className="w-full bg-[#2d3144] border border-[#3d4460] rounded-lg px-3 py-2 text-white text-sm">
-                    <option value="">— Kein Projekt —</option>
+                    <option value="">Kein Projekt.</option>
                     {projekte.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                   </select>
                 </div>
@@ -159,7 +159,7 @@ function VertragModal({ vertrag, kunden, projekte, onClose, onSaved }: {
                   <label className="block text-xs text-slate-400 mb-1">Vorlage</label>
                   <select value={form.template_typ || ''} onChange={e => set('template_typ', e.target.value || undefined)}
                     className="w-full bg-[#2d3144] border border-[#3d4460] rounded-lg px-3 py-2 text-white text-sm">
-                    <option value="">— Wählen —</option>
+                    <option value="">Bitte wählen.</option>
                     {(Object.keys(TEMPLATE_CFG) as TemplateTyp[]).map(k => (
                       <option key={k} value={k}>{TEMPLATE_CFG[k]}</option>
                     ))}
@@ -193,7 +193,7 @@ function VertragModal({ vertrag, kunden, projekte, onClose, onSaved }: {
             <div>
               <label className="block text-xs text-slate-400 mb-2">Vertragstext</label>
               <textarea rows={18} value={form.inhalt || ''} onChange={e => set('inhalt', e.target.value)}
-                placeholder="Vollständigen Vertragstext hier eingeben…"
+                placeholder="Gib hier den vollständigen Vertragstext ein."
                 className="w-full bg-[#2d3144] border border-[#3d4460] rounded-lg px-3 py-2 text-white text-xs font-mono leading-relaxed resize-none" />
             </div>
           )}
@@ -207,7 +207,7 @@ function VertragModal({ vertrag, kunden, projekte, onClose, onSaved }: {
             <div className="flex gap-3">
               <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-slate-400 hover:text-white text-sm">Abbrechen</button>
               <button type="submit" disabled={saving} className="px-4 py-2 bg-ms-500 hover:bg-ms-600 text-white rounded-lg text-sm disabled:opacity-50">
-                {saving ? 'Speichern…' : 'Speichern'}
+                {saving ? 'Ich speichere den Vertrag.' : 'Speichern'}
               </button>
             </div>
           </div>
@@ -292,7 +292,7 @@ export default function VertragePage() {
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-          <input type="text" placeholder="Titel oder Kunde suchen…" value={search} onChange={e => setSearch(e.target.value)}
+          <input type="text" placeholder="Suche nach Titel oder Kunde." value={search} onChange={e => setSearch(e.target.value)}
             className="w-full bg-[#1e2235] border border-[#2d3144] rounded-xl pl-9 pr-3 py-2.5 text-white text-sm placeholder-slate-500 focus:border-ms-500 outline-none" />
         </div>
         <select value={filterStatus} onChange={e => setFilter(e.target.value as VertragStatus | '')}
@@ -305,7 +305,7 @@ export default function VertragePage() {
       </div>
 
       {loading ? (
-        <div className="text-slate-400 text-sm">Lade Daten…</div>
+        <div className="text-slate-400 text-sm">Die Verträge werden geladen.</div>
       ) : filtered.length === 0 ? (
         <div className="bg-[#1e2235] border border-[#2d3144] rounded-2xl p-12 text-center">
           <FileSignature size={40} className="mx-auto text-slate-600 mb-3" />

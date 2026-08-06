@@ -187,7 +187,7 @@ export default function ProjectsPage() {
         </div>
         <div className="flex items-center gap-3">
           <button disabled={busy} onClick={save} className="btn btn-primary px-4 py-2 disabled:opacity-60">
-            {busy ? 'Speichern…' : isEditing ? 'Änderungen speichern' : 'Anlegen'}
+            {busy ? 'Ich speichere das Projekt.' : isEditing ? 'Änderungen speichern' : 'Anlegen'}
           </button>
           {isEditing && (
             <button className="btn btn-soft px-4 py-2" onClick={() => setForm({ id: null, type: 'certificate', title: '', description: '', url: '', file: null })}>
@@ -198,7 +198,7 @@ export default function ProjectsPage() {
         </div>
       </div>
 
-      {loading ? <div className="text-sm text-slate-600">Lädt…</div> : null}
+      {loading ? <div className="text-sm text-slate-600">Die Projekte werden geladen.</div> : null}
       {!loading && !items.length ? <div className="text-sm text-slate-500">Keine Dokumente vorhanden.</div> : null}
 
       <div className="space-y-6">

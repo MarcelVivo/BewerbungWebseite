@@ -12,7 +12,7 @@
     "id": "safe-2025",
     "title": "SAFe Zertifikat 2025",
     "type": "certificate",
-    "description": "Das SAFe Zertifikat weist meine Fähigkeiten im skalierbaren agilen Arbeiten nach. Ich kann Abläufe in grösseren Organisationen abstimmen und mehrere Teams strukturiert koordinieren. Diese Kenntnisse helfen mir, komplexe Projekte stabil und zielgerichtet zu steuern.",
+    "description": "Das SAFe Zertifikat bestätigt meine Kenntnisse in der Zusammenarbeit mehrerer agiler Teams. Ich kann Abläufe in grösseren Organisationen abstimmen und gemeinsame Ziele und Abhängigkeiten verständlich festhalten.",
     "url": "/assets/SAFeZertifikatMarcelSpahr.pdf",
     "code": "",
     "createdAt": 2
@@ -21,7 +21,7 @@
     "id": "cambridge-a2-2025",
     "title": "Englisch A2 Diplom 2025",
     "type": "certificate",
-    "description": "Das Diplom bestätigt meine Englischkenntnisse auf Niveau A2. Ich kann grundlegende Gespräche führen, berufliche Inhalte verstehen und mich zuverlässig schriftlich ausdrücken. Damit bin ich in internationalen oder englischsprachigen Situationen solide handlungsfähig.",
+    "description": "Das Diplom bestätigt meine Englischkenntnisse auf Niveau A2. Ich kann einfache Gespräche führen und grundlegende berufliche Inhalte lesen und schriftlich beantworten.",
     "url": "/assets/CambridgeEnglischA2ZertifikatMarcelSpahr.pdf",
     "code": "",
     "createdAt": 3
@@ -30,7 +30,7 @@
     "id": "scrum-2024",
     "title": "Scrum Master Zertifikat 2024",
     "type": "certificate",
-    "description": "Dieses Zertifikat bestätigt meine Kenntnisse im agilen Arbeiten sowie die sichere Anwendung des Scrum Frameworks. Ich führe Teams fokussiert durch den Prozess und sorge für eine klare, effiziente Zusammenarbeit. Dadurch gelingt es mir, Projekte strukturiert voranzutreiben und ein produktives Arbeitsumfeld zu schaffen.",
+    "description": "Dieses Zertifikat bestätigt meine Kenntnisse in Scrum. Ich kenne die Rollen, Ereignisse und Arbeitsmittel des Frameworks und kann Teams dabei unterstützen, Hindernisse sichtbar zu machen und ihre Zusammenarbeit zu verbessern.",
     "url": "/assets/SCRUMZertifikat.pdf",
     "code": "",
     "createdAt": 4
@@ -57,7 +57,7 @@
     "id": "zeugnis-swisscom",
     "title": "Arbeitszeugnis Swisscom 2025",
     "type": "zeugnis",
-    "description": "Das Arbeitszeugnis bestätigt meine langjährige Erfahrung im ICT Umfeld, meine Rolle in der Prozessoptimierung und Digitalisierung sowie eine zuverlässige und lösungsorientierte Arbeitsweise. Diese Zeit hat meine fachliche Tiefe und meine Fähigkeit zur strukturierten Problemlösung entscheidend geprägt.",
+    "description": "Das Arbeitszeugnis bestätigt meine langjährige Erfahrung bei Swisscom. Es beschreibt meine Arbeit in Prozessverbesserung und Digitalisierung sowie meine zuverlässige und strukturierte Arbeitsweise.",
     "url": "/assets/ArbeitszeugnisSwisscomMarcelSpahr2025.pdf",
     "code": "",
     "createdAt": 7
@@ -73,9 +73,9 @@
   },
   {
     "id": "portfolio-aila",
-    "title": "Transferbericht AILA – KI-gestützte Gesprächsanalyse",
+    "title": "Transferbericht AILA. KI gestützte Gesprächsanalyse.",
     "type": "project",
-    "description": "Der Bericht analysiert die Machbarkeit von AILA, einem KI-System zur Echtzeitanalyse von Kundengesprächen. Ich untersuchte NLP, Maschinelles Lernen, Sentiment-Analyse und Datenschutz und simulierte einen möglichen Einsatz im Call-Center. Die Arbeit zeigt mein technisches Verständnis und meine Fähigkeit, KI-Lösungen praxisnah zu evaluieren.",
+    "description": "In diesem Bericht prüfe ich die Machbarkeit von AILA, einem KI System zur Analyse von Kundengesprächen in Echtzeit. Ich untersuchte Sprachverarbeitung, maschinelles Lernen, Stimmungsanalyse und Datenschutz und simulierte einen möglichen Einsatz im Kundendienst.",
     "url": "/assets/TransferberichtMarcelSpahrAILA.pdf",
     "code": "",
     "createdAt": 9
@@ -84,7 +84,7 @@
     "id": "portfolio-olivenpaste",
     "title": "Business Konzept Olivias Olivenpaste",
     "type": "project",
-    "description": "Das Konzept beschreibt die vollständige Entwicklung eines nachhaltigen Bio-Produkts – von der Produktidee über Marken- und Verpackungsdesign bis zu Marktanalyse, SWOT und Business Canvas. Es zeigt meine Stärke in ganzheitlicher Produktentwicklung und betont mein Verständnis für Marktmechanismen, Positionierung und wirtschaftliche Machbarkeit.",
+    "description": "In diesem Konzept entwickle ich ein nachhaltiges Bioprodukt von der ersten Idee bis zur Planung für den Markt. Ich behandle Marke, Verpackung, Marktanalyse, SWOT und Business Model Canvas und prüfe dabei auch die wirtschaftliche Machbarkeit.",
     "url": "/assets/OliviasOlivenpaste_MarcelSpahr.pdf",
     "code": "",
     "createdAt": 10
@@ -93,7 +93,7 @@
     "id": "portfolio-software-re",
     "title": "Projektarbeit Software- & Requirements Engineering",
     "type": "project",
-    "description": "Die Arbeit zeigt mein Verständnis für moderne Softwareentwicklung, präzise Anforderungsanalyse und den Einsatz professioneller Werkzeuge wie UML, BPMN und Jira. Behandelt werden strukturierte Spezifikation, Validierung, agile Methoden und DevOps. Der Fokus liegt auf sauber definierten Anforderungen als Grundlage für robuste Softwarelösungen.",
+    "description": "In dieser Arbeit zeige ich, wie ich Anforderungen für eine Software erhebe, dokumentiere und prüfe. Dafür nutze ich UML, BPMN und Jira und behandle auch agile Methoden und DevOps. Klar beschriebene Anforderungen bilden die Grundlage für die weitere Entwicklung.",
     "url": "/assets/FinalArbeitSoftwareundRequirementsEngineering.pdf",
     "code": "",
     "createdAt": 11
@@ -102,7 +102,7 @@
     "id": "portfolio-streetparade",
     "title": "Marketingkonzept Streetparade Love Mobile",
     "type": "project",
-    "description": "Dieses Konzept zeigt meine Fähigkeit, ein gesamtes Marketingprojekt strategisch und operativ umzusetzen. Mit einem 90s-Eurodance-Motto entwickelte ich Zielgruppenanalysen, Social-Media-Strategien, eine Customer Journey und ein Erlösmodell. Das Projekt kombiniert kreative Markenentwicklung mit strukturiertem, datenbasiertem Marketing.",
+    "description": "Für dieses Marketingprojekt mit einem Eurodance Motto der neunziger Jahre erstellte ich eine Zielgruppenanalyse, eine Strategie für Social Media, eine Customer Journey und ein Erlösmodell. Ich plante sowohl die Marke als auch die konkrete Umsetzung der Kampagne.",
     "url": "/assets/90sLoveMobileProjektarbeit_Digital Marketing-Final.pdf",
     "code": "",
     "createdAt": 12
@@ -111,7 +111,7 @@
     "id": "portfolio-fuehrungshandbuch",
     "title": "Persönliches Führungshandbuch",
     "type": "project",
-    "description": "In diesem Handbuch habe ich meine Haltung und Arbeitsweise als Führungsperson praxisnah und ehrlich beschrieben. Es basiert auf meiner bisherigen Erfahrung in der Personalführung sowie auf meinen Werten: Vertrauen, Klarheit, Empathie und Zielorientierung. Das Handbuch zeigt, wie ich mit echten Alltagssituationen im Büro umgehe – strukturiert, menschlich und lösungsorientiert. Es ist kein Theoriewerk, sondern ein persönlicher Leitfaden, wie ich als ruhiger, vorausdenkender und engagierter Mensch Teams erfolgreich führe und entwickle.",
+    "description": "In diesem Handbuch beschreibe ich meine Haltung und Arbeitsweise als Führungsperson. Es beruht auf meiner Erfahrung in der Personalführung und auf meinen Werten Vertrauen, Klarheit, Einfühlungsvermögen und Zielorientierung. An konkreten Situationen zeige ich, wie ich Entscheidungen treffe, Gespräche führe und ein Team begleite.",
     "url": "/assets/Personliches_Fuhrungshandbuch_MarcelSpahr.pdf",
     "code": "",
     "createdAt": 13

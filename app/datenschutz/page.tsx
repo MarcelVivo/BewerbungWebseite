@@ -43,8 +43,8 @@ const C: Record<'de' | 'en', { title: string; subtitle: string; back: string; up
           'Zur technischen Abwicklung werden folgende Auftragsverarbeiter eingesetzt:',
         ],
         list: [
-          'Supabase Inc. (San Francisco, USA) – Datenbankablage; Rechenzentrum Frankfurt/EU; Datenübertragung auf Basis von EU-Standardvertragsklauseln (SCCs)',
-          'Resend Inc. (San Francisco, USA) – E-Mail-Versand; Datenübertragung auf Basis von SCCs',
+          'Supabase Inc. mit Sitz in San Francisco in den USA speichert die Daten in einem Rechenzentrum in Frankfurt in der EU. Eine Datenübertragung erfolgt auf Basis der EU Standardvertragsklauseln.',
+          'Resend Inc. mit Sitz in San Francisco in den USA versendet E-Mails. Eine Datenübertragung erfolgt auf Basis der EU Standardvertragsklauseln.',
         ],
       },
       {
@@ -76,7 +76,7 @@ const C: Record<'de' | 'en', { title: string; subtitle: string; back: string; up
           'Für jeden Seitenaufruf wird im Arbeitsspeicher des Browsers eine zufällige, nicht dauerhafte Kennung erzeugt. Sie wird weder in Cookies noch in localStorage oder sessionStorage gespeichert und ist nach einem Neuladen nicht wiedererkennbar. Im Analyse-Datensatz werden keine IP-Adresse, kein User-Agent, keine Formulareingaben und kein Geräte-Fingerabdruck gespeichert. Es entstehen keine dauerhaften Nutzerprofile und keine websiteübergreifende Nachverfolgung.',
           'Die Daten werden in der Supabase-Datenbank in Frankfurt/EU gespeichert, ausschliesslich intern ausgewertet und spätestens nach 180 Tagen automatisch gelöscht. Global Privacy Control und die Browser-Einstellung Do Not Track werden respektiert. Rechtsgrundlage ist das berechtigte Interesse an der verständlichen und wirksamen Gestaltung des eigenen Webangebots. Für diese Messung werden keine Tracking-Cookies gesetzt; daher wird hierfür kein Cookie-Banner eingeblendet.',
           'Diese Website verwendet kein Google Analytics, keinen Meta Pixel und keine externen Werbe- oder Profiling-Dienste.',
-          'Google Fonts werden von Next.js lokal auf dem Webserver bereitgestellt – es erfolgt keine Verbindung zu Google-Servern.',
+          'Google Fonts werden von Next.js lokal auf dem Webserver bereitgestellt. Dabei wird keine Verbindung zu Servern von Google hergestellt.',
         ],
       },
       {
@@ -148,8 +148,8 @@ const C: Record<'de' | 'en', { title: string; subtitle: string; back: string; up
           'The following processors handle the technical transmission:',
         ],
         list: [
-          'Supabase Inc. (San Francisco, USA) – database storage; data centre in Frankfurt/EU; data transfer based on EU Standard Contractual Clauses (SCCs)',
-          'Resend Inc. (San Francisco, USA) – email delivery; data transfer based on SCCs',
+          'Supabase Inc. is based in San Francisco in the USA and stores data in a data centre in Frankfurt in the EU. Data transfers are based on EU Standard Contractual Clauses.',
+          'Resend Inc. is based in San Francisco in the USA and delivers emails. Data transfers are based on EU Standard Contractual Clauses.',
         ],
       },
       {
@@ -181,7 +181,7 @@ const C: Record<'de' | 'en', { title: string; subtitle: string; back: string; up
           'A random, non-persistent identifier is generated in browser memory for each page load. It is not stored in cookies, localStorage or sessionStorage and cannot be recognised after reloading. No IP address, user agent, form input or device fingerprint is stored in the analytics dataset. No persistent user profiles or cross-site tracking are created.',
           'The data is stored in the Supabase database in Frankfurt/EU, used solely for internal analysis and automatically deleted after no more than 180 days. Global Privacy Control and the browser Do Not Track setting are respected. Processing is based on the legitimate interest in making this website clear and effective. This measurement does not set tracking cookies; no cookie banner is therefore displayed for it.',
           'This website does not use Google Analytics, Meta Pixel or external advertising or profiling services.',
-          'Google Fonts are served locally by Next.js from the web server — no connection to Google servers is made.',
+          'Google Fonts are served locally by Next.js from the web server. No connection to Google servers is made.',
         ],
       },
       {

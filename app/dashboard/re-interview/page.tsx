@@ -102,7 +102,7 @@ const NF_CHIPS = [
   'SSL / IT-Sicherheit',
   'SEO-tauglich',
   'Mehrsprachig (DE/EN/FR)',
-  'Skalierbar',
+  'Für mehr Nutzung ausgelegt',
   'Analytics / Tracking',
   'Browser-Kompatibilität',
   'Backup & Recovery',
@@ -126,7 +126,7 @@ const ANF_SEGMENT: Record<string, string[]> = {
 const ANF_PROJEKT: Record<string, string[]> = {
   'Neue Website':        ['Responsive Design', 'CMS (einfach pflegbar)', 'SEO-Optimierung', 'Schnelle Ladezeit', 'DSGVO-konform', 'Cookie-Banner', 'Analytics', 'SSL'],
   'Website Redesign':    ['Inhalte übernehmen', 'Neues Design / CI', 'SEO nicht verlieren', 'Mobile UX verbessern', 'Modernere Technologie', 'A/B Testing', 'Ladezeit optimieren'],
-  'Prozessoptimierung':  ['Automatisierung', 'Weniger manuelle Eingaben', 'Reporting/Dashboard', 'Systemintegration', 'Fehlerreduktion', 'Zeitersparnis messbar', 'Skalierbarkeit'],
+  'Prozessoptimierung':  ['Automatisierung', 'Weniger manuelle Eingaben', 'Reporting/Dashboard', 'Systemintegration', 'Fehlerreduktion', 'Zeitersparnis messbar', 'Für mehr Nutzung ausgelegt'],
   'Marketing Strategie': ['Zielgruppen-Definition', 'Content-Kalender', 'Social Media Plan', 'SEO-Strategie', 'E-Mail Marketing', 'Paid Ads', 'KPI-Definition', 'Wettbewerbsanalyse'],
   'KI-Integration':      ['KI-Chatbot', 'Automatische Zusammenfassungen', 'KI-Suche', 'Dokumentenanalyse', 'Empfehlungssystem', 'Datenschutz/DSGVO', 'Training auf eigene Daten', 'API-Anbindung'],
   'App / Plattform':     ['Login/Registrierung', 'Mobile App (iOS/Android)', 'Admin-Dashboard', 'Push-Notifications', 'Offline-Funktion', 'API-Schnittstellen', 'Rollen/Rechte', 'Zahlungsintegration'],
@@ -136,13 +136,13 @@ const ANF_PROJEKT: Record<string, string[]> = {
 };
 
 const BUDGET_OPTIONS = [
-  "Unter CHF 2'000", "CHF 2'000 – 5'000", "CHF 5'000 – 15'000",
-  "CHF 15'000 – 30'000", "Über CHF 30'000", 'Noch nicht definiert',
+  "Unter CHF 2'000", "CHF 2'000 bis 5'000", "CHF 5'000 bis 15'000",
+  "CHF 15'000 bis 30'000", "Über CHF 30'000", 'Noch nicht definiert',
 ];
 
 const ZEIT_OPTIONS = [
-  'So bald wie möglich', '1 – 2 Monate', '3 – 6 Monate',
-  '6 – 12 Monate', 'Über 1 Jahr', 'Noch offen',
+  'So bald wie möglich', '1 bis 2 Monate', '3 bis 6 Monate',
+  '6 bis 12 Monate', 'Über 1 Jahr', 'Noch offen',
 ];
 
 const STEPS = [
@@ -296,7 +296,7 @@ export default function ReInterviewPage() {
 
   function autoTitle() {
     if (!iv.projekttitel) {
-      set('projekttitel', `${iv.projekttyp} – ${iv.kundenName}`);
+      set('projekttitel', `${iv.projekttyp}. ${iv.kundenName}.`);
     }
   }
 
@@ -350,11 +350,11 @@ export default function ReInterviewPage() {
       ``,
       `Bitte erstelle basierend auf diesen Anforderungen:`,
       ``,
-      `1. **Projektbeschreibung** – Kurze, klare Zusammenfassung des Projekts und Ziels`,
-      `2. **Technische Architektur** – Empfohlener Tech-Stack und Systemaufbau`,
-      `3. **Epics & User Stories** – Priorisierte Aufgabenliste (Must-haves zuerst)`,
-      `4. **Grober Zeitplan** – Meilensteine basierend auf Zeitrahmen und Budget`,
-      `5. **Offene Fragen** – Was muss noch geklärt werden, bevor mit der Umsetzung gestartet werden kann?`,
+      `1. **Projektbeschreibung.** Fasse das Projekt und sein Ziel kurz und klar zusammen.`,
+      `2. **Technische Architektur.** Empfehle einen passenden technischen Aufbau.`,
+      `3. **Aufgaben und User Stories.** Ordne die Aufgaben nach ihrer Wichtigkeit.`,
+      `4. **Grober Zeitplan.** Nenne Meilensteine passend zu Zeitrahmen und Budget.`,
+      `5. **Offene Fragen.** Halte fest, was vor der Umsetzung noch geklärt werden muss.`,
     );
 
     return lines.join('\n');
@@ -370,7 +370,7 @@ export default function ReInterviewPage() {
     setSaving(true);
     const must = iv.anforderungen.filter(a => a.prio === 'must').map(a => `  • ${a.text}`).join('\n');
     const nice = iv.anforderungen.filter(a => a.prio === 'nice').map(a => `  ◇ ${a.text}`).join('\n');
-    const nf   = iv.nfAnforderungen.map(a => `  – ${a}`).join('\n');
+    const nf   = iv.nfAnforderungen.map(a => `  ${a}.`).join('\n');
 
     const beschreibung = [
       `=== RE-Interview Auswertung ===`,
@@ -402,7 +402,7 @@ export default function ReInterviewPage() {
 
     const sb = createClient();
     const { error } = await sb.from('projekte').insert({
-      name:        iv.projekttitel || `${iv.projekttyp} – ${iv.kundenName}`,
+      name:        iv.projekttitel || `${iv.projekttyp}. ${iv.kundenName}.`,
       kunden_id:   iv.kunden_id || null,
       status:      'aktiv',
       beschreibung,
@@ -427,7 +427,7 @@ export default function ReInterviewPage() {
                 onChange={e => handleKundeSelect(e.target.value)}
                 className={inp}
               >
-                <option value="">– Neuer / kein Eintrag –</option>
+                <option value="">Neuer oder kein Eintrag.</option>
                 {kunden.map(k => (
                   <option key={k.id} value={k.id}>{k.firmenname || k.kontaktperson}</option>
                 ))}
@@ -525,7 +525,7 @@ export default function ReInterviewPage() {
             onChange={e => set('schmerzpunkteText', e.target.value)}
             rows={2}
             className={inp + ' resize-none'}
-            placeholder="Weitere Schmerzpunkte in eigenen Worten…"
+            placeholder="Beschreibe weitere Probleme in eigenen Worten."
           />
         </div>
       </div>
@@ -562,7 +562,7 @@ export default function ReInterviewPage() {
               onChange={e => setCustomAnfInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addCustomAnf())}
               className={inp + ' flex-1'}
-              placeholder="Eigene Anforderung hinzufügen…"
+              placeholder="Füge eine eigene Anforderung hinzu."
             />
             <button
               type="button"
@@ -600,7 +600,7 @@ export default function ReInterviewPage() {
               onChange={e => set('anforderungenText', e.target.value)}
               rows={2}
               className={inp + ' resize-none'}
-              placeholder="Weitere Anforderungen in eigenen Worten…"
+              placeholder="Beschreibe weitere Anforderungen in eigenen Worten."
             />
           </div>
         </div>
@@ -688,7 +688,7 @@ export default function ReInterviewPage() {
             onChange={e => set('techEinschraenkungen', e.target.value)}
             rows={2}
             className={inp + ' resize-none'}
-            placeholder="z.B. Muss mit Wordpress kompatibel sein, kein AWS, bestehende Datenbank beibehalten…"
+            placeholder="Zum Beispiel muss die Lösung mit WordPress kompatibel sein oder eine bestehende Datenbank behalten."
           />
         </div>
 
@@ -699,7 +699,7 @@ export default function ReInterviewPage() {
             onChange={e => set('notizen', e.target.value)}
             rows={3}
             className={inp + ' resize-none'}
-            placeholder="Persönliche Eindrücke, Besonderheiten, Offene Punkte…"
+            placeholder="Halte persönliche Eindrücke, Besonderheiten und offene Punkte fest."
           />
         </div>
       </div>
@@ -718,7 +718,7 @@ export default function ReInterviewPage() {
               <CheckCircle2 size={32} className="text-green-400" />
             </div>
             <p className="text-white font-semibold text-lg">Projekt erstellt!</p>
-            <p className="text-slate-400 text-sm">Weiterleitung zu Projekte…</p>
+            <p className="text-slate-400 text-sm">Du wirst zu den Projekten weitergeleitet.</p>
           </div>
         ) : (
           <>
@@ -730,15 +730,15 @@ export default function ReInterviewPage() {
               <div className="grid sm:grid-cols-3 gap-3 text-sm">
                 <div>
                   <span className="text-slate-500 text-xs">Kunde</span>
-                  <p className="text-white font-medium">{iv.kundenName || '–'}</p>
+                  <p className="text-white font-medium">{iv.kundenName || 'Keine Angabe.'}</p>
                 </div>
                 <div>
                   <span className="text-slate-500 text-xs">Branche</span>
-                  <p className="text-white font-medium">{iv.branche || '–'}</p>
+                  <p className="text-white font-medium">{iv.branche || 'Keine Angabe.'}</p>
                 </div>
                 <div>
                   <span className="text-slate-500 text-xs">Projekttyp</span>
-                  <p className="text-white font-medium">{iv.projekttyp || '–'}</p>
+                  <p className="text-white font-medium">{iv.projekttyp || 'Keine Angabe.'}</p>
                 </div>
               </div>
             </div>
@@ -832,7 +832,7 @@ export default function ReInterviewPage() {
                 </button>
               </div>
               <p className="text-xs text-slate-500">
-                Dieser Prompt fasst alle Anforderungen strukturiert zusammen – direkt in Claude Code einfügen.
+                Dieser Prompt fasst alle Anforderungen zusammen. Du kannst ihn direkt in Claude Code einfügen.
               </p>
               <pre className="text-xs text-slate-300 bg-[#0f1117] rounded-lg border border-[#2d3144] p-4 overflow-auto max-h-64 whitespace-pre-wrap leading-relaxed font-mono">
                 {generatePrompt()}
@@ -849,7 +849,7 @@ export default function ReInterviewPage() {
                   onChange={e => set('projekttitel', e.target.value)}
                   onFocus={autoTitle}
                   className={inp}
-                  placeholder={`${iv.projekttyp} – ${iv.kundenName}`}
+                  placeholder={`${iv.projekttyp}. ${iv.kundenName}.`}
                 />
               </div>
               <button
@@ -857,7 +857,7 @@ export default function ReInterviewPage() {
                 disabled={saving}
                 className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[#6366f1] hover:bg-[#5254cc] disabled:opacity-50 text-white font-semibold transition-colors"
               >
-                {saving ? 'Erstelle Projekt…' : <><Sparkles size={16} /> Projekt aus Interview erstellen</>}
+                {saving ? 'Ich erstelle das Projekt.' : <><Sparkles size={16} /> Projekt aus Interview erstellen</>}
               </button>
             </div>
           </>
@@ -895,7 +895,7 @@ export default function ReInterviewPage() {
   }
 
   function renderAnfragen() {
-    if (anfragenLoading) return <div className="py-16 text-center text-slate-500 text-sm">Lädt…</div>;
+    if (anfragenLoading) return <div className="py-16 text-center text-slate-500 text-sm">Die Anfragen werden geladen.</div>;
     if (anfragen.length === 0) return (
       <div className="py-16 text-center">
         <Inbox size={40} className="mx-auto mb-3 text-slate-600" />
@@ -974,7 +974,7 @@ export default function ReInterviewPage() {
                 )}
 
                 <div className="mt-4 flex gap-2">
-                  <a href={`mailto:${a.email}?subject=Ihre Projektanfrage – ${a.projekttyp}`}
+                  <a href={`mailto:${a.email}?subject=Ihre Projektanfrage. ${a.projekttyp}.`}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#6366f1] hover:bg-[#5254cc] text-white text-xs font-medium transition-colors">
                     <Mail size={12} /> Antworten
                   </a>

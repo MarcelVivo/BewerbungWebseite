@@ -97,7 +97,7 @@ function TerminModal({ termin, kunden, onClose, onSaved }: {
           <div>
             <label className="block text-xs text-slate-500 mb-1">Titel *</label>
             <input value={form.titel ?? ''} onChange={e => set('titel', e.target.value)}
-              className={inputCls} placeholder="Kundengespräch, Workshop…" autoFocus />
+              className={inputCls} placeholder="Zum Beispiel ein Kundengespräch oder Workshop." autoFocus />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -111,7 +111,7 @@ function TerminModal({ termin, kunden, onClose, onSaved }: {
             <div>
               <label className="block text-xs text-slate-500 mb-1">Kunde</label>
               <select value={form.kunden_id ?? ''} onChange={e => set('kunden_id', e.target.value || undefined)} className={inputCls}>
-                <option value="">– Kein Kunde –</option>
+                <option value="">Kein Kunde.</option>
                 {kunden.map(k => <option key={k.id} value={k.id}>{k.firmenname || k.kontaktperson}</option>)}
               </select>
             </div>
@@ -131,12 +131,12 @@ function TerminModal({ termin, kunden, onClose, onSaved }: {
           <div>
             <label className="block text-xs text-slate-500 mb-1">Ort</label>
             <input value={form.ort ?? ''} onChange={e => set('ort', e.target.value)}
-              className={inputCls} placeholder="Bern, Kaffeebar…" />
+              className={inputCls} placeholder="Zum Beispiel Bern oder eine Kaffeebar." />
           </div>
           <div>
             <label className="block text-xs text-slate-500 mb-1">Zoom / Meeting-Link</label>
             <input value={form.zoom_link ?? ''} onChange={e => set('zoom_link', e.target.value)}
-              className={inputCls} placeholder="https://zoom.us/j/…" />
+              className={inputCls} placeholder="Füge hier den Link zur Besprechung ein." />
           </div>
           <div>
             <label className="block text-xs text-slate-500 mb-1">Beschreibung</label>
@@ -146,7 +146,7 @@ function TerminModal({ termin, kunden, onClose, onSaved }: {
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-slate-400 hover:text-white border border-[#2d3144] transition-colors">Abbrechen</button>
             <button type="submit" disabled={saving} className="px-4 py-2 rounded-lg text-sm font-medium bg-[#6366f1] hover:bg-[#5254cc] disabled:opacity-50 text-white transition-colors">
-              {saving ? 'Speichern…' : 'Speichern'}
+              {saving ? 'Ich speichere den Termin.' : 'Speichern'}
             </button>
           </div>
         </form>
@@ -180,7 +180,7 @@ function TerminDetail({ termin, onClose, onEdit, onDelete }: {
           <div className="space-y-2 text-sm text-slate-400 mb-4">
             <div className="flex items-center gap-2">
               <Clock size={14} className="flex-shrink-0" />
-              <span>{formatTime(termin.start_zeit)} – {formatTime(termin.end_zeit)}</span>
+              <span>{formatTime(termin.start_zeit)} bis {formatTime(termin.end_zeit)}</span>
             </div>
             {termin.ort && (
               <div className="flex items-center gap-2">
@@ -309,7 +309,7 @@ export default function KalenderPage() {
 
           {/* Days */}
           {loading ? (
-            <div className="py-16 text-center text-slate-500 text-sm">Lädt…</div>
+            <div className="py-16 text-center text-slate-500 text-sm">Die Termine werden geladen.</div>
           ) : (
             <div className="grid grid-cols-7">
               {cells.map((date, i) => {

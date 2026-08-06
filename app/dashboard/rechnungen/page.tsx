@@ -24,12 +24,12 @@ const TYP_CFG: Record<RechnungTyp, { label: string; cls: string }> = {
 const MWST = 8.1;
 
 function formatCHF(v?: number | null) {
-  if (v == null) return '–';
+  if (v == null) return 'Keine Angabe.';
   return `CHF ${v.toLocaleString('de-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 function formatDate(iso?: string | null) {
-  if (!iso) return '–';
+  if (!iso) return 'Keine Angabe.';
   return new Date(iso).toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: '2-digit' });
 }
 
@@ -169,14 +169,14 @@ function RechnungModal({ rechnung, kunden, projekte, nextNr, onClose, onSaved }:
               <div>
                 <label className="block text-xs text-slate-500 mb-1">Kunde</label>
                 <select value={form.kunden_id ?? ''} onChange={e => setField('kunden_id', e.target.value || undefined)} className={inputCls}>
-                  <option value="">– Kein Kunde –</option>
+                  <option value="">Kein Kunde.</option>
                   {kunden.map(k => <option key={k.id} value={k.id}>{k.firmenname || k.kontaktperson}</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-xs text-slate-500 mb-1">Projekt</label>
                 <select value={form.projekt_id ?? ''} onChange={e => setField('projekt_id', e.target.value || undefined)} className={inputCls}>
-                  <option value="">– Kein Projekt –</option>
+                  <option value="">Kein Projekt.</option>
                   {projekte.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
               </div>
@@ -222,7 +222,7 @@ function RechnungModal({ rechnung, kunden, projekte, nextNr, onClose, onSaved }:
                       <tr key={i} className="border-t border-[#2d3144]">
                         <td className="px-2 py-1.5">
                           <input value={pos.beschreibung} onChange={e => setPos(i, 'beschreibung', e.target.value)}
-                            className="w-full bg-transparent text-white text-sm outline-none focus:bg-[#0f1117] rounded px-1 py-0.5" placeholder="Leistungsbeschreibung…" />
+                            className="w-full bg-transparent text-white text-sm outline-none focus:bg-[#0f1117] rounded px-1 py-0.5" placeholder="Beschreibe die erbrachte Leistung." />
                         </td>
                         <td className="px-2 py-1.5">
                           <input type="number" value={pos.menge} onChange={e => setPos(i, 'menge', e.target.value)}
@@ -290,7 +290,7 @@ function RechnungModal({ rechnung, kunden, projekte, nextNr, onClose, onSaved }:
               Abbrechen
             </button>
             <button type="submit" disabled={saving} className="px-4 py-2 rounded-lg text-sm font-medium bg-[#6366f1] hover:bg-[#5254cc] disabled:opacity-50 text-white transition-colors">
-              {saving ? 'Speichern…' : 'Speichern'}
+              {saving ? 'Ich speichere die Rechnung.' : 'Speichern'}
             </button>
           </div>
         </form>
@@ -396,7 +396,7 @@ export default function RechnungenPage() {
         <div className="relative flex-1">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
           <input value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Suchen nach Nummer, Kunde…"
+            placeholder="Suche nach Nummer oder Kunde."
             className="w-full pl-9 pr-4 py-2 rounded-lg bg-[#1a1d27] border border-[#2d3144] focus:border-[#6366f1] outline-none text-white text-sm placeholder-slate-500 transition-colors" />
         </div>
         {(['alle', 'rechnung', 'angebot', 'mahnung'] as const).map(t => (
@@ -410,7 +410,7 @@ export default function RechnungenPage() {
       {/* Table */}
       <div className="rounded-xl border border-[#2d3144] bg-[#1a1d27] overflow-hidden">
         {loading ? (
-          <div className="py-16 text-center text-slate-500 text-sm">Lädt…</div>
+          <div className="py-16 text-center text-slate-500 text-sm">Die Rechnungen werden geladen.</div>
         ) : filtered.length === 0 ? (
           <div className="py-16 text-center">
             <FileText size={32} className="mx-auto mb-3 text-slate-600" />
@@ -443,7 +443,7 @@ export default function RechnungenPage() {
                       <div className={`text-xs font-medium ${TYP_CFG[r.typ].cls}`}>{TYP_CFG[r.typ].label}</div>
                     </td>
                     <td className="px-4 py-3 hidden md:table-cell text-slate-300">
-                      {r.kunden?.firmenname || r.kunden?.kontaktperson || '–'}
+                      {r.kunden?.firmenname || r.kunden?.kontaktperson || 'Keine Angabe.'}
                     </td>
                     <td className="px-4 py-3 text-right">
                       <span className="font-bold text-white">{formatCHF(r.gesamtbetrag)}</span>

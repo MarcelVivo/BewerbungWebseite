@@ -221,12 +221,12 @@ export default function BewerbungenPage() {
       {/* Search */}
       <div className="relative">
         <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-        <input type="text" placeholder="Name, Firma oder E-Mail suchen…" value={search} onChange={e => setSearch(e.target.value)}
+        <input type="text" placeholder="Suche nach Name, Firma oder E-Mail." value={search} onChange={e => setSearch(e.target.value)}
           className="w-full bg-[#1e2235] border border-[#2d3144] rounded-xl pl-9 pr-3 py-2.5 text-white text-sm placeholder-slate-500 focus:border-ms-500 outline-none" />
       </div>
 
       {loading ? (
-        <div className="text-slate-400 text-sm">Lade Anfragen…</div>
+        <div className="text-slate-400 text-sm">Die Anfragen werden geladen.</div>
       ) : filtered.length === 0 ? (
         <div className="bg-[#1e2235] border border-[#2d3144] rounded-2xl p-12 text-center">
           <MessageSquare size={40} className="mx-auto text-slate-600 mb-3" />
@@ -263,12 +263,12 @@ export default function BewerbungenPage() {
                       <p className="text-slate-500 text-xs">{a.email}</p>
                     </td>
                     <td className="px-4 py-3 text-slate-400">
-                      {a.firma || <span className="text-slate-600">–</span>}
+                      {a.firma || <span className="text-slate-600">Keine Firma.</span>}
                     </td>
                     <td className="px-4 py-3">
                       {a.stellen_typ
                         ? <span className={`text-xs font-medium ${STELLEN_CFG[a.stellen_typ]?.cls}`}>{STELLEN_CFG[a.stellen_typ]?.label}</span>
-                        : <span className="text-slate-600 text-xs">–</span>}
+                        : <span className="text-slate-600 text-xs">Keine Angabe.</span>}
                     </td>
                     <td className="px-4 py-3">
                       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${cfg.cls}`}>

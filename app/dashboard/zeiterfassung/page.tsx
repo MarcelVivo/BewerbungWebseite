@@ -136,14 +136,14 @@ function EntryModal({ projekte, kunden, onClose, onSaved }: {
             <div>
               <label className="block text-xs text-slate-500 mb-1">Projekt</label>
               <select value={form.projekt_id} onChange={e => set('projekt_id', e.target.value)} className={inputCls}>
-                <option value="">– Kein Projekt –</option>
+                <option value="">Kein Projekt.</option>
                 {projekte.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             </div>
             <div>
               <label className="block text-xs text-slate-500 mb-1">Kunde</label>
               <select value={form.kunden_id} onChange={e => set('kunden_id', e.target.value)} className={inputCls}>
-                <option value="">– Kein Kunde –</option>
+                <option value="">Kein Kunde.</option>
                 {kunden.map(k => <option key={k.id} value={k.id}>{k.firmenname || k.kontaktperson}</option>)}
               </select>
             </div>
@@ -156,7 +156,7 @@ function EntryModal({ projekte, kunden, onClose, onSaved }: {
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-slate-400 hover:text-white border border-[#2d3144] transition-colors">Abbrechen</button>
             <button type="submit" disabled={saving} className="px-4 py-2 rounded-lg text-sm font-medium bg-[#6366f1] hover:bg-[#5254cc] disabled:opacity-50 text-white transition-colors">
-              {saving ? 'Speichern…' : 'Speichern'}
+              {saving ? 'Ich speichere den Eintrag.' : 'Speichern'}
             </button>
           </div>
         </form>
@@ -322,7 +322,7 @@ export default function ZeiterfassungPage() {
 
       {/* Entries */}
       {loading ? (
-        <div className="py-12 text-center text-slate-500 text-sm">Lädt…</div>
+        <div className="py-12 text-center text-slate-500 text-sm">Die Einträge werden geladen.</div>
       ) : groups.length === 0 ? (
         <div className="py-12 text-center">
           <Clock size={32} className="mx-auto mb-3 text-slate-600" />
@@ -343,7 +343,7 @@ export default function ZeiterfassungPage() {
                     <div key={e.id} className="flex items-center gap-4 px-4 py-3 hover:bg-[#252836] transition-colors group">
                       {/* Kategorie dot */}
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${e.kategorie ? KATEGORIEN[e.kategorie].color : 'bg-slate-700 text-slate-400'}`}>
-                        {e.kategorie ? KATEGORIEN[e.kategorie].label : '–'}
+                        {e.kategorie ? KATEGORIEN[e.kategorie].label : 'Keine Angabe.'}
                       </span>
                       {/* Beschreibung */}
                       <span className="flex-1 text-sm text-white truncate">{e.beschreibung || <span className="text-slate-500 italic">Keine Beschreibung</span>}</span>
@@ -356,11 +356,11 @@ export default function ZeiterfassungPage() {
                       )}
                       {/* Zeit */}
                       <span className="text-xs text-slate-500 flex-shrink-0">
-                        {formatTime(e.start_zeit)} – {e.end_zeit ? formatTime(e.end_zeit) : '…'}
+                        {formatTime(e.start_zeit)} bis {e.end_zeit ? formatTime(e.end_zeit) : 'offen'}
                       </span>
                       {/* Dauer */}
                       <span className="font-mono text-sm font-bold text-white w-16 text-right flex-shrink-0">
-                        {e.dauer_minuten ? minutesToHM(e.dauer_minuten) : '–'}
+                        {e.dauer_minuten ? minutesToHM(e.dauer_minuten) : 'Keine Angabe.'}
                       </span>
                       {/* Abrechenbar */}
                       <span className={`text-xs flex-shrink-0 ${e.abrechenbar ? 'text-green-400' : 'text-slate-600'}`}>

@@ -40,7 +40,7 @@ const PL = {
     resultsLabel: 'Ergebnis', resultsHeading: 'Was du bekommst',
     ctaHeading: 'Projekt besprechen',
     ctaPrefix: 'Interessiert an ',
-    ctaSuffix: '? Schreib mir – ich melde mich innerhalb von 2 Arbeitstagen und wir schauen gemeinsam, was für dich Sinn macht. Unverbindlich.',
+    ctaSuffix: '? Schreib mir. Ich melde mich innerhalb von zwei Arbeitstagen und wir schauen gemeinsam, was für dich sinnvoll ist.',
     navServices: 'Meine Umsetzung', navPortfolio: 'Meine Referenzen', navAbout: 'Dein Digitalpartner',
     navCta: 'Projekt besprechen', navCtaAi: 'KI-Potenzial prüfen', backHome: 'Zurück zur Startseite',
     imprint: 'Impressum', privacy: 'Datenschutz',
@@ -53,7 +53,7 @@ const PL = {
     resultsLabel: 'Results', resultsHeading: 'What you get',
     ctaHeading: 'Discuss your project',
     ctaPrefix: 'Interested in ',
-    ctaSuffix: "? Write to me – I'll respond within 2 business days and we'll see together what makes sense for you. No commitment.",
+    ctaSuffix: "? Write to me. I will respond within two business days and we can decide together what makes sense for you.",
     navServices: 'My Execution', navPortfolio: 'My Work', navAbout: 'Your Digital Partner',
     navCta: 'Discuss your project', navCtaAi: 'Assess AI potential', backHome: 'Back to home',
     imprint: 'Imprint', privacy: 'Privacy',
@@ -65,17 +65,17 @@ const PL = {
 function VisualKiAgenten({ color, lang }: { color: string; lang: Lang }) {
   const msgs = lang === 'en' ? [
     { from: 'Customer', text: 'Good day, I would like to cancel an order. Order number 48291.', align: 'left' },
-    { from: 'AI Agent', text: '✅ Order #48291 found. Cancellation processed immediately. Confirmation sent by email. Refund within 3–5 business days.', align: 'right' },
+    { from: 'AI Agent', text: '✅ Order #48291 found. The cancellation has been processed. A confirmation was sent by email. The refund takes three to five business days.', align: 'right' },
     { from: 'Customer', text: 'Great, thank you! And can I place a new order for item 7722?', align: 'left' },
     { from: 'AI Agent', text: '🛒 Item 7722 is in stock. Shall I take the order directly or would you like to check the cart first?', align: 'right' },
   ] : [
     { from: 'Kunde', text: 'Guten Tag, ich möchte eine Bestellung stornieren. Bestellnummer 48291.', align: 'left' },
-    { from: 'KI-Agent', text: '✅ Bestellung #48291 gefunden. Stornierung wird sofort verarbeitet. Sie erhalten eine Bestätigung per E-Mail. Rückerstattung innerhalb von 3–5 Werktagen.', align: 'right' },
+    { from: 'KI-Agent', text: '✅ Bestellung #48291 gefunden. Die Stornierung wurde verarbeitet. Sie erhalten eine Bestätigung per E-Mail. Die Rückerstattung dauert drei bis fünf Werktage.', align: 'right' },
     { from: 'Kunde', text: 'Super, danke! Und kann ich eine neue Bestellung für Artikel 7722 aufgeben?', align: 'left' },
     { from: 'KI-Agent', text: '🛒 Artikel 7722 ist auf Lager. Soll ich die Bestellung direkt aufnehmen oder möchten Sie den Warenkorb zuerst prüfen?', align: 'right' },
   ];
   const caption = lang === 'en' ? 'Live Demo: Customer writes, agent responds' : 'Live-Demo: Kunde schreibt, Agent antwortet';
-  const footer  = lang === 'en' ? 'This entire dialogue ran without human intervention – fully automated.' : 'Dieser gesamte Dialog lief ohne menschliches Eingreifen – vollautomatisch.';
+  const footer  = lang === 'en' ? 'This dialogue was completed automatically without human intervention.' : 'Dieser Dialog wurde ohne menschliches Eingreifen automatisch abgeschlossen.';
   return (
     <div className="rounded-2xl border border-[#2d2820] bg-[#0c0a06] p-6 space-y-3">
       <p className="text-xs text-[#7a6d5a] uppercase tracking-wider font-semibold mb-4">{caption}</p>
@@ -138,13 +138,13 @@ function VisualBpmn({ color, lang }: { color: string; lang: Lang }) {
   ];
   const after = lang === 'en' ? [
     { step: '1', text: 'Enter data in the system', time: '5 min' },
-    { step: '2', text: 'Click "Send" – rest is automatic', time: '1 min' },
+    { step: '2', text: 'Click "Send". The remaining steps are automatic.', time: '1 min' },
   ] : [
     { step: '1', text: 'Daten im System erfassen', time: '5 min' },
-    { step: '2', text: 'Auf „Senden" klicken – Rest automatisch', time: '1 min' },
+    { step: '2', text: 'Auf „Senden" klicken. Die weiteren Schritte laufen automatisch.', time: '1 min' },
   ];
-  const beforeLabel = lang === 'en' ? 'Before — 85 min/week' : 'Vorher — 85 min/Woche';
-  const afterLabel  = lang === 'en' ? 'After — 6 min/week'   : 'Nachher — 6 min/Woche';
+  const beforeLabel = lang === 'en' ? 'Before. 85 minutes per week.' : 'Vorher. 85 Minuten pro Woche.';
+  const afterLabel  = lang === 'en' ? 'After. 6 minutes per week.'   : 'Nachher. 6 Minuten pro Woche.';
   const savings     = lang === 'en' ? '→ Time saved: ~79 min/week = 65 hours/year' : '→ Zeitersparnis: ~79 Minuten pro Woche = 65 Stunden pro Jahr';
   return (
     <div className="space-y-5">
@@ -216,17 +216,17 @@ function VisualMarketing({ color, lang }: { color: string; lang: Lang }) {
 
 function VisualVideo({ color, lang }: { color: string; lang: Lang }) {
   const phases = lang === 'en' ? [
-    { icon: '💡', label: 'Concept',     days: '1–2 days',  desc: 'Brief, goal, script, storyboard' },
-    { icon: '📋', label: 'Preparation', days: '2–3 days',  desc: 'Shooting schedule, equipment, location' },
-    { icon: '🎬', label: 'Shoot',       days: '0.5–1 day', desc: 'Production, B-roll, interviews' },
-    { icon: '✂️', label: 'Edit',        days: '2–4 days',  desc: 'Editing, color grading, music, subtitles' },
-    { icon: '🚀', label: 'Done',        days: 'Day 8–10',  desc: 'Export all formats & approval' },
+    { icon: '💡', label: 'Concept',     days: '1 to 2 days',  desc: 'I clarify the goal and prepare the script and storyboard.' },
+    { icon: '📋', label: 'Preparation', days: '2 to 3 days',  desc: 'I plan the shoot, equipment and location.' },
+    { icon: '🎬', label: 'Shoot',       days: 'Half a day to one day', desc: 'I record the production, additional footage and interviews.' },
+    { icon: '✂️', label: 'Edit',        days: '2 to 4 days',  desc: 'I edit the material, colours, music and subtitles.' },
+    { icon: '🚀', label: 'Done',        days: 'Day 8 to 10',  desc: 'I export every required format and obtain approval.' },
   ] : [
-    { icon: '💡', label: 'Konzept',      days: '1–2 Tage',  desc: 'Brief, Ziel, Script, Storyboard' },
-    { icon: '📋', label: 'Vorbereitung', days: '2–3 Tage',  desc: 'Drehplan, Technik, Location' },
-    { icon: '🎬', label: 'Dreh',         days: '0.5–1 Tag', desc: 'Produktion, B-Roll, Interviews' },
-    { icon: '✂️', label: 'Schnitt',      days: '2–4 Tage',  desc: 'Edit, Farbkorrektur, Musik, Untertitel' },
-    { icon: '🚀', label: 'Fertig',       days: 'Tag 8–10',  desc: 'Export alle Formate & Freigabe' },
+    { icon: '💡', label: 'Konzept',      days: '1 bis 2 Tage',  desc: 'Ich kläre das Ziel und erstelle Skript und Storyboard.' },
+    { icon: '📋', label: 'Vorbereitung', days: '2 bis 3 Tage',  desc: 'Ich plane Dreh, Technik und Ort.' },
+    { icon: '🎬', label: 'Dreh',         days: 'Ein halber bis ein Tag', desc: 'Ich nehme Produktion, Zusatzmaterial und Interviews auf.' },
+    { icon: '✂️', label: 'Schnitt',      days: '2 bis 4 Tage',  desc: 'Ich bearbeite Material, Farben, Musik und Untertitel.' },
+    { icon: '🚀', label: 'Fertig',       days: 'Tag 8 bis 10',  desc: 'Ich exportiere alle benötigten Formate und hole die Freigabe ein.' },
   ];
   return (
     <div className="space-y-3">
@@ -369,14 +369,14 @@ function VisualWebsite({ color, lang }: { color: string; lang: Lang }) {
 
 function VisualRoadmap({ color, lang }: { color: string; lang: Lang }) {
   const phases = lang === 'en' ? [
-    { week: 'Week 1–2',    title: 'Assessment',        desc: 'Inventory of processes, data, tools. Interviews with key people.' },
-    { week: 'Week 3–4',    title: 'Potential Analysis', desc: 'Top 5 AI use cases identified, evaluated, prioritized.' },
-    { week: 'Week 5–6',    title: 'AI Roadmap',         desc: '12-month plan with costs, ROI calculation and technology selection.' },
+    { week: 'Week 1 to 2', title: 'Assessment', desc: 'I review processes, data and tools and speak with the people involved.' },
+    { week: 'Week 3 to 4', title: 'Potential analysis', desc: 'I identify, assess and prioritise five useful applications for AI.' },
+    { week: 'Week 5 to 6', title: 'Plan', desc: 'You receive a plan for twelve months with costs, expected benefit and a choice of technology.' },
     { week: 'From Week 7', title: 'Pilot Project',      desc: 'First quick win: small AI project with measurable result.' },
   ] : [
-    { week: 'Woche 1–2',  title: 'Assessment',        desc: 'Bestandsaufnahme Prozesse, Daten, Tools. Interviews mit Schlüsselpersonen.' },
-    { week: 'Woche 3–4',  title: 'Potenzialanalyse',  desc: 'Top 5 KI-Use-Cases identifiziert, bewertet, priorisiert.' },
-    { week: 'Woche 5–6',  title: 'KI-Roadmap',        desc: '12-Monats-Plan mit Kosten, ROI-Kalkulation und Technologie-Auswahl.' },
+    { week: 'Woche 1 bis 2', title: 'Bestandsaufnahme', desc: 'Ich prüfe Prozesse, Daten und Werkzeuge und spreche mit den beteiligten Personen.' },
+    { week: 'Woche 3 bis 4', title: 'Potenzialanalyse', desc: 'Ich finde, bewerte und priorisiere fünf sinnvolle Einsatzmöglichkeiten für KI.' },
+    { week: 'Woche 5 bis 6', title: 'Plan', desc: 'Du erhältst einen Plan für zwölf Monate mit Kosten, erwartetem Nutzen und einer Auswahl der Technik.' },
     { week: 'Ab Woche 7', title: 'Pilotprojekt',       desc: 'Erster Quick Win: kleines KI-Projekt mit messbarem Ergebnis.' },
   ];
   return (

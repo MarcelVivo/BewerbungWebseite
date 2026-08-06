@@ -51,7 +51,7 @@ export default function ForgotPasswordPage() {
                 <input type="email" required autoComplete="email" value={email} onChange={event => setEmail(event.target.value)} className="w-full rounded-xl border border-[#2d3144] bg-[#11131b] px-4 py-3 text-sm text-white outline-none transition focus:border-[#6366f1] focus:ring-2 focus:ring-[#6366f1]/20" />
               </label>
               {error && <p role="alert" className="flex items-start gap-2 rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-300"><AlertCircle size={15} className="mt-0.5 shrink-0" />{error}</p>}
-              <button type="submit" disabled={loading} className="w-full rounded-xl bg-[#6366f1] py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition hover:bg-[#5558e8] disabled:cursor-not-allowed disabled:opacity-60">{loading ? 'Wird gesendet …' : 'Recovery-Link senden'}</button>
+              <button type="submit" disabled={loading} className="w-full rounded-xl bg-[#6366f1] py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition hover:bg-[#5558e8] disabled:cursor-not-allowed disabled:opacity-60">{loading ? 'Der Link wird gesendet.' : 'Link zum Zurücksetzen senden'}</button>
             </form>
             <Link href="/dashboard/login" className="mt-6 inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-300"><ArrowLeft size={15} /> Zurück zum Login</Link>
           </>
@@ -60,4 +60,3 @@ export default function ForgotPasswordPage() {
     </main>
   );
 }
-

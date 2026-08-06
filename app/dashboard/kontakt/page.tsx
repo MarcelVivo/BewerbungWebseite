@@ -201,14 +201,14 @@ export default function KontaktPage() {
       {/* Search */}
       <div className="relative">
         <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-        <input type="text" placeholder="Name, E-Mail oder Nachricht suchen…"
+        <input type="text" placeholder="Suche nach Name, E-Mail oder Nachricht."
           value={search} onChange={e => setSearch(e.target.value)}
           className="w-full bg-[#1e2235] border border-[#2d3144] rounded-xl pl-9 pr-3 py-2.5 text-white text-sm placeholder-slate-500 focus:border-indigo-500 outline-none" />
       </div>
 
       {/* List */}
       {loading ? (
-        <div className="text-slate-400 text-sm">Lade Anfragen…</div>
+        <div className="text-slate-400 text-sm">Die Anfragen werden geladen.</div>
       ) : filtered.length === 0 ? (
         <div className="bg-[#1e2235] border border-[#2d3144] rounded-2xl p-12 text-center">
           <MessageSquare size={40} className="mx-auto text-slate-600 mb-3" />
@@ -255,7 +255,7 @@ export default function KontaktPage() {
                     <td className="px-4 py-3 text-slate-400 text-xs">{a.email}</td>
                     <td className="px-4 py-3 max-w-xs">
                       <p className="text-slate-400 text-xs truncate">
-                        {a.nachricht || <span className="text-slate-600 italic">–</span>}
+                        {a.nachricht || <span className="text-slate-600 italic">Keine Nachricht.</span>}
                       </p>
                     </td>
                     <td className="px-4 py-3">

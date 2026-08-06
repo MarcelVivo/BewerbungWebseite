@@ -222,61 +222,61 @@ type ValueInfoCopy = {
 const VALUE_INFO: Record<'de' | 'en', ValueInfoCopy[]> = {
   de: [
     {
-      title: 'Aus einem Auftritt wird eine erkennbare Marke.',
-      summary: 'Ich verbinde Positionierung, Gestaltung und digitale Nutzerführung zu einem konsistenten Markenerlebnis, das dein Angebot schneller verständlich und glaubwürdig macht.',
-      optimizes: ['Markenbild, Typografie, Farben und Bildsprache', 'Botschaft und Wiedererkennung über alle Kontaktpunkte', 'Nutzerführung von der Aufmerksamkeit bis zur Anfrage'],
-      benefits: ['Passende Kunden verstehen dein Angebot schneller', 'Ein professioneller Auftritt schafft messbar mehr Vertrauen', 'Mehr qualifizierte Anfragen statt unnötigem Streuverlust'],
+      title: 'Ich mache deinen Auftritt klar und wiedererkennbar.',
+      summary: 'Ich kläre zuerst, wofür dein Unternehmen steht. Danach gestalte ich Logo, Farben, Typografie und Website so, dass alles zusammenpasst und dein Angebot schnell verstanden wird.',
+      optimizes: ['Ich bringe Logo, Farben, Typografie und Bilder in eine klare Linie.', 'Ich formuliere die Botschaft so, dass sie an jedem Kontaktpunkt gleich verständlich bleibt.', 'Ich führe Besucher von der ersten Frage bis zur passenden Anfrage.'],
+      benefits: ['Deine Kunden verstehen schneller, was du anbietest.', 'Ein einheitlicher Auftritt wirkt verlässlich und schafft Vertrauen.', 'Du erhältst eher Anfragen von Menschen, die wirklich zu deinem Angebot passen.'],
       stages: ['KLARHEIT', 'VERTRAUEN', 'ANFRAGE'],
     },
     {
-      title: 'Schnelle Technik wird zur besseren Nutzererfahrung.',
-      summary: 'Ich optimiere Architektur, Inhalte und Frontend als ein System. Dadurch laden Websites und Applikationen schneller, reagieren direkter und bleiben auf allen Geräten stabil.',
-      optimizes: ['Ladepfad, Assets, Code und technische Architektur', 'Responsive Darstellung und verständliche Bedienabläufe', 'Stabilität, Erweiterbarkeit und technische SEO-Basis'],
-      benefits: ['Weniger Absprünge während des Seitenaufbaus', 'Schnellere Entscheidungen und angenehmere Interaktion', 'Eine belastbare Plattform für Kampagnen und Wachstum'],
+      title: 'Ich baue Websites, die schnell und zuverlässig funktionieren.',
+      summary: 'Ich prüfe den Aufbau, den Code und die Inhalte gemeinsam. So lädt deine Website schnell, lässt sich auf jedem Gerät gut bedienen und bleibt auch nach Erweiterungen stabil.',
+      optimizes: ['Ich verkürze Ladezeiten und räume unnötigen Code auf.', 'Ich passe Darstellung und Bedienung an alle wichtigen Bildschirmgrössen an.', 'Ich schaffe eine saubere technische Grundlage für Suchmaschinen und spätere Erweiterungen.'],
+      benefits: ['Besucher müssen nicht auf Inhalte warten.', 'Die Bedienung fühlt sich direkt und verständlich an.', 'Deine Website bleibt auch bei neuen Funktionen verlässlich.'],
       stages: ['ANFRAGE', 'OPTIMIERUNG', 'BEREIT'],
     },
     {
-      title: 'Eine zentrale Datenbasis ersetzt isolierte Einzellösungen.',
-      summary: 'Ich bilde Kunden, Projekte, Dokumente, Angebote und Abläufe in einem durchgängigen CRM-/ERP-System ab. Informationen werden einmal gepflegt und überall zuverlässig genutzt.',
-      optimizes: ['Datenmodell, Rollen, Rechte und zentrale Stammdaten', 'Workflows zwischen Verkauf, Projekt und Administration', 'Schnittstellen, Dashboards und automatische Auswertungen'],
-      benefits: ['Weniger Doppelerfassung, Suchaufwand und Fehler', 'Aktuelle Informationen für alle beteiligten Personen', 'Mehr freie Zeit für Kunden und wertschöpfende Arbeit'],
+      title: 'Ich bringe deine Daten an einen verlässlichen Ort.',
+      summary: 'Ich bilde Kunden, Projekte, Dokumente, Angebote und Aufgaben in einem gemeinsamen System ab. Dein Team pflegt Informationen nur einmal und findet sie danach dort, wo sie gebraucht werden.',
+      optimizes: ['Ich ordne Daten, Rollen und Zugriffsrechte verständlich.', 'Ich verbinde die Arbeit von Verkauf, Projekt und Administration.', 'Ich richte Schnittstellen und Auswertungen so ein, dass sie im Alltag helfen.'],
+      benefits: ['Dein Team erfasst weniger Daten doppelt und macht weniger Fehler.', 'Alle Beteiligten arbeiten mit dem gleichen aktuellen Stand.', 'Du verbringst weniger Zeit mit Suchen und mehr Zeit mit deinen Kunden.'],
       stages: ['SILOS', 'ZENTRAL', 'SYNCHRON'],
     },
     {
-      title: 'Wiederkehrende Arbeit wird zu einem kontrollierten Ablauf.',
-      summary: 'Ich kombiniere Automation, passende AI-Modelle und bestehende Werkzeuge zu nachvollziehbaren Prozessen. Menschen behalten die Kontrolle, während Routinen zuverlässig im Hintergrund laufen.',
-      optimizes: ['Wiederkehrende Kommunikation, Daten- und Prüfschritte', 'AI-Assistenten mit klaren Regeln und Freigabepunkten', 'Integration in vorhandene Tools statt zusätzlichem Tool-Chaos'],
-      benefits: ['Weniger manuelle Routinearbeit und Medienbrüche', 'Kürzere Durchlaufzeiten bei gleichbleibender Qualität', 'Skalierbare Abläufe ohne proportional mehr Personalaufwand'],
+      title: 'Ich automatisiere Arbeit, die sich jeden Tag wiederholt.',
+      summary: 'Ich prüfe zuerst, welche Schritte wirklich Zeit kosten. Danach automatisiere ich genau diese Abläufe und setze KI nur dort ein, wo sie nachvollziehbar hilft. Entscheidungen bleiben bei den Menschen.',
+      optimizes: ['Ich vereinfache wiederkehrende Nachrichten, Dateneingaben und Kontrollen.', 'Ich richte KI Assistenten mit klaren Regeln und Freigaben ein.', 'Ich binde neue Abläufe in die Werkzeuge ein, die dein Team bereits nutzt.'],
+      benefits: ['Dein Team erledigt weniger monotone Handarbeit.', 'Aufgaben werden schneller und mit gleichbleibender Qualität abgeschlossen.', 'Mehr Arbeit lässt sich bewältigen, ohne jeden Ablauf komplizierter zu machen.'],
       stages: ['ROUTINE', 'AI-FLOW', 'FREIRAUM'],
     },
   ],
   en: [
     {
-      title: 'A visual presence becomes a recognizable brand.',
-      summary: 'I combine positioning, design and digital user guidance into a consistent brand experience that makes your offer easier to understand and trust.',
-      optimizes: ['Brand identity, typography, color and imagery', 'Message and recognition across every touchpoint', 'User guidance from first attention to enquiry'],
-      benefits: ['The right customers understand your offer faster', 'A professional presence creates measurable trust', 'More qualified enquiries with less wasted reach'],
+      title: 'I make your business easy to recognise.',
+      summary: 'I first clarify what your business stands for. I then design the logo, colours, typography and website so that everything fits together and people quickly understand your offer.',
+      optimizes: ['I bring the logo, colours, typography and images into one clear style.', 'I write the message so that it stays clear at every point of contact.', 'I guide visitors from their first question to the right enquiry.'],
+      benefits: ['Your customers understand your offer more quickly.', 'A consistent presence feels dependable and builds trust.', 'You receive more enquiries from people who are a good fit for your offer.'],
       stages: ['CLARITY', 'TRUST', 'ENQUIRY'],
     },
     {
-      title: 'Fast technology becomes a better user experience.',
-      summary: 'I optimize architecture, content and frontend as one system. Websites and applications load faster, respond directly and remain stable across devices.',
-      optimizes: ['Loading path, assets, code and architecture', 'Responsive presentation and intuitive user flows', 'Stability, extensibility and technical SEO foundation'],
-      benefits: ['Fewer users leave while the page is loading', 'Faster decisions and smoother interaction', 'A robust platform for campaigns and growth'],
+      title: 'I build websites that load quickly and work reliably.',
+      summary: 'I review the structure, code and content together. Your website loads quickly, is easy to use on every device and remains stable when new features are added.',
+      optimizes: ['I reduce loading times and remove unnecessary code.', 'I adapt the layout and controls to all important screen sizes.', 'I create a sound technical basis for search engines and future additions.'],
+      benefits: ['Visitors do not have to wait for the content.', 'The website feels direct and easy to use.', 'Your website remains dependable when it grows.'],
       stages: ['REQUEST', 'OPTIMIZE', 'READY'],
     },
     {
-      title: 'One central data source replaces isolated solutions.',
-      summary: 'I map customers, projects, documents, quotes and operations in one consistent CRM/ERP system. Information is maintained once and used reliably everywhere.',
-      optimizes: ['Data model, roles, permissions and master data', 'Workflows across sales, projects and administration', 'Interfaces, dashboards and automated reporting'],
-      benefits: ['Less duplicate entry, searching and avoidable errors', 'Current information for every involved person', 'More free time for customers and valuable work'],
+      title: 'I keep your business data in one dependable place.',
+      summary: 'I bring customers, projects, documents, quotes and tasks into one shared system. Your team enters information once and finds it where it is needed.',
+      optimizes: ['I organise data, roles and access rights clearly.', 'I connect the work of sales, projects and administration.', 'I set up integrations and reports that help with daily work.'],
+      benefits: ['Your team enters less data twice and makes fewer mistakes.', 'Everyone works with the same current information.', 'You spend less time searching and more time with your customers.'],
       stages: ['SILOS', 'CENTRAL', 'SYNCED'],
     },
     {
-      title: 'Recurring work becomes a controlled workflow.',
-      summary: 'I combine automation, suitable AI models and existing tools into transparent processes. People stay in control while routines run reliably in the background.',
-      optimizes: ['Recurring communication, data and validation steps', 'AI assistants with clear rules and approval points', 'Integration into existing tools without tool chaos'],
-      benefits: ['Less manual routine work and fewer handovers', 'Shorter lead times with consistent quality', 'Scalable operations without proportional staffing growth'],
+      title: 'I automate work that repeats every day.',
+      summary: 'I first check which steps actually take time. I then automate those tasks and only use AI where it provides a clear and understandable benefit. People remain responsible for decisions.',
+      optimizes: ['I simplify recurring messages, data entry and checks.', 'I set up AI assistants with clear rules and approvals.', 'I connect new processes to the tools your team already uses.'],
+      benefits: ['Your team spends less time on repetitive manual work.', 'Tasks are completed faster and with consistent quality.', 'You can handle more work without making every process more complicated.'],
       stages: ['ROUTINE', 'AI FLOW', 'CAPACITY'],
     },
   ],
@@ -1027,7 +1027,7 @@ function ReferenceCardsContent({ lang }: { lang: 'de' | 'en' }) {
               } as CSSProperties}
             >
               <div className="reference-card-image">
-                <Image src={project.image} alt={`${copy.title} – ${copy.tag}`} fill sizes="(min-width: 1024px) 25vw, 90vw" />
+                <Image src={project.image} alt={`${copy.title}. ${copy.tag}`} fill sizes="(min-width: 1024px) 25vw, 90vw" />
                 <span className="reference-card-status">{copy.cardStatus ?? copy.status}</span>
               </div>
               <div className="reference-card-copy">
@@ -1174,16 +1174,16 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
   }, []);
   const copy = lang === 'de'
     ? {
-        kicker: 'PERSÖNLICH · UNVERBINDLICH · AUF AUGENHÖHE',
+        kicker: 'PERSÖNLICH. UNVERBINDLICH. DIREKT.',
         title: 'PROJEKT BESPRECHEN.',
         text: 'Erzähl mir kurz, was du aufbauen, verbessern oder digitalisieren möchtest. Ich melde mich persönlich bei dir.',
-        overviewKicker: 'DREI WEGE · EIN KLARES ZIEL',
+        overviewKicker: 'DREI MÖGLICHKEITEN. DU ENTSCHEIDEST.',
         overviewTitle: 'WÄHLE DEINEN EINSTIEG.',
         overviewText: 'Wähle den Einstieg, der zu deinem aktuellen Vorhaben passt. Du kannst jederzeit zwischen den drei Wegen wechseln.',
         name: 'Name',
         email: 'E-Mail',
         message: 'Worum geht es?',
-        placeholder: 'Beschreibe dein Vorhaben in wenigen Sätzen …',
+        placeholder: 'Beschreibe dein Vorhaben in wenigen Sätzen.',
         submit: 'Erstgespräch',
         send: 'Gespräch anfragen',
         project: 'Projektanfrage',
@@ -1191,7 +1191,7 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
         consultationHint: 'Für ein unverbindliches erstes Gespräch.',
         projectHint: 'Für ein bereits konkretes Vorhaben.',
         kiCheckHint: 'Um dein KI-Potenzial schnell einzuordnen.',
-        sending: 'Wird gesendet …',
+        sending: 'Ich sende deine Anfrage.',
         successTitle: 'Vielen Dank.',
         successText: 'Deine Anfrage ist angekommen. Ich melde mich innerhalb von zwei Arbeitstagen persönlich bei dir.',
         nextTitle: 'Was jetzt passiert',
@@ -1208,16 +1208,16 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
         requiredConsent: 'Bitte bestätige die Datenschutzerklärung.',
       }
     : {
-        kicker: 'PERSONAL · NO OBLIGATION · EYE TO EYE',
+        kicker: 'PERSONAL. DIRECT. NO OBLIGATION.',
         title: 'DISCUSS YOUR PROJECT.',
         text: 'Tell me briefly what you want to build, improve or digitize. I will get back to you personally.',
-        overviewKicker: 'THREE PATHS · ONE CLEAR GOAL',
+        overviewKicker: 'THREE OPTIONS. YOU DECIDE.',
         overviewTitle: 'CHOOSE YOUR PATH.',
         overviewText: 'Choose the entry point that best matches your current project. You can switch between all three paths at any time.',
         name: 'Name',
         email: 'Email',
         message: 'What would you like to discuss?',
-        placeholder: 'Describe your project in a few sentences …',
+        placeholder: 'Describe your project in a few sentences.',
         submit: 'Initial conversation',
         send: 'Request a conversation',
         project: 'Project inquiry',
@@ -1225,7 +1225,7 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
         consultationHint: 'For a no-obligation initial conversation.',
         projectHint: 'For a project that is already concrete.',
         kiCheckHint: 'To quickly assess your AI potential.',
-        sending: 'Sending …',
+        sending: 'I am sending your request.',
         successTitle: 'Thank you.',
         successText: 'Your request has arrived. I will contact you personally within two working days.',
         nextTitle: 'What happens next',
@@ -1488,27 +1488,27 @@ function StudioWebSignature() {
 function StudioProfileContent({ lang }: { lang: 'de' | 'en' }) {
   const copy = lang === 'de'
     ? {
-        kicker: 'DIGITALSTUDIO MARCEL SPAHR · BERN',
-        title: 'Persönlich geführt. Ganzheitlich umgesetzt.',
-        intro: 'Du arbeitest direkt mit mir – von der Analyse bis zur Einführung. So bleiben Ziele, Entscheidungen und Umsetzung verbunden.',
-        quote: '„Ich verbinde Empathie, Strategie und Technologie – zu digitalen Lösungen, die im Alltag wirken und mit Unternehmen wachsen.“',
+        kicker: 'DIGITALSTUDIO MARCEL SPAHR. BERN.',
+        title: 'Du arbeitest direkt mit mir.',
+        intro: 'Ich begleite dein Projekt selbst, von der ersten Analyse bis zur Einführung. Dadurch kennst du jederzeit den Stand und weisst, wer die Verantwortung trägt.',
+        quote: '„Ich höre zuerst zu, frage nach und baue danach eine Lösung, die zu deinem Unternehmen und deinem Alltag passt.“',
         facts: [
-          ['15+ Jahre Erfahrung', 'IT, Projekte, Digitalisierung, Marketing & Verkauf'],
-          ['Zwei Fachrichtungen', 'Wirtschaftsinformatik HF (Abschlussphase) · Werbetechnik'],
-          ['A–Z-Verantwortung', 'Analyse, UX/UI, Entwicklung und Einführung aus einer Hand'],
-          ['Bern', 'Schweizweit und international tätig'],
+          ['Mehr als 15 Jahre Erfahrung.', 'Ich kenne IT, Projekte, Digitalisierung, Marketing und Verkauf aus der Praxis.'],
+          ['Zwei Fachrichtungen.', 'Ich verbinde Wirtschaftsinformatik HF mit meiner Ausbildung in Werbetechnik.'],
+          ['Eine verantwortliche Person.', 'Ich übernehme Analyse, UX, Entwicklung und Einführung persönlich.'],
+          ['Mein Standort ist Bern.', 'Ich arbeite mit Kunden in der ganzen Schweiz und im Ausland.'],
         ],
       }
     : {
-        kicker: 'MARCEL SPAHR DIGITAL STUDIO · BERN',
-        title: 'Personally led. Comprehensively delivered.',
-        intro: 'You work directly with me from analysis through implementation. This keeps goals, decisions and delivery connected.',
-        quote: '“I connect empathy, strategy and technology — creating digital solutions that work in everyday business and grow with companies.”',
+        kicker: 'MARCEL SPAHR DIGITAL STUDIO. BERN.',
+        title: 'You work directly with me.',
+        intro: 'I look after your project myself, from the first review to its introduction. You always know where the work stands and who is responsible.',
+        quote: '“I listen first, ask questions and then build a solution that fits your business and your daily work.”',
         facts: [
-          ['15+ years of experience', 'IT, projects, digitalization, marketing & sales'],
-          ['Two disciplines', 'Business Information Technology HF (final phase) · Advertising Technology'],
-          ['End-to-end ownership', 'Analysis, UX/UI, development and implementation from one source'],
-          ['Bern', 'Working across Switzerland and internationally'],
+          ['More than 15 years of experience.', 'I know IT, projects, digitalisation, marketing and sales from practical work.'],
+          ['Two disciplines.', 'I combine Business Information Technology HF with my training in advertising technology.'],
+          ['One responsible person.', 'I personally handle analysis, UX, development and introduction.'],
+          ['I am based in Bern.', 'I work with customers throughout Switzerland and abroad.'],
         ],
       };
 
@@ -2314,17 +2314,17 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       kind: 'service',
       slug: 'corporate-design-webauftritt',
       code: '01',
-      title: lang === 'de' ? 'Corporate Design\n& Webauftritt' : 'Corporate design\n& web presence',
+      title: lang === 'de' ? 'Corporate Design\nund Webauftritt' : 'Corporate design\nand web presence',
       body: lang === 'de'
-        ? 'Marke, Gestaltung, Wirkung und digitale Präsentation sauber aus einem System gedacht.'
-        : 'Brand, design, impact and digital presentation built as one coherent system.',
-      detailTitle: lang === 'de' ? 'Ein Auftritt, der sofort seriös wirkt.' : 'A presence that feels credible immediately.',
+        ? 'Ich entwickle Marke und Website gemeinsam, damit dein Auftritt überall zusammenpasst.'
+        : 'I develop the brand and website together so that your presence is consistent everywhere.',
+      detailTitle: lang === 'de' ? 'Ich gebe deinem Unternehmen einen klaren Auftritt.' : 'I give your business a clear appearance.',
       detailText: lang === 'de'
-        ? 'Ich entwickle ein visuelles Fundament, das zu deinem Unternehmen passt: Logo, Farben, Typografie, Bildsprache, Layoutsystem und Website-Auftritt. Ziel ist kein austauschbares Design, sondern ein professioneller digitaler Eindruck, der Vertrauen schafft und dein Angebot verständlich macht.'
-        : 'I build a visual foundation that fits your company: logo, colors, typography, imagery, layout system and web presence. The goal is not generic design, but a credible digital impression that builds trust and explains your offer clearly.',
+        ? 'Ich entwickle Logo, Farben, Typografie, Bilder, Layout und Website passend zu deinem Unternehmen. So erkennen Kunden dein Unternehmen wieder und verstehen schneller, was du anbietest.'
+        : 'I develop the logo, colours, typography, images, layout and website to suit your business. Customers recognise your business and understand your offer more quickly.',
       detailPoints: lang === 'de'
-        ? ['Corporate Design und visuelle Leitplanken', 'Website-Struktur, Texteinstieg und Nutzerführung', 'Moderne Gestaltung mit klarer Wirkung', 'Saubere Übergabe für langfristige Weiterentwicklung']
-        : ['Corporate design and visual guidelines', 'Website structure, copy entry and user flow', 'Modern design with clear impact', 'Clean handover for long-term evolution'],
+        ? ['Ich definiere Corporate Design und Gestaltungsregeln.', 'Ich plane Aufbau, Texteinstieg und Bedienung der Website.', 'Ich gestalte den Auftritt passend zu deinem Unternehmen.', 'Du erhältst eine verständliche Übergabe für spätere Änderungen.']
+        : ['I define the corporate design and visual rules.', 'I plan the website structure, introduction and controls.', 'I design the appearance to suit your business.', 'You receive a clear handover for later changes.'],
       accent: '#c89a3d',
       accentRgb: '200,154,61',
       icon: Star,
@@ -2333,17 +2333,17 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       kind: 'service',
       slug: 'websites-applikationen',
       code: '02',
-      title: lang === 'de' ? '2D-/3D-Websites\n& Applikationen' : '2D/3D websites\n& applications',
+      title: lang === 'de' ? '2D- und 3D-Websites\nund Applikationen' : '2D and 3D websites\nand applications',
       body: lang === 'de'
-        ? 'Moderne Websites und Web-Apps, die hochwertig aussehen und technisch belastbar sind.'
-        : 'Modern websites and web apps that look premium and hold up technically.',
+        ? 'Ich entwickle Websites und Webanwendungen, die gut aussehen und zuverlässig funktionieren.'
+        : 'I develop websites and web applications that look good and work reliably.',
       detailTitle: lang === 'de' ? 'Websites und Apps, die nicht nur gut aussehen.' : 'Websites and apps that do more than look good.',
       detailText: lang === 'de'
-        ? 'Ich baue moderne 2D- und 3D-Websites, Landingpages, Portale und Web-Applikationen mit sauberer Architektur. Performance, Responsivität, Animationen, Inhalte und Bedienbarkeit werden zusammen geplant, damit die Lösung stabil, schnell und überzeugend funktioniert.'
-        : 'I build modern 2D and 3D websites, landing pages, portals and web applications with clean architecture. Performance, responsiveness, animation, content and usability are planned together so the solution is stable, fast and convincing.',
+        ? 'Ich entwickle 2D und 3D Websites, Landingpages, Portale und Webanwendungen. Ladezeit, Darstellung, Animationen, Inhalte und Bedienung plane ich gemeinsam, damit die Seite auf jedem Gerät zuverlässig funktioniert.'
+        : 'I develop 2D and 3D websites, landing pages, portals and web applications. I plan loading times, layout, animation, content and controls together so the site works reliably on every device.',
       detailPoints: lang === 'de'
-        ? ['Individuelle Websites, Landingpages und Web-Apps', '2D-/3D-Interaktionen mit Fokus auf Performance', 'Responsive Umsetzung für Desktop und Mobile', 'Technisch saubere Basis für SEO und Erweiterungen']
-        : ['Custom websites, landing pages and web apps', '2D/3D interactions with performance focus', 'Responsive implementation for desktop and mobile', 'Clean technical base for SEO and extensions'],
+        ? ['Ich entwickle individuelle Websites, Landingpages und Webanwendungen.', 'Ich gestalte 2D und 3D Interaktionen mit guten Ladezeiten.', 'Ich passe die Darstellung an Computer, Tablet und Smartphone an.', 'Ich schaffe eine technische Grundlage für Suchmaschinen und Erweiterungen.']
+        : ['I develop custom websites, landing pages and web applications.', 'I design 2D and 3D interactions with good loading times.', 'I adapt the layout to computers, tablets and phones.', 'I create a technical basis for search engines and future additions.'],
       accent: '#4d7fbf',
       accentRgb: '77,127,191',
       icon: Globe,
@@ -2352,17 +2352,17 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       kind: 'service',
       slug: 'crm-erp-datenbanken',
       code: '03',
-      title: lang === 'de' ? 'CRM, ERP\n& Datenbanken' : 'CRM, ERP\n& databases',
+      title: lang === 'de' ? 'CRM, ERP\nund Datenbanken' : 'CRM, ERP\nand databases',
       body: lang === 'de'
-        ? 'Individuelle Systeme, exakt auf Abläufe, Teams, Daten und Wachstum abgestimmt.'
-        : 'Custom systems aligned to workflows, teams, data and long-term growth.',
+        ? 'Ich baue Systeme, die zu deinen Daten, deinem Team und deinen täglichen Abläufen passen.'
+        : 'I build systems that fit your data, your team and your daily processes.',
       detailTitle: lang === 'de' ? 'Systeme, die exakt zu deinem Betrieb passen.' : 'Systems aligned exactly to your business.',
       detailText: lang === 'de'
-        ? 'Ich konzipiere und entwickle CRM-, ERP- und Datenbanklösungen, die reale Abläufe abbilden statt sie komplizierter zu machen. Kunden, Projekte, Dokumente, Angebote, Rechnungen, Prozesse und Rechte werden so strukturiert, dass dein Unternehmen damit langfristig arbeiten kann.'
+        ? 'Ich entwickle CRM, ERP und Datenbanken passend zu deinen tatsächlichen Abläufen. Kunden, Projekte, Dokumente, Angebote, Rechnungen und Zugriffsrechte werden verständlich geordnet.'
         : 'I design and develop CRM, ERP and database solutions that reflect real workflows instead of making them more complicated. Customers, projects, documents, quotes, invoices, processes and roles are structured so your company can rely on them long term.',
       detailPoints: lang === 'de'
-        ? ['CRM- und ERP-Funktionen nach Maß', 'Datenbanken, Rollen, Rechte und Workflows', 'Dashboards, Dokumente, Formulare und Auswertungen', 'Schnittstellen zu bestehenden Tools und Prozessen']
-        : ['Custom CRM and ERP functions', 'Databases, roles, permissions and workflows', 'Dashboards, documents, forms and reporting', 'Interfaces to existing tools and processes'],
+        ? ['Ich entwickle passende CRM und ERP Funktionen.', 'Ich ordne Datenbanken, Rollen, Rechte und Abläufe.', 'Ich baue Übersichten, Dokumente, Formulare und Auswertungen.', 'Ich verbinde vorhandene Programme und Prozesse.']
+        : ['I develop suitable CRM and ERP functions.', 'I organise databases, roles, permissions and processes.', 'I build dashboards, documents, forms and reports.', 'I connect existing programs and processes.'],
       accent: '#a6425c',
       accentRgb: '166,66,92',
       icon: FolderKanban,
@@ -2371,17 +2371,17 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
       kind: 'service',
       slug: 'ki-automation-prozesse',
       code: '04',
-      title: lang === 'de' ? 'KI-Automation\n& Prozesse' : 'AI automation\n& processes',
+      title: lang === 'de' ? 'KI Automation\nund Prozesse' : 'AI automation\nand processes',
       body: lang === 'de'
-        ? 'Sinnvolle KI-Lösungen, die Arbeit vereinfachen, Prozesse beschleunigen und Qualität sichern.'
-        : 'Practical AI solutions that simplify work, accelerate processes and protect quality.',
+        ? 'Ich automatisiere wiederkehrende Arbeit und setze KI dort ein, wo sie im Alltag wirklich hilft.'
+        : 'I automate recurring work and use AI where it genuinely helps with daily tasks.',
       detailTitle: lang === 'de' ? 'KI dort einsetzen, wo sie wirklich hilft.' : 'AI where it actually helps.',
       detailText: lang === 'de'
-        ? 'Ich analysiere, wo Automatisierung und KI in deinem Unternehmen konkret Nutzen bringen: weniger manuelle Arbeit, bessere Antworten, schnellere Prozesse, klarere Daten und weniger Fehler. Statt Tool-Chaos entsteht eine passende Lösung, die kontrollierbar und seriös bleibt.'
-        : 'I analyze where automation and AI create concrete value in your company: less manual work, better answers, faster processes, clearer data and fewer errors. Instead of tool chaos, you get a fitting solution that remains controlled and professional.',
+        ? 'Ich prüfe, welche wiederkehrenden Aufgaben Zeit kosten und wo Automatisierung oder KI helfen kann. Danach setze ich die passenden Schritte um. Dein Team prüft wichtige Ergebnisse und behält die Verantwortung.'
+        : 'I check which recurring tasks take time and where automation or AI can help. I then implement the suitable steps. Your team checks important results and remains responsible.',
       detailPoints: lang === 'de'
-        ? ['KI-Workflows für wiederkehrende Aufgaben', 'Automatisierung von Kommunikation, Daten und Abläufen', 'Tool-Auswahl und Integration ohne KI-Chaos', 'Sichere, nachvollziehbare und wartbare Umsetzung']
-        : ['AI workflows for recurring tasks', 'Automation of communication, data and operations', 'Tool selection and integration without AI chaos', 'Safe, explainable and maintainable implementation'],
+        ? ['Ich automatisiere wiederkehrende Aufgaben.', 'Ich verbinde Kommunikation, Daten und Arbeitsabläufe.', 'Ich wähle passende Werkzeuge aus und integriere sie.', 'Ich dokumentiere die Lösung verständlich und achte auf Sicherheit.']
+        : ['I automate recurring tasks.', 'I connect communication, data and work processes.', 'I choose suitable tools and integrate them.', 'I document the solution clearly and pay attention to security.'],
       accent: '#4dbf7f',
       accentRgb: '77,191,127',
       icon: Bot,
@@ -2889,44 +2889,44 @@ function HighEndAgencyJourney({ lang }: { lang: 'de' | 'en' }) {
     ? [
         {
           code: '01', eyebrow: 'MARKE', title: 'Corporate Design & Webauftritt',
-          body: 'Marke, Gestaltung, Wirkung und digitale Präsentation sauber aus einem System gedacht.',
+          body: 'Ich entwickle Marke und Website gemeinsam, damit dein Auftritt überall zusammenpasst.',
           accent: '#c89a3d', accentRgb: '200,154,61', icon: Star,
         },
         {
           code: '02', eyebrow: 'WEB', title: '2D-/3D-Websites & Applikationen',
-          body: 'Moderne Websites und Web-Apps, die hochwertig aussehen und technisch belastbar sind.',
+          body: 'Ich entwickle Websites und Webanwendungen, die gut aussehen und zuverlässig funktionieren.',
           accent: '#4d7fbf', accentRgb: '77,127,191', icon: Globe,
         },
         {
           code: '03', eyebrow: 'SYSTEME', title: 'CRM, ERP & Datenbanken',
-          body: 'Individuelle Systeme, exakt auf Abläufe, Teams, Daten und Wachstum abgestimmt.',
+          body: 'Ich baue Systeme, die zu deinen Daten, deinem Team und deinen täglichen Abläufen passen.',
           accent: '#a6425c', accentRgb: '166,66,92', icon: FolderKanban,
         },
         {
           code: '04', eyebrow: 'AUTOMATION', title: 'KI-Automation & Prozesse',
-          body: 'Sinnvolle KI-Lösungen, die Arbeit vereinfachen, Prozesse beschleunigen und Qualität sichern.',
+          body: 'Ich automatisiere wiederkehrende Arbeit und setze KI dort ein, wo sie im Alltag wirklich hilft.',
           accent: '#4dbf7f', accentRgb: '77,191,127', icon: Bot,
         },
       ]
     : [
         {
           code: '01', eyebrow: 'BRAND', title: 'Corporate design & web presence',
-          body: 'Brand, design, impact and digital presentation built as one coherent system.',
+          body: 'I develop the brand and website together so that your presence is consistent everywhere.',
           accent: '#c89a3d', accentRgb: '200,154,61', icon: Star,
         },
         {
           code: '02', eyebrow: 'WEB', title: '2D/3D websites & applications',
-          body: 'Modern websites and web apps that look premium and hold up technically.',
+          body: 'I develop websites and web applications that look good and work reliably.',
           accent: '#4d7fbf', accentRgb: '77,127,191', icon: Globe,
         },
         {
           code: '03', eyebrow: 'SYSTEMS', title: 'CRM, ERP & databases',
-          body: 'Custom systems aligned to workflows, teams, data and long-term growth.',
+          body: 'I build systems that fit your data, your team and your daily processes.',
           accent: '#a6425c', accentRgb: '166,66,92', icon: FolderKanban,
         },
         {
           code: '04', eyebrow: 'AUTOMATION', title: 'AI automation & processes',
-          body: 'Practical AI solutions that simplify work, accelerate processes and protect quality.',
+          body: 'I automate recurring work and use AI where it genuinely helps with daily tasks.',
           accent: '#4dbf7f', accentRgb: '77,191,127', icon: Bot,
         },
       ], [lang]);
@@ -3266,8 +3266,8 @@ export default function HomePage() {
   const handleBrainSceneReady = useCallback(() => setBrainSceneReady(true), []);
   useEffect(() => {
     document.title = lang === 'de'
-      ? 'Digitalstudio Marcel Spahr – Weblösungen, CRM & ERP für KMU'
-      : 'Marcel Spahr Digital Studio – Web Solutions, CRM & ERP for SMEs';
+      ? 'Digitalstudio Marcel Spahr. Weblösungen, CRM und ERP für KMU.'
+      : 'Marcel Spahr Digital Studio. Web solutions, CRM and ERP for SMEs.';
   }, [lang]);
   useEffect(() => {
     const requestedForm = new URLSearchParams(window.location.search).get('lead');
@@ -3296,8 +3296,8 @@ export default function HomePage() {
   useEffect(() => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const lines = lang === 'de'
-      ? ['DEINE DIGITALE GESAMTLÖSUNG.', 'FÜR SCHWEIZER KMU & START-UPS.']
-      : ['YOUR COMPLETE DIGITAL SOLUTION.', 'FOR SWISS SMES & STARTUPS.'];
+      ? ['ICH BAUE DEINE DIGITALE LÖSUNG.', 'FÜR SCHWEIZER KMU UND START-UPS.']
+      : ['I BUILD YOUR DIGITAL SOLUTION.', 'FOR SWISS SMES AND STARTUPS.'];
     const letters = lines.flatMap((line, index) => {
       const container = heroFlapLineRefs.current[index];
       return container ? buildFlapWord(container, line) : [];
@@ -3323,14 +3323,14 @@ export default function HomePage() {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const lines = lang === 'de'
       ? [
-          'WEBSITES, PORTALE, CRM/ERP UND AUTOMATISIERUNGEN.',
-          'ICH VERBINDE SYSTEME, DATEN UND MANUELLE PROZESSE',
-          'ZU EINER SKALIERBAREN LÖSUNG – VON DER ANALYSE BIS ZUM GO-LIVE.',
+          'ICH ENTWICKLE WEBSITES, PORTALE, CRM, ERP UND AUTOMATIONEN.',
+          'ICH VERBINDE SYSTEME, DATEN UND ARBEITSABLÄUFE,',
+          'DAMIT SIE IM ALLTAG EINFACH FUNKTIONIEREN.',
         ]
       : [
-          'WEBSITES, PORTALS, CRM/ERP AND AUTOMATION.',
-          'I PERSONALLY CONNECT SYSTEMS, DATA AND MANUAL PROCESSES',
-          'INTO ONE SCALABLE SOLUTION – FROM ANALYSIS THROUGH GO-LIVE.',
+          'I BUILD WEBSITES, PORTALS, CRM, ERP AND AUTOMATION.',
+          'I CONNECT SYSTEMS, DATA AND DAILY WORKFLOWS,',
+          'SO THEY WORK IN PRACTICE.',
         ];
     const letters = lines.flatMap((line, index) => {
       const container = heroBottomFlapLineRefs.current[index];
@@ -3355,16 +3355,16 @@ export default function HomePage() {
   }, [lang]);
   const serviceWorldCards = useMemo(() => lang === 'de'
     ? [
-        { code: '01', title: 'Corporate Design\n& Webauftritt', body: 'Marke, Gestaltung, Wirkung und digitale Präsentation sauber aus einem System gedacht.', accent: '#c89a3d' },
-        { code: '02', title: '2D-/3D-Websites\n& Applikationen', body: 'Moderne Websites und Web-Apps, die hochwertig aussehen und technisch belastbar sind.', accent: '#4d7fbf' },
-        { code: '03', title: 'CRM, ERP\n& Datenbanken', body: 'Individuelle Systeme, exakt auf Abläufe, Teams, Daten und Wachstum abgestimmt.', accent: '#a6425c' },
-        { code: '04', title: 'KI-Automation\n& Prozesse', body: 'Sinnvolle KI-Lösungen, die Arbeit vereinfachen, Prozesse beschleunigen und Qualität sichern.', accent: '#8ebef2' },
+        { code: '01', title: 'Corporate Design\nund Webauftritt', body: 'Ich entwickle Marke und Website gemeinsam, damit dein Auftritt überall zusammenpasst.', accent: '#c89a3d' },
+        { code: '02', title: '2D- und 3D-Websites\nund Applikationen', body: 'Ich entwickle Websites und Webanwendungen, die gut aussehen und zuverlässig funktionieren.', accent: '#4d7fbf' },
+        { code: '03', title: 'CRM, ERP\nund Datenbanken', body: 'Ich baue Systeme, die zu deinen Daten, deinem Team und deinen täglichen Abläufen passen.', accent: '#a6425c' },
+        { code: '04', title: 'KI Automation\nund Prozesse', body: 'Ich automatisiere wiederkehrende Arbeit und setze KI dort ein, wo sie im Alltag wirklich hilft.', accent: '#8ebef2' },
       ]
     : [
-        { code: '01', title: 'Corporate design\n& web presence', body: 'Brand, design, impact and digital presentation built as one coherent system.', accent: '#c89a3d' },
-        { code: '02', title: '2D/3D websites\n& applications', body: 'Modern websites and web apps that look premium and hold up technically.', accent: '#4d7fbf' },
-        { code: '03', title: 'CRM, ERP\n& databases', body: 'Custom systems aligned to workflows, teams, data and long-term growth.', accent: '#a6425c' },
-        { code: '04', title: 'AI automation\n& processes', body: 'Practical AI solutions that simplify work, accelerate processes and protect quality.', accent: '#8ebef2' },
+        { code: '01', title: 'Corporate design\nand web presence', body: 'I develop the brand and website together so that your presence is consistent everywhere.', accent: '#c89a3d' },
+        { code: '02', title: '2D and 3D websites\nand applications', body: 'I develop websites and web applications that look good and work reliably.', accent: '#4d7fbf' },
+        { code: '03', title: 'CRM, ERP\nand databases', body: 'I build systems that fit your data, your team and your daily processes.', accent: '#a6425c' },
+        { code: '04', title: 'AI automation\nand processes', body: 'I automate recurring work and use AI where it genuinely helps with daily tasks.', accent: '#8ebef2' },
       ], [lang]);
 
   return (
@@ -3396,13 +3396,13 @@ export default function HomePage() {
               <div className="hero-copy hero-copy-centered ms-anim">
                 <h1
                   className={`hero-title-flap max-w-6xl mx-auto text-5xl font-bold text-white leading-[0.96] tracking-[-0.055em] ${chakraPetch.className}`}
-                  aria-label={lang === 'de' ? 'DEINE DIGITALE GESAMTLÖSUNG. FÜR SCHWEIZER KMU UND START-UPS.' : 'YOUR COMPLETE DIGITAL SOLUTION. FOR SWISS SMES AND STARTUPS.'}
+                  aria-label={lang === 'de' ? 'ICH BAUE DEINE DIGITALE LÖSUNG. FÜR SCHWEIZER KMU UND START-UPS.' : 'I BUILD YOUR DIGITAL SOLUTION. FOR SWISS SMES AND STARTUPS.'}
                 >
                   <span ref={(el) => { heroFlapLineRefs.current[0] = el; }} className="hero-flap-line">
-                    {lang === 'de' ? 'DEINE DIGITALE GESAMTLÖSUNG.' : 'YOUR COMPLETE DIGITAL SOLUTION.'}
+                    {lang === 'de' ? 'ICH BAUE DEINE DIGITALE LÖSUNG.' : 'I BUILD YOUR DIGITAL SOLUTION.'}
                   </span>
                   <span ref={(el) => { heroFlapLineRefs.current[1] = el; }} className="hero-flap-line">
-                    {lang === 'de' ? 'FÜR SCHWEIZER KMU & START-UPS.' : 'FOR SWISS SMES & STARTUPS.'}
+                    {lang === 'de' ? 'FÜR SCHWEIZER KMU UND START-UPS.' : 'FOR SWISS SMES AND STARTUPS.'}
                   </span>
                 </h1>
               </div>
@@ -3415,17 +3415,17 @@ export default function HomePage() {
                 <p
                   className={`hero-bottom-flap max-w-lg mx-auto text-lg text-[#d8ccb3] leading-relaxed ${chakraPetch.className}`}
                   aria-label={lang === 'de'
-                    ? 'WEBSITES, PORTALE, CRM/ERP UND AUTOMATISIERUNGEN. ICH VERBINDE SYSTEME, DATEN UND MANUELLE PROZESSE ZU EINER SKALIERBAREN LÖSUNG – VON DER ANALYSE BIS ZUM GO-LIVE.'
-                    : 'WEBSITES, PORTALS, CRM/ERP AND AUTOMATION. I PERSONALLY CONNECT SYSTEMS, DATA AND MANUAL PROCESSES INTO ONE SCALABLE SOLUTION – FROM ANALYSIS THROUGH GO-LIVE.'}
+                    ? 'ICH ENTWICKLE WEBSITES, PORTALE, CRM, ERP UND AUTOMATIONEN. ICH VERBINDE SYSTEME, DATEN UND ARBEITSABLÄUFE, DAMIT SIE IM ALLTAG EINFACH FUNKTIONIEREN.'
+                    : 'I BUILD WEBSITES, PORTALS, CRM, ERP AND AUTOMATION. I CONNECT SYSTEMS, DATA AND DAILY WORKFLOWS, SO THEY WORK IN PRACTICE.'}
                 >
                   <span ref={(el) => { heroBottomFlapLineRefs.current[0] = el; }} className="hero-bottom-flap-line">
-                    {lang === 'de' ? 'WEBSITES, PORTALE, CRM/ERP UND AUTOMATISIERUNGEN.' : 'WEBSITES, PORTALS, CRM/ERP AND AUTOMATION.'}
+                    {lang === 'de' ? 'ICH ENTWICKLE WEBSITES, PORTALE, CRM, ERP UND AUTOMATIONEN.' : 'I BUILD WEBSITES, PORTALS, CRM, ERP AND AUTOMATION.'}
                   </span>
                   <span ref={(el) => { heroBottomFlapLineRefs.current[1] = el; }} className="hero-bottom-flap-line">
-                    {lang === 'de' ? 'ICH VERBINDE SYSTEME, DATEN UND MANUELLE PROZESSE' : 'I PERSONALLY CONNECT SYSTEMS, DATA AND MANUAL PROCESSES'}
+                    {lang === 'de' ? 'ICH VERBINDE SYSTEME, DATEN UND ARBEITSABLÄUFE,' : 'I CONNECT SYSTEMS, DATA AND DAILY WORKFLOWS,'}
                   </span>
                   <span ref={(el) => { heroBottomFlapLineRefs.current[2] = el; }} className="hero-bottom-flap-line">
-                    {lang === 'de' ? 'ZU EINER SKALIERBAREN LÖSUNG – VON DER ANALYSE BIS ZUM GO-LIVE.' : 'INTO ONE SCALABLE SOLUTION – FROM ANALYSIS THROUGH GO-LIVE.'}
+                    {lang === 'de' ? 'DAMIT SIE IM ALLTAG EINFACH FUNKTIONIEREN.' : 'SO THEY WORK IN PRACTICE.'}
                   </span>
                 </p>
               </div>

@@ -12,8 +12,8 @@ type CheckPayload = {
 };
 
 function label(v: string | string[] | undefined): string {
-  if (!v) return '–';
-  if (Array.isArray(v)) return v.length > 0 ? v.join(', ') : '–';
+  if (!v) return 'Keine Angabe.';
+  if (Array.isArray(v)) return v.length > 0 ? v.join(', ') : 'Keine Angabe.';
   return v;
 }
 
@@ -56,46 +56,46 @@ function generateReport(answers: Record<string, string | string[]>) {
   let readinessDesc: string;
   if (maturity === 'starter') {
     const urgency = timeLost.includes('20') || timeLost.includes('10') ? 'hohem' : 'moderatem';
-    readinessLabel = 'KI-Einsteiger mit Potenzial';
-    readinessDesc = `Ihr Unternehmen steht am Anfang der KI-Reise – mit ${urgency} Automatisierungspotenzial. Genau der richtige Moment, strukturiert und ohne Umwege einzusteigen.`;
+    readinessLabel = 'Sie stehen beim Einsatz von KI am Anfang.';
+    readinessDesc = `In Ihrem Unternehmen sehe ich ${urgency} Potenzial für Automatisierung. Bevor Sie ein Werkzeug auswählen, sollten Sie die wichtigsten Aufgaben und den erwarteten Nutzen festhalten.`;
   } else if (maturity === 'intermediate') {
-    readinessLabel = 'KI-Anwender auf Wachstumskurs';
-    readinessDesc = 'Sie nutzen KI bereits punktuell – jetzt geht es darum, aus einzelnen Insellösungen eine kohärente Strategie zu machen, die wirklich skaliert.';
+    readinessLabel = 'Sie nutzen KI bereits für einzelne Aufgaben.';
+    readinessDesc = 'Prüfen Sie jetzt, welche Anwendungen im Alltag wirklich helfen. Danach können Sie Regeln, Zuständigkeiten und den Umgang mit Daten einheitlich festlegen.';
   } else {
-    readinessLabel = 'KI-Pionier';
-    readinessDesc = 'Ihr Unternehmen ist bereits fortgeschritten. Der nächste Schritt: KI noch tiefer in Kernprozesse integrieren, Prozesse messen und skalieren.';
+    readinessLabel = 'Sie setzen KI bereits regelmässig ein.';
+    readinessDesc = 'Als nächsten Schritt können Sie die bestehenden Anwendungen messen und prüfen, welche davon sicher in wichtige Abläufe eingebunden werden können.';
   }
 
   const recs: Rec[] = [];
 
   if (maturity === 'starter') {
     recs.push({
-      title: 'Analyse & KI-Konzept',
-      reason: 'Ihr persönlicher KI-Fahrplan: Welche Tools passen wirklich zu Ihnen, welche Schritte bringen sofort Ergebnisse – und was können Sie später angehen.',
+      title: 'Analyse und KI Konzept',
+      reason: 'Ich prüfe, welche Aufgaben zuerst angegangen werden sollten, welche Werkzeuge passen und was vorerst warten kann.',
       url: serviceUrl('analyse-konzept'),
     });
   }
 
   if (barriers.some(b => b.includes('skeptisch') || b.includes('anfangen'))) {
     recs.push({
-      title: 'KI-Einführung & Schulung',
-      reason: 'Ein massgeschneiderter Workshop holt Ihr Team ab und macht KI greifbar – mit echten Aufgaben aus Ihrem Alltag, nicht mit abstrakten Beispielen.',
+      title: 'KI Einführung und Schulung',
+      reason: 'In einem Workshop arbeitet Ihr Team mit eigenen Aufgaben. So wird schnell klar, wo KI hilft und welche Regeln nötig sind.',
       url: serviceUrl('automatisierung-ki-agenten'),
     });
   }
 
   if (timeWasters.some(t => t.includes('E-Mail') || t.includes('Kundenanfragen') || t.includes('Daten'))) {
     recs.push({
-      title: 'KI-Automation & KI-Unterstützung',
-      reason: 'Genau für diese Aufgaben lassen sich KI-Agenten bauen, die 24/7 für Sie arbeiten – ohne zusätzliche Mitarbeitende.',
+      title: 'KI Automation und KI Unterstützung',
+      reason: 'Wiederkehrende E-Mails, Kundenanfragen und Dateneingaben lassen sich teilweise vorbereiten oder automatisieren. Ihr Team prüft die Ergebnisse und behält die Verantwortung.',
       url: serviceUrl('automatisierung-ki-agenten'),
     });
   }
 
   if (timeWasters.some(t => t.includes('Offerten') || t.includes('Dokumente') || t.includes('Daten zwischen'))) {
     recs.push({
-      title: 'ERP- & Geschäftsprozesse',
-      reason: 'Diese Abläufe können digitalisiert und automatisiert werden – mit messbarer Zeitersparnis und klarer Vorher/Nachher-Kalkulation.',
+      title: 'ERP und Geschäftsprozesse',
+      reason: 'Ich würde diese Abläufe zuerst aufnehmen und die benötigte Zeit messen. Danach lässt sich entscheiden, welche Schritte digitalisiert oder automatisiert werden sollten.',
       url: serviceUrl('erp-prozesse'),
     });
   }
@@ -103,15 +103,15 @@ function generateReport(answers: Record<string, string | string[]>) {
   if (timeWasters.some(t => t.includes('Vertrieb') || t.includes('Lead')) || priority.includes('Umsatz')) {
     recs.push({
       title: 'CRM-Lösungen',
-      reason: 'Leads, Kontakte, Aufgaben und nächste Schritte werden zentral geführt, damit aus Sichtbarkeit verlässlich neue Kundenbeziehungen entstehen.',
+      reason: 'Ein gemeinsamer Ort für Kontakte, Aufgaben und nächste Schritte hilft Ihrem Team, Anfragen vollständig und pünktlich zu bearbeiten.',
       url: serviceUrl('crm-loesungen'),
     });
   }
 
   if (maturity !== 'starter' || timeWasters.length >= 4) {
     recs.push({
-      title: 'Analyse & Konzept',
-      reason: 'Prozesse systematisch analysieren, Prioritäten setzen und Lösungen sauber spezifizieren – bevor etwas gebaut wird.',
+      title: 'Analyse und Konzept',
+      reason: 'Ich würde die Prozesse zuerst analysieren, Prioritäten setzen und die Anforderungen verständlich festhalten. Danach kann die Umsetzung geplant werden.',
       url: serviceUrl('analyse-konzept'),
     });
   }
@@ -204,7 +204,7 @@ export async function POST(req: Request) {
               <p style="margin:0 0 10px;color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;font-weight:600">Alle Antworten</p>
               <table style="width:100%;border-collapse:collapse">${answerRows}</table>
               <div style="margin-top:24px">
-                <a href="mailto:${email}?subject=Ihr persönlicher KI-Fahrplan – Marcel Spahr"
+                <a href="mailto:${email}?subject=Ihre persönliche KI Einschätzung. Marcel Spahr."
                    style="background:#c9a84c;color:#0c0a06;padding:11px 22px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:700;display:inline-block">
                   Direkt antworten
                 </a>
@@ -224,19 +224,19 @@ export async function POST(req: Request) {
       resend.emails.send({
         from:    'Marcel Spahr <kontakt@marcelspahr.ch>',
         to:      email,
-        subject: `Ihr persönlicher KI-Fahrplan – ${readinessLabel}`,
+        subject: `Ihre persönliche KI Einschätzung. ${readinessLabel}`,
         html: `
           <div style="font-family:sans-serif;max-width:600px;margin:0 auto;background:#ffffff;color:#1e293b;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0">
             <div style="background:#0c0a06;padding:28px 32px">
-              <h1 style="margin:0;color:#c9a84c;font-size:22px;font-weight:700">Ihr persönlicher KI-Fahrplan</h1>
-              <p style="margin:6px 0 0;color:#7a6d5a;font-size:13px">Erstellt von Marcel Spahr · marcelspahr.ch</p>
+              <h1 style="margin:0;color:#c9a84c;font-size:22px;font-weight:700">Meine Einschätzung zu Ihrem KI Einsatz.</h1>
+              <p style="margin:6px 0 0;color:#7a6d5a;font-size:13px">Persönlich geprüft von Marcel Spahr. marcelspahr.ch.</p>
             </div>
             <div style="padding:32px">
               <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#334155">Guten Tag ${name},</p>
               <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#334155">
-                vielen Dank für Ihren KI-Check. Ich habe Ihre Antworten ausgewertet und Ihren
-                persönlichen Fahrplan zusammengestellt – basierend auf dem, wo Ihr Unternehmen
-                heute steht und was Sie erreichen möchten.
+                vielen Dank für Ihre Antworten. Ich habe Ihre Angaben geprüft und daraus diese
+                Einschätzung erstellt. Sie berücksichtigt Ihre heutige Situation und die Ziele,
+                die Sie für Ihr Unternehmen genannt haben.
               </p>
               <div style="background:#0c0a06;border-radius:10px;padding:20px 24px;margin-bottom:28px">
                 <p style="margin:0 0 4px;color:#c9a84c;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700">Ihr KI-Reifegrad</p>
@@ -246,17 +246,15 @@ export async function POST(req: Request) {
               <p style="margin:0 0 14px;font-size:15px;color:#1e293b;font-weight:600">Meine konkreten Empfehlungen für Sie:</p>
               ${recHtml}
               <div style="background:#fffbeb;border-radius:10px;padding:18px 22px;margin:24px 0;border:1px solid #fde68a">
-                <p style="margin:0 0 6px;color:#92400e;font-size:13px;font-weight:700">Mein Versprechen an Sie</p>
+                <p style="margin:0 0 6px;color:#92400e;font-size:13px;font-weight:700">Worauf ich bei der Umsetzung achte.</p>
                 <p style="margin:0;color:#78350f;font-size:13px;line-height:1.7">
-                  KI ersetzt Menschen nicht – sie macht gute Menschen noch besser. Ich zeige Ihnen,
-                  wie Sie KI als Verstärker Ihrer Erfahrung nutzen, nicht als Ersatz dafür.
-                  Der Mensch bleibt der Dirigent.
+                  Ich setze KI nur dort ein, wo der Nutzen nachvollziehbar ist. Ihr Team prüft
+                  wichtige Ergebnisse und bleibt für Entscheidungen verantwortlich.
                 </p>
               </div>
               <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#334155">
-                Als nächsten Schritt empfehle ich ein <strong>kostenloses 30-minütiges Erstgespräch</strong>,
-                in dem wir gemeinsam schauen, welcher Hebel bei Ihnen am meisten bringt – konkret,
-                ohne Buzzwords.
+                Wenn Sie die Einschätzung besprechen möchten, können wir ein <strong>kostenloses Gespräch von 30 Minuten</strong>
+                vereinbaren. Dabei klären wir, welche Aufgabe zuerst geprüft werden sollte.
               </p>
               <div style="text-align:center;margin:28px 0">
                 <a href="${PUBLIC_SITE_URL}/?lead=consultation" target="_blank" rel="noopener noreferrer"
@@ -267,8 +265,8 @@ export async function POST(req: Request) {
               <p style="margin:24px 0 0;font-size:14px;line-height:1.7;color:#334155">
                 Freundliche Grüsse<br/>
                 <strong>Marcel Spahr</strong><br/>
-                <span style="color:#64748b;font-size:13px">KI-Berater & Wirtschaftsinformatiker · Bern, Schweiz</span><br/>
-                <span style="color:#64748b;font-size:13px">+41 79 511 09 11 · kontakt@marcelspahr.ch</span>
+                <span style="color:#64748b;font-size:13px">Wirtschaftsinformatiker und KI Berater. Bern, Schweiz.</span><br/>
+                <span style="color:#64748b;font-size:13px">+41 79 511 09 11. kontakt@marcelspahr.ch.</span>
               </p>
             </div>
             <div style="padding:14px 32px;background:#f8fafc;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center">

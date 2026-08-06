@@ -109,19 +109,19 @@ export async function POST(req: Request) {
       // 1. Benachrichtigung an Marcel
       const mustHtml = safe.must.length
         ? safe.must.map(a => `<li style="padding:3px 0;color:#86efac;font-size:13px">✓ ${a.text}</li>`).join('')
-        : '<li style="color:#64748b;font-size:13px">–</li>';
+        : '<li style="color:#64748b;font-size:13px">Keine Angabe.</li>';
       const niceHtml = safe.nice.length
         ? safe.nice.map(a => `<li style="padding:3px 0;color:#fde68a;font-size:13px">◇ ${a.text}</li>`).join('')
         : '';
       const nfHtml = safe.nfAnforderungen.length
-        ? safe.nfAnforderungen.map(n => `<li style="padding:2px 0;color:#a5b4fc;font-size:13px">– ${n}</li>`).join('')
+        ? safe.nfAnforderungen.map(n => `<li style="padding:2px 0;color:#a5b4fc;font-size:13px">${n}</li>`).join('')
         : '';
 
       resend.emails.send({
         from:    'noreply@marcelspahr.ch',
         to:      'kontakt@marcelspahr.ch',
         replyTo: email,
-        subject: `📋 Neue RE-Anfrage: ${projekttyp} – ${firma || name}`,
+        subject: `📋 Neue Projektanfrage. ${projekttyp}. ${firma || name}.`,
         html: `
           <div style="font-family:sans-serif;max-width:660px;margin:0 auto;background:#0f1117;color:#e2e8f0;border-radius:12px;overflow:hidden">
             <div style="background:#c9a84c;padding:22px 32px">
@@ -151,7 +151,7 @@ export async function POST(req: Request) {
               ${safe.notizen ? `<div style="background:#1e2235;border-radius:8px;padding:14px 18px;margin-bottom:16px;border-left:3px solid #c9a84c"><p style="margin:0 0 6px;color:#c9a84c;font-size:11px;text-transform:uppercase;font-weight:700">Notizen</p><p style="margin:0;color:#e2e8f0;font-size:13px;line-height:1.6;white-space:pre-wrap">${safe.notizen}</p></div>` : ''}
 
               <div style="margin-top:24px;display:flex;gap:12px">
-                <a href="mailto:${safe.email}?subject=Ihre Projektanfrage – Marcel Spahr"
+                <a href="mailto:${safe.email}?subject=Ihre Projektanfrage. Marcel Spahr."
                    style="background:#c9a84c;color:#0c0a06;padding:11px 22px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:700;display:inline-block">
                   Direkt antworten
                 </a>
@@ -162,7 +162,7 @@ export async function POST(req: Request) {
               </div>
             </div>
             <div style="padding:14px 32px;background:#1a1d27;border-top:1px solid #2d3144">
-              <p style="margin:0;color:#475569;font-size:11px">Anfrage-ID: ${insertedId || '–'} · marcelspahr.ch RE-Tool</p>
+              <p style="margin:0;color:#475569;font-size:11px">Anfrage ID: ${insertedId || 'Keine Angabe.'}. marcelspahr.ch.</p>
             </div>
           </div>`,
       }).catch(e => console.error('[re-anfrage] Resend Marcel:', e));
@@ -178,24 +178,24 @@ export async function POST(req: Request) {
       resend.emails.send({
         from:    'Marcel Spahr <kontakt@marcelspahr.ch>',
         to:      email,
-        subject: `Ihre Projektanfrage ist eingegangen – ${projekttyp}`,
+        subject: `Ihre Projektanfrage ist eingegangen. ${projekttyp}.`,
         html: `
           <div style="font-family:sans-serif;max-width:600px;margin:0 auto;background:#ffffff;color:#1e293b;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0">
             <div style="background:#0c0a06;padding:28px 32px">
-              <h1 style="margin:0;color:#c9a84c;font-size:22px;font-weight:700">Ihre Anfrage ist bei mir!</h1>
-              <p style="margin:6px 0 0;color:#7a6d5a;font-size:13px">Marcel Spahr · marcelspahr.ch</p>
+              <h1 style="margin:0;color:#c9a84c;font-size:22px;font-weight:700">Ihre Anfrage ist bei mir.</h1>
+              <p style="margin:6px 0 0;color:#7a6d5a;font-size:13px">Marcel Spahr. marcelspahr.ch.</p>
             </div>
             <div style="padding:32px">
               <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#334155">Guten Tag ${safe.name},</p>
               <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#334155">
-                vielen Dank für Ihre Projektanfrage! Ich habe alle Ihre Angaben erhalten und melde
-                mich <strong>innerhalb von 24 Stunden</strong> persönlich bei Ihnen.
+                vielen Dank für Ihre Projektanfrage. Ich habe alle Angaben erhalten und melde
+                mich <strong>innerhalb von zwei Arbeitstagen</strong> persönlich bei Ihnen.
               </p>
 
               <div style="background:#f0fdf4;border-radius:10px;padding:20px 24px;margin-bottom:20px;border:1px solid #bbf7d0">
                 <p style="margin:0 0 4px;color:#166534;font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Ihr Projekt</p>
                 <p style="margin:0 0 2px;color:#14532d;font-size:16px;font-weight:700">${safe.projekttyp}</p>
-                <p style="margin:0;color:#166534;font-size:13px">Branche: ${safe.branche}${safe.budget ? ` · Budget: ${safe.budget}` : ''}${safe.zeitrahmen ? ` · Zeitrahmen: ${safe.zeitrahmen}` : ''}</p>
+                <p style="margin:0;color:#166534;font-size:13px">Branche: ${safe.branche}.${safe.budget ? ` Budget: ${safe.budget}.` : ''}${safe.zeitrahmen ? ` Zeitrahmen: ${safe.zeitrahmen}.` : ''}</p>
               </div>
 
               ${safe.must.length ? `
@@ -208,9 +208,9 @@ export async function POST(req: Request) {
               <div style="background:#fffbeb;border-radius:10px;padding:18px 22px;margin:24px 0;border:1px solid #fde68a">
                 <p style="margin:0 0 6px;color:#92400e;font-size:13px;font-weight:700">Was als Nächstes passiert</p>
                 <ol style="margin:0;padding-left:20px;color:#78350f;font-size:13px;line-height:2">
-                  <li>Ich sichte Ihre Anforderungen sorgfältig</li>
-                  <li>Ich melde mich innerhalb 24h bei Ihnen (per E-Mail oder Telefon)</li>
-                  <li>Gemeinsam besprechen wir Ihr Projekt und die nächsten Schritte</li>
+                  <li>Ich lese Ihre Anforderungen sorgfältig.</li>
+                  <li>Ich melde mich innerhalb von zwei Arbeitstagen per E-Mail oder Telefon bei Ihnen.</li>
+                  <li>Wir besprechen Ihr Projekt und die nächsten Schritte.</li>
                 </ol>
               </div>
 
@@ -223,7 +223,7 @@ export async function POST(req: Request) {
               <p style="margin:0;font-size:15px;line-height:1.7;color:#334155">
                 Freundliche Grüsse<br/>
                 <strong>Marcel Spahr</strong><br/>
-                <span style="color:#64748b;font-size:13px">KI-Berater & Wirtschaftsinformatiker · Bern, Schweiz</span>
+                <span style="color:#64748b;font-size:13px">Wirtschaftsinformatiker und KI Berater. Bern, Schweiz.</span>
               </p>
             </div>
             <div style="padding:14px 32px;background:#f8fafc;border-top:1px solid #e2e8f0;text-align:center">

@@ -36,12 +36,12 @@ const TYP_CFG: Record<DokumentTyp, { label: string; cls: string; color: string }
 };
 
 function formatDate(iso?: string | null) {
-  if (!iso) return '–';
+  if (!iso) return 'Keine Angabe.';
   return new Date(iso).toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
 function formatBytes(bytes?: number | null) {
-  if (!bytes) return '–';
+  if (!bytes) return 'Keine Angabe.';
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
@@ -115,7 +115,7 @@ function DokumentModal({ dokument, kunden, projekte, onClose, onSaved }: {
               <label className="block text-xs text-slate-400 mb-1">Typ</label>
               <select value={form.typ || ''} onChange={e => set('typ', e.target.value || undefined)}
                 className="w-full bg-[#2d3144] border border-[#3d4460] rounded-lg px-3 py-2 text-white text-sm">
-                <option value="">— Wählen —</option>
+                <option value="">Bitte wählen.</option>
                 {(Object.keys(TYP_CFG) as DokumentTyp[]).map(k => (
                   <option key={k} value={k}>{TYP_CFG[k].label}</option>
                 ))}
@@ -134,10 +134,10 @@ function DokumentModal({ dokument, kunden, projekte, onClose, onSaved }: {
               <label className="block text-xs text-slate-400 mb-1">Kunde</label>
               <select value={form.kunden_id || ''} onChange={e => set('kunden_id', e.target.value || undefined)}
                 className="w-full bg-[#2d3144] border border-[#3d4460] rounded-lg px-3 py-2 text-white text-sm">
-                <option value="">— Kein Kunde —</option>
+                <option value="">Kein Kunde.</option>
                 {kunden.map(k => (
                   <option key={k.id} value={k.id}>
-                    {k.firmenname ? `${k.firmenname} – ${k.kontaktperson}` : k.kontaktperson}
+                    {k.firmenname ? `${k.firmenname}. ${k.kontaktperson}.` : k.kontaktperson}
                   </option>
                 ))}
               </select>
@@ -146,7 +146,7 @@ function DokumentModal({ dokument, kunden, projekte, onClose, onSaved }: {
               <label className="block text-xs text-slate-400 mb-1">Projekt</label>
               <select value={form.projekt_id || ''} onChange={e => set('projekt_id', e.target.value || undefined)}
                 className="w-full bg-[#2d3144] border border-[#3d4460] rounded-lg px-3 py-2 text-white text-sm">
-                <option value="">— Kein Projekt —</option>
+                <option value="">Kein Projekt.</option>
                 {projekte.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             </div>
@@ -155,7 +155,7 @@ function DokumentModal({ dokument, kunden, projekte, onClose, onSaved }: {
           <div>
             <label className="block text-xs text-slate-400 mb-1">Pfad / URL</label>
             <input value={form.storage_path || ''} onChange={e => set('storage_path', e.target.value)}
-              placeholder="z.B. /assets/Angebot.pdf oder https://…"
+              placeholder="Füge einen Pfad oder eine vollständige Adresse ein."
               className="w-full bg-[#2d3144] border border-[#3d4460] rounded-lg px-3 py-2 text-white text-sm font-mono text-xs" />
             <p className="text-slate-600 text-xs mt-1">Direkter Link oder relativer Pfad zur Datei</p>
           </div>
@@ -169,7 +169,7 @@ function DokumentModal({ dokument, kunden, projekte, onClose, onSaved }: {
             <div className="flex gap-3">
               <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-slate-400 hover:text-white text-sm">Abbrechen</button>
               <button type="submit" disabled={saving} className="px-4 py-2 bg-ms-500 hover:bg-ms-600 text-white rounded-lg text-sm disabled:opacity-50">
-                {saving ? 'Speichern…' : 'Speichern'}
+                {saving ? 'Ich speichere das Dokument.' : 'Speichern'}
               </button>
             </div>
           </div>
@@ -245,12 +245,12 @@ export default function DokumentePage() {
       {/* Search */}
       <div className="relative">
         <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-        <input type="text" placeholder="Dateiname suchen…" value={search} onChange={e => setSearch(e.target.value)}
+        <input type="text" placeholder="Suche nach einem Dateinamen." value={search} onChange={e => setSearch(e.target.value)}
           className="w-full bg-[#1e2235] border border-[#2d3144] rounded-xl pl-9 pr-3 py-2.5 text-white text-sm placeholder-slate-500 focus:border-ms-500 outline-none" />
       </div>
 
       {loading ? (
-        <div className="text-slate-400 text-sm">Lade Daten…</div>
+        <div className="text-slate-400 text-sm">Die Dokumente werden geladen.</div>
       ) : filtered.length === 0 ? (
         <div className="bg-[#1e2235] border border-[#2d3144] rounded-2xl p-12 text-center">
           <FolderOpen size={40} className="mx-auto text-slate-600 mb-3" />

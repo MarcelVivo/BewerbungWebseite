@@ -71,7 +71,7 @@ export default function UpdatePasswordPage() {
             <h1 className="text-2xl font-semibold text-white">Neues Passwort festlegen</h1>
             <p className="mt-2 text-sm leading-relaxed text-slate-400">Verwende mindestens 12 Zeichen und ein Passwort, das du auf keiner anderen Website einsetzt.</p>
 
-            {checking ? <p className="mt-7 text-sm text-slate-500">Recovery-Link wird geprüft …</p> : validSession ? (
+            {checking ? <p className="mt-7 text-sm text-slate-500">Der Link wird geprüft.</p> : validSession ? (
               <form className="mt-7 space-y-4" onSubmit={handleSubmit}>
                 <label className="block">
                   <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">Neues Passwort</span>
@@ -85,7 +85,7 @@ export default function UpdatePasswordPage() {
                   <input type={showPassword ? 'text' : 'password'} required minLength={12} autoComplete="new-password" value={confirmation} onChange={event => setConfirmation(event.target.value)} className="w-full rounded-xl border border-[#2d3144] bg-[#11131b] px-4 py-3 text-sm text-white outline-none transition focus:border-[#6366f1] focus:ring-2 focus:ring-[#6366f1]/20" />
                 </label>
                 {error && <p role="alert" className="flex items-start gap-2 rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-300"><AlertCircle size={15} className="mt-0.5 shrink-0" />{error}</p>}
-                <button type="submit" disabled={loading} className="w-full rounded-xl bg-[#6366f1] py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition hover:bg-[#5558e8] disabled:cursor-not-allowed disabled:opacity-60">{loading ? 'Wird gespeichert …' : 'Passwort sicher ändern'}</button>
+                <button type="submit" disabled={loading} className="w-full rounded-xl bg-[#6366f1] py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition hover:bg-[#5558e8] disabled:cursor-not-allowed disabled:opacity-60">{loading ? 'Das Passwort wird gespeichert.' : 'Passwort sicher ändern'}</button>
               </form>
             ) : (
               <div className="mt-7">
@@ -99,4 +99,3 @@ export default function UpdatePasswordPage() {
     </main>
   );
 }
-

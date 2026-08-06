@@ -5,12 +5,12 @@ import { createClient } from '@/lib/supabase/client';
 import { Rechnung } from '@/lib/types';
 
 function formatCHF(v?: number | null) {
-  if (v == null) return '–';
+  if (v == null) return 'Keine Angabe.';
   return v.toLocaleString('de-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function formatDate(iso?: string | null) {
-  if (!iso) return '–';
+  if (!iso) return 'Keine Angabe.';
   return new Date(iso).toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
@@ -49,7 +49,7 @@ export default function PrintPage({ params }: { params: { id: string } }) {
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <p className="text-gray-400 text-sm">Lade…</p>
+        <p className="text-gray-400 text-sm">Die Rechnung wird geladen.</p>
       </div>
     );
   }
@@ -173,7 +173,7 @@ export default function PrintPage({ params }: { params: { id: string } }) {
             <tbody>
               {doc.positionen.map((pos, i) => (
                 <tr key={i} className="border-b border-gray-100">
-                  <td className="px-4 py-3 text-gray-800">{pos.beschreibung || '–'}</td>
+                  <td className="px-4 py-3 text-gray-800">{pos.beschreibung || 'Keine Angabe.'}</td>
                   <td className="px-4 py-3 text-right text-gray-700">{pos.menge}</td>
                   <td className="px-4 py-3 text-gray-500">{pos.einheit}</td>
                   <td className="px-4 py-3 text-right text-gray-700">CHF {formatCHF(pos.einzelpreis)}</td>

@@ -14,10 +14,10 @@ const siteFont = Chakra_Petch({
 
 export const metadata = {
   title: {
-    default: 'Marcel Spahr – Weblösungen, CRM & ERP für KMU',
+    default: 'Marcel Spahr. Weblösungen, CRM und ERP für KMU.',
     template: '%s | Marcel Spahr',
   },
-  description: 'Marcel Spahr baut massgeschneiderte Weblösungen für KMU und Unternehmen: Corporate Design, moderne 2D/3D-Websites, CRM, ERP, Datenbanken, KI-Automation und Automatisierung aus einer Hand.',
+  description: 'Ich entwickle Websites, CRM, ERP, Datenbanken und Automationen für KMU. Von meinem Standort in Bern begleite ich Projekte persönlich von der Analyse bis zur Einführung.',
   keywords: [
     'Weblösungen KMU Schweiz',
     'Webagentur Bern',
@@ -30,7 +30,7 @@ export const metadata = {
     'KI Agenten Schweiz',
     'Datenbank Entwicklung Schweiz',
     'Automatisierung KMU',
-    'Massgeschneiderte Website',
+    'Individuelle Website',
     'Wirtschaftsinformatiker Bern',
     'Marcel Spahr',
   ],
@@ -38,18 +38,18 @@ export const metadata = {
   creator: 'Marcel Spahr',
   metadataBase: new URL('https://www.marcelspahr.ch'),
   openGraph: {
-    title: 'Marcel Spahr – Weblösungen, CRM & ERP für KMU',
-    description: 'Massgeschneiderte Weblösungen aus einer Hand: Corporate Design, moderne Websites, CRM, ERP, Datenbanken, KI-Automation und Automatisierung.',
+    title: 'Marcel Spahr. Weblösungen, CRM und ERP für KMU.',
+    description: 'Ich entwickle Websites, CRM, ERP, Datenbanken und Automationen für KMU und begleite jedes Projekt persönlich.',
     url: 'https://www.marcelspahr.ch',
     siteName: 'Marcel Spahr',
     locale: 'de_CH',
     type: 'website',
-    images: [{ url: 'https://www.marcelspahr.ch/assets/portrait.jpg', width: 400, height: 400, alt: 'Marcel Spahr – Weblösungen für KMU und Unternehmen' }],
+    images: [{ url: 'https://www.marcelspahr.ch/assets/portrait.jpg', width: 400, height: 400, alt: 'Marcel Spahr. Weblösungen für KMU und Unternehmen.' }],
   },
   twitter: {
     card: 'summary',
-    title: 'Marcel Spahr – Weblösungen, CRM & ERP für KMU',
-    description: 'Massgeschneiderte Weblösungen für KMU und Unternehmen. Bern, Schweiz.',
+    title: 'Marcel Spahr. Weblösungen, CRM und ERP für KMU.',
+    description: 'Ich entwickle Websites und Geschäftssysteme für KMU. Bern, Schweiz.',
     images: ['https://www.marcelspahr.ch/assets/portrait.jpg'],
   },
   robots: {
@@ -76,7 +76,7 @@ const jsonLd = [
     url: 'https://www.marcelspahr.ch',
     image: 'https://www.marcelspahr.ch/assets/portrait.jpg',
     jobTitle: 'Weblösungen, CRM & ERP | Wirtschaftsinformatiker',
-    description: 'Wirtschaftsinformatiker mit 15 Jahren Erfahrung in digitalen Systemen. Spezialisiert auf massgeschneiderte Weblösungen, CRM, ERP, Datenbanken, KI-Automation und Automatisierung für KMU.',
+    description: 'Ich bin Wirtschaftsinformatiker mit mehr als 15 Jahren Erfahrung. Ich entwickle Websites, CRM, ERP, Datenbanken und Automationen für KMU.',
     telephone: '+41795110911',
     email: 'kontakt@marcelspahr.ch',
     address: {
@@ -98,15 +98,15 @@ const jsonLd = [
       { '@type': 'EducationalOccupationalCredential', name: 'EFZ Werbetechniker', credentialCategory: 'degree' },
       { '@type': 'EducationalOccupationalCredential', name: 'EFZ Maler', credentialCategory: 'degree' },
     ],
-    worksFor: { '@type': 'Organization', name: 'Marcel Spahr – Weblösungen' },
+    worksFor: { '@type': 'Organization', name: 'Marcel Spahr. Weblösungen.' },
   },
   {
     '@context': 'https://schema.org',
     '@type': 'ProfessionalService',
-    name: 'Marcel Spahr – Weblösungen, CRM & ERP',
+    name: 'Marcel Spahr. Weblösungen, CRM und ERP.',
     url: 'https://www.marcelspahr.ch',
     image: 'https://www.marcelspahr.ch/assets/portrait.jpg',
-    description: 'Massgeschneiderte Weblösungen für KMU und Unternehmen: Corporate Design, moderne Websites, CRM, ERP, Datenbanken, KI-Automation und Automatisierung aus einer Hand.',
+    description: 'Ich entwickle Corporate Design, Websites, CRM, ERP, Datenbanken und Automationen für KMU und Unternehmen.',
     telephone: '+41795110911',
     email: 'kontakt@marcelspahr.ch',
     address: {

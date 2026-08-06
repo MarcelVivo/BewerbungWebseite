@@ -90,7 +90,7 @@ export async function POST(request: Request) {
                 </div>
               </div>
               <div style="padding:16px 32px;background:#1a1d27;border-top:1px solid #2d3144">
-                <p style="margin:0;color:#475569;font-size:11px">marcelspahr.ch · Command Center · Anfrage-ID: ${insertedId || '–'}</p>
+                <p style="margin:0;color:#475569;font-size:11px">marcelspahr.ch. Command Center. Anfrage ID: ${insertedId || 'Keine Angabe.'}</p>
               </div>
             </div>
           `,
@@ -104,7 +104,7 @@ export async function POST(request: Request) {
         await resend.emails.send({
           from: 'Marcel Spahr <kontakt@marcelspahr.ch>',
           to:   email,
-          subject: 'Vielen Dank für Ihre Anfrage – Marcel Spahr',
+          subject: 'Vielen Dank für Ihre Anfrage. Marcel Spahr.',
           html: `
             <div style="font-family:sans-serif;max-width:600px;margin:0 auto;background:#ffffff;color:#1e293b;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0">
               <div style="background:#6366f1;padding:28px 32px">
@@ -131,7 +131,7 @@ export async function POST(request: Request) {
                 <p style="margin:0;font-size:15px;line-height:1.7;color:#334155">
                   Freundliche Grüsse<br/>
                   <strong>Marcel Spahr</strong><br/>
-                  <span style="color:#64748b;font-size:13px">KI-Berater & Wirtschaftsinformatiker · Bern, Schweiz</span>
+                  <span style="color:#64748b;font-size:13px">Wirtschaftsinformatiker und KI Berater. Bern, Schweiz.</span>
                 </p>
               </div>
               <div style="padding:16px 32px;background:#f8fafc;border-top:1px solid #e2e8f0;text-align:center">

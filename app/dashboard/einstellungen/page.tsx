@@ -108,7 +108,7 @@ function ProfilTab({ email }: { email: string }) {
 
           <button type="submit" disabled={saving || !name.trim()}
             className="flex items-center gap-2 bg-ms-500 hover:bg-ms-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium disabled:opacity-50 transition-colors">
-            <Save size={15} /> {saving ? 'Speichern…' : 'Änderungen speichern'}
+            <Save size={15} /> {saving ? 'Ich speichere die Änderungen.' : 'Änderungen speichern'}
           </button>
         </form>
       </div>
@@ -214,7 +214,7 @@ function SicherheitTab() {
 
           <button type="submit" disabled={saving || !pw || pw !== pwConfirm}
             className="flex items-center gap-2 bg-ms-500 hover:bg-ms-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium disabled:opacity-50 transition-colors">
-            <Lock size={15} /> {saving ? 'Wird geändert…' : 'Passwort ändern'}
+            <Lock size={15} /> {saving ? 'Das Passwort wird geändert.' : 'Passwort ändern'}
           </button>
         </form>
       </div>

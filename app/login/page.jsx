@@ -40,7 +40,7 @@ export default function LoginPage() {
       <div className="recruiter-login-aurora" aria-hidden="true" />
       <section className="recruiter-login-shell" aria-labelledby="recruiter-login-title">
         <header className="recruiter-login-heading">
-          <p>VERTRAULICH · PERSÖNLICH · DIREKT</p>
+          <p>VERTRAULICH. PERSÖNLICH. DIREKT.</p>
           <h1 id="recruiter-login-title">RECRUITER-ZUGANG</h1>
         </header>
 
@@ -54,9 +54,9 @@ export default function LoginPage() {
             <div className="recruiter-login-portrait-shade" aria-hidden="true" />
             <div className="recruiter-login-quote">
               <blockquote>
-                „Ich verbinde 16 Jahre Praxiserfahrung mit Wirtschaftsinformatik,
-                analytischer Klarheit und Empathie – und übersetze komplexe Anforderungen
-                in Lösungen, die Teams mittragen und Unternehmen messbar voranbringen.“
+                „Ich bringe 16 Jahre Berufserfahrung und mein Wissen aus der
+                Wirtschaftsinformatik zusammen. Komplexe Aufgaben zerlege ich so,
+                dass Teams sie verstehen und gemeinsam lösen können.“
               </blockquote>
             </div>
             <div className="recruiter-login-signature" aria-label="Marcel Spahr">
@@ -74,9 +74,9 @@ export default function LoginPage() {
                 <ShieldCheck size={22} strokeWidth={1.7} />
               </div>
               <div>
-                <p>BEWERBUNGSPROFIL · MARCEL SPAHR</p>
+                <p>BEWERBUNGSPROFIL. MARCEL SPAHR.</p>
                 <h2>Willkommen im geschützten Bereich.</h2>
-                <span>Lebenslauf, Diplome, Arbeitszeugnisse und Projektdokumente – persönlich für ausgewählte Empfänger bereitgestellt.</span>
+                <span>Hier stelle ich ausgewählten Empfängern meinen Lebenslauf, meine Diplome, Arbeitszeugnisse und Projektdokumente zur Verfügung.</span>
               </div>
             </div>
 
@@ -122,7 +122,7 @@ export default function LoginPage() {
             <div className="recruiter-login-actions">
               <button type="submit" disabled={submitting}>
                 <LockKeyhole size={18} aria-hidden="true" />
-                <span>{submitting ? 'Zugang wird geprüft …' : 'Bewerbungsprofil öffnen'}</span>
+                <span>{submitting ? 'Ich prüfe den Zugang.' : 'Bewerbungsprofil öffnen'}</span>
                 <ArrowRight size={18} aria-hidden="true" />
               </button>
               <p>

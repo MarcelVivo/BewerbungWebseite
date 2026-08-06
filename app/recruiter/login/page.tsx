@@ -46,7 +46,7 @@ export default function RecruiterLogin() {
             <Lock size={22} className="text-white" />
           </div>
           <h1 className="text-2xl font-bold text-white">Recruiter-Zugang</h1>
-          <p className="text-slate-400 text-sm mt-1.5">marcelspahr.ch · Vertraulich</p>
+          <p className="text-slate-400 text-sm mt-1.5">marcelspahr.ch. Vertraulich.</p>
         </div>
 
         {/* Card */}
@@ -85,7 +85,7 @@ export default function RecruiterLogin() {
               disabled={loading || !pw}
               className="brand-blue-fill w-full py-3 rounded-xl disabled:opacity-40 text-white font-semibold transition-colors"
             >
-              {loading ? 'Anmelden…' : 'Anmelden'}
+              {loading ? 'Ich prüfe den Zugang.' : 'Anmelden'}
             </button>
           </form>
         </div>

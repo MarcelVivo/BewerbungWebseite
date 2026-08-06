@@ -3,7 +3,7 @@ import Sidebar from '@/components/dashboard/Sidebar';
 import TopBar  from '@/components/dashboard/TopBar';
 
 export const metadata: Metadata = {
-  title:       'Command Center – Marcel Spahr',
+  title:       'Command Center. Marcel Spahr.',
   description: 'Privates Command Center für Marcel Spahr',
   robots:      'noindex, nofollow',
 };
