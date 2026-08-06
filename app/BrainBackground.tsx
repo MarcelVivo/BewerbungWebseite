@@ -35,11 +35,11 @@ export default function BrainBackground({ introTexts = [], serviceCards = [], on
     // Nur die Startgruppe wird versetzt; Helix, grünes Gehirn und sämtliche
     // späteren Reisestationen behalten ihre bisherigen Weltpositionen.
     var MOBILE_BRAIN_Y_OFFSET = isMobile ? 3.45 : 0;
-    var renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'high-performance' });
+    var renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: !isMobile, powerPreference: 'high-performance' });
     // Retina-Auflösung oberhalb dieses Bereichs erhöht die GPU-Pixellast sehr
     // stark, ohne bei den feinen Punkt-/Linienstrukturen sichtbar mehr Nutzen
     // zu bringen. Mobile erhält bewusst ein engeres Budget.
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.05 : 1.35));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? .85 : 1));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 0.58;
@@ -4582,6 +4582,29 @@ export default function BrainBackground({ introTexts = [], serviceCards = [], on
       document.body.style.cursor='';
       persistGoldStrandEnd();
     }
+    var agencySurface=document.querySelector('.agency-surface');
+    var agencyFinale=document.querySelector('.agency-finale');
+    var agencySurfaceTop=Infinity;
+    var agencyFinaleTop=Infinity;
+    var canvasSuspended=false;
+    function measureAgencyBounds(){
+      if(agencySurface){
+        var surfaceRect=agencySurface.getBoundingClientRect();
+        agencySurfaceTop=surfaceRect.top+scrollY;
+      }
+      if(agencyFinale){
+        var finaleRect=agencyFinale.getBoundingClientRect();
+        agencyFinaleTop=finaleRect.top+scrollY;
+      }
+    }
+    function setCanvasSuspended(suspended){
+      if(canvasSuspended===suspended) return;
+      canvasSuspended=suspended;
+      // Eine nur transparente/unsichtbare fixed WebGL-Fläche kann weiterhin
+      // als grosser Compositing-Layer mitgeführt werden. display:none entfernt
+      // sie während der opaken 2D-Kapitel nachweislich vollständig aus Paint.
+      canvas.style.display=suspended?'none':'block';
+    }
     const resize = () => {
       // updateStyle=false: keep the canvas's own width:100%/height:100% CSS
       // (set inline below) instead of letting Three.js stamp a literal
@@ -4597,6 +4620,8 @@ export default function BrainBackground({ introTexts = [], serviceCards = [], on
       if(oceanImmersionHalo){
         oceanImmersionHalo.material.uniforms.uPixelRatio.value=Math.min(window.devicePixelRatio||1,2);
       }
+      measureAgencyBounds();
+      onScroll();
     };
     // Scroll setzt nur das gewünschte Ziel auf der Schiene. Die tatsächliche
     // Fahrt wird darunter als gedämpfte Masse integriert: Beschleunigung,
@@ -4621,6 +4646,17 @@ export default function BrainBackground({ introTexts = [], serviceCards = [], on
         ? Math.max(1,innerHeight*7.95)
         : Math.max(1,journey.offsetHeight);
       targetScrollP=Math.max(0,Math.min(1,(scrollY-start)/distance));
+      var coveredBySurface=scrollY>=agencySurfaceTop
+        && scrollY+innerHeight*.88<agencyFinaleTop;
+      setCanvasSuspended(coveredBySurface);
+      if(coveredBySurface){
+        // Die Kameraposition darf im verdeckten Bereich direkt folgen. So
+        // muss keine unsichtbare Feder 3D-Geometrie weiterberechnen und beim
+        // Finale startet die Szene trotzdem am korrekten Schienenpunkt.
+        cameraProgress=targetScrollP;
+        cameraVelocity=0;
+        scrollP=targetScrollP;
+      }
     };
     const onJourneyCameraWarp = (event) => {
       var requestedProgress=Number(event&&event.detail);
@@ -4780,26 +4816,20 @@ export default function BrainBackground({ introTexts = [], serviceCards = [], on
       }
     }
 
-    var t = 0, last = 0, rafId = 0, lastWobbleUpdate = 0, lastSatelliteStrandUpdate = 0, lastGoldStrandUpdate = 0, lastCoveredFrame = 0, lastVisibleFrame = 0;
+    var t = 0, last = 0, rafId = 0, lastWobbleUpdate = 0, lastSatelliteStrandUpdate = 0, lastGoldStrandUpdate = 0, lastVisibleFrame = 0;
     function tick(now) {
       rafId = requestAnimationFrame(tick);
       if (!documentVisible) return;
-      // Zwischen Opening und grünem Finale liegt die WebGL-Szene vollständig
-      // hinter der opaken 2D-Agenturfläche. In diesem Bereich muss nur die
-      // Kameraschiene weitergeführt werden; Geometrie, Nervenimpulse und GPU-
-      // Rendering werden pausiert. 10 Hz reichen für den unsichtbaren
-      // Kamerastatus und sparen den grössten Teil der Frame-Arbeit ein.
-      // Die komplexe Gehirnszene schläft während der opaken 2D-Story und
-      // belastet den Scrollpfad dadurch nur minimal.
-      var lowPowerCovered=targetScrollP>.025&&targetScrollP<.815&&cameraProgress>.02&&cameraProgress<.825;
-      if(lowPowerCovered&&now-lastCoveredFrame<100) return;
-      if(lowPowerCovered) lastCoveredFrame=now;
-      if(!lowPowerCovered&&now-lastVisibleFrame<(isMobile?50:40)) return;
-      if(!lowPowerCovered) lastVisibleFrame=now;
+      // Zwischen Opening und grünem Finale ist der Canvas komplett verdeckt.
+      // In dieser Strecke werden weder Szene noch Kamera oder Renderer
+      // angefasst; selbst ein 10-Hz-Update erzeugte messbare Long Tasks.
+      if(canvasSuspended){ last=now; return; }
+      if(now-lastVisibleFrame<(isMobile?50:40)) return;
+      lastVisibleFrame=now;
       var dt = Math.min((now - last) / 1000 || 0.016, 0.05); last = now;
       if (SCENE_MOTION || OBJECT_FLOATING) t += dt;
       var userIsScrolling=now-lastUserScrollAt<180;
-      if(!lowPowerCovered&&!userIsScrolling){
+      if(!userIsScrolling){
       var mouseEase=1-Math.exp(-dt*3.2);
       smoothMouseX += (mouseX-smoothMouseX)*mouseEase;
       smoothMouseY += (mouseY-smoothMouseY)*mouseEase;
@@ -5073,7 +5103,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [], on
           cameraProgress: cameraProgress,
         };
       }
-      if(!lowPowerCovered) renderer.render(scene, camera);
+      renderer.render(scene, camera);
     }
     rafId = requestAnimationFrame(tick);
 

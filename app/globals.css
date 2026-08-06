@@ -534,7 +534,7 @@ body.agency-is-loading {
 
 .agency-references.is-revealed .reference-card {
   opacity: 1;
-  transform: translateY(0);
+  transform: none;
 }
 
 @media (max-width: 699px) {
@@ -767,6 +767,20 @@ body.agency-is-loading {
   opacity: var(--agency-reveal, 0);
   transform: translate3d(0, var(--agency-content-y, 24px), 0);
   transition: opacity 100ms linear;
+}
+
+/* Nach der einmaligen Einblendung dürfen die grossen Inhaltsflächen keine
+   eigenen GPU-Compositing-Layer behalten. Identitäts-translate3d/-scale auf
+   mehreren bildschirmgrossen Kapiteln überschritt im Browser das Tile-Budget
+   und war die Ursache der sichtbaren Scroll-Stopps. */
+.agency-chapter.is-revealed .agency-chapter-shell,
+.agency-chapter.is-revealed .agency-chapter-heading,
+.agency-chapter.is-revealed .value-impact-content,
+.agency-chapter.is-revealed .references-content,
+.agency-chapter.is-revealed .studio-profile-composition,
+.agency-chapter.is-revealed .agency-services-layout {
+  opacity: 1;
+  transform: none;
 }
 
 .agency-chapter-heading {
@@ -1104,7 +1118,12 @@ body.agency-is-loading {
   width: min(82vw, 60rem);
   opacity: var(--finale-reveal);
   transform: translate3d(0, var(--finale-y), 0) scale(var(--finale-scale));
-  will-change: opacity, transform;
+  will-change: auto;
+}
+
+.agency-finale-stage.is-revealed .agency-finale-card {
+  opacity: 1;
+  transform: none;
 }
 
 .agency-finale-card .project-cta-content {

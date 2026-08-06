@@ -2926,121 +2926,68 @@ function HighEndAgencyJourney({ lang }: { lang: 'de' | 'en' }) {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const chapters = Array.from(root.querySelectorAll<HTMLElement>('[data-agency-chapter]'));
     const finale = root.querySelector<HTMLElement>('.agency-finale-stage');
-    const finaleSection = root.querySelector<HTMLElement>('.agency-finale');
-    let frameId = 0;
     let valueAnimationStarted = false;
     let valueAnimationStop = () => {};
-    let valueAnimationTimer = 0;
-    let effectActive = true;
-    let chapterMetrics: Array<{ top: number; height: number }> = [];
-    let finaleMetric = { top: 0, height: 1 };
 
-    const measure = () => {
-      const scrollTop = window.scrollY;
-      chapterMetrics = chapters.map((chapter) => {
-        const rect = chapter.getBoundingClientRect();
-        return { top: rect.top + scrollTop, height: rect.height };
+    const revealChapter = (chapter: HTMLElement, index: number) => {
+      chapter.style.setProperty('--agency-x', '0px');
+      chapter.style.setProperty('--agency-y', '0px');
+      chapter.style.setProperty('--agency-rotate', '0deg');
+      chapter.style.setProperty('--agency-scale', '1');
+      chapter.style.setProperty('--agency-visibility', '1');
+      chapter.style.setProperty('--agency-section-progress', '1');
+      chapter.style.setProperty('--agency-section-percent', '100%');
+      chapter.style.setProperty('--agency-reveal', '1');
+      chapter.style.setProperty('--agency-content-y', '0px');
+      chapter.classList.add('is-agency-active', 'is-revealed');
+      root.style.setProperty('--agency-story-progress', String((index + 1) / chapters.length));
+
+      if (index === 1 && !valueAnimationStarted) {
+        valueAnimationStarted = true;
+        // Die Zahlen stehen sofort auf ihrem Endwert. Die frühere 60-FPS-
+        // Zählschleife erzeugte beim Eintritt in den Mehrwert unnötige
+        // DOM-Schreibvorgänge und sichtbare Scrollpausen.
+        valueAnimationStop = animateValueNumbers(chapter, lang, true);
+      }
+    };
+
+    const revealFinale = () => {
+      if (!finale) return;
+      finale.style.setProperty('--finale-reveal', '1');
+      finale.style.setProperty('--finale-y', '0px');
+      finale.style.setProperty('--finale-scale', '1');
+      finale.style.setProperty('--finale-aura-scale', '1');
+      finale.classList.add('is-revealed');
+      finale.setAttribute('aria-hidden', 'false');
+    };
+
+    if (reduced || typeof IntersectionObserver === 'undefined') {
+      chapters.forEach(revealChapter);
+      revealFinale();
+      return () => valueAnimationStop();
+    }
+
+    const chapterObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const chapter = entry.target as HTMLElement;
+        revealChapter(chapter, chapters.indexOf(chapter));
+        chapterObserver.unobserve(chapter);
       });
-      if (finaleSection) {
-        const rect = finaleSection.getBoundingClientRect();
-        finaleMetric = { top: rect.top + scrollTop, height: Math.max(1, rect.height) };
-      }
-    };
+    }, { rootMargin: '18% 0px 18% 0px', threshold: 0.01 });
 
-    const frame = () => {
-      frameId = 0;
-      const viewportHeight = Math.max(1, window.innerHeight);
-      const scrollTop = window.scrollY;
-      const surface = root.querySelector<HTMLElement>('.agency-surface');
-      if (surface) {
-        const surfaceRect = surface.getBoundingClientRect();
-        const surfaceTop = surfaceRect.top + scrollTop;
-        const surfaceTravel = Math.max(1, surfaceRect.height - viewportHeight);
-        const storyProgress = Math.max(0, Math.min(1, (scrollTop - surfaceTop) / surfaceTravel));
-        root.style.setProperty('--agency-story-progress', storyProgress.toFixed(4));
-      }
+    chapters.forEach((chapter) => chapterObserver.observe(chapter));
 
-      chapters.forEach((chapter, index) => {
-        const metric = chapterMetrics[index];
-        if (!metric) return;
-        const localProgress = Math.max(0, Math.min(1, (scrollTop - metric.top) / Math.max(1, metric.height - viewportHeight)));
-        const sectionTop = metric.top - scrollTop;
-        const arrivalRaw = Math.max(0, Math.min(1,
-          (viewportHeight * 1.12 - sectionTop) / (viewportHeight * .3)
-        ));
-        const arrival = arrivalRaw * arrivalRaw * (3 - 2 * arrivalRaw);
-        // Alle Kapitel sind wieder Teil des nativen Dokumentflusses. Nach dem
-        // frühen Eintritt bleiben sie sichtbar und werden nicht durch eine
-        // zweite, künstliche Scroll-Timeline ausgeblendet.
-        const reveal = reduced ? 1 : arrival;
-        const visibility = reduced ? 1 : .16 + reveal * .84;
-        const x = 0;
-        const y = reduced ? 0 : (1 - reveal) * 28;
-        const rotate = 0;
-        const scale = reduced ? 1 : .99 + reveal * .01;
-        chapter.style.setProperty('--agency-x', `${x.toFixed(2)}px`);
-        chapter.style.setProperty('--agency-y', `${y.toFixed(2)}px`);
-        chapter.style.setProperty('--agency-rotate', `${rotate.toFixed(3)}deg`);
-        chapter.style.setProperty('--agency-scale', scale.toFixed(4));
-        chapter.style.setProperty('--agency-visibility', visibility.toFixed(3));
-        chapter.style.setProperty('--agency-section-progress', localProgress.toFixed(4));
-        chapter.style.setProperty('--agency-section-percent', `${(localProgress * 100).toFixed(2)}%`);
-        chapter.style.setProperty('--agency-reveal', reveal.toFixed(4));
-        chapter.style.setProperty('--agency-content-y', `${((1 - reveal) * 24).toFixed(2)}px`);
-        chapter.classList.toggle('is-agency-active', reveal > .45);
-        chapter.classList.toggle('is-revealed', reveal > .52);
+    const finaleObserver = finale ? new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      revealFinale();
+      finaleObserver.disconnect();
+    }, { rootMargin: '12% 0px 12% 0px', threshold: 0.01 }) : null;
+    if (finale && finaleObserver) finaleObserver.observe(finale);
 
-        if (index === 1 && !valueAnimationStarted && reveal > .62) {
-          valueAnimationStarted = true;
-          valueAnimationStop = animateValueNumbers(chapter, lang, reduced);
-          // Einmaliger Informationsaufbau statt einer endlosen Zählschleife.
-          valueAnimationTimer = window.setTimeout(valueAnimationStop, 3600);
-        }
-      });
-
-      if (finale) {
-        // Bedienbarkeit und Sichtbarkeit hängen direkt am nativen Scrollstand,
-        // niemals an der verzögerten WebGL-Feder. So kann ein langsamer oder
-        // pausierter Canvas den CTA nicht mehr unsichtbar/inaktiv festhalten.
-        const finaleProgress = (scrollTop + viewportHeight - finaleMetric.top) / finaleMetric.height;
-        const revealRaw = Math.max(0, Math.min(1, (finaleProgress - 0.44) / 0.16));
-        const reveal = revealRaw * revealRaw * (3 - 2 * revealRaw);
-        finale.style.setProperty('--finale-reveal', reveal.toFixed(3));
-        finale.style.setProperty('--finale-y', `${((1 - reveal) * 42).toFixed(2)}px`);
-        finale.style.setProperty('--finale-scale', (0.965 + reveal * 0.035).toFixed(4));
-        finale.style.setProperty('--finale-aura-scale', (0.72 + reveal * 0.28).toFixed(4));
-        finale.setAttribute('aria-hidden', reveal > 0.08 ? 'false' : 'true');
-      }
-    };
-
-    const schedule = () => {
-      if (!frameId) frameId = window.requestAnimationFrame(frame);
-    };
-
-    const handleScroll = () => {
-      schedule();
-    };
-
-    const handleResize = () => {
-      measure();
-      handleScroll();
-    };
-
-    measure();
-    schedule();
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('load', handleResize, { once: true });
-    document.fonts?.ready.then(() => {
-      if (effectActive) handleResize();
-    }).catch(() => {});
     return () => {
-      effectActive = false;
-      window.cancelAnimationFrame(frameId);
-      window.clearTimeout(valueAnimationTimer);
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('load', handleResize);
+      chapterObserver.disconnect();
+      finaleObserver?.disconnect();
       valueAnimationStop();
     };
   }, [lang]);
