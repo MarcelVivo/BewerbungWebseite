@@ -590,9 +590,104 @@ body.agency-is-loading {
     linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px),
     radial-gradient(circle at 78% 12%, rgba(200,154,61,.085), transparent 28rem),
     radial-gradient(circle at 12% 72%, rgba(77,127,191,.055), transparent 34rem),
-    #0d0f12;
+    rgba(8,10,13,.91);
   background-size: 72px 72px, 72px 72px, auto, auto, auto;
   box-shadow: 0 -28px 100px rgba(0,0,0,.72), 0 -1px 0 rgba(246,227,161,.32);
+}
+
+/* A second, intentionally tiny WebGL layer carries the spatial motif through
+   the editorial chapters. It is isolated from the detailed hero brain and
+   therefore remains inexpensive enough for a smooth pinned story. */
+.agency-ambient-orb {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: .88;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 5%, #000 94%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 5%, #000 94%, transparent);
+}
+
+.agency-ambient-orb::before,
+.agency-ambient-orb::after {
+  content: '';
+  position: fixed;
+  z-index: 2;
+  inset: 0;
+  pointer-events: none;
+}
+
+.agency-ambient-orb::before {
+  background: radial-gradient(circle at 50% 50%, transparent 0 18rem, rgba(7,9,12,.18) 34rem, rgba(7,9,12,.62) 72rem);
+}
+
+.agency-ambient-orb::after {
+  opacity: .3;
+  background: linear-gradient(90deg, rgba(8,10,13,.72), transparent 23%, transparent 77%, rgba(8,10,13,.72));
+}
+
+.agency-ambient-orb canvas {
+  position: sticky;
+  top: 0;
+  display: block;
+  width: 100%;
+  height: 100vh;
+  height: 100svh;
+}
+
+.agency-story-spine {
+  position: absolute;
+  z-index: 2;
+  top: 8rem;
+  bottom: 4rem;
+  left: clamp(1.05rem, 3vw, 2.8rem);
+  width: 1px;
+  pointer-events: none;
+}
+
+.agency-story-spine-base,
+.agency-story-spine-progress {
+  position: absolute;
+  inset: 0;
+  display: block;
+  transform-origin: top center;
+}
+
+.agency-story-spine-base {
+  background: rgba(231,197,106,.13);
+}
+
+.agency-story-spine-progress {
+  background: linear-gradient(to bottom, #f6e3a1, #c89a3d 54%, #4d7fbf 78%, #4dbf7f);
+  box-shadow: 0 0 14px rgba(231,197,106,.58);
+  transform: scaleY(var(--agency-story-progress, 0));
+}
+
+.agency-story-spine i {
+  position: absolute;
+  left: 50%;
+  display: block;
+  width: .52rem;
+  height: .52rem;
+  border: 1px solid rgba(231,197,106,.45);
+  border-radius: 50%;
+  background: #0b0d10;
+  box-shadow: 0 0 0 6px rgba(200,154,61,.035);
+  transform: translate(-50%, -50%);
+}
+
+.agency-story-spine b {
+  position: sticky;
+  top: 50vh;
+  left: 50%;
+  display: block;
+  width: .34rem;
+  height: .34rem;
+  border-radius: 50%;
+  background: #f6e3a1;
+  box-shadow: 0 0 1rem #e7c56a, 0 0 2.8rem rgba(231,197,106,.52);
+  transform: translate(-50%, -50%);
 }
 
 .agency-surface::before {
@@ -622,7 +717,7 @@ body.agency-is-loading {
 
 .agency-surface-cap {
   position: relative;
-  z-index: 2;
+  z-index: 3;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -665,9 +760,28 @@ body.agency-is-loading {
   --agency-visibility: 1;
   position: relative;
   z-index: 2;
-  min-height: 155vh;
+  min-height: 175vh;
   perspective: 1800px;
   transform-style: preserve-3d;
+}
+
+.agency-services {
+  min-height: 430vh;
+}
+
+.agency-chapter-shell::before {
+  content: '';
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 0;
+  width: clamp(2.5rem, 7vw, 7rem);
+  height: 1px;
+  opacity: var(--agency-reveal, .18);
+  background: linear-gradient(90deg, rgba(231,197,106,.75), transparent);
+  transform: scaleX(var(--agency-reveal, 0));
+  transform-origin: left center;
+  pointer-events: none;
 }
 
 .agency-chapter-shell {
@@ -683,8 +797,33 @@ body.agency-is-loading {
   opacity: max(.14, var(--agency-visibility));
   transform: translate3d(var(--agency-x), var(--agency-y), 0) rotateY(var(--agency-rotate)) scale(var(--agency-scale));
   transform-origin: center;
-  transition: opacity 180ms linear;
-  will-change: transform, opacity;
+  transition: opacity 120ms linear;
+}
+
+.agency-chapter-heading,
+.agency-chapter .value-impact-content,
+.agency-chapter .references-content,
+.agency-chapter .studio-profile-composition,
+.agency-services-layout {
+  opacity: var(--agency-reveal, 0);
+  transform: translate3d(0, var(--agency-content-y, 24px), 0);
+  transition: opacity 100ms linear;
+}
+
+.agency-chapter-heading {
+  position: relative;
+}
+
+.agency-chapter-heading::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: -.8rem;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(231,197,106,.7), rgba(231,197,106,.08) 46%, transparent);
+  transform: scaleX(var(--agency-reveal, 0));
+  transform-origin: left;
 }
 
 .agency-chapter .agency-chapter-shell { pointer-events: auto; }
@@ -752,6 +891,21 @@ body.agency-is-loading {
   transition: color 260ms ease, padding 360ms cubic-bezier(.2,.72,.2,1), background 260ms ease;
 }
 
+.agency-service-selector::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  background: linear-gradient(to bottom, #e7c56a var(--agency-section-percent, 0%), rgba(255,255,255,.08) 0);
+  box-shadow: 0 0 12px rgba(231,197,106,.24);
+}
+
+.agency-service-selector {
+  position: relative;
+}
+
 .agency-service-selector > button::before {
   content: '';
   position: absolute;
@@ -792,7 +946,7 @@ body.agency-is-loading {
     linear-gradient(145deg, rgba(255,255,255,.055), rgba(255,255,255,.018) 52%),
     #12151a;
   box-shadow: inset 0 1px 0 rgba(255,255,255,.09), 0 30px 100px rgba(0,0,0,.28);
-  animation: agency-focus-enter 520ms cubic-bezier(.2,.72,.2,1) both;
+  animation: agency-focus-enter 480ms cubic-bezier(.2,.72,.2,1) both;
 }
 
 @keyframes agency-focus-enter {
@@ -989,6 +1143,10 @@ body.agency-is-loading {
     opacity: 1 !important;
     transform: none !important;
   }
+  .agency-chapter-shell::before { display: none; }
+  .agency-ambient-orb { opacity: .62; }
+  .agency-ambient-orb::before { background: radial-gradient(circle at 50% 50%, transparent 0 8rem, rgba(7,9,12,.45) 22rem); }
+  .agency-story-spine { left: .72rem; opacity: .58; }
   .agency-chapter:not(.is-agency-active) .agency-chapter-shell { pointer-events: auto; }
   .agency-chapter-heading { grid-template-columns: 1fr; gap: .8rem; }
   .agency-chapter-heading > div { order: 2; }

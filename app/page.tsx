@@ -32,6 +32,7 @@ import { PROJECTS } from './portfolio/data';
 import { Chakra_Petch } from 'next/font/google';
 import { trackWebsiteEvent, type WebsiteFormId } from './lib/analytics';
 import PublicFlapHeading from './PublicFlapHeading';
+import AgencyAmbientOrb from './AgencyAmbientOrb';
 
 const chakraPetch = Chakra_Petch({ subsets: ['latin'], weight: '700', display: 'swap' });
 type LeadFormId = JourneyLeadForm;
@@ -2866,6 +2867,18 @@ function HighEndAgencyJourney({ lang }: { lang: 'de' | 'en' }) {
   const rootRef = useRef<HTMLElement | null>(null);
   const [activeServiceIndex, setActiveServiceIndex] = useState(0);
 
+  const selectAgencyService = useCallback((index: number) => {
+    setActiveServiceIndex(index);
+    if (window.innerWidth < 700) return;
+    const chapter = rootRef.current?.querySelector<HTMLElement>('.agency-services');
+    if (!chapter) return;
+    const rect = chapter.getBoundingClientRect();
+    const chapterTop = rect.top + window.scrollY;
+    const travel = Math.max(1, rect.height - window.innerHeight);
+    const target = chapterTop + travel * ((index + .18) / 4);
+    window.scrollTo({ top: target, behavior: 'smooth' });
+  }, []);
+
   const services = useMemo(() => lang === 'de'
     ? [
         {
@@ -2927,6 +2940,7 @@ function HighEndAgencyJourney({ lang }: { lang: 'de' | 'en' }) {
     let valueAnimationStarted = false;
     let valueAnimationStop = () => {};
     let valueAnimationTimer = 0;
+    let effectActive = true;
     let chapterMetrics: Array<{ top: number; height: number }> = [];
     let finaleMetric = { top: 0, height: 1 };
 
@@ -2946,28 +2960,46 @@ function HighEndAgencyJourney({ lang }: { lang: 'de' | 'en' }) {
       frameId = 0;
       const viewportHeight = Math.max(1, window.innerHeight);
       const scrollTop = window.scrollY;
-      const cameraState = (window as any).__cardsCameraState;
-      const orbit = typeof cameraState?.orbit === 'number' ? cameraState.orbit : 0;
+      const surface = root.querySelector<HTMLElement>('.agency-surface');
+      if (surface) {
+        const surfaceRect = surface.getBoundingClientRect();
+        const surfaceTop = surfaceRect.top + scrollTop;
+        const surfaceTravel = Math.max(1, surfaceRect.height - viewportHeight);
+        const storyProgress = Math.max(0, Math.min(1, (scrollTop - surfaceTop) / surfaceTravel));
+        root.style.setProperty('--agency-story-progress', storyProgress.toFixed(4));
+      }
 
       chapters.forEach((chapter, index) => {
         const metric = chapterMetrics[index];
         if (!metric) return;
         const centerDelta = (metric.top + metric.height * 0.5 - scrollTop - viewportHeight * 0.5) / viewportHeight;
         const distance = Math.max(-1.35, Math.min(1.35, centerDelta));
-        const visibility = Math.max(0, 1 - Math.abs(distance) * 0.72);
+        const localProgress = Math.max(0, Math.min(1, (scrollTop - metric.top) / Math.max(1, metric.height - viewportHeight)));
+        const enter = Math.max(0, Math.min(1, (1.16 - distance) / .72));
+        const leave = Math.max(0, Math.min(1, (distance + 1.05) / .6));
+        const reveal = reduced ? 1 : enter * leave;
+        const visibility = reduced ? 1 : .16 + reveal * .84;
         const direction = index % 2 === 0 ? 1 : -1;
-        const helixSway = Math.sin(orbit + index * 1.18) * 14;
-        const x = reduced ? 0 : direction * distance * 72 + helixSway * visibility;
-        const y = reduced ? 0 : distance * 34;
-        const rotate = reduced ? 0 : -direction * distance * 1.45;
-        const scale = reduced ? 1 : 1 - Math.min(0.035, Math.abs(distance) * 0.024);
+        const x = reduced ? 0 : direction * distance * 24;
+        const y = reduced ? 0 : (1 - reveal) * 54 + Math.max(0, -distance - .62) * -28;
+        const rotate = reduced ? 0 : -direction * distance * .45;
+        const scale = reduced ? 1 : .985 + reveal * .015;
         chapter.style.setProperty('--agency-x', `${x.toFixed(2)}px`);
         chapter.style.setProperty('--agency-y', `${y.toFixed(2)}px`);
         chapter.style.setProperty('--agency-rotate', `${rotate.toFixed(3)}deg`);
         chapter.style.setProperty('--agency-scale', scale.toFixed(4));
         chapter.style.setProperty('--agency-visibility', visibility.toFixed(3));
-        chapter.classList.toggle('is-agency-active', Math.abs(distance) < 0.58);
-        chapter.classList.toggle('is-revealed', Math.abs(distance) < 0.72);
+        chapter.style.setProperty('--agency-section-progress', localProgress.toFixed(4));
+        chapter.style.setProperty('--agency-section-percent', `${(localProgress * 100).toFixed(2)}%`);
+        chapter.style.setProperty('--agency-reveal', reveal.toFixed(4));
+        chapter.style.setProperty('--agency-content-y', `${((1 - reveal) * 24).toFixed(2)}px`);
+        chapter.classList.toggle('is-agency-active', Math.abs(distance) < .72);
+        chapter.classList.toggle('is-revealed', reveal > .52);
+
+        if (index === 0 && window.innerWidth >= 700 && localProgress >= 0 && localProgress <= 1) {
+          const serviceIndex = Math.min(3, Math.floor(localProgress * 4));
+          setActiveServiceIndex((current) => current === serviceIndex ? current : serviceIndex);
+        }
 
         if (index === 1 && !valueAnimationStarted && Math.abs(distance) < 0.58) {
           valueAnimationStarted = true;
@@ -3009,18 +3041,31 @@ function HighEndAgencyJourney({ lang }: { lang: 'de' | 'en' }) {
     schedule();
     window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('resize', handleResize);
+    window.addEventListener('load', handleResize, { once: true });
+    document.fonts?.ready.then(() => {
+      if (effectActive) handleResize();
+    }).catch(() => {});
     return () => {
+      effectActive = false;
       window.cancelAnimationFrame(frameId);
       window.clearTimeout(valueAnimationTimer);
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleResize);
+      window.removeEventListener('load', handleResize);
       valueAnimationStop();
     };
-  }, [activeServiceIndex, lang]);
+  }, [lang]);
 
   return (
     <section ref={rootRef} id="solution-spiral" className="agency-journey" aria-label={lang === 'de' ? 'Leistungen und Zusammenarbeit' : 'Services and collaboration'}>
       <div className="agency-surface">
+        <AgencyAmbientOrb />
+        <div className="agency-story-spine" aria-hidden="true">
+          <span className="agency-story-spine-base" />
+          <span className="agency-story-spine-progress" />
+          {[0, 1, 2, 3, 4].map((index) => <i key={index} style={{ top: `${index * 25}%` }} />)}
+          <b />
+        </div>
         <div className="agency-surface-cap" aria-hidden="true">
           <span />
           <i />
@@ -3029,7 +3074,7 @@ function HighEndAgencyJourney({ lang }: { lang: 'de' | 'en' }) {
 
         <span id="services" className="agency-alias-anchor" />
         <span id="mobile-solutions" className="agency-alias-anchor" />
-        <section id="journey-solutions" className="agency-chapter agency-services" data-agency-chapter>
+        <section id="journey-solutions" className="agency-chapter agency-services" data-agency-chapter data-agency-index="01">
           <div className="agency-chapter-shell">
             <header className="agency-chapter-heading">
               <div>
@@ -3052,7 +3097,7 @@ function HighEndAgencyJourney({ lang }: { lang: 'de' | 'en' }) {
                       aria-selected={isActive}
                       className={isActive ? 'is-active' : ''}
                       style={{ '--agency-accent': service.accent, '--agency-accent-rgb': service.accentRgb } as CSSProperties}
-                      onClick={() => setActiveServiceIndex(index)}
+                      onClick={() => selectAgencyService(index)}
                     >
                       <span className="agency-service-number">{service.code}</span>
                       <span className="agency-service-icon"><Icon size={18} strokeWidth={1.7} /></span>
@@ -3111,7 +3156,7 @@ function HighEndAgencyJourney({ lang }: { lang: 'de' | 'en' }) {
         </section>
 
         <span id="mobile-journey-value" className="agency-alias-anchor" />
-        <section id="journey-value" className="agency-chapter agency-value" data-agency-chapter>
+        <section id="journey-value" className="agency-chapter agency-value" data-agency-chapter data-agency-index="02">
           <div className="agency-chapter-shell">
             <div className="agency-orbit-label" aria-hidden="true"><span>02</span><i /></div>
             <ValueImpactContent lang={lang} />
@@ -3121,7 +3166,7 @@ function HighEndAgencyJourney({ lang }: { lang: 'de' | 'en' }) {
         <span id="references" className="agency-alias-anchor" />
         <span id="portfolio" className="agency-alias-anchor" />
         <span id="mobile-journey-references" className="agency-alias-anchor" />
-        <section id="journey-references" className="agency-chapter agency-references" data-agency-chapter>
+        <section id="journey-references" className="agency-chapter agency-references" data-agency-chapter data-agency-index="03">
           <div className="agency-chapter-shell">
             <div className="agency-orbit-label" aria-hidden="true"><span>03</span><i /></div>
             <ReferenceCardsContent lang={lang} />
@@ -3130,7 +3175,7 @@ function HighEndAgencyJourney({ lang }: { lang: 'de' | 'en' }) {
 
         <span id="about" className="agency-alias-anchor" />
         <span id="mobile-journey-about" className="agency-alias-anchor" />
-        <section id="journey-about" className="agency-chapter agency-about" data-agency-chapter>
+        <section id="journey-about" className="agency-chapter agency-about" data-agency-chapter data-agency-index="04">
           <div className="agency-chapter-shell">
             <div className="agency-orbit-label" aria-hidden="true"><span>04</span><i /></div>
             <StudioProfileContent lang={lang} />
