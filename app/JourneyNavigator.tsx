@@ -74,13 +74,21 @@ export default function JourneyNavigator() {
     };
 
     const frame = () => {
+      rafId = 0;
       update();
-      rafId = window.requestAnimationFrame(frame);
     };
 
-    frame();
+    const schedule = () => {
+      if (!rafId) rafId = window.requestAnimationFrame(frame);
+    };
+
+    schedule();
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
     return () => {
       window.cancelAnimationFrame(rafId);
+      window.removeEventListener('scroll', schedule);
+      window.removeEventListener('resize', schedule);
     };
   }, []);
 

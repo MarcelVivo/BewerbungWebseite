@@ -35,7 +35,10 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     // späteren Reisestationen behalten ihre bisherigen Weltpositionen.
     var MOBILE_BRAIN_Y_OFFSET = isMobile ? 3.45 : 0;
     var renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'high-performance' });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    // Retina-Auflösung oberhalb dieses Bereichs erhöht die GPU-Pixellast sehr
+    // stark, ohne bei den feinen Punkt-/Linienstrukturen sichtbar mehr Nutzen
+    // zu bringen. Mobile erhält bewusst ein engeres Budget.
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.05 : 1.35));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 0.58;
@@ -4762,12 +4765,21 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       }
     }
 
-    var t = 0, last = 0, rafId = 0, lastWobbleUpdate = 0, lastSatelliteStrandUpdate = 0, lastGoldStrandUpdate = 0;
+    var t = 0, last = 0, rafId = 0, lastWobbleUpdate = 0, lastSatelliteStrandUpdate = 0, lastGoldStrandUpdate = 0, lastCoveredFrame = 0;
     function tick(now) {
       rafId = requestAnimationFrame(tick);
       if (!documentVisible) return;
+      // Zwischen Opening und grünem Finale liegt die WebGL-Szene vollständig
+      // hinter der opaken 2D-Agenturfläche. In diesem Bereich muss nur die
+      // Kameraschiene weitergeführt werden; Geometrie, Nervenimpulse und GPU-
+      // Rendering werden pausiert. 15 Hz reichen für den unsichtbaren
+      // Kamerastatus und sparen den grössten Teil der Frame-Arbeit ein.
+      var lowPowerCovered=targetScrollP>.12&&targetScrollP<.76&&cameraProgress>.1&&cameraProgress<.78;
+      if(lowPowerCovered&&now-lastCoveredFrame<66) return;
+      if(lowPowerCovered) lastCoveredFrame=now;
       var dt = Math.min((now - last) / 1000 || 0.016, 0.05); last = now;
       if (SCENE_MOTION || OBJECT_FLOATING) t += dt;
+      if(!lowPowerCovered){
       var mouseEase=1-Math.exp(-dt*3.2);
       smoothMouseX += (mouseX-smoothMouseX)*mouseEase;
       smoothMouseY += (mouseY-smoothMouseY)*mouseEase;
@@ -4862,6 +4874,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       }
       if(oceanImmersionHalo){
         oceanImmersionHalo.material.uniforms.uPulse.value=goldPulseStrength;
+      }
       }
       var railSlowdown=cameraProgress<=cameraHelixExitStart?cameraRailSlowdown(cameraProgress):1;
       var cameraAcceleration=((targetScrollP-cameraProgress)*CAMERA_SPRING*railSlowdown-cameraVelocity*CAMERA_DAMPING)/CAMERA_MASS;
@@ -5040,7 +5053,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
           cameraProgress: cameraProgress,
         };
       }
-      renderer.render(scene, camera);
+      if(!lowPowerCovered) renderer.render(scene, camera);
     }
     rafId = requestAnimationFrame(tick);
 

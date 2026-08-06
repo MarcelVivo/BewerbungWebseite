@@ -2923,18 +2923,32 @@ function HighEndAgencyJourney({ lang }: { lang: 'de' | 'en' }) {
     const chapters = Array.from(root.querySelectorAll<HTMLElement>('[data-agency-chapter]'));
     const finale = root.querySelector<HTMLElement>('.agency-finale-stage');
     let frameId = 0;
+    let burstTimer = 0;
+    let burstUntil = 0;
     let valueAnimationStarted = false;
     let valueAnimationStop = () => {};
     let valueAnimationTimer = 0;
+    let chapterMetrics: Array<{ top: number; height: number }> = [];
+
+    const measure = () => {
+      const scrollTop = window.scrollY;
+      chapterMetrics = chapters.map((chapter) => {
+        const rect = chapter.getBoundingClientRect();
+        return { top: rect.top + scrollTop, height: rect.height };
+      });
+    };
 
     const frame = () => {
+      frameId = 0;
       const viewportHeight = Math.max(1, window.innerHeight);
+      const scrollTop = window.scrollY;
       const cameraState = (window as any).__cardsCameraState;
       const orbit = typeof cameraState?.orbit === 'number' ? cameraState.orbit : 0;
 
       chapters.forEach((chapter, index) => {
-        const rect = chapter.getBoundingClientRect();
-        const centerDelta = (rect.top + rect.height * 0.5 - viewportHeight * 0.5) / viewportHeight;
+        const metric = chapterMetrics[index];
+        if (!metric) return;
+        const centerDelta = (metric.top + metric.height * 0.5 - scrollTop - viewportHeight * 0.5) / viewportHeight;
         const distance = Math.max(-1.35, Math.min(1.35, centerDelta));
         const visibility = Math.max(0, 1 - Math.abs(distance) * 0.72);
         const direction = index % 2 === 0 ? 1 : -1;
@@ -2970,14 +2984,52 @@ function HighEndAgencyJourney({ lang }: { lang: 'de' | 'en' }) {
         finale.setAttribute('aria-hidden', reveal > 0.34 ? 'false' : 'true');
         finale.inert = reveal <= 0.34;
       }
-
-      frameId = window.requestAnimationFrame(frame);
     };
 
-    frameId = window.requestAnimationFrame(frame);
+    const schedule = () => {
+      if (!frameId) frameId = window.requestAnimationFrame(frame);
+    };
+
+    const continueCameraBurst = () => {
+      window.clearTimeout(burstTimer);
+      if (performance.now() >= burstUntil) return;
+      schedule();
+      burstTimer = window.setTimeout(continueCameraBurst, 34);
+    };
+
+    const handleScroll = () => {
+      // Die WebGL-Kamera rollt nach dem Scrollen kurz aus. Während dieses
+      // kurzen Fensters folgt die 2D-Ebene weiter, danach steht sie komplett
+      // still und verbraucht keine permanente RAF-Zeit mehr.
+      burstUntil = performance.now() + 520;
+      schedule();
+      continueCameraBurst();
+    };
+
+    const handleResize = () => {
+      measure();
+      handleScroll();
+    };
+
+    const resizeObserver = typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver(() => {
+          measure();
+          schedule();
+        })
+      : null;
+
+    measure();
+    chapters.forEach((chapter) => resizeObserver?.observe(chapter));
+    schedule();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleResize);
     return () => {
       window.cancelAnimationFrame(frameId);
+      window.clearTimeout(burstTimer);
       window.clearTimeout(valueAnimationTimer);
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleResize);
+      resizeObserver?.disconnect();
       valueAnimationStop();
     };
   }, [lang]);
