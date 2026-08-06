@@ -17,7 +17,7 @@ import { trackWebsiteEvent } from './lib/analytics';
 const chakraPetch = Chakra_Petch({ subsets: ['latin'], weight: '700', display: 'swap' });
 
 const STATIONS = [
-  { destination: 'start', label: { de: 'Deine Idee', en: 'Your Idea' }, target: 'journey-start' },
+  { destination: 'start', label: { de: 'Start', en: 'Start' }, target: 'journey-start' },
   { destination: 'solutions', label: { de: 'Meine Umsetzung', en: 'My Execution' }, target: 'journey-solutions', mobileTarget: 'mobile-solutions' },
   { destination: 'value', label: { de: 'Dein Mehrwert', en: 'Your Value' }, target: 'journey-value', mobileTarget: 'mobile-journey-value' },
   { destination: 'references', label: { de: 'Meine Referenzen', en: 'My Work' }, target: 'journey-references', mobileTarget: 'mobile-journey-references' },
@@ -33,46 +33,6 @@ const STATIONS = [
 const STATION_INDEX = new Map<JourneyDestination, number>(
   STATIONS.map((station, index) => [station.destination, index]),
 );
-
-// Dieselben normierten Positionen, an denen die Desktop-Kamera ihre sechs
-// inhaltlichen Stationen zeigt. So stimmen Klickziel, sichtbarer Inhalt und
-// aktive Beschriftung der rechten Navigation immer miteinander überein.
-// "Meine Umsetzung" lag ursprünglich bei 26/55.5 (~0.468). Messung zeigt:
-// die "Dein Mehrwert"-Welt wird real schon ab ~0.454-0.46 vollständig
-// sichtbar (aria-hidden="false", opacity 1) - der alte Zielwert lag also
-// bereits HINTER diesem Umschlagpunkt. Ein Klick auf "Meine Umsetzung"
-// landete dadurch auf einer Scrollposition, an der "Dein Mehrwert" die
-// Bühne schon übernommen hatte; die Navigation blieb sichtbar auf "Dein
-// Mehrwert" hängen, "Meine Umsetzung" wurde nie sauber gezeigt. 0.40 liegt
-// mit klarem Abstand vor diesem Umschlagpunkt.
-const DESKTOP_STATION_PROGRESS = [0, 0.40, 0.56, 0.7, 0.93, 1];
-// Die Schwellen markieren den sichtbaren Kapitelwechsel, nicht erst den
-// mathematischen Mittelpunkt der jeweiligen Kamerastation. Die DOM-Welten
-// unten haben Vorrang; diese Werte überbrücken lediglich die kurzen Momente,
-// in denen zwei Kapitel während einer Kamerafahrt gleichzeitig ausblenden.
-// Der erste Wert (0.452) lag zu nah am realen "Dein Mehrwert"-Umschlagpunkt
-// (~0.454-0.46) und liess praktisch kein stabiles Zeitfenster für "Meine
-// Umsetzung" - auf 0.30 abgesenkt, passend zum neuen Klickziel oben.
-const DESKTOP_ACTIVE_THRESHOLDS = [0.30, 0.515, 0.625, 0.91, 0.9748];
-
-// Die grossen Inhaltsebenen veröffentlichen ihren echten Sichtbarkeitsstatus
-// über aria-hidden. Von hinten nach vorne geprüft gewinnt bei einer weichen
-// Überblendung immer das neuere Kapitel. Damit zeigt die Navigation exakt den
-// Inhalt an, den die Besucherin oder der Besucher gerade tatsächlich sieht.
-const DESKTOP_VISIBLE_STATIONS = [
-  { index: 5, selector: '.project-cta-world' },
-  { index: 4, selector: '.studio-profile-world' },
-  { index: 3, selector: '.references-world' },
-  { index: 2, selector: '.value-impact-world' },
-];
-
-function getVisibleDesktopStation() {
-  for (const station of DESKTOP_VISIBLE_STATIONS) {
-    const element = document.querySelector<HTMLElement>(station.selector);
-    if (element?.getAttribute('aria-hidden') === 'false') return station.index;
-  }
-  return null;
-}
 
 export default function JourneyNavigator() {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -101,34 +61,6 @@ export default function JourneyNavigator() {
 
     const update = () => {
       if (travelTargetRef.current !== null) return;
-
-      if (window.innerWidth > 699) {
-        const journey = document.getElementById('solution-spiral');
-        if (!journey) return;
-
-        const cameraState = (window as any).__cardsCameraState;
-        const scrollStart = journey.offsetTop - window.innerHeight;
-        const rawProgress = (window.scrollY - scrollStart) / Math.max(1, journey.offsetHeight);
-        const progress = Math.max(0, Math.min(1,
-          typeof cameraState?.cameraProgress === 'number'
-            ? cameraState.cameraProgress
-            : rawProgress,
-        ));
-
-        const visibleStation = getVisibleDesktopStation();
-        if (visibleStation !== null) {
-          setActiveIndex(previous => previous === visibleStation ? previous : visibleStation);
-          return;
-        }
-
-        let current = 0;
-        DESKTOP_ACTIVE_THRESHOLDS.forEach((threshold, index) => {
-          if (progress >= threshold) current = index + 1;
-        });
-        setActiveIndex(previous => previous === current ? previous : current);
-        return;
-      }
-
       const probe = window.scrollY + window.innerHeight * 0.46;
       let current = 0;
       STATIONS.forEach((station, index) => {
@@ -200,21 +132,17 @@ export default function JourneyNavigator() {
 
   function getStationTop(index: number) {
     const station = STATIONS[index];
-    if (window.innerWidth > 699 && index > 0) {
-      const journey = document.getElementById('solution-spiral');
-      if (journey) {
-        return journey.offsetTop - window.innerHeight + journey.offsetHeight * DESKTOP_STATION_PROGRESS[index];
-      }
-    }
-
     const targetId = window.innerWidth <= 699 && station.mobileTarget
       ? station.mobileTarget
       : station.target;
     const target = document.getElementById(targetId);
     if (!target) return window.scrollY;
     const targetTop = target.getBoundingClientRect().top + window.scrollY;
-    if (window.innerWidth <= 699) return targetTop;
-    return targetTop - Math.max(0, (window.innerHeight - target.offsetHeight) / 2);
+    if (index === 0) return 0;
+    if (index === STATIONS.length - 1) {
+      return targetTop + Math.max(0, target.offsetHeight - window.innerHeight * 1.05);
+    }
+    return targetTop + Math.max(0, (target.offsetHeight - window.innerHeight) / 2);
   }
 
   function getCameraProgressForScrollTop(scrollTop: number) {
@@ -386,72 +314,7 @@ export default function JourneyNavigator() {
     }
 
     const stationDistance = Math.abs(index - activeIndex);
-    if (stationDistance >= 2) {
-      startAdaptiveTravel(index, 'warp', 'push');
-      return;
-    }
-
-    cancelTravelRef.current?.();
-    const station = STATIONS[index];
-    if (window.innerWidth > 699 && index > 0) {
-      const journey = document.getElementById('solution-spiral');
-      if (journey) {
-        writeJourneyHistory(index, 'push');
-
-        // Ohne diese Sperre lief `update()` während der nativen Scroll-
-        // Animation ungebremst weiter mit und konnte den Zielindex noch
-        // mittendrin überschreiben. Grund: die 3D-Kamera in
-        // BrainBackground.tsx folgt der Scrollposition nicht direkt, sondern
-        // über eine gedämpfte Feder-Simulation (cameraProgress), die einem
-        // grossen Sprung erst über mehrere Sekunden "nachzieht". Die Sperre
-        // darf deshalb nicht nach fester Zeit fallen, sondern erst, wenn
-        // cameraProgress tatsächlich beim Klickziel angekommen ist – sonst
-        // liest update() unmittelbar danach noch den alten, alten Wert und
-        // springt auf die falsche (meist die aktuell näherliegende) Station
-        // zurück. Der Warp-Pfad (>=2 Stationen) umgeht das Problem, indem er
-        // cameraProgress per JOURNEY_CAMERA_WARP_EVENT hart auf das Ziel
-        // setzt; hier soll die Kamera aber sichtbar weich nachschwingen,
-        // daher wird stattdessen auf Konvergenz gewartet statt sie zu
-        // erzwingen.
-        travelTargetRef.current = index;
-        setTravelTargetIndex(index);
-
-        const targetProgress = DESKTOP_STATION_PROGRESS[index];
-        const pollStartedAt = performance.now();
-        let pollId = 0;
-
-        const finish = () => {
-          window.cancelAnimationFrame(pollId);
-          travelTargetRef.current = null;
-          cancelTravelRef.current = null;
-          setTravelTargetIndex(null);
-          setActiveIndex(index);
-        };
-        cancelTravelRef.current = finish;
-
-        const pollCameraConvergence = () => {
-          if (window.innerWidth <= 699) { finish(); return; }
-          const cameraState = (window as any).__cardsCameraState;
-          const progress = typeof cameraState?.cameraProgress === 'number' ? cameraState.cameraProgress : null;
-          const converged = progress !== null && Math.abs(progress - targetProgress) < 0.015;
-          const timedOut = performance.now() - pollStartedAt > 5000;
-          if (converged || timedOut) { finish(); return; }
-          pollId = window.requestAnimationFrame(pollCameraConvergence);
-        };
-        pollCameraConvergence();
-
-        window.scrollTo({
-          top: getStationTop(index),
-          behavior: 'smooth',
-        });
-        return;
-      }
-    }
-    const targetId = window.innerWidth <= 699 && station.mobileTarget
-      ? station.mobileTarget
-      : station.target;
-    writeJourneyHistory(index, 'push');
-    document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    startAdaptiveTravel(index, stationDistance >= 2 ? 'warp' : 'fast', 'push');
   }
 
   useEffect(() => {

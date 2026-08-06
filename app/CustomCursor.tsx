@@ -8,7 +8,12 @@ const SYSTEM_CURSOR_PATHS = ['/bewerbungsprofil', '/expertise', '/login', '/dash
 export default function CustomCursor() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const pathname = usePathname();
-  const useCustomCursor = !SYSTEM_CURSOR_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
+  // Auf der öffentlichen Startseite übernimmt die neue, ruhige Agentur-
+  // Journey wieder den vertrauten Systemcursor. Das erhöht Präzision und
+  // wahrgenommene Seriosität; die experimentelle Cursor-Variante bleibt auf
+  // den übrigen öffentlichen Showcase-Seiten erhalten.
+  const useCustomCursor = pathname !== '/'
+    && !SYSTEM_CURSOR_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
 
   useEffect(() => {
     if (!useCustomCursor) return;

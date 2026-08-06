@@ -9,10 +9,12 @@ export default function PublicFlapHeading({
   label,
   as = 'h2',
   className = '',
+  animated = true,
 }: {
   label: string;
   as?: 'h1' | 'h2';
   className?: string;
+  animated?: boolean;
 }) {
   const titleRef = useRef<HTMLHeadingElement | null>(null);
   const Heading = as;
@@ -20,6 +22,11 @@ export default function PublicFlapHeading({
   useEffect(() => {
     const title = titleRef.current;
     if (!title) return;
+
+    // Die neue Agentur-Journey setzt Kapitelüberschriften bewusst sofort und
+    // ruhig. Der Split-Flap-Effekt bleibt für bestehende Seiten verfügbar,
+    // wird dort aber nicht als wiederkehrende Ablenkung eingesetzt.
+    if (!animated) return;
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const letters = buildFlapWord(title, label);
@@ -85,13 +92,15 @@ export default function PublicFlapHeading({
       window.clearTimeout(repeatTimer);
       setFlapWordMode(letters, 'settle', true);
     };
-  }, [label]);
+  }, [animated, label]);
 
   return (
     <Heading
       ref={titleRef}
-      className={`public-card-heading intro-flap-word ${className}`.trim()}
+      className={`public-card-heading ${animated ? 'intro-flap-word' : 'public-card-heading-static'} ${className}`.trim()}
       aria-label={label}
-    />
+    >
+      {animated ? null : label}
+    </Heading>
   );
 }

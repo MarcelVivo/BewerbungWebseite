@@ -714,6 +714,7 @@ function ValueImpactContent({
       <PublicFlapHeading
         label={lang === 'de' ? 'DEIN MEHRWERT' : 'YOUR VALUE'}
         className="value-impact-flap"
+        animated={false}
       />
       <div className={`value-diagram-stage ${activeInfoIndex !== null ? 'is-info-open' : ''}`}>
         <div
@@ -991,7 +992,7 @@ function ReferenceCardsContent({ lang }: { lang: 'de' | 'en' }) {
     <div className={`references-content ${chakraPetch.className}`}>
       <div className="references-heading">
         <p>{lang === 'de' ? 'AUSGEWÄHLTE ARBEITEN' : 'SELECTED WORK'}</p>
-        <PublicFlapHeading label={lang === 'de' ? 'MEINE REFERENZEN' : 'MY WORK'} />
+        <PublicFlapHeading label={lang === 'de' ? 'MEINE REFERENZEN' : 'MY WORK'} animated={false} />
       </div>
       <div
         ref={mobileDeckRef}
@@ -1273,6 +1274,7 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
       <PublicFlapHeading
         label={lang === 'de' ? 'DEIN PROJEKT' : 'YOUR PROJECT'}
         className="project-cta-section-flap"
+        animated={false}
       />
       <div className="project-cta-stage">
         <section
@@ -1500,6 +1502,7 @@ function StudioProfileContent({ lang }: { lang: 'de' | 'en' }) {
       <PublicFlapHeading
         label={lang === 'de' ? 'DEIN DIGITALPARTNER' : 'YOUR DIGITAL PARTNER'}
         className="studio-profile-section-flap"
+        animated={false}
       />
       <div className="studio-profile-content">
         <div className="studio-profile-top-row">
@@ -2857,11 +2860,265 @@ function SpiralShowcase({ t, lang }: { t: typeof T['de']; lang: 'de' | 'en' }) {
   );
 }
 
+// ── High-end 2D/3D agency journey ───────────────────────────
+
+function HighEndAgencyJourney({ lang }: { lang: 'de' | 'en' }) {
+  const rootRef = useRef<HTMLElement | null>(null);
+  const [activeServiceIndex, setActiveServiceIndex] = useState(0);
+
+  const services = useMemo(() => lang === 'de'
+    ? [
+        {
+          code: '01', eyebrow: 'MARKE', title: 'Corporate Design & Webauftritt',
+          body: 'Marke, Gestaltung, Wirkung und digitale Präsentation sauber aus einem System gedacht.',
+          accent: '#c89a3d', accentRgb: '200,154,61', icon: Star,
+        },
+        {
+          code: '02', eyebrow: 'WEB', title: '2D-/3D-Websites & Applikationen',
+          body: 'Moderne Websites und Web-Apps, die hochwertig aussehen und technisch belastbar sind.',
+          accent: '#4d7fbf', accentRgb: '77,127,191', icon: Globe,
+        },
+        {
+          code: '03', eyebrow: 'SYSTEME', title: 'CRM, ERP & Datenbanken',
+          body: 'Individuelle Systeme, exakt auf Abläufe, Teams, Daten und Wachstum abgestimmt.',
+          accent: '#a6425c', accentRgb: '166,66,92', icon: FolderKanban,
+        },
+        {
+          code: '04', eyebrow: 'AUTOMATION', title: 'KI-Automation & Prozesse',
+          body: 'Sinnvolle KI-Lösungen, die Arbeit vereinfachen, Prozesse beschleunigen und Qualität sichern.',
+          accent: '#4dbf7f', accentRgb: '77,191,127', icon: Bot,
+        },
+      ]
+    : [
+        {
+          code: '01', eyebrow: 'BRAND', title: 'Corporate design & web presence',
+          body: 'Brand, design, impact and digital presentation built as one coherent system.',
+          accent: '#c89a3d', accentRgb: '200,154,61', icon: Star,
+        },
+        {
+          code: '02', eyebrow: 'WEB', title: '2D/3D websites & applications',
+          body: 'Modern websites and web apps that look premium and hold up technically.',
+          accent: '#4d7fbf', accentRgb: '77,127,191', icon: Globe,
+        },
+        {
+          code: '03', eyebrow: 'SYSTEMS', title: 'CRM, ERP & databases',
+          body: 'Custom systems aligned to workflows, teams, data and long-term growth.',
+          accent: '#a6425c', accentRgb: '166,66,92', icon: FolderKanban,
+        },
+        {
+          code: '04', eyebrow: 'AUTOMATION', title: 'AI automation & processes',
+          body: 'Practical AI solutions that simplify work, accelerate processes and protect quality.',
+          accent: '#4dbf7f', accentRgb: '77,191,127', icon: Bot,
+        },
+      ], [lang]);
+
+  const activeService = services[activeServiceIndex];
+  const activeInfo = VALUE_INFO[lang][activeServiceIndex];
+  const activeDiagram = VALUE_DIAGRAMS[lang][activeServiceIndex];
+
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const chapters = Array.from(root.querySelectorAll<HTMLElement>('[data-agency-chapter]'));
+    const finale = root.querySelector<HTMLElement>('.agency-finale-stage');
+    let frameId = 0;
+    let valueAnimationStarted = false;
+    let valueAnimationStop = () => {};
+    let valueAnimationTimer = 0;
+
+    const frame = () => {
+      const viewportHeight = Math.max(1, window.innerHeight);
+      const cameraState = (window as any).__cardsCameraState;
+      const orbit = typeof cameraState?.orbit === 'number' ? cameraState.orbit : 0;
+
+      chapters.forEach((chapter, index) => {
+        const rect = chapter.getBoundingClientRect();
+        const centerDelta = (rect.top + rect.height * 0.5 - viewportHeight * 0.5) / viewportHeight;
+        const distance = Math.max(-1.35, Math.min(1.35, centerDelta));
+        const visibility = Math.max(0, 1 - Math.abs(distance) * 0.72);
+        const direction = index % 2 === 0 ? 1 : -1;
+        const helixSway = Math.sin(orbit + index * 1.18) * 14;
+        const x = reduced ? 0 : direction * distance * 72 + helixSway * visibility;
+        const y = reduced ? 0 : distance * 34;
+        const rotate = reduced ? 0 : -direction * distance * 1.45;
+        const scale = reduced ? 1 : 1 - Math.min(0.035, Math.abs(distance) * 0.024);
+        chapter.style.setProperty('--agency-x', `${x.toFixed(2)}px`);
+        chapter.style.setProperty('--agency-y', `${y.toFixed(2)}px`);
+        chapter.style.setProperty('--agency-rotate', `${rotate.toFixed(3)}deg`);
+        chapter.style.setProperty('--agency-scale', scale.toFixed(4));
+        chapter.style.setProperty('--agency-visibility', visibility.toFixed(3));
+        chapter.classList.toggle('is-agency-active', Math.abs(distance) < 0.58);
+        chapter.classList.toggle('is-revealed', Math.abs(distance) < 0.72);
+
+        if (index === 1 && !valueAnimationStarted && Math.abs(distance) < 0.58) {
+          valueAnimationStarted = true;
+          valueAnimationStop = animateValueNumbers(chapter, lang, reduced);
+          // Einmaliger Informationsaufbau statt einer endlosen Zählschleife.
+          valueAnimationTimer = window.setTimeout(valueAnimationStop, 3600);
+        }
+      });
+
+      if (finale) {
+        const approach = Math.max(0, Math.min(1, Number(cameraState?.approachProgress) || 0));
+        const revealRaw = Math.max(0, Math.min(1, (approach - 0.79) / 0.18));
+        const reveal = revealRaw * revealRaw * (3 - 2 * revealRaw);
+        finale.style.setProperty('--finale-reveal', reveal.toFixed(3));
+        finale.style.setProperty('--finale-y', `${((1 - reveal) * 42).toFixed(2)}px`);
+        finale.style.setProperty('--finale-scale', (0.965 + reveal * 0.035).toFixed(4));
+        finale.style.setProperty('--finale-aura-scale', (0.72 + reveal * 0.28).toFixed(4));
+        finale.setAttribute('aria-hidden', reveal > 0.34 ? 'false' : 'true');
+        finale.inert = reveal <= 0.34;
+      }
+
+      frameId = window.requestAnimationFrame(frame);
+    };
+
+    frameId = window.requestAnimationFrame(frame);
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      window.clearTimeout(valueAnimationTimer);
+      valueAnimationStop();
+    };
+  }, [lang]);
+
+  return (
+    <section ref={rootRef} id="solution-spiral" className="agency-journey" aria-label={lang === 'de' ? 'Leistungen und Zusammenarbeit' : 'Services and collaboration'}>
+      <div className="agency-surface">
+        <div className="agency-surface-cap" aria-hidden="true">
+          <span />
+          <i />
+          <span />
+        </div>
+
+        <span id="services" className="agency-alias-anchor" />
+        <span id="mobile-solutions" className="agency-alias-anchor" />
+        <section id="journey-solutions" className="agency-chapter agency-services" data-agency-chapter>
+          <div className="agency-chapter-shell">
+            <header className="agency-chapter-heading">
+              <div>
+                <span className="agency-chapter-index">01 / 04</span>
+                <p>{lang === 'de' ? 'VON DER IDEE BIS ZUM BETRIEB' : 'FROM IDEA TO OPERATION'}</p>
+              </div>
+              <h2>{lang === 'de' ? 'MEINE UMSETZUNG' : 'MY EXECUTION'}</h2>
+            </header>
+
+            <div className="agency-services-layout">
+              <div className="agency-service-selector" role="tablist" aria-label={lang === 'de' ? 'Leistung auswählen' : 'Choose a service'}>
+                {services.map((service, index) => {
+                  const Icon = service.icon;
+                  const isActive = activeServiceIndex === index;
+                  return (
+                    <button
+                      key={service.code}
+                      type="button"
+                      role="tab"
+                      aria-selected={isActive}
+                      className={isActive ? 'is-active' : ''}
+                      style={{ '--agency-accent': service.accent, '--agency-accent-rgb': service.accentRgb } as CSSProperties}
+                      onClick={() => setActiveServiceIndex(index)}
+                    >
+                      <span className="agency-service-number">{service.code}</span>
+                      <span className="agency-service-icon"><Icon size={18} strokeWidth={1.7} /></span>
+                      <span className="agency-service-label">
+                        <small>{service.eyebrow}</small>
+                        <strong>{service.title}</strong>
+                      </span>
+                      <ChevronRight size={18} strokeWidth={1.8} />
+                    </button>
+                  );
+                })}
+              </div>
+
+              <article
+                key={`${lang}-${activeService.code}`}
+                className="agency-service-focus"
+                style={{ '--agency-accent': activeService.accent, '--agency-accent-rgb': activeService.accentRgb } as CSSProperties}
+              >
+                <div className="agency-service-focus-copy">
+                  <div className="agency-service-focus-meta"><span>{activeService.code}</span><i />{activeService.eyebrow}</div>
+                  <h3>{activeInfo.title}</h3>
+                  <p>{activeService.body}</p>
+                  <p>{activeInfo.summary}</p>
+                  <div className="agency-service-columns">
+                    <div>
+                      <h4>{lang === 'de' ? 'WAS ICH OPTIMIERE' : 'WHAT I OPTIMIZE'}</h4>
+                      <ul>{activeInfo.optimizes.map(point => <li key={point}><CheckCircle size={14} /><span>{point}</span></li>)}</ul>
+                    </div>
+                    <div>
+                      <h4>{lang === 'de' ? 'DEIN NUTZEN' : 'YOUR BENEFIT'}</h4>
+                      <ul>{activeInfo.benefits.map(point => <li key={point}><CheckCircle size={14} /><span>{point}</span></li>)}</ul>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="agency-primary-cta"
+                    onClick={() => openJourneyLeadForm(activeServiceIndex === 3 ? 'ki' : 'project', {
+                      travel: 'warp',
+                      ctaId: `agency_service_${activeService.code}`,
+                    })}
+                  >
+                    <span>{activeServiceIndex === 3
+                      ? (lang === 'de' ? 'KI-Potenzial prüfen' : 'Assess AI potential')
+                      : (lang === 'de' ? 'Projekt besprechen' : 'Discuss your project')}</span>
+                    <ChevronRight size={17} />
+                  </button>
+                </div>
+                <div className="agency-service-focus-visual">
+                  <ValueInfoGraphic index={activeServiceIndex} />
+                  <div className="agency-service-result"><strong>{activeDiagram.result}</strong><span>{activeDiagram.resultLabel}</span></div>
+                  <div className="agency-service-stages">{activeInfo.stages.map((stage, index) => <span key={stage}><i>0{index + 1}</i>{stage}</span>)}</div>
+                </div>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <span id="mobile-journey-value" className="agency-alias-anchor" />
+        <section id="journey-value" className="agency-chapter agency-value" data-agency-chapter>
+          <div className="agency-chapter-shell">
+            <div className="agency-orbit-label" aria-hidden="true"><span>02</span><i /></div>
+            <ValueImpactContent lang={lang} />
+          </div>
+        </section>
+
+        <span id="references" className="agency-alias-anchor" />
+        <span id="portfolio" className="agency-alias-anchor" />
+        <span id="mobile-journey-references" className="agency-alias-anchor" />
+        <section id="journey-references" className="agency-chapter agency-references" data-agency-chapter>
+          <div className="agency-chapter-shell">
+            <div className="agency-orbit-label" aria-hidden="true"><span>03</span><i /></div>
+            <ReferenceCardsContent lang={lang} />
+          </div>
+        </section>
+
+        <span id="about" className="agency-alias-anchor" />
+        <span id="mobile-journey-about" className="agency-alias-anchor" />
+        <section id="journey-about" className="agency-chapter agency-about" data-agency-chapter>
+          <div className="agency-chapter-shell">
+            <div className="agency-orbit-label" aria-hidden="true"><span>04</span><i /></div>
+            <StudioProfileContent lang={lang} />
+          </div>
+        </section>
+      </div>
+
+      <span id="mobile-journey-contact" className="agency-alias-anchor" />
+      <section id="journey-contact" className="agency-finale">
+        <div className="agency-finale-stage" aria-hidden="true">
+          <div className="agency-finale-aura" aria-hidden="true"><span /><span /><span /></div>
+          <div className="agency-finale-card">
+            <ProjectCtaContent lang={lang} />
+          </div>
+        </div>
+      </section>
+    </section>
+  );
+}
+
 // ── Page ──────────────────────────────────────────────────────
 
 export default function HomePage() {
   const { lang } = useLanguage();
-  const t = T[lang];
   useEffect(() => {
     document.title = lang === 'de'
       ? 'Digitalstudio Marcel Spahr – Weblösungen, CRM & ERP für KMU'
@@ -2912,10 +3169,8 @@ export default function HomePage() {
     };
 
     replay();
-    const replayInterval = window.setInterval(replay, HERO_TITLE_FLAP_REPEAT_MS);
     return () => {
       window.clearTimeout(settleTimer);
-      window.clearInterval(replayInterval);
       setFlapWordMode(letters, 'settle', false);
     };
   }, [lang]);
@@ -2948,14 +3203,11 @@ export default function HomePage() {
     };
 
     replay();
-    const replayInterval = window.setInterval(replay, HERO_SUPPORT_FLAP_REPEAT_MS);
     return () => {
       window.clearTimeout(settleTimer);
-      window.clearInterval(replayInterval);
       setFlapWordMode(letters, 'settle', false);
     };
   }, [lang]);
-  const introWorldTexts = useMemo(() => [...INTRO_SEQUENCES[lang]], [lang]);
   const serviceWorldCards = useMemo(() => lang === 'de'
     ? [
         { code: '01', title: 'Corporate Design\n& Webauftritt', body: 'Marke, Gestaltung, Wirkung und digitale Präsentation sauber aus einem System gedacht.', accent: '#c89a3d' },
@@ -2979,7 +3231,7 @@ export default function HomePage() {
       />
       <MobileHeroBrainPoster />
       <JourneyNavigator />
-      <BrainBackground introTexts={introWorldTexts} serviceCards={serviceWorldCards} />
+      <BrainBackground introTexts={[]} serviceCards={serviceWorldCards} />
 
       {/* ── Hero ── */}
       <section id="journey-start" className="home-hero relative z-10 min-h-screen overflow-hidden">
@@ -3061,7 +3313,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <SpiralShowcase t={t} lang={lang} />
+      <HighEndAgencyJourney lang={lang} />
 
     </div>
   );

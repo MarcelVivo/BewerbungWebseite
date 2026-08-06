@@ -34,17 +34,6 @@ const MOBILE_TARGET: Record<JourneyDestination, string> = {
   contact: 'mobile-journey-contact',
 };
 
-// Muss mit DESKTOP_STATION_PROGRESS in JourneyNavigator.tsx übereinstimmen
-// (dortiger Kommentar erklärt die Kalibrierung von 0.40 für "solutions").
-const DESKTOP_PROGRESS: Record<JourneyDestination, number> = {
-  start: 0,
-  solutions: 0.40,
-  value: 0.56,
-  references: 0.7,
-  about: 0.93,
-  contact: 1,
-};
-
 export function getJourneyDestinationFromHash(hash: string): JourneyDestination | null {
   return HASH_DESTINATION.get(hash.toLowerCase()) ?? null;
 }
@@ -82,22 +71,14 @@ export function scrollToJourneyDestination(destination: JourneyDestination) {
 
 /** Direkter Fallback, falls der JourneyNavigator noch nicht hydriert ist. */
 export function resolveJourneyPosition(destination: JourneyDestination, behavior: ScrollBehavior = 'auto') {
-  if (window.innerWidth <= 699) {
-    document.getElementById(MOBILE_TARGET[destination])?.scrollIntoView({ behavior, block: 'start' });
-    return;
-  }
-
   if (destination === 'start') {
     window.scrollTo({ top: 0, behavior });
     return;
   }
-
-  const journey = document.getElementById('solution-spiral');
-  if (!journey) return;
-  window.scrollTo({
-    top: journey.offsetTop - window.innerHeight + journey.offsetHeight * DESKTOP_PROGRESS[destination],
-    behavior,
-  });
+  const targetId = window.innerWidth <= 699
+    ? MOBILE_TARGET[destination]
+    : JOURNEY_DESTINATION_HASH[destination].slice(1);
+  document.getElementById(targetId)?.scrollIntoView({ behavior, block: destination === 'contact' ? 'end' : 'center' });
 }
 
 export function openJourneyLeadForm(
