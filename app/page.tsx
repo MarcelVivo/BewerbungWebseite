@@ -2980,10 +2980,10 @@ function HighEndAgencyJourney({ lang }: { lang: 'de' | 'en' }) {
         // Referenzkarten sind normale Dokumentinhalte und dürfen keinen
         // langen Sticky-Hold erzeugen. Sobald ihre Oberkante den Viewport
         // erreicht, bleiben sie sichtbar und scrollen natürlich weiter.
-        const referenceReveal = Math.max(0, Math.min(1,
+        const documentReveal = Math.max(0, Math.min(1,
           (viewportHeight * .9 - (metric.top - scrollTop)) / (viewportHeight * .32)
         ));
-        const reveal = reduced ? 1 : index === 2 ? referenceReveal : enter * leave;
+        const reveal = reduced ? 1 : index >= 2 ? documentReveal : enter * leave;
         const visibility = reduced ? 1 : .16 + reveal * .84;
         const direction = index % 2 === 0 ? 1 : -1;
         const x = reduced ? 0 : direction * distance * 24;

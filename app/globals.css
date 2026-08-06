@@ -790,7 +790,10 @@ body.agency-is-loading {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  width: min(100%, 94rem);
+  /* Editorial content stays clear of the fixed journey navigation. The
+     outer gutter and smaller maximum width create a calmer composition on
+     wide screens without changing the mobile layout. */
+  width: min(calc(100% - clamp(4rem, 14vw, 13rem)), 82rem);
   min-height: 100vh;
   margin: 0 auto;
   padding: clamp(4.8rem, 8vh, 7rem) clamp(2.5rem, 6vw, 6rem);
@@ -1072,12 +1075,31 @@ body.agency-is-loading {
 .agency-references .reference-card-image { min-height: clamp(10rem, 22vh, 14rem); }
 
 .agency-about .studio-profile-content {
+  grid-template-rows: clamp(17rem, 28vw, 24rem) auto auto;
+  height: auto;
+  min-height: 0;
+  aspect-ratio: auto;
+  overflow: visible;
+  overscroll-behavior: auto;
   border: 1px solid rgba(255,255,255,.1);
   border-radius: 1.25rem;
   background: linear-gradient(135deg, rgba(200,154,61,.06), transparent 42%), #12151a;
   box-shadow: inset 0 1px 0 rgba(255,255,255,.065), 0 30px 90px rgba(0,0,0,.28);
   text-shadow: none;
   backdrop-filter: none;
+}
+.agency-about {
+  min-height: auto;
+}
+.agency-about .agency-chapter-shell {
+  position: relative;
+  min-height: auto;
+  padding-top: clamp(7rem, 11vh, 10rem);
+  padding-bottom: clamp(7rem, 11vh, 10rem);
+}
+.agency-about .studio-profile-positioning-row,
+.agency-about .studio-profile-content > .studio-profile-facts {
+  overflow: visible;
 }
 .agency-about .studio-profile-header-image { filter: saturate(.72) contrast(1.04); }
 .agency-about .studio-profile-fact { border-color: rgba(255,255,255,.09); background: rgba(255,255,255,.022); }
@@ -1163,6 +1185,7 @@ body.agency-is-loading {
   .agency-chapter { min-height: auto; perspective: none; }
   .agency-chapter-shell {
     position: relative;
+    width: 100%;
     min-height: 0;
     padding: 6rem 1rem;
     opacity: 1 !important;
@@ -1206,12 +1229,72 @@ body.agency-is-loading {
   .agency-references .references-content,
   .agency-about .studio-profile-composition { padding: 0 !important; }
   .agency-references .agency-chapter-shell { padding-block: 6rem; }
+  .agency-about .agency-chapter-shell { padding-block: 6rem; }
   .agency-value .value-diagram-grid,
   .agency-references .references-grid { margin-inline: -1rem; padding-inline: 1rem; }
   .agency-references .references-grid { grid-template-columns: 1fr; }
   .agency-value .value-diagram,
   .agency-references .reference-card { border-radius: .9rem; }
   .agency-about .studio-profile-content { border-radius: 1rem; }
+  .agency-about .studio-profile-content {
+    display: flex;
+    flex-direction: column;
+    gap: .68rem;
+    padding: 0 var(--studio-profile-pad) var(--studio-profile-pad);
+  }
+  .agency-about .studio-profile-top-row {
+    flex: 0 0 auto;
+    height: auto;
+    min-height: clamp(16rem, 64vw, 23rem);
+    aspect-ratio: 1.55 / 1;
+  }
+  .agency-about .studio-profile-header-copy {
+    top: 14%;
+    right: 3%;
+    width: 44%;
+    padding-left: .5rem;
+  }
+  .agency-about .studio-profile-header-copy blockquote {
+    font-size: clamp(.48rem, 2.15vw, .68rem);
+    line-height: 1.5;
+  }
+  .agency-about .studio-profile-header-signature {
+    bottom: 2.5%;
+    left: 17%;
+    width: 33%;
+  }
+  .agency-about .studio-profile-positioning-row {
+    grid-template-columns: 1fr;
+    gap: .6rem;
+    padding-block: .75rem;
+  }
+  .agency-about .studio-profile-positioning-title h2 {
+    font-size: clamp(1.2rem, 5.5vw, 1.7rem);
+  }
+  .agency-about .studio-profile-positioning-row .studio-profile-copy {
+    font-size: clamp(.68rem, 3vw, .82rem);
+  }
+  .agency-about .studio-profile-cta {
+    width: 100%;
+    min-height: 3rem;
+    font-size: clamp(.72rem, 3vw, .86rem);
+  }
+  .agency-about .studio-profile-content > .studio-profile-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .45rem;
+    border: 0;
+    background: transparent;
+  }
+  .agency-about .studio-profile-content > .studio-profile-facts .studio-profile-fact {
+    min-height: 8rem;
+    padding: .7rem;
+    border: 1px solid rgba(231,197,106,.18);
+    border-radius: .7rem;
+    background: rgba(231,197,106,.035);
+  }
+  .agency-about .studio-profile-content > .studio-profile-facts .studio-profile-fact + .studio-profile-fact {
+    border-left: 1px solid rgba(231,197,106,.18);
+  }
 
   .agency-finale { min-height: 190vh; }
   .agency-finale-card { width: calc(100vw - 1rem); }
