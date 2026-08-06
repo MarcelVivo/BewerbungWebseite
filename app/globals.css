@@ -589,6 +589,15 @@ body.agency-is-loading {
   font-family: var(--font-chakra-petch), "Chakra Petch", sans-serif !important;
 }
 
+/* buildFlapWord legt echte Buchstaben innerhalb einer Word-Group ab, die
+   Leerzeichen dagegen als direkte Letter-Kinder des Titels. Unter
+   white-space:normal kollabierte deren Inhalt auf Breite 0 und die Wörter
+   wirkten zusammengeschrieben. */
+.agency-journey .public-card-heading > .intro-flap-letter {
+  width: .34em;
+  min-width: .34em;
+}
+
 .agency-surface {
   position: relative;
   z-index: 3;
