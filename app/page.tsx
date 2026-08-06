@@ -2975,15 +2975,21 @@ function HighEndAgencyJourney({ lang }: { lang: 'de' | 'en' }) {
         const centerDelta = (metric.top + metric.height * 0.5 - scrollTop - viewportHeight * 0.5) / viewportHeight;
         const distance = Math.max(-1.35, Math.min(1.35, centerDelta));
         const localProgress = Math.max(0, Math.min(1, (scrollTop - metric.top) / Math.max(1, metric.height - viewportHeight)));
-        const enter = Math.max(0, Math.min(1, (1.16 - distance) / .72));
-        const leave = Math.max(0, Math.min(1, (distance + 1.05) / .6));
-        // Referenzkarten sind normale Dokumentinhalte und dürfen keinen
-        // langen Sticky-Hold erzeugen. Sobald ihre Oberkante den Viewport
-        // erreicht, bleiben sie sichtbar und scrollen natürlich weiter.
-        const documentReveal = Math.max(0, Math.min(1,
-          (viewportHeight * .9 - (metric.top - scrollTop)) / (viewportHeight * .32)
+        const sectionTop = metric.top - scrollTop;
+        const sectionBottom = sectionTop + metric.height;
+        const arrivalRaw = Math.max(0, Math.min(1,
+          (viewportHeight * 1.12 - sectionTop) / (viewportHeight * .3)
         ));
-        const reveal = reduced ? 1 : index >= 2 ? documentReveal : enter * leave;
+        const departureRaw = Math.max(0, Math.min(1,
+          (sectionBottom - viewportHeight * .08) / (viewportHeight * .32)
+        ));
+        const arrival = arrivalRaw * arrivalRaw * (3 - 2 * arrivalRaw);
+        const departure = departureRaw * departureRaw * (3 - 2 * departureRaw);
+        // Sticky-Kapitel erscheinen bereits kurz vor dem Viewport, bleiben
+        // über fast die gesamte Station stehen und überblenden sich an der
+        // Kapitelgrenze. Dokumentkapitel scrollen natürlich weiter und
+        // werden nach dem Eintritt nicht künstlich wieder ausgeblendet.
+        const reveal = reduced ? 1 : index >= 2 ? arrival : arrival * departure;
         const visibility = reduced ? 1 : .16 + reveal * .84;
         const direction = index % 2 === 0 ? 1 : -1;
         const x = reduced ? 0 : direction * distance * 24;
@@ -2999,7 +3005,7 @@ function HighEndAgencyJourney({ lang }: { lang: 'de' | 'en' }) {
         chapter.style.setProperty('--agency-section-percent', `${(localProgress * 100).toFixed(2)}%`);
         chapter.style.setProperty('--agency-reveal', reveal.toFixed(4));
         chapter.style.setProperty('--agency-content-y', `${((1 - reveal) * 24).toFixed(2)}px`);
-        chapter.classList.toggle('is-agency-active', Math.abs(distance) < .72);
+        chapter.classList.toggle('is-agency-active', reveal > .45);
         chapter.classList.toggle('is-revealed', reveal > .52);
 
         if (index === 0 && window.innerWidth >= 700 && localProgress >= 0 && localProgress <= 1) {
@@ -3007,7 +3013,7 @@ function HighEndAgencyJourney({ lang }: { lang: 'de' | 'en' }) {
           setActiveServiceIndex((current) => current === serviceIndex ? current : serviceIndex);
         }
 
-        if (index === 1 && !valueAnimationStarted && Math.abs(distance) < 0.58) {
+        if (index === 1 && !valueAnimationStarted && reveal > .62) {
           valueAnimationStarted = true;
           valueAnimationStop = animateValueNumbers(chapter, lang, reduced);
           // Einmaliger Informationsaufbau statt einer endlosen Zählschleife.
