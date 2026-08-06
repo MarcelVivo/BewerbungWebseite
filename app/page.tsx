@@ -32,7 +32,6 @@ import { PROJECTS } from './portfolio/data';
 import { Chakra_Petch } from 'next/font/google';
 import { trackWebsiteEvent, type WebsiteFormId } from './lib/analytics';
 import PublicFlapHeading from './PublicFlapHeading';
-import AgencyAmbientOrb from './AgencyAmbientOrb';
 
 const chakraPetch = Chakra_Petch({ subsets: ['latin'], weight: '700', display: 'swap' });
 type LeadFormId = JourneyLeadForm;
@@ -2869,14 +2868,6 @@ function HighEndAgencyJourney({ lang }: { lang: 'de' | 'en' }) {
 
   const selectAgencyService = useCallback((index: number) => {
     setActiveServiceIndex(index);
-    if (window.innerWidth < 700) return;
-    const chapter = rootRef.current?.querySelector<HTMLElement>('.agency-services');
-    if (!chapter) return;
-    const rect = chapter.getBoundingClientRect();
-    const chapterTop = rect.top + window.scrollY;
-    const travel = Math.max(1, rect.height - window.innerHeight);
-    const target = chapterTop + travel * ((index + .18) / 4);
-    window.scrollTo({ top: target, behavior: 'smooth' });
   }, []);
 
   const services = useMemo(() => lang === 'de'
@@ -2972,30 +2963,21 @@ function HighEndAgencyJourney({ lang }: { lang: 'de' | 'en' }) {
       chapters.forEach((chapter, index) => {
         const metric = chapterMetrics[index];
         if (!metric) return;
-        const centerDelta = (metric.top + metric.height * 0.5 - scrollTop - viewportHeight * 0.5) / viewportHeight;
-        const distance = Math.max(-1.35, Math.min(1.35, centerDelta));
         const localProgress = Math.max(0, Math.min(1, (scrollTop - metric.top) / Math.max(1, metric.height - viewportHeight)));
         const sectionTop = metric.top - scrollTop;
-        const sectionBottom = sectionTop + metric.height;
         const arrivalRaw = Math.max(0, Math.min(1,
           (viewportHeight * 1.12 - sectionTop) / (viewportHeight * .3)
         ));
-        const departureRaw = Math.max(0, Math.min(1,
-          (sectionBottom - viewportHeight * .08) / (viewportHeight * .32)
-        ));
         const arrival = arrivalRaw * arrivalRaw * (3 - 2 * arrivalRaw);
-        const departure = departureRaw * departureRaw * (3 - 2 * departureRaw);
-        // Sticky-Kapitel erscheinen bereits kurz vor dem Viewport, bleiben
-        // über fast die gesamte Station stehen und überblenden sich an der
-        // Kapitelgrenze. Dokumentkapitel scrollen natürlich weiter und
-        // werden nach dem Eintritt nicht künstlich wieder ausgeblendet.
-        const reveal = reduced ? 1 : index >= 2 ? arrival : arrival * departure;
+        // Alle Kapitel sind wieder Teil des nativen Dokumentflusses. Nach dem
+        // frühen Eintritt bleiben sie sichtbar und werden nicht durch eine
+        // zweite, künstliche Scroll-Timeline ausgeblendet.
+        const reveal = reduced ? 1 : arrival;
         const visibility = reduced ? 1 : .16 + reveal * .84;
-        const direction = index % 2 === 0 ? 1 : -1;
-        const x = reduced ? 0 : direction * distance * 24;
-        const y = reduced ? 0 : (1 - reveal) * 54 + Math.max(0, -distance - .62) * -28;
-        const rotate = reduced ? 0 : -direction * distance * .45;
-        const scale = reduced ? 1 : .985 + reveal * .015;
+        const x = 0;
+        const y = reduced ? 0 : (1 - reveal) * 28;
+        const rotate = 0;
+        const scale = reduced ? 1 : .99 + reveal * .01;
         chapter.style.setProperty('--agency-x', `${x.toFixed(2)}px`);
         chapter.style.setProperty('--agency-y', `${y.toFixed(2)}px`);
         chapter.style.setProperty('--agency-rotate', `${rotate.toFixed(3)}deg`);
@@ -3007,11 +2989,6 @@ function HighEndAgencyJourney({ lang }: { lang: 'de' | 'en' }) {
         chapter.style.setProperty('--agency-content-y', `${((1 - reveal) * 24).toFixed(2)}px`);
         chapter.classList.toggle('is-agency-active', reveal > .45);
         chapter.classList.toggle('is-revealed', reveal > .52);
-
-        if (index === 0 && window.innerWidth >= 700 && localProgress >= 0 && localProgress <= 1) {
-          const serviceIndex = Math.min(3, Math.floor(localProgress * 4));
-          setActiveServiceIndex((current) => current === serviceIndex ? current : serviceIndex);
-        }
 
         if (index === 1 && !valueAnimationStarted && reveal > .62) {
           valueAnimationStarted = true;
@@ -3071,7 +3048,6 @@ function HighEndAgencyJourney({ lang }: { lang: 'de' | 'en' }) {
   return (
     <section ref={rootRef} id="solution-spiral" className="agency-journey" aria-label={lang === 'de' ? 'Leistungen und Zusammenarbeit' : 'Services and collaboration'}>
       <div className="agency-surface">
-        <AgencyAmbientOrb />
         <div className="agency-story-spine" aria-hidden="true">
           <span className="agency-story-spine-base" />
           <span className="agency-story-spine-progress" />

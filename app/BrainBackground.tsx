@@ -4787,15 +4787,14 @@ export default function BrainBackground({ introTexts = [], serviceCards = [], on
       // Zwischen Opening und grünem Finale liegt die WebGL-Szene vollständig
       // hinter der opaken 2D-Agenturfläche. In diesem Bereich muss nur die
       // Kameraschiene weitergeführt werden; Geometrie, Nervenimpulse und GPU-
-      // Rendering werden pausiert. 15 Hz reichen für den unsichtbaren
+      // Rendering werden pausiert. 10 Hz reichen für den unsichtbaren
       // Kamerastatus und sparen den grössten Teil der Frame-Arbeit ein.
-      // Die leichte Ambient-Orb übernimmt direkt nach dem Opening und bis
-      // unmittelbar vor dem grünen Finale. Die komplexe Gehirnszene schläft
-      // während dieser gesamten 2D-Story und belastet den Scrollpfad nicht.
+      // Die komplexe Gehirnszene schläft während der opaken 2D-Story und
+      // belastet den Scrollpfad dadurch nur minimal.
       var lowPowerCovered=targetScrollP>.025&&targetScrollP<.815&&cameraProgress>.02&&cameraProgress<.825;
-      if(lowPowerCovered&&now-lastCoveredFrame<66) return;
+      if(lowPowerCovered&&now-lastCoveredFrame<100) return;
       if(lowPowerCovered) lastCoveredFrame=now;
-      if(!lowPowerCovered&&now-lastVisibleFrame<32) return;
+      if(!lowPowerCovered&&now-lastVisibleFrame<(isMobile?50:40)) return;
       if(!lowPowerCovered) lastVisibleFrame=now;
       var dt = Math.min((now - last) / 1000 || 0.016, 0.05); last = now;
       if (SCENE_MOTION || OBJECT_FLOATING) t += dt;
