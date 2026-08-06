@@ -580,6 +580,15 @@ body.agency-is-loading {
   font-family: var(--agency-font);
 }
 
+/* Split-Flap zerlegt einen Titel in verschachtelte span-Elemente. Die globale
+   Journey-Regel oben setzte diese Buchstaben sonst wieder auf Inter, obwohl
+   das h2 selbst bereits Chakra Petch verwendete. Deshalb wird die Titelschrift
+   auch auf jedes erzeugte Flap-Zeichen fest vererbt. */
+.agency-journey .public-card-heading,
+.agency-journey .public-card-heading * {
+  font-family: var(--font-chakra-petch), "Chakra Petch", sans-serif !important;
+}
+
 .agency-surface {
   position: relative;
   z-index: 3;
