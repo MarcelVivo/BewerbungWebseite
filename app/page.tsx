@@ -2977,7 +2977,13 @@ function HighEndAgencyJourney({ lang }: { lang: 'de' | 'en' }) {
         const localProgress = Math.max(0, Math.min(1, (scrollTop - metric.top) / Math.max(1, metric.height - viewportHeight)));
         const enter = Math.max(0, Math.min(1, (1.16 - distance) / .72));
         const leave = Math.max(0, Math.min(1, (distance + 1.05) / .6));
-        const reveal = reduced ? 1 : enter * leave;
+        // Referenzkarten sind normale Dokumentinhalte und dürfen keinen
+        // langen Sticky-Hold erzeugen. Sobald ihre Oberkante den Viewport
+        // erreicht, bleiben sie sichtbar und scrollen natürlich weiter.
+        const referenceReveal = Math.max(0, Math.min(1,
+          (viewportHeight * .9 - (metric.top - scrollTop)) / (viewportHeight * .32)
+        ));
+        const reveal = reduced ? 1 : index === 2 ? referenceReveal : enter * leave;
         const visibility = reduced ? 1 : .16 + reveal * .84;
         const direction = index % 2 === 0 ? 1 : -1;
         const x = reduced ? 0 : direction * distance * 24;

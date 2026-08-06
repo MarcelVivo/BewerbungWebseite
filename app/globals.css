@@ -1035,14 +1035,38 @@ body.agency-is-loading {
 .agency-value .value-impact-disclaimer { color: rgba(255,255,255,.34); }
 
 .agency-references .references-heading p { color: rgba(255,255,255,.4); letter-spacing: .18em; }
-.agency-references .references-grid { gap: clamp(.8rem, 1.4vw, 1.3rem); }
+.agency-references {
+  min-height: auto;
+}
+.agency-references .agency-chapter-shell {
+  position: relative;
+  min-height: auto;
+  padding-top: clamp(7rem, 11vh, 10rem);
+  padding-bottom: clamp(7rem, 11vh, 10rem);
+}
+.agency-references .references-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(.8rem, 1.4vw, 1.3rem);
+}
 .agency-references .reference-card {
+  grid-template-rows: auto auto;
+  height: auto;
+  min-height: 0;
+  aspect-ratio: auto;
   overflow: hidden;
   border: 1px solid rgba(255,255,255,.1);
   border-radius: 1rem;
   background: #12151a;
   box-shadow: 0 24px 70px rgba(0,0,0,.24);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  contain: layout paint style;
   transition: transform 360ms cubic-bezier(.2,.72,.2,1), border-color 260ms ease;
+}
+.agency-references .reference-card-copy {
+  min-height: 0;
+  overflow: visible;
+  overscroll-behavior: auto;
 }
 .agency-references .reference-card:hover { transform: translateY(-7px); border-color: rgba(var(--reference-accent-rgb),.42); }
 .agency-references .reference-card-image { min-height: clamp(10rem, 22vh, 14rem); }
@@ -1129,6 +1153,7 @@ body.agency-is-loading {
   .agency-service-focus { grid-template-columns: 1fr minmax(14rem,.72fr); }
   .agency-service-columns { grid-template-columns: 1fr; }
   .agency-service-columns > div:last-child { display: none; }
+  .agency-references .references-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 699px) {
@@ -1180,8 +1205,10 @@ body.agency-is-loading {
   .agency-value .value-impact-content,
   .agency-references .references-content,
   .agency-about .studio-profile-composition { padding: 0 !important; }
+  .agency-references .agency-chapter-shell { padding-block: 6rem; }
   .agency-value .value-diagram-grid,
   .agency-references .references-grid { margin-inline: -1rem; padding-inline: 1rem; }
+  .agency-references .references-grid { grid-template-columns: 1fr; }
   .agency-value .value-diagram,
   .agency-references .reference-card { border-radius: .9rem; }
   .agency-about .studio-profile-content { border-radius: 1rem; }
