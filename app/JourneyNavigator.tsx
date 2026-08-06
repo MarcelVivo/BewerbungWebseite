@@ -148,7 +148,13 @@ export default function JourneyNavigator() {
     const targetTop = target.getBoundingClientRect().top + window.scrollY;
     if (index === 0) return 0;
     if (index === STATIONS.length - 1) {
-      return targetTop + Math.max(0, target.offsetHeight - window.innerHeight * 1.05);
+      // Auf kleinen Screens ist das mobile Ziel nur ein unsichtbarer Alias vor
+      // der eigentlichen Abschlusssektion. Fuer die Endposition muss deshalb
+      // immer die Hoehe der echten Sektion verwendet werden, damit die Karte
+      // nicht am unteren Fensterrand stehen bleibt.
+      const finale = document.getElementById(station.target) ?? target;
+      const finaleTop = finale.getBoundingClientRect().top + window.scrollY;
+      return finaleTop + Math.max(0, finale.offsetHeight - window.innerHeight * 1.05);
     }
     return targetTop + Math.max(0, (target.offsetHeight - window.innerHeight) / 2);
   }
