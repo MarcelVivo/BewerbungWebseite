@@ -2922,13 +2922,13 @@ function HighEndAgencyJourney({ lang }: { lang: 'de' | 'en' }) {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const chapters = Array.from(root.querySelectorAll<HTMLElement>('[data-agency-chapter]'));
     const finale = root.querySelector<HTMLElement>('.agency-finale-stage');
+    const finaleSection = root.querySelector<HTMLElement>('.agency-finale');
     let frameId = 0;
-    let burstTimer = 0;
-    let burstUntil = 0;
     let valueAnimationStarted = false;
     let valueAnimationStop = () => {};
     let valueAnimationTimer = 0;
     let chapterMetrics: Array<{ top: number; height: number }> = [];
+    let finaleMetric = { top: 0, height: 1 };
 
     const measure = () => {
       const scrollTop = window.scrollY;
@@ -2936,6 +2936,10 @@ function HighEndAgencyJourney({ lang }: { lang: 'de' | 'en' }) {
         const rect = chapter.getBoundingClientRect();
         return { top: rect.top + scrollTop, height: rect.height };
       });
+      if (finaleSection) {
+        const rect = finaleSection.getBoundingClientRect();
+        finaleMetric = { top: rect.top + scrollTop, height: Math.max(1, rect.height) };
+      }
     };
 
     const frame = () => {
@@ -2974,15 +2978,17 @@ function HighEndAgencyJourney({ lang }: { lang: 'de' | 'en' }) {
       });
 
       if (finale) {
-        const approach = Math.max(0, Math.min(1, Number(cameraState?.approachProgress) || 0));
-        const revealRaw = Math.max(0, Math.min(1, (approach - 0.79) / 0.18));
+        // Bedienbarkeit und Sichtbarkeit hängen direkt am nativen Scrollstand,
+        // niemals an der verzögerten WebGL-Feder. So kann ein langsamer oder
+        // pausierter Canvas den CTA nicht mehr unsichtbar/inaktiv festhalten.
+        const finaleProgress = (scrollTop + viewportHeight - finaleMetric.top) / finaleMetric.height;
+        const revealRaw = Math.max(0, Math.min(1, (finaleProgress - 0.44) / 0.16));
         const reveal = revealRaw * revealRaw * (3 - 2 * revealRaw);
         finale.style.setProperty('--finale-reveal', reveal.toFixed(3));
         finale.style.setProperty('--finale-y', `${((1 - reveal) * 42).toFixed(2)}px`);
         finale.style.setProperty('--finale-scale', (0.965 + reveal * 0.035).toFixed(4));
         finale.style.setProperty('--finale-aura-scale', (0.72 + reveal * 0.28).toFixed(4));
-        finale.setAttribute('aria-hidden', reveal > 0.34 ? 'false' : 'true');
-        finale.inert = reveal <= 0.34;
+        finale.setAttribute('aria-hidden', reveal > 0.08 ? 'false' : 'true');
       }
     };
 
@@ -2990,20 +2996,8 @@ function HighEndAgencyJourney({ lang }: { lang: 'de' | 'en' }) {
       if (!frameId) frameId = window.requestAnimationFrame(frame);
     };
 
-    const continueCameraBurst = () => {
-      window.clearTimeout(burstTimer);
-      if (performance.now() >= burstUntil) return;
-      schedule();
-      burstTimer = window.setTimeout(continueCameraBurst, 34);
-    };
-
     const handleScroll = () => {
-      // Die WebGL-Kamera rollt nach dem Scrollen kurz aus. Während dieses
-      // kurzen Fensters folgt die 2D-Ebene weiter, danach steht sie komplett
-      // still und verbraucht keine permanente RAF-Zeit mehr.
-      burstUntil = performance.now() + 520;
       schedule();
-      continueCameraBurst();
     };
 
     const handleResize = () => {
@@ -3011,28 +3005,18 @@ function HighEndAgencyJourney({ lang }: { lang: 'de' | 'en' }) {
       handleScroll();
     };
 
-    const resizeObserver = typeof ResizeObserver !== 'undefined'
-      ? new ResizeObserver(() => {
-          measure();
-          schedule();
-        })
-      : null;
-
     measure();
-    chapters.forEach((chapter) => resizeObserver?.observe(chapter));
     schedule();
     window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('resize', handleResize);
     return () => {
       window.cancelAnimationFrame(frameId);
-      window.clearTimeout(burstTimer);
       window.clearTimeout(valueAnimationTimer);
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleResize);
-      resizeObserver?.disconnect();
       valueAnimationStop();
     };
-  }, [lang]);
+  }, [activeServiceIndex, lang]);
 
   return (
     <section ref={rootRef} id="solution-spiral" className="agency-journey" aria-label={lang === 'de' ? 'Leistungen und Zusammenarbeit' : 'Services and collaboration'}>

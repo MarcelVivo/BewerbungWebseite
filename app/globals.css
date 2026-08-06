@@ -340,6 +340,27 @@ option {
   animation-fill-mode: forwards !important;
 }
 
+@media (max-width: 699px) {
+  html:has(.agency-journey) {
+    scroll-snap-type: none !important;
+  }
+
+  .agency-journey {
+    touch-action: pan-y pinch-zoom;
+  }
+}
+
+.agency-value .value-chart-svg *,
+.agency-service-focus-visual .value-info-svg * {
+  animation: none !important;
+}
+
+.agency-finale-card .project-cta-content {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background-color: rgba(1, 7, 4, .88);
+}
+
 .agency-references.is-revealed .reference-card {
   opacity: 1;
   transform: translateY(0);
@@ -495,7 +516,7 @@ option {
   will-change: transform, opacity;
 }
 
-.agency-chapter:not(.is-agency-active) .agency-chapter-shell { pointer-events: none; }
+.agency-chapter .agency-chapter-shell { pointer-events: auto; }
 
 .agency-chapter-heading {
   display: grid;

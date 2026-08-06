@@ -4522,12 +4522,18 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
   }
 
     var mouseX = 0, mouseY = 0, smoothMouseX = 0, smoothMouseY = 0;
+    // Die frühere öffentliche Drag-Funktion am goldenen Strang registrierte
+    // Pointer-Events im Capture-Phase auf dem ganzen Fenster. Hinter der 2D-
+    // Oberfläche konnte sie dadurch reguläre Buttons abfangen. Das interne
+    // Objekt-Tuning bleibt über ?tune=1 verfügbar, die öffentliche Drag-
+    // Interaktion ist bewusst deaktiviert.
+    var goldTipInteractionEnabled=false;
     const onMouse = (e) => { mouseX = (e.clientX / innerWidth - 0.5) * 2; mouseY = (e.clientY / innerHeight - 0.5) * 2; };
     function setGoldDragPointer(event){
       goldDragPointer.set(event.clientX/innerWidth*2-1,-(event.clientY/innerHeight)*2+1);
     }
     function pointerIsOverGoldTip(event){
-      if(isMobile||!goldDragHandle||!goldDragHandle.visible) return false;
+      if(!goldTipInteractionEnabled||isMobile||!goldDragHandle||!goldDragHandle.visible) return false;
       brain.updateWorldMatrix(true,false);
       updateGoldEndOffset();
       goldStrandTipWorld(goldTipWorld,true);
@@ -4595,7 +4601,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     // Fahrt wird darunter als gedämpfte Masse integriert: Beschleunigung,
     // Geschwindigkeit und Trägheit bleiben zwischen einzelnen Scroll-Events
     // erhalten, damit die Kamera kurz weich ausrollt statt hart zu stoppen.
-    var scrollP = 0, targetScrollP = 0;
+    var scrollP = 0, targetScrollP = 0, lastUserScrollAt = -Infinity;
     var cameraProgress = 0, cameraVelocity = 0, cameraAimY = cameraTargetStart;
     var CAMERA_MASS = 1.48;
     var CAMERA_SPRING = 12;
@@ -4603,6 +4609,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     var textWorldPosition = new THREE.Vector3();
     var documentVisible = document.visibilityState === 'visible';
     const onScroll = () => {
+      lastUserScrollAt=performance.now();
       var journey=document.getElementById('solution-spiral');
       if(!journey) return;
       var start=journey.offsetTop-innerHeight;
@@ -4765,7 +4772,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       }
     }
 
-    var t = 0, last = 0, rafId = 0, lastWobbleUpdate = 0, lastSatelliteStrandUpdate = 0, lastGoldStrandUpdate = 0, lastCoveredFrame = 0;
+    var t = 0, last = 0, rafId = 0, lastWobbleUpdate = 0, lastSatelliteStrandUpdate = 0, lastGoldStrandUpdate = 0, lastCoveredFrame = 0, lastVisibleFrame = 0;
     function tick(now) {
       rafId = requestAnimationFrame(tick);
       if (!documentVisible) return;
@@ -4777,9 +4784,12 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
       var lowPowerCovered=targetScrollP>.12&&targetScrollP<.76&&cameraProgress>.1&&cameraProgress<.78;
       if(lowPowerCovered&&now-lastCoveredFrame<66) return;
       if(lowPowerCovered) lastCoveredFrame=now;
+      if(!lowPowerCovered&&now-lastVisibleFrame<32) return;
+      if(!lowPowerCovered) lastVisibleFrame=now;
       var dt = Math.min((now - last) / 1000 || 0.016, 0.05); last = now;
       if (SCENE_MOTION || OBJECT_FLOATING) t += dt;
-      if(!lowPowerCovered){
+      var userIsScrolling=now-lastUserScrollAt<180;
+      if(!lowPowerCovered&&!userIsScrolling){
       var mouseEase=1-Math.exp(-dt*3.2);
       smoothMouseX += (mouseX-smoothMouseX)*mouseEase;
       smoothMouseY += (mouseY-smoothMouseY)*mouseEase;
