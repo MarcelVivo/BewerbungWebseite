@@ -709,6 +709,21 @@ function ValueImpactContent({
     return () => window.removeEventListener('keydown', closeOnEscape);
   }, [activeInfoIndex]);
 
+  useEffect(() => {
+    if (activeInfoIndex === null) return;
+    const frameId = window.requestAnimationFrame(() => {
+      const card = contentRef.current?.querySelector<HTMLElement>('.value-info-card.is-open');
+      if (!card) return;
+      // Das Detail ersetzt das Raster im normalen Dokumentfluss. Am Anfang
+      // positionieren, damit weder Titel noch Schliessen-Button oberhalb des
+      // aktuellen Viewports liegen, wenn eine Karte aus der zweiten Reihe
+      // geöffnet wurde.
+      card.scrollIntoView({ behavior: 'auto', block: 'start' });
+      card.querySelector<HTMLButtonElement>('.value-info-close')?.focus({ preventScroll: true });
+    });
+    return () => window.cancelAnimationFrame(frameId);
+  }, [activeInfoIndex]);
+
   return (
     <div ref={contentRef} className={`value-impact-content ${chakraPetch.className}`}>
       <PublicFlapHeading

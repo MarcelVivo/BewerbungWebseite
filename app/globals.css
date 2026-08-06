@@ -340,6 +340,72 @@ option {
   animation-fill-mode: forwards !important;
 }
 
+/* Mehrwert-Details bleiben Teil des nativen Seitenflusses. Das bisherige
+   absolute 1:1-Overlay sperrte am Kartenrand das Seitenscrollen, obwohl sein
+   Inhalt höher als die verfügbare Fläche war. Beim Öffnen ersetzt das Detail
+   nun das Raster, wächst vollständig mit seinem Inhalt und lässt die Seite
+   normal weiterlaufen. */
+.agency-value .value-diagram-stage.is-info-open .value-diagram-grid {
+  display: none !important;
+}
+
+.agency-value .value-info-card.is-open {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  aspect-ratio: auto;
+  overflow: visible;
+  overscroll-behavior: auto;
+  scrollbar-gutter: auto;
+  grid-template-columns: minmax(0, 1.12fr) minmax(15rem, .88fr);
+  align-items: start;
+  scroll-margin-top: 1rem;
+}
+
+.agency-value .value-info-card.is-open .value-info-copy,
+.agency-value .value-info-card.is-open .value-info-visual {
+  height: auto;
+  min-height: 0;
+  overflow: visible;
+}
+
+.agency-value .value-info-card.is-open .value-info-copy {
+  grid-template-rows: auto;
+  align-content: start;
+}
+
+.agency-value .value-info-card.is-open .value-info-columns {
+  align-self: auto;
+}
+
+@media (max-width: 699px) {
+  .agency-value .value-info-card.is-open {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+    padding: 3.5rem 1rem 1.25rem;
+    scroll-margin-top: .5rem;
+  }
+
+  .agency-value .value-info-card.is-open .value-info-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .agency-value .value-info-card.is-open .value-info-visual {
+    padding: 1.25rem 0 0;
+    border-top: 1px solid rgba(255,255,255,.14);
+    border-left: 0;
+  }
+
+  .agency-value .value-info-card.is-open .value-info-cta {
+    width: 100%;
+    min-height: 2.75rem;
+    margin-top: 1.25rem;
+  }
+}
+
 /* ── Homepage readiness gate ─────────────────────────────────────────────
    Lightweight, transform-only motion masks the one-time WebGL setup. The
    actual release is controlled by fonts + BrainBackground's first frame. */
