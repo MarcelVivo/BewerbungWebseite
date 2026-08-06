@@ -9,9 +9,10 @@ import { JOURNEY_CAMERA_WARP_EVENT } from './lib/journeyNavigation';
 type BrainBackgroundProps = {
   introTexts?: string[];
   serviceCards?: Array<{ code: string; title: string; body: string; accent: string }>;
+  onReady?: () => void;
 };
 
-export default function BrainBackground({ introTexts = [], serviceCards = [] }: BrainBackgroundProps) {
+export default function BrainBackground({ introTexts = [], serviceCards = [], onReady }: BrainBackgroundProps) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -4642,6 +4643,13 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
     document.addEventListener('visibilitychange', onVisibilityChange);
     resize(); onScroll();
     renderer.render(scene, camera);
+    // Der Loader wird erst freigegeben, nachdem die komplette Szene aufgebaut
+    // und mindestens ein echtes WebGL-Bild an den Browser übergeben wurde.
+    // Ein eigener Frame gibt dem Browser zuvor die Gelegenheit, den Loader zu
+    // zeichnen, auch wenn der Szenenaufbau auf einem langsameren Gerät dauert.
+    var readinessRafId=requestAnimationFrame(function(){
+      if(typeof onReady==='function') onReady();
+    });
 
     // Unregelmässiger Doppelimpuls über das komplette goldene Hauptgehirn:
     // ein kurzer, gedämpfter Vorimpuls und direkt danach ein stärkeres
@@ -5069,6 +5077,7 @@ export default function BrainBackground({ introTexts = [], serviceCards = [] }: 
 
     return () => {
       oceanWaveAnimationDisposed=true;
+      cancelAnimationFrame(readinessRafId);
       cancelAnimationFrame(rafId);
       window.removeEventListener('mousemove', onMouse);
       window.removeEventListener('pointerdown', onGoldPointerDown, true);

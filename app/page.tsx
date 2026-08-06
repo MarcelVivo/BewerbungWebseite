@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from 'react';
 import {
   Bot, BarChart3, Workflow, FolderKanban,
   GraduationCap, Globe, Lightbulb,
@@ -3153,8 +3153,118 @@ function HighEndAgencyJourney({ lang }: { lang: 'de' | 'en' }) {
 
 // ── Page ──────────────────────────────────────────────────────
 
+function AgencyPreloader({ sceneReady, lang }: { sceneReady: boolean; lang: 'de' | 'en' }) {
+  const [fontsReady, setFontsReady] = useState(false);
+  const [minimumElapsed, setMinimumElapsed] = useState(false);
+  const [timedOut, setTimedOut] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [exiting, setExiting] = useState(false);
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    if (document.fonts?.ready) {
+      document.fonts.ready.then(() => {
+        if (active) setFontsReady(true);
+      }).catch(() => {
+        if (active) setFontsReady(true);
+      });
+    } else {
+      setFontsReady(true);
+    }
+    return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const minimumTimer = window.setTimeout(() => setMinimumElapsed(true), reduced ? 250 : 1050);
+    // WebGL darf die Seite niemals dauerhaft sperren. Schlägt die Szene auf
+    // einem Gerät fehl, bleibt der DOM-Inhalt nach diesem Sicherheitsfenster
+    // vollständig benutzbar.
+    const fallbackTimer = window.setTimeout(() => setTimedOut(true), 8000);
+    return () => {
+      window.clearTimeout(minimumTimer);
+      window.clearTimeout(fallbackTimer);
+    };
+  }, []);
+
+  const canComplete = minimumElapsed && ((sceneReady && fontsReady) || timedOut);
+  const targetProgress = canComplete ? 100 : sceneReady ? 90 : fontsReady ? 32 : 12;
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setProgress((current) => {
+        if (current >= targetProgress) return current;
+        const distance = targetProgress - current;
+        return Math.min(targetProgress, current + Math.max(1, Math.ceil(distance * 0.075)));
+      });
+    }, 34);
+    return () => window.clearInterval(interval);
+  }, [targetProgress]);
+
+  useEffect(() => {
+    if (progress < 100) return;
+    const exitTimer = window.setTimeout(() => setExiting(true), 120);
+    const removeTimer = window.setTimeout(() => setVisible(false), 720);
+    return () => {
+      window.clearTimeout(exitTimer);
+      window.clearTimeout(removeTimer);
+    };
+  }, [progress]);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const body = document.body;
+    if (visible) {
+      root.classList.add('agency-is-loading');
+      body.classList.add('agency-is-loading');
+    } else {
+      root.classList.remove('agency-is-loading');
+      body.classList.remove('agency-is-loading');
+    }
+    return () => {
+      root.classList.remove('agency-is-loading');
+      body.classList.remove('agency-is-loading');
+    };
+  }, [visible]);
+
+  if (!visible) return null;
+
+  const status = progress >= 100
+    ? (lang === 'de' ? 'ERLEBNIS BEREIT' : 'EXPERIENCE READY')
+    : sceneReady
+      ? (lang === 'de' ? 'SCHRIFTEN & INTERFACE' : 'FONTS & INTERFACE')
+      : (lang === 'de' ? '3D-SZENE WIRD AUFGEBAUT' : 'BUILDING 3D SCENE');
+
+  return (
+    <div className={`agency-preloader${exiting ? ' is-exiting' : ''}`} role="progressbar" aria-label={status} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}>
+      <div className="agency-preloader-noise" aria-hidden="true" />
+      <div className="agency-preloader-core" aria-hidden="true">
+        <span className="agency-preloader-orbit agency-preloader-orbit-a"><i /></span>
+        <span className="agency-preloader-orbit agency-preloader-orbit-b"><i /></span>
+        <span className="agency-preloader-orbit agency-preloader-orbit-c"><i /></span>
+        <span className="agency-preloader-mark">MS</span>
+      </div>
+      <div className="agency-preloader-readout">
+        <div className="agency-preloader-meta">
+          <span>DIGITAL STUDIO / BERN</span>
+          <span>{status}</span>
+        </div>
+        <div className="agency-preloader-value">
+          <span>{String(progress).padStart(2, '0')}</span><small>%</small>
+        </div>
+        <div className="agency-preloader-track" aria-hidden="true">
+          <span style={{ transform: `scaleX(${progress / 100})` }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function HomePage() {
   const { lang } = useLanguage();
+  const [brainSceneReady, setBrainSceneReady] = useState(false);
+  const handleBrainSceneReady = useCallback(() => setBrainSceneReady(true), []);
   useEffect(() => {
     document.title = lang === 'de'
       ? 'Digitalstudio Marcel Spahr – Weblösungen, CRM & ERP für KMU'
@@ -3260,6 +3370,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#0c0a06] text-[#f4edd8]">
+      <AgencyPreloader sceneReady={brainSceneReady} lang={lang} />
       <script
         dangerouslySetInnerHTML={{
           __html: "document.documentElement.style.setProperty('--hero-mobile-scale',String(Math.min(1,window.innerWidth/1512)))",
@@ -3267,7 +3378,7 @@ export default function HomePage() {
       />
       <MobileHeroBrainPoster />
       <JourneyNavigator />
-      <BrainBackground introTexts={[]} serviceCards={serviceWorldCards} />
+      <BrainBackground introTexts={[]} serviceCards={serviceWorldCards} onReady={handleBrainSceneReady} />
 
       {/* ── Hero ── */}
       <section id="journey-start" className="home-hero relative z-10 min-h-screen overflow-hidden">
