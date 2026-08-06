@@ -10,11 +10,13 @@ export default function PublicFlapHeading({
   as = 'h2',
   className = '',
   animated = true,
+  repeat = true,
 }: {
   label: string;
   as?: 'h1' | 'h2';
   className?: string;
   animated?: boolean;
+  repeat?: boolean;
 }) {
   const titleRef = useRef<HTMLHeadingElement | null>(null);
   const Heading = as;
@@ -37,9 +39,12 @@ export default function PublicFlapHeading({
     let visibilityObserver: MutationObserver | null = null;
     let intersectionObserver: IntersectionObserver | null = null;
     let isVisible = false;
+    let hasPlayed = false;
 
     const triggerFlap = () => {
       if (reduced || !isVisible) return;
+      if (!repeat && hasPlayed) return;
+      hasPlayed = true;
       window.clearTimeout(settleTimer);
       setFlapWordMode(letters, 'spin', false);
       settleTimer = window.setTimeout(() => setFlapWordMode(letters, 'settle', false), 720);
@@ -47,7 +52,7 @@ export default function PublicFlapHeading({
 
     const scheduleNextFlap = (): void => {
       window.clearTimeout(repeatTimer);
-      if (reduced || !isVisible) return;
+      if (reduced || !isVisible || !repeat) return;
       repeatTimer = window.setTimeout(() => {
         triggerFlap();
         scheduleNextFlap();
@@ -92,7 +97,7 @@ export default function PublicFlapHeading({
       window.clearTimeout(repeatTimer);
       setFlapWordMode(letters, 'settle', true);
     };
-  }, [animated, label]);
+  }, [animated, label, repeat]);
 
   return (
     <Heading
@@ -100,7 +105,7 @@ export default function PublicFlapHeading({
       className={`public-card-heading ${animated ? 'intro-flap-word' : 'public-card-heading-static'} ${className}`.trim()}
       aria-label={label}
     >
-      {animated ? null : label}
+      {label}
     </Heading>
   );
 }

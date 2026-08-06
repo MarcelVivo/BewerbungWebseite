@@ -714,7 +714,7 @@ function ValueImpactContent({
       <PublicFlapHeading
         label={lang === 'de' ? 'DEIN MEHRWERT' : 'YOUR VALUE'}
         className="value-impact-flap"
-        animated={false}
+        repeat={false}
       />
       <div className={`value-diagram-stage ${activeInfoIndex !== null ? 'is-info-open' : ''}`}>
         <div
@@ -992,7 +992,7 @@ function ReferenceCardsContent({ lang }: { lang: 'de' | 'en' }) {
     <div className={`references-content ${chakraPetch.className}`}>
       <div className="references-heading">
         <p>{lang === 'de' ? 'AUSGEWÄHLTE ARBEITEN' : 'SELECTED WORK'}</p>
-        <PublicFlapHeading label={lang === 'de' ? 'MEINE REFERENZEN' : 'MY WORK'} animated={false} />
+        <PublicFlapHeading label={lang === 'de' ? 'MEINE REFERENZEN' : 'MY WORK'} repeat={false} />
       </div>
       <div
         ref={mobileDeckRef}
@@ -1274,7 +1274,7 @@ function ProjectCtaContent({ lang }: { lang: 'de' | 'en' }) {
       <PublicFlapHeading
         label={lang === 'de' ? 'DEIN PROJEKT' : 'YOUR PROJECT'}
         className="project-cta-section-flap"
-        animated={false}
+        repeat={false}
       />
       <div className="project-cta-stage">
         <section
@@ -1502,7 +1502,7 @@ function StudioProfileContent({ lang }: { lang: 'de' | 'en' }) {
       <PublicFlapHeading
         label={lang === 'de' ? 'DEIN DIGITALPARTNER' : 'YOUR DIGITAL PARTNER'}
         className="studio-profile-section-flap"
-        animated={false}
+        repeat={false}
       />
       <div className="studio-profile-content">
         <div className="studio-profile-top-row">
@@ -3016,7 +3016,11 @@ function HighEndAgencyJourney({ lang }: { lang: 'de' | 'en' }) {
                 <span className="agency-chapter-index">01 / 04</span>
                 <p>{lang === 'de' ? 'VON DER IDEE BIS ZUM BETRIEB' : 'FROM IDEA TO OPERATION'}</p>
               </div>
-              <h2>{lang === 'de' ? 'MEINE UMSETZUNG' : 'MY EXECUTION'}</h2>
+              <PublicFlapHeading
+                label={lang === 'de' ? 'MEINE UMSETZUNG' : 'MY EXECUTION'}
+                className="agency-services-title"
+                repeat={false}
+              />
             </header>
 
             <div className="agency-services-layout">

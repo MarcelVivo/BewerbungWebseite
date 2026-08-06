@@ -823,12 +823,12 @@ body.agency-is-loading {
 .agency-chapter-index { color: #e7c56a; }
 
 .agency-chapter-heading h2,
-.agency-journey .public-card-heading-static {
+.agency-journey .public-card-heading {
   margin: 0;
   color: #fff;
-  font-family: var(--agency-font) !important;
+  font-family: var(--font-chakra-petch), "Chakra Petch", sans-serif !important;
   font-size: clamp(2.35rem, 5vw, 5.7rem);
-  font-weight: 650;
+  font-weight: 700;
   letter-spacing: -.065em;
   line-height: .9;
   text-wrap: balance;
@@ -838,6 +838,16 @@ body.agency-is-loading {
   display: grid;
   grid-template-columns: minmax(17rem, .38fr) minmax(0, 1fr);
   gap: clamp(1rem, 2.2vw, 2rem);
+}
+
+.agency-chapter-heading .public-card-heading {
+  margin: 0 !important;
+}
+
+/* Der Flap bleibt kurz und hochwertig, ohne nach dem Eintritt pro Buchstabe
+   einen permanenten GPU-Layer zu reservieren. */
+.agency-journey .intro-flap-glyph {
+  will-change: auto;
 }
 
 .agency-service-selector {
@@ -1136,7 +1146,7 @@ body.agency-is-loading {
   backdrop-filter: blur(10px);
 }
 
-.agency-finale-card .public-card-heading-static { font-size: clamp(2.2rem, 4.2vw, 4.8rem); }
+.agency-finale-card .public-card-heading { font-size: clamp(2.2rem, 4.2vw, 4.8rem); }
 
 /* Der Hero bleibt die sofortige 3D-Signatur, wirkt typografisch aber ruhiger. */
 .home-hero { font-family: var(--agency-font, Inter, ui-sans-serif, sans-serif); }
@@ -1290,7 +1300,7 @@ body.agency-is-loading {
   .agency-chapter-heading { grid-template-columns: 1fr; gap: .8rem; }
   .agency-chapter-heading > div { order: 2; }
   .agency-chapter-heading h2,
-  .agency-journey .public-card-heading-static { font-size: clamp(2.05rem, 12vw, 3.7rem); line-height: .93; }
+  .agency-journey .public-card-heading { font-size: clamp(2.05rem, 12vw, 3.7rem); line-height: .93; }
   .agency-chapter-heading p { font-size: .52rem; }
   .agency-services-layout { grid-template-columns: 1fr; }
   .agency-service-selector { grid-template-columns: 1fr 1fr; gap: .5rem; border: 0; }
@@ -1390,7 +1400,7 @@ body.agency-is-loading {
   .agency-finale { min-height: 100svh; }
   .agency-finale-card { width: calc(100vw - 1rem); }
   .agency-finale-card .project-cta-content { height: min(94svh, 52rem); min-height: min(38rem, calc(100svh - .8rem)); border-radius: 1rem; }
-  .agency-finale-card .public-card-heading-static { font-size: clamp(1.75rem, 9vw, 2.7rem); }
+  .agency-finale-card .public-card-heading { font-size: clamp(1.75rem, 9vw, 2.7rem); }
   .agency-finale-aura span:nth-child(1) { width: 130vw; }
   .agency-finale-aura span:nth-child(2) { width: 102vw; }
   .agency-finale-aura span:nth-child(3) { width: 72vw; }
@@ -10926,19 +10936,19 @@ body.journey-warp-active .mobile-project-cta {
   }
 }
 
-/* Final specificity layer: the legacy public-card rules below the new
-   journey remain available to subpages, while these headings stay editorial
-   and static inside the rebuilt homepage. */
-.agency-journey .public-card-heading-static {
+/* Abschliessende Spezifität: Die bestehenden Public-Card-Regeln bleiben für
+   Unterseiten erhalten, während die animierten Journey-Titel ihre grosse
+   redaktionelle Typografie behalten. */
+.agency-journey .public-card-heading {
   position: relative !important;
   inset: auto !important;
   display: block !important;
   width: 100% !important;
   margin: 0 0 clamp(1.5rem, 3vh, 2.6rem) !important;
   color: #fff !important;
-  font-family: var(--agency-font) !important;
+  font-family: var(--font-chakra-petch), "Chakra Petch", sans-serif !important;
   font-size: clamp(1.9rem, 3.2vw, 3.6rem) !important;
-  font-weight: 650 !important;
+  font-weight: 700 !important;
   letter-spacing: -.065em !important;
   line-height: .9 !important;
   text-align: left !important;
@@ -10947,18 +10957,18 @@ body.journey-warp-active .mobile-project-cta {
   transform: none !important;
 }
 
-.agency-finale-card .project-cta-content > .project-cta-section-flap.public-card-heading-static {
+.agency-finale-card .project-cta-content > .project-cta-section-flap.public-card-heading {
   margin-bottom: .55rem !important;
   font-size: clamp(2rem, 4.2vw, 4.7rem) !important;
   text-align: center !important;
 }
 
 @media (max-width: 699px) {
-  .agency-journey .public-card-heading-static {
+  .agency-journey .public-card-heading {
     font-size: clamp(2.05rem, 12vw, 3.7rem) !important;
   }
 
-  .agency-finale-card .project-cta-content > .project-cta-section-flap.public-card-heading-static {
+  .agency-finale-card .project-cta-content > .project-cta-section-flap.public-card-heading {
     margin-bottom: .35rem !important;
     font-size: clamp(1.65rem, 8.5vw, 2.5rem) !important;
   }
