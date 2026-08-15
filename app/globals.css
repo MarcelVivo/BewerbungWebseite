@@ -2,11 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
+html:has(.experience-root) {
+  scroll-behavior: smooth;
+  background: #070807;
+}
+
+html.hero-intro-locked {
+  overflow: hidden;
+}
+
+body:has(.experience-root) {
+  background: #070807;
+}
+
+@media (max-width: 699px), (prefers-reduced-motion: reduce) {
+  html:has(.experience-root) { scroll-behavior: auto; }
+}
+
 /* ==========================================================
    MARCELSPAHR.CH — OFFICIAL DESIGN SYSTEM
    Premium Metallic Edition
    ========================================================== */
 :root {
+  --font-chakra-petch: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   --font-site: var(--font-chakra-petch), "Chakra Petch", sans-serif;
   --font-inter: var(--font-site);
   --font-playfair: var(--font-site);

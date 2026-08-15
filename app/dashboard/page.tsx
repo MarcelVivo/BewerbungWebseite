@@ -175,10 +175,10 @@ export default function DashboardPage() {
       tasksTotal:        td.length,
     });
 
-    setTermine((termineDaten as Termin[]) || []);
+    setTermine((termineDaten as unknown as Termin[]) || []);
     // Widget: nur offene Tasks, max 5
     setTasks(td.filter(t => t.status !== 'done').slice(0, 5) as Task[]);
-    setRechnungen((rechnungsList as Rechnung[]) || []);
+    setRechnungen((rechnungsList as unknown as Rechnung[]) || []);
     setAgents((agentsDaten as KiAgent[]) || []);
     setLoading(false);
   }

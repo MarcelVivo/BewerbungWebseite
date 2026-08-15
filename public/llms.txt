@@ -1,96 +1,110 @@
-# Marcel Spahr – KI & Digitalisierungsberater Schweiz
+# Marcel Spahr – Digitale Unternehmenssysteme aus Bern, Schweiz
 
-> Marcel Spahr ist ein Wirtschaftsinformatiker (HF) und KI-Unternehmensberater aus Bern, Schweiz. Er verbindet 15 Jahre Praxiserfahrung bei Swisscom mit modernsten KI-Werkzeugen und hilft Schweizer KMU bei Digitalisierung, Prozessautomatisierung, Business Analyse und Digital Marketing. Kontakt: kontakt@marcelspahr.ch · +41 79 511 09 11
+> marcelspahr.ch entwickelt individuelle digitale Unternehmenssysteme für Schweizer KMU und Start-ups. Website, Marketing, CRM, ERP, Daten, AI, Automationen und interne Prozesse werden nicht als getrennte Produkte, sondern als ein verbundenes System geplant und umgesetzt.
 
-## Über Marcel Spahr
+## Person und Verantwortlichkeit
 
-Marcel Spahr ist Wirtschaftsinformatiker (HF, WISS Bern, 2022–2026) und ausgebildeter Werbetechniker EFZ. Er arbeitete 15 Jahre bei Swisscom AG in Bern im Bereich Digitalisierung, Requirements Engineering und agiler Projektarbeit (SAFe). Heute ist er als selbstständiger KI-Unternehmensberater für Schweizer KMU tätig.
+Marcel Spahr ist selbstständiger Digitalpartner in Bern. Er verbindet Wirtschaftsinformatik HF in der Abschlussphase mit einer Ausbildung als Werbetechniker EFZ und mehr als 15 Jahren Praxis in Technologie, Kundenprojekten, Projektarbeit, Marketing und Verkauf.
 
-**Kernkompetenz:** Fusion von menschlicher Erfahrung und KI-Technologie — Marcel kombiniert strategisches Denken, Empathie und branchenübergreifende Praxiserfahrung mit modernsten KI-Tools.
+Projekte werden persönlich begleitet: von der Analyse über Informationsarchitektur, UX/UI, technische Architektur, Frontend, Backend und Datenmodell bis zu Tests, Einführung und Weiterentwicklung.
 
-**Standort:** Bern, Schweiz (auch remote schweizweit tätig)
-**Sprachen:** Deutsch (Muttersprache, C2), Englisch (B1+)
-**LinkedIn:** https://www.linkedin.com/in/marcel-spahr-901568304
-
-## Ausbildung & Zertifikate
-
-- Wirtschaftsinformatik HF – WISS Schule für Wirtschaft, Informatik und Immobilien, Bern (2022–2026)
-- SAFe 5 Agilist – Scaled Agile Framework Zertifizierung
-- SCRUM Zertifikat – Scrum.org
-- EFZ Werbetechniker (2013–2016)
-- EFZ Maler (2010–2013)
-- Adobe Illustrator & Photoshop (Grund- und Aufbaukurs)
-- Cambridge English A2 – Cambridge Assessment
-
-## Leistungen (Services)
-
-### KI-Agenten & Automatisierung
-Massgeschneiderte KI-Agenten, die repetitive Aufgaben automatisieren – 24/7, ohne manuelle Eingriffe. Einsatzgebiete: E-Mail-Management, Auftragsverarbeitung, Kunden-Kommunikation, Reporting.
-→ https://www.marcelspahr.ch/leistungen/ki-agenten
-
-### Business Analyse & Requirements Engineering
-Stakeholder-Interviews, Prozessmodellierung, User Stories und priorisierte Anforderungskataloge. Brücke zwischen Geschäftszielen und technischer Umsetzung.
-→ https://www.marcelspahr.ch/leistungen/business-analyse
-
-### Prozessoptimierung (BPMN)
-Visualisierung, Analyse und Digitalisierung manueller Abläufe mit BPMN (Business Process Model and Notation). Messbare Zeitersparnis – z.B. Rechnungsstellung von 4 Stunden auf 15 Minuten pro Woche.
-→ https://www.marcelspahr.ch/leistungen/prozessoptimierung
-
-### Digital Marketing & Social Media
-LinkedIn-Strategie, Content-Pläne, KI-unterstützte Content-Erstellung, Analytics-Setup (GA4). Organisches Wachstum ohne Paid Advertising.
-→ https://www.marcelspahr.ch/leistungen/digital-marketing
-
-### Video-Produktion
-Erklärvideos, Unternehmensfilme, Social-Content – vom Konzept bis zur fertigen Produktion (MP4, alle Formate, Untertitel).
-→ https://www.marcelspahr.ch/leistungen/video-produktion
-
-### Projektmanagement
-Agile Projektleitung nach Scrum und SAFe. Strukturierte Steuerung von IT- und Digitalisierungsprojekten – termingerecht und budgetschonend.
-→ https://www.marcelspahr.ch/leistungen/projektmanagement
-
-### Workshops & Schulungen
-Praxisnahe KI-Schulungen für Teams (ChatGPT, Copilot, Automatisierung) – massgeschneidert, max. 12 Personen, inkl. 30 Tage Nachbetreuung.
-→ https://www.marcelspahr.ch/leistungen/workshops
-
-### Website-Optimierung
-Technische SEO, Core Web Vitals, Performance-Optimierung, GA4-Setup und monatliches Reporting für Schweizer KMU.
-→ https://www.marcelspahr.ch/leistungen/website-optimierung
-
-### KI-Beratung für KMU
-KI-Readiness-Assessment, Potenzialanalyse (Top-5-Use-Cases), 12-Monats-KI-Roadmap und begleitetes Pilotprojekt. Keine Buzzwords – messbare Ergebnisse.
-→ https://www.marcelspahr.ch/leistungen/ki-beratung-kmu
-
-## Berufserfahrung
-
-**Swisscom AG, Bern** (2022–2025) – Informatiker / Digitalisierung
-- Digitalisierung interner Prozesse und Tools
-- Requirements Engineering für IT-Projekte
-- Agile Zusammenarbeit (SAFe-Framework)
-- Fachkonzepte, Spezifikationen, User Stories
-
-**Roth Malerei, Region Bern** (2016–2022) – Maler / Vorarbeiter
-- Koordination von Kleinteams
-- Kundenkommunikation und Projektabwicklung
-
-## Schlüsselzahlen
-
-- 15+ Jahre Berufserfahrung
-- 50+ realisierte Projekte
-- Tätig für Schweizer KMU in allen Branchen
-- Bern + Remote (schweizweit)
-
-## Kontakt
-
-- Website: https://www.marcelspahr.ch
-- E-Mail: kontakt@marcelspahr.ch
+- Standort: Bern, Schweiz
+- Kontakt: kontakt@marcelspahr.ch
 - Telefon: +41 79 511 09 11
-- Adresse: Bern, BE 3000, Schweiz
 - LinkedIn: https://www.linkedin.com/in/marcel-spahr-901568304
+
+## Was marcelspahr.ch baut
+
+### Website, Marke und Verkaufssystem
+
+Websites und Webanwendungen verbinden klare Positionierung, UX/UI, 2D- oder 3D-Inszenierung, Performance, technische SEO, lokale Auffindbarkeit, strukturierte Daten, Formulare und die nachgelagerten Verkaufsprozesse.
+
+- https://www.marcelspahr.ch/leistungen/corporate-design
+- https://www.marcelspahr.ch/leistungen/2d-3d-websites
+
+### CRM, ERP und Geschäftsprozesse
+
+Individuelle Systeme können Kontakte, Leads, Kommunikation, Offerten, Aufträge, Projekte, Aufgaben, Termine, Dokumente, Mitarbeitende, Zeiterfassung, Rechnungen, Zahlungen und Managementinformationen verbinden. Gebaut werden nur die Module, die ein Unternehmen tatsächlich benötigt.
+
+- https://www.marcelspahr.ch/leistungen/crm-loesungen
+- https://www.marcelspahr.ch/leistungen/erp-prozesse
+
+### Datenbanken, Cloud und Integrationen
+
+Die technische Architektur kann PostgreSQL-Datenbanken, APIs, Authentifizierung, Rollen und Rechte, sichere Dateiablagen, Backups, Protokollierung, Analytics und die Integration bestehender Werkzeuge umfassen.
+
+- https://www.marcelspahr.ch/leistungen/datenbanken-schnittstellen
+
+### AI und Automationen
+
+AI wird für konkrete, kontrollierbare Aufgaben eingesetzt, zum Beispiel zur Klassifikation von Anfragen, Dokumentanalyse, Antwortvorbereitung, Lead-Qualifizierung, internen Wissensunterstützung und Auswertung. Entscheidungen und Freigaben können bewusst beim Menschen bleiben.
+
+- https://www.marcelspahr.ch/leistungen/automatisierung-ki-agenten
+
+### Analyse, Einführung und Weiterentwicklung
+
+Ein Projekt beginnt mit der Analyse von Unternehmen, Zielen, Mitarbeitenden, Engpässen, Daten und vorhandenen Systemen. Danach werden Anforderungen priorisiert, die passende Architektur entwickelt, umgesetzt, getestet und eingeführt.
+
+- https://www.marcelspahr.ch/leistungen/analyse-konzept
+- https://www.marcelspahr.ch/leistungen/go-live-umsetzung
+- https://www.marcelspahr.ch/leistungen/wartung-weiterentwicklung
+
+## Auffindbarkeit: SEO und GEO
+
+Technische SEO, schnelle Seiten, saubere Informationsarchitektur, strukturierte Daten und semantische Inhalte machen Angebote für Menschen, klassische Suchmaschinen und AI-Antwortsysteme verständlich. Es werden keine pauschalen Ranking-Garantien abgegeben.
+
+## Datenschutz und Sicherheit
+
+Privacy by Design, Security by Design, Datenminimierung, Authentifizierung, rollenbasierte Zugriffe, sichere Schnittstellen, Backups und Logging werden je nach Projekt von Beginn an berücksichtigt. Schweizer Datenschutzanforderungen und die DSGVO werden im jeweiligen Projektkontext geprüft; pauschale rechtliche Compliance-Garantien werden nicht formuliert.
+
+## Nachweisbare Projekte
+
+### VeraHome
+
+Für VeraHome entwickelte Marcel Spahr Strategie, Marke, eine zweisprachige öffentliche Website und ein eigenes CRM-/ERP-Verwaltungsportal mit PostgreSQL, Authentifizierung, Rollen und Berechtigungen. Die Website ist live. Das Portal befindet sich seit dem 1. Juli 2026 in der Testphase.
+
+- Case: https://www.marcelspahr.ch/portfolio/verahome
+- Live: https://www.verahome.ch
+
+### GiGi Beauty
+
+Scrollgesteuerte 3D-Website für ein Kosmetikstudio in Bern mit Three.js, Leistungen, Preisen, mehrsprachigen Inhalten, lokaler Suchmaschinenoptimierung und Buchungsweg. Eine öffentliche Testversion ist verfügbar; finale Abnahme und Veröffentlichung stehen noch aus.
+
+- Case: https://www.marcelspahr.ch/portfolio/gigibeauty
+
+### Liquoda
+
+Validiertes Detailkonzept und Anforderungsanalyse für eine tokenisierte Vermittlungsplattform. Die Diplomarbeit basiert auf neun Interviews mit Experten und Stakeholdern. Die öffentliche Informationsseite ist verfügbar; die Plattform selbst wurde noch nicht entwickelt.
+
+- Case: https://www.marcelspahr.ch/portfolio/liquoda
+
+### Olivia's Olivenpaste
+
+Businessplan und Prozesskonzept für eine mögliche Markteinführung in der Schweiz. Die Feusi bewertete die Studienarbeit mit der Note 5.8. Das Konzept wurde bisher nicht operativ umgesetzt.
+
+- Case: https://www.marcelspahr.ch/portfolio/olivias-olivenpaste
+
+## Häufige Fragen
+
+### Was ist ein digitales Unternehmenssystem?
+
+Eine individuell entwickelte Verbindung aus sichtbaren Kundenschnittstellen wie Website und Marketing sowie internen Daten, Anwendungen und Prozessen. Informationen werden möglichst einmal erfasst und danach kontrolliert weiterverwendet.
+
+### Für wen ist das Angebot gedacht?
+
+Für Schweizer KMU und Start-ups, die digitale Werkzeuge und Prozesse verbinden, manuelle Übergaben reduzieren oder eine neue digitale Lösung ganzheitlich aufbauen wollen.
+
+### Muss jedes Unternehmen alle Module kaufen?
+
+Nein. Zuerst werden Unternehmen, Ziele, bestehende Systeme und Engpässe verstanden. Danach wird nur geplant und gebaut, was im jeweiligen Kontext sinnvoll ist.
+
+### Wie beginnt die Zusammenarbeit?
+
+Mit einer unverbindlichen Projektanfrage und einem persönlichen Gespräch. Anschliessend werden Ausgangslage, Ziele, Anforderungen, Prioritäten und ein realistischer nächster Schritt geklärt.
 
 ## Wichtige Seiten
 
-- Startseite: https://www.marcelspahr.ch
-- Alle Leistungen: https://www.marcelspahr.ch/leistungen/ki-agenten
-- Impressum: https://www.marcelspahr.ch/impressum
+- Startseite und Projektanfrage: https://www.marcelspahr.ch
 - Datenschutz: https://www.marcelspahr.ch/datenschutz
+- Impressum: https://www.marcelspahr.ch/impressum
 - Sitemap: https://www.marcelspahr.ch/sitemap.xml
