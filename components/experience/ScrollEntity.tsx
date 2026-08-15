@@ -434,18 +434,32 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
         // scrollY, through the same mapScrollToPathProgress() the object
         // itself uses, is what keeps the drawn line and the live object
         // provably on the same curve.
+        //
+        // mapScrollToPathProgress has a genuine slope discontinuity at every
+        // dock's arrivalScroll and departureScroll (transit stops or starts
+        // changing progress right there). An evenly-spaced grid can land a
+        // few px to either side of that exact scrollY, and the straight
+        // polyline segment between its neighbors then corner-cuts the real
+        // kink - independently measured (getBoundingClientRect vs
+        // getPointAtLength/getScreenCTM) as >1px at those two points.
+        // Forcing an exact vertex at every arrival/departure removes that
+        // corner-cutting outright, instead of just sampling more densely
+        // everywhere.
         const railStep = Math.max(6, Math.round(maximumScroll / 1400));
-        const railCommands: string[] = [];
-        for (let scrollSample = 0; scrollSample <= maximumScroll; scrollSample += railStep) {
+        const scrollSamples = new Set<number>();
+        for (let scrollSample = 0; scrollSample <= maximumScroll; scrollSample += railStep) scrollSamples.add(scrollSample);
+        scrollSamples.add(maximumScroll);
+        dockingProgress.forEach((dock) => {
+          if (Number.isFinite(dock.arrivalScroll)) scrollSamples.add(clamp(dock.arrivalScroll, 0, maximumScroll));
+          if (Number.isFinite(dock.departureScroll)) scrollSamples.add(clamp(dock.departureScroll, 0, maximumScroll));
+        });
+        const sortedScrollSamples = Array.from(scrollSamples).sort((a, b) => a - b);
+        const railCommands: string[] = sortedScrollSamples.map((scrollSample, index) => {
           const sampleTarget = mapScrollToPathProgress(scrollSample, viewportHeight, dockingProgress);
           const sample = sampleMasterFlightPath(resolvedMasterPath, sampleTarget.targetPathProgress);
           const { documentX, documentY } = pathSampleToDocument(sample.position, scrollSample, { width: viewportWidth, height: viewportHeight });
-          railCommands.push(`${scrollSample === 0 ? 'M' : 'L'} ${documentX.toFixed(1)} ${documentY.toFixed(1)}`);
-        }
-        const finalTarget = mapScrollToPathProgress(maximumScroll, viewportHeight, dockingProgress);
-        const finalSample = sampleMasterFlightPath(resolvedMasterPath, finalTarget.targetPathProgress);
-        const finalDocument = pathSampleToDocument(finalSample.position, maximumScroll, { width: viewportWidth, height: viewportHeight });
-        railCommands.push(`L ${finalDocument.documentX.toFixed(1)} ${finalDocument.documentY.toFixed(1)}`);
+          return `${index === 0 ? 'M' : 'L'} ${documentX.toFixed(1)} ${documentY.toFixed(1)}`;
+        });
         railPath = railCommands.join(' ');
       }
 
