@@ -67,7 +67,6 @@ export default function TitleDepthLayer() {
       });
       layer.replaceChildren();
       pairs = Array.from(main.querySelectorAll<HTMLElement>('h1, section h2'))
-        .filter((source) => !source.closest(`.${styles.pauseFit}`))
         .map((source, index) => {
         const clone = document.createElement('div');
         const anchorName = `--title-depth-${index + 1}`;
@@ -99,10 +98,19 @@ export default function TitleDepthLayer() {
         const revealParent = source.closest<HTMLElement>('[data-reveal]') ?? source.closest<HTMLElement>(`.${styles.heroCopy}`);
         const revealStyle = revealParent ? window.getComputedStyle(revealParent) : null;
         if (!nativeAnchors) {
+          // getBoundingClientRect() reflects any ancestor CSS transform (e.g.
+          // the compacted sections' --fit-scale), but copyTextAppearance()
+          // reads computed font-size, which does not. Sizing the clone box to
+          // the source's untransformed layout size and then scaling the whole
+          // clone by the same ratio keeps text and box scaling together.
+          const naturalWidth = Math.max(source.offsetWidth, 1);
+          const scale = naturalWidth ? rect.width / naturalWidth : 1;
           clone.style.left = `${rect.left}px`;
           clone.style.top = `${rect.top}px`;
-          clone.style.width = `${rect.width}px`;
-          clone.style.height = `${rect.height}px`;
+          clone.style.width = `${source.offsetWidth}px`;
+          clone.style.height = `${source.offsetHeight}px`;
+          clone.style.transform = scale !== 1 ? `scale(${scale})` : '';
+          clone.style.transformOrigin = 'top left';
         }
         clone.style.opacity = revealStyle?.opacity ?? window.getComputedStyle(source).opacity;
         clone.style.visibility = rect.bottom < -40 || rect.top > window.innerHeight + 40 ? 'hidden' : 'visible';
