@@ -4,7 +4,7 @@ export const FLIGHT_PATH_START_POINT: FlightPathPoint = {
   id: 'journey-start',
   sectionOffset: 0,
   x: 50,
-  y: 12,
+  y: 20,
   scale: 0.95,
   rotation: -6,
   opacity: .96,
