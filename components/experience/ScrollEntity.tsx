@@ -15,7 +15,7 @@ import {
   type ResolvedFlightPathPoint,
 } from './flightPathStore';
 import { pathSampleToDocument } from './flightPathTransforms';
-import { DOCKING_STOPS, FLIGHT_PATH_START_POINT, dockingStopForAnchor } from './dockingRoute';
+import { DOCKING_STOPS, dockingStopForAnchor } from './dockingRoute';
 import { createMasterFlightPath, sampleMasterFlightPath, type MasterFlightPath } from './masterFlightPath';
 import {
   DOCK_EPSILON,
@@ -52,12 +52,12 @@ type TrailParticle = {
   phase: number;
 };
 
-const INTRO_POSITION = {
-  x: FLIGHT_PATH_START_POINT.x,
-  y: FLIGHT_PATH_START_POINT.y,
-  scale: FLIGHT_PATH_START_POINT.scale,
-  rotation: FLIGHT_PATH_START_POINT.rotation,
-  opacity: FLIGHT_PATH_START_POINT.opacity,
+// Always read live from the shared draft - the pre-scroll intro visual must
+// reflect a dragged start point exactly like the rail and the object's
+// on-scroll movement do. Never a snapshot copied once at module load.
+const getIntroPosition = () => {
+  const start = getFlightPathDraft().start;
+  return { x: start.x, y: start.y, scale: start.scale, rotation: start.rotation, opacity: start.opacity };
 };
 
 const clamp = (value: number, min = 0, max = 1) => Math.min(max, Math.max(min, value));
@@ -271,10 +271,9 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
     let masterPath: MasterFlightPath | null = null;
     let dockingProgress: DockProgressPoint[] = [];
     const pathFollower = new Object3D();
-    const introPosition = INTRO_POSITION;
     const firstDraftPoint = getFlightPathDraft().points[0];
     let current = root.dataset.heroPhase === 'loading'
-      ? { ...introPosition, opacity: 0 }
+      ? { ...getIntroPosition(), opacity: 0 }
       : { x: firstDraftPoint.x, y: firstDraftPoint.y, scale: firstDraftPoint.scale, rotation: firstDraftPoint.rotation, opacity: 0 };
     let targetPathProgress = 0;
     let currentPathProgress = 0;
@@ -418,10 +417,10 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       }
 
       pathRoute = [{
-        ...FLIGHT_PATH_START_POINT,
+        ...draft.start,
         scroll: 0,
-        documentX: viewportWidth * FLIGHT_PATH_START_POINT.x / 100,
-        documentY: viewportHeight * FLIGHT_PATH_START_POINT.y / 100,
+        documentX: viewportWidth * draft.start.x / 100,
+        documentY: viewportHeight * draft.start.y / 100,
       }, ...route];
       const resolvedMasterPath = masterPath ?? createMasterFlightPath(pathRoute);
       if (masterPath) resolvedMasterPath.updateFromNodes(pathRoute);
@@ -485,7 +484,7 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
     };
 
     const positionOnRail = (pathProgress: number) => {
-      if (!masterPath) return { ...introPosition };
+      if (!masterPath) return { ...getIntroPosition() };
       const sample = sampleMasterFlightPath(masterPath, pathProgress);
       currentRouteScroll = sample.routeScroll;
       // This is the sole runtime writer of the carrier's world position.
@@ -512,7 +511,7 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       if (!pathInitialized) {
         currentPathProgress = targetPathProgress;
         pathInitialized = true;
-        current = followsRail ? positionOnRail(currentPathProgress) : { ...introPosition };
+        current = followsRail ? positionOnRail(currentPathProgress) : { ...getIntroPosition() };
       }
 
       DOCKING_STOPS.forEach((stop, stationIndex) => {
@@ -657,7 +656,8 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
         // The complete carrier position comes from the one master curve.
         current = positionOnRail(currentPathProgress);
       } else {
-        current = { ...introPosition, opacity: root.dataset.heroPhase === 'loading' ? 0 : introPosition.opacity };
+        const intro = getIntroPosition();
+        current = { ...intro, opacity: root.dataset.heroPhase === 'loading' ? 0 : intro.opacity };
       }
 
       const activeStop = DOCKING_STOPS[pathTarget.activeStationIndex];
@@ -843,10 +843,10 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
         className={styles.scrollEntity}
         data-scroll-path-follower
         style={{
-          left: `${INTRO_POSITION.x}vw`,
-          top: `${INTRO_POSITION.y}vh`,
-          opacity: INTRO_POSITION.opacity,
-          transform: `translate3d(-50%, -50%, 0) rotate(${INTRO_POSITION.rotation}deg) scale(${INTRO_POSITION.scale})`,
+          left: `${getFlightPathDraft().start.x}vw`,
+          top: `${getFlightPathDraft().start.y}vh`,
+          opacity: getFlightPathDraft().start.opacity,
+          transform: `translate3d(-50%, -50%, 0) rotate(${getFlightPathDraft().start.rotation}deg) scale(${getFlightPathDraft().start.scale})`,
         }}
       >
         <video

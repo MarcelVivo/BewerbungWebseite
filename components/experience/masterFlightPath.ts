@@ -29,8 +29,8 @@ export type MasterFlightPathSample = {
 };
 
 export type ResolvedBezierHandles = {
-  curveIn: { x: number; y: number; z: number; scale: number };
-  curveOut: { x: number; y: number; z: number; scale: number };
+  curveIn: { x: number; y: number; z: number };
+  curveOut: { x: number; y: number; z: number };
 };
 
 const clamp01 = (value: number) => Math.min(1, Math.max(0, Number.isFinite(value) ? value : 0));
@@ -52,13 +52,11 @@ export function resolveBezierHandles(points: FlightPathPoint[], index: number): 
       x: point.curveIn?.x ?? -tangent.x,
       y: point.curveIn?.y ?? -tangent.y,
       z: point.curveIn?.z ?? -tangent.z,
-      scale: point.curveIn?.z ?? -tangent.z,
     },
     curveOut: {
       x: point.curveOut?.x ?? tangent.x,
       y: point.curveOut?.y ?? tangent.y,
       z: point.curveOut?.z ?? tangent.z,
-      scale: point.curveOut?.z ?? tangent.z,
     },
   };
 }

@@ -1,18 +1,29 @@
 'use client';
 
 /**
- * The single source of truth for the flight path. Both ScrollEntity (the
- * real object) and FlightPathEditor (the debug rail) read and write through
- * this module only - neither may keep its own local copy of the points, its
- * own CurvePath/FlightPathModel instance, or its own SVG sampling.
+ * The single source of truth for the flight path. ScrollEntity (the real
+ * object), FlightPathEditor (drag UI) and every docking-station ring read
+ * and write through this module only - none of them may keep its own local
+ * copy of a point, its own CurvePath/FlightPathModel instance, its own SVG
+ * sampling, or (for docking stations) its own locally-seeded ring position.
  *
  * Plain module-level state + a subscribe/notify pattern, compatible with
  * React's built-in useSyncExternalStore. No new dependency.
  */
 
 import rawFlightPath from './flight-path.json';
+import heroDock from './hero-dock.json';
+import problemDock from './problem-dock.json';
+import systemDock from './system-dock.json';
+import websiteDock from './website-dock.json';
+import marketingDock from './marketing-dock.json';
+import processDock from './process-dock.json';
+import dataDock from './data-dock.json';
+import projectsDock from './projects-dock.json';
+import aboutDock from './about-dock.json';
+import contactDock from './contact-dock.json';
 import { normalizeDockingPoints } from './dockingRoute';
-import type { FlightPathConfig, FlightPathPoint } from './flightPathTypes';
+import type { DockRingPosition, FlightPathConfig, FlightPathPoint } from './flightPathTypes';
 import type { FlightPathModel } from './masterFlightPath';
 import type { DockProgressPoint, ScrollPathPhase } from './scrollPathController';
 
@@ -26,7 +37,7 @@ export type ResolvedFlightPathPoint = FlightPathPoint & {
 export type ResolvedFlightPath = {
   /** The draft's points, resolved to real scroll/document positions. Same order/indices as the draft. */
   route: ResolvedFlightPathPoint[];
-  /** route with the fixed intro point prepended - what the MasterFlightPath instance was actually built from. */
+  /** route with the start point prepended - what the MasterFlightPath instance was actually built from. */
   pathRoute: ResolvedFlightPathPoint[];
   /** The one FlightPathModel instance for this snapshot. Object position, SVG rail, editor anchors and the
    *  precision-test all sample this same instance - never a second one built independently. */
@@ -59,12 +70,46 @@ export type FlightPathRuntimeState = {
   distancePx: number;
 };
 
-const raw = rawFlightPath as { followSpeed?: number; points: FlightPathPoint[] };
+const raw = rawFlightPath as { followSpeed?: number; start?: FlightPathPoint; points: FlightPathPoint[] };
 
-let draft: FlightPathConfig = {
-  followSpeed: raw.followSpeed ?? 1,
-  points: normalizeDockingPoints(raw.points.map((point) => ({ ...point }))),
+const DEFAULT_START: FlightPathPoint = {
+  id: 'journey-start',
+  sectionOffset: 0,
+  x: 50,
+  y: 20,
+  scale: .95,
+  rotation: -6,
+  opacity: .96,
+  type: 'start',
+  handleMode: 'aligned',
 };
+
+const DOCK_RING_DEFAULTS: Record<string, DockRingPosition> = {
+  hero: heroDock,
+  problem: problemDock,
+  system: systemDock,
+  website: websiteDock,
+  marketing: marketingDock,
+  process: processDock,
+  data: dataDock,
+  projects: projectsDock,
+  about: aboutDock,
+  contact: contactDock,
+};
+
+const normalizeConfig = (config: { followSpeed: number; start: FlightPathPoint; points: FlightPathPoint[]; dockRings: Record<string, DockRingPosition> }): FlightPathConfig => ({
+  followSpeed: config.followSpeed,
+  start: { ...config.start, type: 'start' },
+  points: normalizeDockingPoints(config.points),
+  dockRings: config.dockRings,
+});
+
+let draft: FlightPathConfig = normalizeConfig({
+  followSpeed: raw.followSpeed ?? 1,
+  start: raw.start ?? DEFAULT_START,
+  points: raw.points.map((point) => ({ ...point })),
+  dockRings: Object.fromEntries(Object.entries(DOCK_RING_DEFAULTS).map(([anchor, position]) => [anchor, { x: position.x, y: position.y }])),
+});
 const draftListeners = new Set<() => void>();
 
 export function getFlightPathDraft(): FlightPathConfig {
@@ -72,7 +117,7 @@ export function getFlightPathDraft(): FlightPathConfig {
 }
 
 export function setFlightPathDraft(next: FlightPathConfig) {
-  draft = { followSpeed: next.followSpeed, points: normalizeDockingPoints(next.points) };
+  draft = normalizeConfig(next);
   draftListeners.forEach((listener) => listener());
 }
 
@@ -84,9 +129,82 @@ export function updateFlightPathPoint(index: number, patch: Partial<FlightPathPo
   setFlightPathDraft({ ...draft, points });
 }
 
+export function updateFlightPathStart(patch: Partial<FlightPathPoint>) {
+  setFlightPathDraft({ ...draft, start: { ...draft.start, ...patch } });
+}
+
+export function updateDockRingPosition(anchor: string, patch: Partial<DockRingPosition>) {
+  const current = draft.dockRings[anchor];
+  if (!current) return;
+  setFlightPathDraft({ ...draft, dockRings: { ...draft.dockRings, [anchor]: { ...current, ...patch } } });
+}
+
 export function subscribeFlightPathDraft(listener: () => void) {
   draftListeners.add(listener);
   return () => { draftListeners.delete(listener); };
+}
+
+// ---- Undo/redo: one entry per completed drag gesture, not per pointermove ----
+// beginFlightPathHistoryEntry() snapshots the pre-drag draft; every update call
+// during the drag mutates `draft` live (so the rail/object update every frame)
+// without touching the history stacks. commitFlightPathHistoryEntry() pushes
+// that one pre-drag snapshot exactly once, iff the drag actually changed
+// anything - never a snapshot per pointermove.
+let pendingHistorySnapshot: FlightPathConfig | null = null;
+const undoStack: FlightPathConfig[] = [];
+const redoStack: FlightPathConfig[] = [];
+const historyListeners = new Set<() => void>();
+
+const notifyHistory = () => historyListeners.forEach((listener) => listener());
+
+export function beginFlightPathHistoryEntry() {
+  pendingHistorySnapshot = draft;
+}
+
+export function commitFlightPathHistoryEntry() {
+  const before = pendingHistorySnapshot;
+  pendingHistorySnapshot = null;
+  if (!before || before === draft) return;
+  undoStack.push(before);
+  if (undoStack.length > 100) undoStack.shift();
+  redoStack.length = 0;
+  notifyHistory();
+}
+
+export function cancelFlightPathHistoryEntry() {
+  const before = pendingHistorySnapshot;
+  pendingHistorySnapshot = null;
+  if (before && before !== draft) {
+    draft = before;
+    draftListeners.forEach((listener) => listener());
+  }
+}
+
+export function undoFlightPath() {
+  const previous = undoStack.pop();
+  if (!previous) return;
+  redoStack.push(draft);
+  draft = normalizeConfig(previous);
+  draftListeners.forEach((listener) => listener());
+  notifyHistory();
+}
+
+export function redoFlightPath() {
+  const next = redoStack.pop();
+  if (!next) return;
+  undoStack.push(draft);
+  draft = normalizeConfig(next);
+  draftListeners.forEach((listener) => listener());
+  notifyHistory();
+}
+
+export function getFlightPathHistoryState() {
+  return { canUndo: undoStack.length > 0, canRedo: redoStack.length > 0 };
+}
+
+export function subscribeFlightPathHistory(listener: () => void) {
+  historyListeners.add(listener);
+  return () => { historyListeners.delete(listener); };
 }
 
 let resolved: ResolvedFlightPath | null = null;

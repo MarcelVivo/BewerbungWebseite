@@ -27,37 +27,18 @@ export type FlightPathCurveHandle = {
 
 export type FlightPathHandleMode = 'mirrored' | 'aligned' | 'free' | 'corner';
 
+/** Position-only ring config for a docking station, coupled 1:1 with its
+ *  dock point's resting position - see flightPathStore.ts's dockRings. */
+export type DockRingPosition = { x: number; y: number };
+
 export type FlightPathConfig = {
   followSpeed: number;
+  /** The fixed pre-scroll intro anchor. Part of the same draft/undo history as everything else -
+   *  never a separate, hardcoded copy edited outside this store. */
+  start: FlightPathPoint;
   points: FlightPathPoint[];
+  /** Each docking station's visual ring position (section-stage-relative %, matching each
+   *  *-dock.json's own convention), keyed by dock anchor id. Updated atomically alongside the
+   *  corresponding dock point when a dock anchor is dragged in the editor. */
+  dockRings: Record<string, DockRingPosition>;
 };
-
-export type FlightPathResolvedPoint = FlightPathPoint & {
-  index: number;
-  left: number;
-  top: number;
-  routeScroll: number;
-  departureScroll?: number;
-};
-
-export type FlightPathResolvedRoute = {
-  points: FlightPathResolvedPoint[];
-  railPath: string;
-};
-
-export type FlightPathRuntimeState = {
-  currentPathProgress: number;
-  targetPathProgress: number;
-  station: string;
-  phase: 'transit' | 'hold';
-  direction: 'forward' | 'reverse' | 'idle';
-  x: number;
-  y: number;
-  scale: number;
-  routeScroll: number;
-};
-
-export const FLIGHT_PATH_CHANGE_EVENT = 'flight-path-change';
-export const FLIGHT_PATH_RESOLVED_EVENT = 'flight-path-resolved';
-export const FLIGHT_PATH_RUNTIME_EVENT = 'flight-path-runtime';
-export const FLIGHT_PATH_STORAGE_KEY = 'ms-flight-path-editor-v4-master-curve';

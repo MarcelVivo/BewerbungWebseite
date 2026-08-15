@@ -1,5 +1,16 @@
 {
   "followSpeed": 1,
+  "start": {
+    "id": "journey-start",
+    "sectionOffset": 0,
+    "x": 50,
+    "y": 20,
+    "scale": 0.95,
+    "rotation": -6,
+    "opacity": 0.96,
+    "type": "start",
+    "handleMode": "aligned"
+  },
   "points": [
     {
       "id": "journey-start",
