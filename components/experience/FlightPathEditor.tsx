@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
 // The project ships the Three.js runtime without its optional declaration package.
 // @ts-expect-error Runtime ESM exports are available and used for editor ray casting.
 import { OrthographicCamera, Plane, Raycaster, Vector2, Vector3 } from 'three';
@@ -17,7 +17,7 @@ import {
   type FlightPathResolvedRoute,
   type FlightPathRuntimeState,
 } from './flightPathTypes';
-import { DOCKING_STOPS, FLIGHT_PATH_START_POINT, dockingStopForAnchor, normalizeDockingConfig, resolveDockPlacement } from './dockingRoute';
+import { DOCKING_STOPS, FLIGHT_PATH_START_POINT, dockingStopForAnchor, normalizeDockingConfig } from './dockingRoute';
 import { resolveBezierHandles } from './masterFlightPath';
 import { useDraggableCalibrationPanel } from './useDraggableCalibrationPanel';
 import styles from './experience.module.css';
@@ -157,26 +157,6 @@ export default function FlightPathEditor() {
     setStatus('dirty');
   }, [pushHistory, setCurrentConfig]);
 
-  const alignDocks = useCallback((current: FlightPathConfig) => ({
-    ...current,
-    points: current.points.map((point) => {
-      const stop = dockingStopForAnchor(point.dockAnchor);
-      const placement = stop ? resolveDockPlacement(stop) : null;
-      if (!stop || !placement) return point;
-      return {
-        ...point,
-        id: stop.sectionId,
-        x: rounded(placement.x),
-        y: rounded(placement.y),
-        scale: placement.scale,
-        dockAnchor: stop.anchor,
-        dockNumber: stop.number,
-        dockLabel: stop.label,
-        dockLocked: true,
-      };
-    }),
-  }), []);
-
   const configureRayCamera = useCallback(() => {
     const width = Math.max(window.innerWidth, 1);
     const height = Math.max(window.innerHeight, 1);
@@ -213,21 +193,21 @@ export default function FlightPathEditor() {
     document.documentElement.style.scrollBehavior = 'auto';
     const experienceRoot = document.querySelector<HTMLElement>('.experience-root');
     if (experienceRoot) experienceRoot.dataset.flightEditor = 'true';
-    let next = materializeBezierHandles(alignDocks(cloneConfig(INITIAL_CONFIG)));
+    let next = materializeBezierHandles(cloneConfig(INITIAL_CONFIG));
     try {
       setPanelCollapsed(window.localStorage.getItem(PANEL_COLLAPSED_KEY) === 'true');
       const local = window.localStorage.getItem(FLIGHT_PATH_STORAGE_KEY);
       if (local) {
         const parsed = JSON.parse(local) as Partial<FlightPathConfig>;
         if (Array.isArray(parsed.points) && parsed.points.length >= 4) {
-          next = materializeBezierHandles(alignDocks(normalizeDockingConfig({
+          next = materializeBezierHandles(normalizeDockingConfig({
             followSpeed: Number(parsed.followSpeed) || 1,
             points: parsed.points.map((point) => ({ ...point })),
-          })));
+          }));
         }
       }
     } catch {
-      next = materializeBezierHandles(alignDocks(cloneConfig(INITIAL_CONFIG)));
+      next = materializeBezierHandles(cloneConfig(INITIAL_CONFIG));
     }
     setCurrentConfig(next);
     resetHistory(next);
@@ -236,7 +216,7 @@ export default function FlightPathEditor() {
       delete document.documentElement.dataset.flightDragging;
       if (experienceRoot) delete experienceRoot.dataset.flightEditor;
     };
-  }, [alignDocks, resetHistory, setCurrentConfig]);
+  }, [resetHistory, setCurrentConfig]);
 
   const setPanelVisibility = (collapsed: boolean) => {
     setPanelCollapsed(collapsed);
@@ -248,21 +228,6 @@ export default function FlightPathEditor() {
     const viewportHeight = Math.max(window.innerHeight, 1);
     const viewportWidth = Math.max(window.innerWidth, 1);
     const next = configRef.current.points.map<GeometryPoint>((point, index) => {
-      const stop = dockingStopForAnchor(point.dockAnchor);
-      const placement = stop ? resolveDockPlacement(stop) : null;
-      if (placement) {
-        return {
-          ...point,
-          x: placement.x,
-          y: placement.y,
-          scale: placement.scale,
-          index,
-          left: viewportWidth * placement.x / 100,
-          top: placement.routeScroll + viewportHeight * placement.y / 100,
-          routeScroll: placement.routeScroll,
-          dockLocked: true,
-        };
-      }
       const section = document.getElementById(point.id);
       const rect = section?.getBoundingClientRect();
       const sectionTop = rect ? window.scrollY + rect.top : 0;
@@ -294,10 +259,6 @@ export default function FlightPathEditor() {
     const syncRuntime = (event: Event) => {
       const detail = (event as CustomEvent<FlightPathRuntimeState>).detail;
       if (!detail) return;
-      /* The rail is a fixed template drawn once (compressed to fit the
-         viewport via verticalScale on railSceneRef) and never re-translated
-         on scroll — it must not move at all. Only the live PathFollower
-         marker below moves, driven purely by scroll-derived pathProgress. */
       if (runtimeMarkerRef.current) {
         runtimeMarkerRef.current.style.left = `${detail.x.toFixed(3)}vw`;
         runtimeMarkerRef.current.style.top = `${detail.y.toFixed(3)}vh`;
@@ -312,23 +273,16 @@ export default function FlightPathEditor() {
       }
     };
     const handleResize = () => resolveFallbackGeometry();
-    const handleDockCalibration = () => {
-      const next = alignDocks(configRef.current);
-      setCurrentConfig(next);
-      resolveFallbackGeometry();
-    };
     window.addEventListener(FLIGHT_PATH_RESOLVED_EVENT, syncResolvedRoute);
     window.addEventListener(FLIGHT_PATH_RUNTIME_EVENT, syncRuntime);
     window.addEventListener('resize', handleResize);
-    window.addEventListener('dock-calibration-change', handleDockCalibration);
     resolveFallbackGeometry();
     return () => {
       window.removeEventListener(FLIGHT_PATH_RESOLVED_EVENT, syncResolvedRoute);
       window.removeEventListener(FLIGHT_PATH_RUNTIME_EVENT, syncRuntime);
       window.removeEventListener('resize', handleResize);
-      window.removeEventListener('dock-calibration-change', handleDockCalibration);
     };
-  }, [alignDocks, enabled, resolveFallbackGeometry, setCurrentConfig]);
+  }, [enabled, resolveFallbackGeometry]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -449,7 +403,7 @@ export default function FlightPathEditor() {
 
   const startPointDrag = (event: ReactPointerEvent<HTMLButtonElement>, point: GeometryPoint) => {
     setSelectedIndex(point.index);
-    if (event.button !== 0 || point.dockLocked) return;
+    if (event.button !== 0) return;
     const depth = depthForScale(point.scale);
     const hit = raycastPointerToDepthPlane(event.clientX, event.clientY, depth);
     if (!hit) return;
@@ -505,19 +459,13 @@ export default function FlightPathEditor() {
   const updateSelected = useCallback((patch: Partial<FlightPathPoint>) => {
     const current = configRef.current;
     const selected = current.points[selectedIndex];
-    if (!selected || selected.dockLocked) return;
+    if (!selected) return;
     const next = {
       ...current,
       points: current.points.map((point, index) => index === selectedIndex ? { ...point, ...patch } : point),
     };
     commitConfig(next);
   }, [commitConfig, selectedIndex]);
-
-  const updateNumber = (key: keyof FlightPathPoint) => (event: ChangeEvent<HTMLInputElement>) => {
-    const value = Number(event.target.value);
-    if (!Number.isFinite(value)) return;
-    updateSelected({ [key]: value });
-  };
 
   const addPointAfterSelected = useCallback(() => {
     const current = configRef.current;
@@ -595,7 +543,7 @@ export default function FlightPathEditor() {
         return;
       }
       const selected = configRef.current.points[selectedIndex];
-      if (!selected || selected.dockLocked || !event.key.startsWith('Arrow')) return;
+      if (!selected || !event.key.startsWith('Arrow')) return;
       event.preventDefault();
       const step = event.shiftKey ? .1 : .5;
       if (event.altKey && (event.key === 'ArrowUp' || event.key === 'ArrowDown')) {
@@ -635,7 +583,7 @@ export default function FlightPathEditor() {
       if (!response.ok) throw new Error('load failed');
       const loaded = await response.json() as FlightPathConfig;
       if (!Array.isArray(loaded.points) || loaded.points.length < 4) throw new Error('invalid path');
-      const next = materializeBezierHandles(alignDocks(normalizeDockingConfig(loaded)));
+      const next = materializeBezierHandles(normalizeDockingConfig(loaded));
       setCurrentConfig(next);
       resetHistory(next);
       setSelectedIndex(0);
@@ -648,7 +596,6 @@ export default function FlightPathEditor() {
 
   const selected = config.points[selectedIndex] ?? config.points[0];
   const editorHeight = useMemo(() => Math.max(pageHeight, ...geometry.map((point) => point.top + viewport.height)), [geometry, pageHeight, viewport.height]);
-  const verticalScale = useMemo(() => viewport.height / Math.max(editorHeight, 1), [editorHeight, viewport.height]);
   const dockingPointByIndex = useMemo(() => {
     const mapped = new Map<number, (typeof DOCKING_STOPS)[number]>();
     geometry.forEach((point) => {
@@ -680,49 +627,6 @@ export default function FlightPathEditor() {
   const selectedHandles = selectedGeometry
     ? resolveBezierHandles(handlePathPoints, selectedIndex + 1)
     : null;
-  const setSelectedHandleMode = (mode: FlightPathHandleMode) => {
-    if (!selectedHandles) return;
-    const current = configRef.current;
-    const selectedPoint = current.points[selectedIndex];
-    if (!selectedPoint) return;
-    let curveIn: FlightPathCurveHandle = { x: selectedHandles.curveIn.x, y: selectedHandles.curveIn.y, z: selectedHandles.curveIn.z };
-    let curveOut: FlightPathCurveHandle = { x: selectedHandles.curveOut.x, y: selectedHandles.curveOut.y, z: selectedHandles.curveOut.z };
-    if (mode === 'corner') {
-      curveIn = { x: 0, y: 0, z: 0 };
-      curveOut = { x: 0, y: 0, z: 0 };
-    } else if (mode === 'mirrored') {
-      curveIn = { x: rounded(-curveOut.x), y: rounded(-curveOut.y), z: rounded(-curveOut.z) };
-    } else if (mode === 'aligned') {
-      const outgoingLength = Math.max(Math.hypot(curveOut.x, curveOut.y, curveOut.z), .0001);
-      const incomingLength = Math.hypot(curveIn.x, curveIn.y, curveIn.z);
-      curveIn = {
-        x: rounded(-curveOut.x / outgoingLength * incomingLength),
-        y: rounded(-curveOut.y / outgoingLength * incomingLength),
-        z: rounded(-curveOut.z / outgoingLength * incomingLength),
-      };
-    }
-    commitConfig({
-      ...current,
-      points: current.points.map((point, index) => index === selectedIndex
-        ? { ...point, handleMode: mode, curveIn, curveOut }
-        : point),
-    });
-  };
-  const updateSelectedHandleZ = (kind: BezierHandleKind) => (event: ChangeEvent<HTMLInputElement>) => {
-    const value = clamp(Number(event.target.value), -2, 2);
-    if (!Number.isFinite(value)) return;
-    const current = configRef.current;
-    const point = current.points[selectedIndex];
-    const handles = selectedHandles;
-    if (!point || !handles) return;
-    const existing = kind === 'curveIn' ? handles.curveIn : handles.curveOut;
-    commitConfig({
-      ...current,
-      points: current.points.map((candidate, index) => index === selectedIndex
-        ? { ...candidate, [kind]: { x: existing.x, y: existing.y, z: rounded(value) } }
-        : candidate),
-    });
-  };
   const selectedDock = dockingPointByIndex.get(selectedIndex);
   const canUndo = historyIndexRef.current > 0;
   const canRedo = historyIndexRef.current < historyRef.current.length - 1;
@@ -730,9 +634,9 @@ export default function FlightPathEditor() {
   if (!enabled || !selected) return null;
 
   return (
-    <div className={styles.flightPathEditor} style={{ height: editorHeight }} data-flight-path-editor data-editor-mode="overview" data-drag-axis={axis}>
-      <div ref={railSceneRef} className={styles.flightPathRailLayer} style={{ height: editorHeight, transform: `scaleY(${verticalScale})`, transformOrigin: 'top left' }}>
-        <svg className={styles.flightPathRail} width="100%" height={editorHeight} aria-label="Eine globale, durchgehende Flugschiene">
+    <div className={styles.flightPathEditor} style={{ height: editorHeight }} data-flight-path-editor data-drag-axis={axis}>
+      <div ref={railSceneRef} className={styles.flightPathRailLayer} style={{ height: editorHeight }}>
+        <svg className={styles.flightPathRail} width="100%" height={editorHeight} aria-label="Eine globale, durchgehende Flugschiene, gekoppelt an den Seiteninhalt">
           <defs>
             <filter id="flight-rail-glow" x="-60%" y="-10%" width="220%" height="120%">
               <feGaussianBlur stdDeviation="5" result="blur" />
@@ -754,15 +658,15 @@ export default function FlightPathEditor() {
           <svg aria-hidden="true">
             <line
               x1={selectedGeometry.left}
-              y1={selectedGeometry.top * verticalScale}
+              y1={selectedGeometry.top}
               x2={selectedGeometry.left + viewport.width * selectedHandles.curveIn.x / 100}
-              y2={(selectedGeometry.top + viewport.height * selectedHandles.curveIn.y / 100) * verticalScale}
+              y2={selectedGeometry.top + viewport.height * selectedHandles.curveIn.y / 100}
             />
             {selectedIndex < geometry.length - 1 && <line
               x1={selectedGeometry.left}
-              y1={selectedGeometry.top * verticalScale}
+              y1={selectedGeometry.top}
               x2={selectedGeometry.left + viewport.width * selectedHandles.curveOut.x / 100}
-              y2={(selectedGeometry.top + viewport.height * selectedHandles.curveOut.y / 100) * verticalScale}
+              y2={selectedGeometry.top + viewport.height * selectedHandles.curveOut.y / 100}
             />}
           </svg>
           <button
@@ -770,7 +674,7 @@ export default function FlightPathEditor() {
             className={styles.flightBezierHandle}
             style={{
               left: selectedGeometry.left + viewport.width * selectedHandles.curveIn.x / 100,
-              top: (selectedGeometry.top + viewport.height * selectedHandles.curveIn.y / 100) * verticalScale,
+              top: selectedGeometry.top + viewport.height * selectedHandles.curveIn.y / 100,
             }}
             onPointerDown={(event) => startBezierDrag(event, selectedIndex, 'curveIn', selectedHandles.curveIn, selectedHandles.curveOut)}
             aria-label="Eingehenden Bézier-Kurvengriff ziehen"
@@ -780,7 +684,7 @@ export default function FlightPathEditor() {
             className={`${styles.flightBezierHandle} ${styles.flightBezierHandleOut}`}
             style={{
               left: selectedGeometry.left + viewport.width * selectedHandles.curveOut.x / 100,
-              top: (selectedGeometry.top + viewport.height * selectedHandles.curveOut.y / 100) * verticalScale,
+              top: selectedGeometry.top + viewport.height * selectedHandles.curveOut.y / 100,
             }}
             onPointerDown={(event) => startBezierDrag(event, selectedIndex, 'curveOut', selectedHandles.curveOut, selectedHandles.curveIn)}
             aria-label="Ausgehenden Bézier-Kurvengriff ziehen"
@@ -791,7 +695,7 @@ export default function FlightPathEditor() {
         className={`${styles.flightPathNode} ${styles.flightPathStartNode}`}
         style={{
           left: viewport.width * FLIGHT_PATH_START_POINT.x / 100,
-          top: viewport.height * FLIGHT_PATH_START_POINT.y / 100 * verticalScale,
+          top: viewport.height * FLIGHT_PATH_START_POINT.y / 100,
           '--node-depth': FLIGHT_PATH_START_POINT.scale,
         } as CSSProperties}
         aria-label="Fester Startpunkt der Master-Curve"
@@ -809,20 +713,19 @@ export default function FlightPathEditor() {
           <button
             type="button"
             key={`${point.dockAnchor ?? point.id}-${point.index}`}
-            className={`${styles.flightPathNode} ${dock ? styles.flightPathDockNode : ''} ${point.dockLocked ? styles.flightPathDockNodeLocked : ''} ${point.index === selectedIndex ? styles.flightPathNodeSelected : ''}`}
-            style={{ left: point.left, top: point.top * verticalScale, '--node-depth': clamp(point.scale, .25, 1.4) } as CSSProperties}
+            className={`${styles.flightPathNode} ${dock ? styles.flightPathDockNode : ''} ${point.index === selectedIndex ? styles.flightPathNodeSelected : ''}`}
+            style={{ left: point.left, top: point.top, '--node-depth': clamp(point.scale, .25, 1.4) } as CSSProperties}
             onPointerDown={(event) => startPointDrag(event, point)}
             onClick={() => setSelectedIndex(point.index)}
-            aria-label={dock ? `Gesperrter Master-Curve-Anker für Station ${dock.number}` : `${controlName} in 3D verschieben`}
+            aria-label={dock ? `Docking-Anker für Station ${dock.number} verschieben` : `${controlName} verschieben`}
             data-dock-rail-point={dock ? 'true' : undefined}
             data-dock-anchor={dock?.anchor}
-            data-dock-locked={point.dockLocked ? 'true' : 'false'}
           >
             <span className={styles.flightPathNodeDepth} />
             <span className={styles.flightPathNodeCore}>{dock ? '◇' : '●'}</span>
             <span className={styles.flightPathNodeLabel}>
               {dock ? `DOCK ${dock.number} · ${dock.label}` : controlName}
-              <small>{dock ? 'LOCKED · MASTER-CURVE' : `${axis.toUpperCase()}-DRAG · X ${point.x.toFixed(1)} · Y ${point.y.toFixed(1)} · Z ${point.scale.toFixed(2)}`}</small>
+              <small>{`${axis.toUpperCase()}-DRAG · X ${point.x.toFixed(1)} · Y ${point.y.toFixed(1)} · Z ${point.scale.toFixed(2)}`}</small>
             </span>
           </button>
         );
@@ -830,59 +733,24 @@ export default function FlightPathEditor() {
       </div>
 
       {panelCollapsed ? (
-        <button type="button" className={styles.flightPathPanelRestore} onClick={() => setPanelVisibility(false)}>FLUGBAHN-REGLER EINBLENDEN</button>
+        <button type="button" className={styles.flightPathPanelRestore} onClick={() => setPanelVisibility(false)}>REGLER EINBLENDEN</button>
       ) : (
-        <aside ref={panel.panelRef} style={panel.panelStyle} className={styles.flightPathPanel}>
+        <aside ref={panel.panelRef} style={panel.panelStyle} className={styles.flightPathMiniToolbar}>
           <header onPointerDown={panel.startDrag}>
-            <div><strong>3D MASTER-FLUGBAHN</strong><span>1 BÉZIER-KURVE · WYSIWYG</span></div>
-            <div className={styles.flightPathPanelHeaderActions}>
-              <i>{String(selectedIndex + 1).padStart(2, '0')} / {String(config.points.length).padStart(2, '0')}</i>
-              <button type="button" onPointerDown={(event) => event.stopPropagation()} onClick={() => setPanelVisibility(true)}>AUSBLENDEN</button>
-            </div>
+            <strong>{String(selectedIndex + 1).padStart(2, '0')} / {String(config.points.length).padStart(2, '0')}</strong>
+            <button type="button" onPointerDown={(event) => event.stopPropagation()} onClick={() => setPanelVisibility(true)}>−</button>
           </header>
-          <p className={styles.flightPathHint}><b>DIREKT BEARBEITEN:</b> Goldene Punkte mit dem Cursor greifen. IN/OUT formen die Kurve wie in Illustrator; Alt löst, Shift rastet bei 45° ein. Cyanfarbene Rauten bleiben gesperrt.</p>
-          <div className={styles.flightPathAxisModes} aria-label="Drag-Achse wählen">
-            {([
-              ['view', 'FREI', 'V'],
-              ['x', 'X', 'X'],
-              ['y', 'Y', 'Y'],
-              ['z', 'Z / TIEFE', 'Z'],
-            ] as const).map(([mode, label, shortcut]) => (
-              <button type="button" key={mode} data-active={axis === mode} onClick={() => setAxis(mode)}>{label}<small>{shortcut}</small></button>
-            ))}
-          </div>
-          <div className={styles.flightPathSelected}><span>{selectedDock ? 'DOCKING-ANCHOR · LOCKED' : `CONTROL ${String(controlNumberByIndex.get(selectedIndex) ?? 0).padStart(2, '0')}`}</span><strong>{selectedDock ? `STATION ${selectedDock.number}` : selected.id}</strong></div>
-          <div className={styles.flightPathCoordinateInputs}>
-            <label><span>X</span><input type="number" min="2" max="98" step=".1" value={rounded(selected.x, 2)} disabled={Boolean(selectedDock)} onChange={updateNumber('x')} /></label>
-            <label><span>Y</span><input type="number" min="2" max="98" step=".1" value={rounded(selected.y, 2)} disabled={Boolean(selectedDock)} onChange={updateNumber('y')} /></label>
-            <label><span>Z</span><input type="number" min=".1" max="2" step=".01" value={rounded(selected.scale, 3)} disabled={Boolean(selectedDock)} onChange={updateNumber('scale')} /></label>
-          </div>
-          <div className={styles.flightPathBezierMode} aria-label="Bézier-Handle-Modus">
-            {(['mirrored', 'aligned', 'free', 'corner'] as const).map((mode) => (
-              <button type="button" key={mode} data-active={(selected.handleMode ?? 'aligned') === mode} onClick={() => setSelectedHandleMode(mode)}>{mode.toUpperCase()}</button>
-            ))}
-          </div>
-          {selectedHandles && <div className={styles.flightPathCoordinateInputs}>
-            <label><span>IN Z</span><input type="number" min="-2" max="2" step=".01" value={rounded(selectedHandles.curveIn.z, 3)} onChange={updateSelectedHandleZ('curveIn')} /></label>
-            <label><span>OUT Z</span><input type="number" min="-2" max="2" step=".01" value={rounded(selectedHandles.curveOut.z, 3)} onChange={updateSelectedHandleZ('curveOut')} /></label>
-          </div>}
-          {!selectedDock && <div className={styles.flightPathTwoColumns}>
-            <label><span>ROTATION <b>{selected.rotation.toFixed(0)}°</b></span><input type="range" min="-90" max="90" step="1" value={selected.rotation} onChange={updateNumber('rotation')} /></label>
-            <label><span>TIEFE / Z <b>{selected.scale.toFixed(2)}</b></span><input type="range" min=".1" max="2" step=".01" value={selected.scale} onChange={updateNumber('scale')} /></label>
-          </div>}
-          <p className={styles.flightPathKeyHint}>X / Y / Z = Achse · V = frei · Shift + Pfeile = fein · Alt + ↑/↓ = Tiefe</p>
-          <label className={styles.flightPathSpeed}><span>NACHLAUF / REAKTION <b>{config.followSpeed.toFixed(2)}×</b></span><input type="range" min=".25" max="2.5" step=".05" value={config.followSpeed} onChange={(event) => commitConfig({ ...configRef.current, followSpeed: Number(event.target.value) })} /></label>
           <div className={styles.flightPathPointActions}>
-            <button type="button" onClick={addPointAfterSelected} disabled={selectedIndex >= config.points.length - 1 || config.points.length >= 100}>POINT DANACH +</button>
-            <button type="button" onClick={removeSelected} disabled={Boolean(selectedDock) || config.points.length <= 4}>POINT LÖSCHEN</button>
+            <button type="button" onClick={addPointAfterSelected} disabled={selectedIndex >= config.points.length - 1 || config.points.length >= 100}>POINT +</button>
+            <button type="button" onClick={removeSelected} disabled={Boolean(selectedDock) || config.points.length <= 4}>LÖSCHEN</button>
             <button type="button" onClick={undo} disabled={!canUndo}>UNDO</button>
             <button type="button" onClick={redo} disabled={!canRedo}>REDO</button>
           </div>
           <div className={styles.flightPathActions}>
-            <button type="button" onClick={loadSaved} disabled={status === 'loading' || status === 'saving'}>{status === 'loading' ? 'LÄDT…' : 'GESPEICHERTEN STAND LADEN'}</button>
-            <button type="button" data-primary onClick={save} disabled={status === 'saving' || status === 'loading'}>{status === 'saving' ? 'SPEICHERT…' : status === 'saved' ? 'GESPEICHERT ✓' : status === 'error' ? 'FEHLER' : 'FLUGBAHN SPEICHERN'}</button>
+            <button type="button" onClick={loadSaved} disabled={status === 'loading' || status === 'saving'}>{status === 'loading' ? 'LÄDT…' : 'GESPEICHERT LADEN'}</button>
+            <button type="button" data-primary onClick={save} disabled={status === 'saving' || status === 'loading'}>{status === 'saving' ? 'SPEICHERT…' : status === 'saved' ? 'GESPEICHERT ✓' : status === 'error' ? 'FEHLER' : 'SPEICHERN'}</button>
           </div>
-          <footer><span>Nur sichtbar mit <code>?flight-editor=1</code>.</span><button type="button" onClick={() => { const url = new URL(window.location.href); url.searchParams.delete('flight-editor'); window.location.href = url.toString(); }}>EDITOR SCHLIESSEN</button></footer>
+          <button type="button" className={styles.flightPathCloseButton} onClick={() => { const url = new URL(window.location.href); url.searchParams.delete('flight-editor'); window.location.href = url.toString(); }}>EDITOR SCHLIESSEN</button>
         </aside>
       )}
     </div>
