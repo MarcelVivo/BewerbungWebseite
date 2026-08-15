@@ -615,7 +615,7 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       scrollVelocity *= Math.exp(-deltaTime * 5.2);
       const responseRate = PATH_DAMPING * clamp(followSpeed, .25, 2.5)
         + clamp(scrollVelocity / 260, 0, 7);
-      currentPathProgress = reducedMotion.matches
+      currentPathProgress = reducedMotion.matches || flightEditorActive
         ? targetPathProgress
         : dampPathProgress(currentPathProgress, targetPathProgress, deltaTime, responseRate);
 
@@ -679,8 +679,17 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
         entity.dataset.pathPhase = pathTarget.phase;
       }
 
+      // The entity is viewport-fixed (vw/vh), while the editor's rail is
+      // drawn in document space. Those two only line up pixel-for-pixel when
+      // the sample's own routeScroll exactly equals the live scroll, which
+      // scroll -> progress -> routeScroll rounding doesn't always guarantee.
+      // In editor mode only, fold that difference back into the vh value so
+      // the object is provably on the drawn curve, not just close to it.
+      const editorAlignedY = flightEditorActive
+        ? current.y + (currentRouteScroll - window.scrollY) / Math.max(window.innerHeight, 1) * 100
+        : current.y;
       entity.style.left = `${current.x.toFixed(3)}vw`;
-      entity.style.top = `${current.y.toFixed(3)}vh`;
+      entity.style.top = `${editorAlignedY.toFixed(3)}vh`;
       entity.style.transform = `translate3d(-50%, -50%, 0) rotate(${current.rotation.toFixed(3)}deg) scale(${current.scale.toFixed(4)})`;
       entity.style.opacity = current.opacity.toFixed(3);
       renderCore();
