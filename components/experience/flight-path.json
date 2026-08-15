@@ -33,24 +33,6 @@
       "dockLocked": true
     },
     {
-      "id": "journey-start",
-      "sectionOffset": 0.8,
-      "x": 24,
-      "y": 14,
-      "scale": 0.72,
-      "rotation": -18,
-      "opacity": 0.98
-    },
-    {
-      "id": "fragmentierung",
-      "sectionOffset": 0.1,
-      "x": 33,
-      "y": 10,
-      "scale": 0.9,
-      "rotation": 14,
-      "opacity": 0.98
-    },
-    {
       "id": "fragmentierung",
       "sectionOffset": 0.6336996336996337,
       "x": 48,
