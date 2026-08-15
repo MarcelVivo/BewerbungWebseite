@@ -4,11 +4,17 @@ import { useEffect, useRef, type RefObject } from 'react';
 // The project currently ships three without its optional declaration package.
 // @ts-expect-error Runtime ESM exports are present and already used elsewhere.
 import { Object3D } from 'three';
-import flightPath from './flight-path.json';
 import FlightPathEditor from './FlightPathEditor';
 import TitleDepthLayer from './TitleDepthLayer';
-import { FLIGHT_PATH_CHANGE_EVENT, FLIGHT_PATH_RESOLVED_EVENT, FLIGHT_PATH_RUNTIME_EVENT, FLIGHT_PATH_STORAGE_KEY, type FlightPathConfig, type FlightPathPoint, type FlightPathResolvedPoint, type FlightPathResolvedRoute, type FlightPathRuntimeState } from './flightPathTypes';
-import { DOCKING_STOPS, FLIGHT_PATH_START_POINT, dockingStopForAnchor, normalizeDockingPoints } from './dockingRoute';
+import {
+  getFlightPathDraft,
+  setFlightPathRuntime,
+  setResolvedFlightPath,
+  subscribeFlightPathDraft,
+  type ResolvedFlightPathPoint,
+} from './flightPathStore';
+import { pathSampleToDocument } from './flightPathTransforms';
+import { DOCKING_STOPS, FLIGHT_PATH_START_POINT, dockingStopForAnchor } from './dockingRoute';
 import { createMasterFlightPath, sampleMasterFlightPath, type MasterFlightPath } from './masterFlightPath';
 import {
   DOCK_EPSILON,
@@ -24,14 +30,7 @@ type ScrollEntityProps = {
   rootRef: RefObject<HTMLDivElement | null>;
 };
 
-type RoutePoint = FlightPathPoint;
-
-type ResolvedPoint = RoutePoint & {
-  scroll: number;
-  documentX: number;
-  documentY: number;
-  departureScroll?: number;
-};
+type ResolvedPoint = ResolvedFlightPathPoint;
 
 type TrailPoint = {
   x: number;
@@ -52,9 +51,6 @@ type TrailParticle = {
   phase: number;
 };
 
-// Pixel-precise production route captured and approved in the on-page flight-path editor.
-const storedPath = flightPath as { followSpeed?: number; points: RoutePoint[] };
-const ROUTE: RoutePoint[] = normalizeDockingPoints(storedPath.points);
 const INTRO_POSITION = {
   x: FLIGHT_PATH_START_POINT.x,
   y: FLIGHT_PATH_START_POINT.y,
@@ -264,31 +260,21 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
     const flightEditorActive = urlParameters.get('flight-editor') === '1';
     const debugPath = urlParameters.get('debug-path') === '1';
     debugOutput.hidden = !debugPath;
-    let editableRoute: RoutePoint[] = ROUTE.map((point) => ({ ...point }));
-    let followSpeed = storedPath.followSpeed ?? 1;
-    if (flightEditorActive) {
-      try {
-        const locallyEdited = window.localStorage.getItem(FLIGHT_PATH_STORAGE_KEY);
-        if (locallyEdited) {
-          const parsed = JSON.parse(locallyEdited) as Partial<FlightPathConfig>;
-          if (Array.isArray(parsed.points) && parsed.points.length > 1) {
-            editableRoute = normalizeDockingPoints(parsed.points.map((point) => ({ ...point })));
-            followSpeed = Number(parsed.followSpeed) || 1;
-          }
-        }
-      } catch {
-        // The checked-in route remains the fallback.
-      }
-    }
+    // The draft (points + followSpeed) always comes from the shared store -
+    // never a local copy. Normal mode reads whatever the store was
+    // initialized with from flight-path.json; editor mode's dragging writes
+    // straight back into the same store, so this always reflects it live.
+    let followSpeed = getFlightPathDraft().followSpeed;
     let route: ResolvedPoint[] = [];
     let pathRoute: ResolvedPoint[] = [];
     let masterPath: MasterFlightPath | null = null;
     let dockingProgress: DockProgressPoint[] = [];
     const pathFollower = new Object3D();
     const introPosition = INTRO_POSITION;
+    const firstDraftPoint = getFlightPathDraft().points[0];
     let current = root.dataset.heroPhase === 'loading'
       ? { ...introPosition, opacity: 0 }
-      : { x: ROUTE[0].x, y: ROUTE[0].y, scale: ROUTE[0].scale, rotation: ROUTE[0].rotation, opacity: 0 };
+      : { x: firstDraftPoint.x, y: firstDraftPoint.y, scale: firstDraftPoint.scale, rotation: firstDraftPoint.rotation, opacity: 0 };
     let targetPathProgress = 0;
     let currentPathProgress = 0;
     let pathTarget: ScrollPathTarget = {
@@ -325,7 +311,9 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
     const resolveRoute = () => {
       const viewportHeight = window.innerHeight;
       const viewportWidth = window.innerWidth;
-      route = editableRoute.map((point) => {
+      const draft = getFlightPathDraft();
+      followSpeed = draft.followSpeed;
+      route = draft.points.map((point) => {
         const section = document.getElementById(point.id);
         if (!section) return {
           ...point,
@@ -438,27 +426,30 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       });
       if (debugPath) debugOutput.dataset.docks = JSON.stringify(dockingProgress);
 
+      let railPath = '';
       if (flightEditorActive) {
-        const resolvedGeometry: FlightPathResolvedPoint[] = route.map((point, index) => ({
-          ...point,
-          index,
-          left: point.documentX,
-          top: point.documentY,
-          routeScroll: point.scroll,
-          departureScroll: point.departureScroll,
-        }));
-        const sampleCount = Math.max(420, resolvedMasterPath.flightPathControlPoints.length * 56);
+        // The debug rail must reflect the real scroll -> progress mapping,
+        // including docking holds (many scrollY values sharing one path
+        // progress) - not a uniform sweep over progress. Sampling by actual
+        // scrollY, through the same mapScrollToPathProgress() the object
+        // itself uses, is what keeps the drawn line and the live object
+        // provably on the same curve.
+        const railStep = Math.max(6, Math.round(maximumScroll / 1400));
         const railCommands: string[] = [];
-        for (let sampleIndex = 0; sampleIndex <= sampleCount; sampleIndex += 1) {
-          const sample = sampleMasterFlightPath(resolvedMasterPath, sampleIndex / sampleCount);
-          const left = viewportWidth * sample.position.x / 100;
-          const top = sample.routeScroll + viewportHeight * sample.position.y / 100;
-          railCommands.push(`${sampleIndex === 0 ? 'M' : 'L'} ${left.toFixed(1)} ${top.toFixed(1)}`);
+        for (let scrollSample = 0; scrollSample <= maximumScroll; scrollSample += railStep) {
+          const sampleTarget = mapScrollToPathProgress(scrollSample, viewportHeight, dockingProgress);
+          const sample = sampleMasterFlightPath(resolvedMasterPath, sampleTarget.targetPathProgress);
+          const { documentX, documentY } = pathSampleToDocument(sample.position, scrollSample, { width: viewportWidth, height: viewportHeight });
+          railCommands.push(`${scrollSample === 0 ? 'M' : 'L'} ${documentX.toFixed(1)} ${documentY.toFixed(1)}`);
         }
-        window.dispatchEvent(new CustomEvent<FlightPathResolvedRoute>(FLIGHT_PATH_RESOLVED_EVENT, {
-          detail: { points: resolvedGeometry, railPath: railCommands.join(' ') },
-        }));
+        const finalTarget = mapScrollToPathProgress(maximumScroll, viewportHeight, dockingProgress);
+        const finalSample = sampleMasterFlightPath(resolvedMasterPath, finalTarget.targetPathProgress);
+        const finalDocument = pathSampleToDocument(finalSample.position, maximumScroll, { width: viewportWidth, height: viewportHeight });
+        railCommands.push(`L ${finalDocument.documentX.toFixed(1)} ${finalDocument.documentY.toFixed(1)}`);
+        railPath = railCommands.join(' ');
       }
+
+      setResolvedFlightPath({ route, pathRoute, masterPath: resolvedMasterPath, dockingProgress, railPath, viewportWidth, viewportHeight });
     };
 
     const positionOnRail = (pathProgress: number) => {
@@ -649,20 +640,35 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       }
       root.dataset.dockPhase = pathTarget.phase;
 
-      if (flightEditorActive) {
-        const progressDelta = targetPathProgress - currentPathProgress;
-        const runtimeState: FlightPathRuntimeState = {
+      if (flightEditorActive && masterPath) {
+        // The precision test: sample the exact same masterPath instance at
+        // the progress this exact live scrollY maps to right now (the same
+        // call the rail itself is built from), and compare that "should be"
+        // document position to the object wrapper's actual rendered
+        // position. If the architecture truly shares one instance and one
+        // set of transforms, this stays sub-pixel.
+        const scrollYNow = window.scrollY;
+        const viewportNow = { width: window.innerWidth, height: window.innerHeight };
+        const referenceTarget = mapScrollToPathProgress(scrollYNow, viewportNow.height, dockingProgress);
+        const referenceSample = sampleMasterFlightPath(masterPath, referenceTarget.targetPathProgress);
+        const objectDocument = pathSampleToDocument(current, scrollYNow, viewportNow);
+        const referenceDocument = pathSampleToDocument(referenceSample.position, scrollYNow, viewportNow);
+        const distancePx = Math.hypot(
+          objectDocument.documentX - referenceDocument.documentX,
+          objectDocument.documentY - referenceDocument.documentY,
+        );
+        setFlightPathRuntime({
           currentPathProgress,
           targetPathProgress,
           station: activeStop?.number ?? '',
           phase: pathTarget.phase,
-          direction: Math.abs(progressDelta) < .00008 ? 'idle' : progressDelta > 0 ? 'forward' : 'reverse',
           x: current.x,
           y: current.y,
           scale: current.scale,
           routeScroll: currentRouteScroll,
-        };
-        window.dispatchEvent(new CustomEvent<FlightPathRuntimeState>(FLIGHT_PATH_RUNTIME_EVENT, { detail: runtimeState }));
+          scrollY: scrollYNow,
+          distancePx,
+        });
       }
 
       if (debugPath && now - lastDebugUpdate > 90) {
@@ -684,17 +690,13 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
         entity.dataset.pathPhase = pathTarget.phase;
       }
 
-      // The entity is viewport-fixed (vw/vh), while the editor's rail is
-      // drawn in document space. Those two only line up pixel-for-pixel when
-      // the sample's own routeScroll exactly equals the live scroll, which
-      // scroll -> progress -> routeScroll rounding doesn't always guarantee.
-      // In editor mode only, fold that difference back into the vh value so
-      // the object is provably on the drawn curve, not just close to it.
-      const editorAlignedY = flightEditorActive
-        ? current.y + (currentRouteScroll - window.scrollY) / Math.max(window.innerHeight, 1) * 100
-        : current.y;
+      // The entity is viewport-fixed (vw/vh); the rail is now sampled by the
+      // exact same mapScrollToPathProgress(window.scrollY) call this render
+      // loop uses, through the same masterPath instance, so no separate
+      // document-space correction is needed here - see the precision test
+      // above, which measures that directly instead of assuming it.
       entity.style.left = `${current.x.toFixed(3)}vw`;
-      entity.style.top = `${editorAlignedY.toFixed(3)}vh`;
+      entity.style.top = `${current.y.toFixed(3)}vh`;
       entity.style.transform = `translate3d(-50%, -50%, 0) rotate(${current.rotation.toFixed(3)}deg) scale(${current.scale.toFixed(4)})`;
       entity.style.opacity = current.opacity.toFixed(3);
       renderCore();
@@ -734,14 +736,14 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       requestRender();
     };
 
-    const handleFlightPathChange = (event: Event) => {
-      const detail = (event as CustomEvent<FlightPathConfig>).detail;
-      if (!detail || !Array.isArray(detail.points) || detail.points.length < 2) return;
-      editableRoute = normalizeDockingPoints(detail.points.map((point) => ({ ...point })));
-      followSpeed = detail.followSpeed ?? 1;
+    // The one and only place ScrollEntity learns about a point edit: the
+    // shared draft store changed (whether that came from the editor drag or
+    // anywhere else). No CustomEvent, no local copy - resolveRoute() reads
+    // getFlightPathDraft() itself every time it runs.
+    const unsubscribeDraft = subscribeFlightPathDraft(() => {
       resolveRoute();
       requestRender();
-    };
+    });
 
     const handleMotionPreference = () => {
       if (video) {
@@ -759,7 +761,6 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
     window.addEventListener('resize', handleResize);
     window.addEventListener('load', handleResize);
     window.addEventListener('dock-calibration-change', handleDockCalibration);
-    window.addEventListener(FLIGHT_PATH_CHANGE_EVENT, handleFlightPathChange);
     reducedMotion.addEventListener('change', handleMotionPreference);
 
     return () => {
@@ -774,7 +775,7 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('load', handleResize);
       window.removeEventListener('dock-calibration-change', handleDockCalibration);
-      window.removeEventListener(FLIGHT_PATH_CHANGE_EVENT, handleFlightPathChange);
+      unsubscribeDraft();
       reducedMotion.removeEventListener('change', handleMotionPreference);
       heroPhaseObserver.disconnect();
     };

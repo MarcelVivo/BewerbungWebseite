@@ -1,402 +1,113 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
-// The project ships the Three.js runtime without its optional declaration package.
-// @ts-expect-error Runtime ESM exports are available and used for editor ray casting.
-import { OrthographicCamera, Plane, Raycaster, Vector2, Vector3 } from 'three';
-import flightPath from './flight-path.json';
+/**
+ * PROOF OF CONCEPT - shared-architecture test only.
+ *
+ * This intentionally does NOT implement the full Illustrator-style editor
+ * (no dual Bezier handles, no multi-point editing, no big settings panel,
+ * no JSON save). It exists to prove one thing: ScrollEntity (the real
+ * object) and this overlay read and write the exact same FlightPathStore
+ * and the exact same FlightPathModel instance, through the exact same
+ * coordinate transforms - so the drawn rail and the live object can never
+ * drift apart again.
+ *
+ * Only one control point (the one between the hero section and the first
+ * docking station) is draggable, live-state + optional localStorage only.
+ */
+
+import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
 import {
-  FLIGHT_PATH_CHANGE_EVENT,
-  FLIGHT_PATH_RESOLVED_EVENT,
-  FLIGHT_PATH_RUNTIME_EVENT,
-  FLIGHT_PATH_STORAGE_KEY,
-  type FlightPathConfig,
-  type FlightPathCurveHandle,
-  type FlightPathHandleMode,
-  type FlightPathPoint,
-  type FlightPathResolvedRoute,
-  type FlightPathRuntimeState,
-} from './flightPathTypes';
-import { DOCKING_STOPS, FLIGHT_PATH_START_POINT, dockingStopForAnchor, normalizeDockingConfig } from './dockingRoute';
-import { resolveBezierHandles } from './masterFlightPath';
-import { useDraggableCalibrationPanel } from './useDraggableCalibrationPanel';
+  getFlightPathDraft,
+  getResolvedFlightPath,
+  getFlightPathRuntime,
+  setFlightPathDraft,
+  subscribeFlightPathDraft,
+  subscribeResolvedFlightPath,
+  subscribeFlightPathRuntime,
+  updateFlightPathPoint,
+} from './flightPathStore';
+import { documentPointerToPathPoint, pathSampleToDocument, type Viewport } from './flightPathTransforms';
 import styles from './experience.module.css';
 
-type GeometryPoint = FlightPathPoint & {
-  index: number;
-  left: number;
-  top: number;
-  routeScroll: number;
-  departureScroll?: number;
-};
-
-type ViewportSize = { width: number; height: number };
-type DragAxis = 'view' | 'x' | 'y' | 'z';
-type PointDrag = {
-  pointerId: number;
-  pointIndex: number;
-  routeScroll: number;
-  axis: DragAxis;
-  depth: number;
-  startHitY: number;
-  offsetX: number;
-  offsetY: number;
-  startX: number;
-  startY: number;
-  startScale: number;
-  before: FlightPathConfig;
-};
-type BezierHandleKind = 'curveIn' | 'curveOut';
-type BezierDrag = {
-  pointerId: number;
-  pointIndex: number;
-  kind: BezierHandleKind;
-  startClientX: number;
-  startClientY: number;
-  startVector: FlightPathCurveHandle;
-  oppositeVector: FlightPathCurveHandle;
-  oppositeLength: number;
-  handleMode: FlightPathHandleMode;
-  viewportWidth: number;
-  viewportHeight: number;
-  before: FlightPathConfig;
-};
-
-const storedPath = flightPath as { followSpeed?: number; points: FlightPathPoint[] };
-const PANEL_COLLAPSED_KEY = 'ms-flight-path-panel-collapsed-v2';
+const POC_STORAGE_KEY = 'ms-flight-path-poc-draft-v1';
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
-const rounded = (value: number, digits = 4) => Number(value.toFixed(digits));
-const cloneConfig = (config: FlightPathConfig): FlightPathConfig => ({
-  followSpeed: config.followSpeed,
-  points: config.points.map((point) => ({
-    ...point,
-    curveIn: point.curveIn ? { ...point.curveIn } : undefined,
-    curveOut: point.curveOut ? { ...point.curveOut } : undefined,
-  })),
-});
-const configsMatch = (left: FlightPathConfig, right: FlightPathConfig) => JSON.stringify(left) === JSON.stringify(right);
-const depthForScale = (scale: number) => (scale - .75) * 240;
-
-const INITIAL_CONFIG: FlightPathConfig = normalizeDockingConfig({
-  followSpeed: storedPath.followSpeed ?? 1,
-  points: storedPath.points.map((point) => ({ ...point })),
-});
-
-const materializeBezierHandles = (config: FlightPathConfig): FlightPathConfig => {
-  const pathPoints = [FLIGHT_PATH_START_POINT, ...config.points];
-  return {
-    ...config,
-    points: config.points.map((point, index) => {
-      const handles = resolveBezierHandles(pathPoints, index + 1);
-      return {
-        ...point,
-        type: point.dockAnchor ? 'dock' : 'control',
-        handleMode: point.handleMode ?? 'aligned',
-        curveIn: { x: rounded(handles.curveIn.x), y: rounded(handles.curveIn.y), z: rounded(handles.curveIn.z) },
-        curveOut: { x: rounded(handles.curveOut.x), y: rounded(handles.curveOut.y), z: rounded(handles.curveOut.z) },
-      };
-    }),
-  };
-};
 
 export default function FlightPathEditor() {
   const [enabled, setEnabled] = useState(false);
-  const [panelCollapsed, setPanelCollapsed] = useState(false);
-  const [config, setConfig] = useState<FlightPathConfig>(INITIAL_CONFIG);
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const [axis, setAxis] = useState<DragAxis>('view');
-  const [geometry, setGeometry] = useState<GeometryPoint[]>([]);
-  const [railPath, setRailPath] = useState('');
-  const [pageHeight, setPageHeight] = useState(1);
-  const [viewport, setViewport] = useState<ViewportSize>({ width: 1, height: 1 });
-  const [status, setStatus] = useState<'idle' | 'dirty' | 'saving' | 'saved' | 'loading' | 'error'>('idle');
-  const [historyVersion, setHistoryVersion] = useState(0);
-  const panel = useDraggableCalibrationPanel('ms-flight-path-panel-v2');
-  const configRef = useRef<FlightPathConfig>(cloneConfig(INITIAL_CONFIG));
-  const axisRef = useRef<DragAxis>('view');
-  const pointDragRef = useRef<PointDrag | null>(null);
-  const bezierDragRef = useRef<BezierDrag | null>(null);
-  const historyRef = useRef<FlightPathConfig[]>([cloneConfig(INITIAL_CONFIG)]);
-  const historyIndexRef = useRef(0);
-  const raycasterRef = useRef(new Raycaster());
-  const pointerRef = useRef(new Vector2());
-  const cameraRef = useRef(new OrthographicCamera(0, 1, 0, -1, .1, 2000));
-  const planeRef = useRef(new Plane(new Vector3(0, 0, 1), 0));
-  const hitRef = useRef(new Vector3());
-  const railSceneRef = useRef<HTMLDivElement | null>(null);
-  const nodeLayerRef = useRef<HTMLDivElement | null>(null);
-  const runtimeMarkerRef = useRef<HTMLDivElement | null>(null);
-  const runtimeReadoutRef = useRef<HTMLOutputElement | null>(null);
+  const [documentHeight, setDocumentHeight] = useState(0);
+  const originalPointRef = useRef<{ x: number; y: number } | null>(null);
+  const draggingRef = useRef<{ pointerId: number } | null>(null);
 
-  const setCurrentConfig = useCallback((next: FlightPathConfig) => {
-    const copied = cloneConfig(next);
-    configRef.current = copied;
-    setConfig(copied);
-  }, []);
+  const draft = useSyncExternalStore(subscribeFlightPathDraft, getFlightPathDraft, getFlightPathDraft);
+  const resolved = useSyncExternalStore(subscribeResolvedFlightPath, getResolvedFlightPath, () => null);
+  const runtime = useSyncExternalStore(subscribeFlightPathRuntime, getFlightPathRuntime, () => null);
 
-  const resetHistory = useCallback((next: FlightPathConfig) => {
-    historyRef.current = [cloneConfig(next)];
-    historyIndexRef.current = 0;
-    setHistoryVersion((version) => version + 1);
-  }, []);
-
-  const pushHistory = useCallback((next: FlightPathConfig) => {
-    const snapshot = cloneConfig(next);
-    const current = historyRef.current[historyIndexRef.current];
-    if (current && configsMatch(current, snapshot)) return;
-    historyRef.current = historyRef.current.slice(0, historyIndexRef.current + 1);
-    historyRef.current.push(snapshot);
-    if (historyRef.current.length > 80) historyRef.current.shift();
-    historyIndexRef.current = historyRef.current.length - 1;
-    setHistoryVersion((version) => version + 1);
-  }, []);
-
-  const commitConfig = useCallback((next: FlightPathConfig, recordHistory = true) => {
-    setCurrentConfig(next);
-    if (recordHistory) pushHistory(next);
-    setStatus('dirty');
-  }, [pushHistory, setCurrentConfig]);
-
-  const configureRayCamera = useCallback(() => {
-    const width = Math.max(window.innerWidth, 1);
-    const height = Math.max(window.innerHeight, 1);
-    const camera = cameraRef.current;
-    camera.left = 0;
-    camera.right = width;
-    camera.top = 0;
-    camera.bottom = -height;
-    camera.near = .1;
-    camera.far = 2000;
-    camera.position.set(0, 0, 1000);
-    camera.lookAt(0, 0, 0);
-    camera.updateProjectionMatrix();
-    camera.updateMatrixWorld();
-    return { width, height, camera };
-  }, []);
-
-  const raycastPointerToDepthPlane = useCallback((clientX: number, clientY: number, depth: number) => {
-    const { width, height, camera } = configureRayCamera();
-    pointerRef.current.set(clientX / width * 2 - 1, -(clientY / height) * 2 + 1);
-    raycasterRef.current.setFromCamera(pointerRef.current, camera);
-    planeRef.current.set(new Vector3(0, 0, 1), -depth);
-    return raycasterRef.current.ray.intersectPlane(planeRef.current, hitRef.current)
-      ? hitRef.current.clone()
-      : null;
-  }, [configureRayCamera]);
-
-  useEffect(() => { axisRef.current = axis; }, [axis]);
+  const firstDockIndex = draft.points.findIndex((point) => point.dockAnchor);
+  const editableIndex = firstDockIndex > 0 ? firstDockIndex - 1 : 0;
 
   useEffect(() => {
     const active = new URLSearchParams(window.location.search).get('flight-editor') === '1';
     setEnabled(active);
     if (!active) return;
-    document.documentElement.style.scrollBehavior = 'auto';
-    const experienceRoot = document.querySelector<HTMLElement>('.experience-root');
-    if (experienceRoot) experienceRoot.dataset.flightEditor = 'true';
-    let next = materializeBezierHandles(cloneConfig(INITIAL_CONFIG));
+
+    // Test-only introspection hook so the store's real state can be verified
+    // directly (not inferred from rendered pixel positions). Only ever
+    // attached in editor mode.
+    (window as unknown as { __flightPathDebug?: unknown }).__flightPathDebug = {
+      getDraft: getFlightPathDraft,
+      getResolved: getResolvedFlightPath,
+      getRuntime: getFlightPathRuntime,
+    };
+
+    if (!originalPointRef.current) {
+      const point = getFlightPathDraft().points[editableIndex];
+      if (point) originalPointRef.current = { x: point.x, y: point.y };
+    }
+
     try {
-      setPanelCollapsed(window.localStorage.getItem(PANEL_COLLAPSED_KEY) === 'true');
-      const local = window.localStorage.getItem(FLIGHT_PATH_STORAGE_KEY);
-      if (local) {
-        const parsed = JSON.parse(local) as Partial<FlightPathConfig>;
-        if (Array.isArray(parsed.points) && parsed.points.length >= 4) {
-          next = materializeBezierHandles(normalizeDockingConfig({
-            followSpeed: Number(parsed.followSpeed) || 1,
-            points: parsed.points.map((point) => ({ ...point })),
-          }));
-        }
+      const saved = window.localStorage.getItem(POC_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved) as { index: number; x: number; y: number };
+        if (parsed.index === editableIndex) updateFlightPathPoint(editableIndex, { x: parsed.x, y: parsed.y });
       }
     } catch {
-      next = materializeBezierHandles(cloneConfig(INITIAL_CONFIG));
+      // Live state still works without persistence.
     }
-    setCurrentConfig(next);
-    resetHistory(next);
-    return () => {
-      document.documentElement.style.removeProperty('scroll-behavior');
-      delete document.documentElement.dataset.flightDragging;
-      if (experienceRoot) delete experienceRoot.dataset.flightEditor;
-    };
-  }, [resetHistory, setCurrentConfig]);
 
-  const setPanelVisibility = (collapsed: boolean) => {
-    setPanelCollapsed(collapsed);
-    try { window.localStorage.setItem(PANEL_COLLAPSED_KEY, String(collapsed)); } catch { /* The toggle still works for this visit. */ }
-  };
-
-  const resolveFallbackGeometry = useCallback(() => {
-    if (!enabled) return;
-    const viewportHeight = Math.max(window.innerHeight, 1);
-    const viewportWidth = Math.max(window.innerWidth, 1);
-    const next = configRef.current.points.map<GeometryPoint>((point, index) => {
-      const section = document.getElementById(point.id);
-      const rect = section?.getBoundingClientRect();
-      const sectionTop = rect ? window.scrollY + rect.top : 0;
-      const stop = dockingStopForAnchor(point.dockAnchor);
-      const routeScroll = Math.max(0, stop
-        ? stop.anchor === 'hero'
-          ? sectionTop + viewportHeight * .62
-          : sectionTop + Math.max((section?.offsetHeight ?? viewportHeight) - viewportHeight, viewportHeight * .65, 1) * stop.rest
-        : sectionTop + (rect?.height ?? viewportHeight) * point.sectionOffset - viewportHeight * .5);
-      return {
-        ...point,
-        index,
-        left: viewportWidth * point.x / 100,
-        top: routeScroll + viewportHeight * point.y / 100,
-        routeScroll,
-      };
-    });
-    setGeometry(next);
-    setViewport({ width: viewportWidth, height: viewportHeight });
-    setPageHeight(Math.max(document.documentElement.scrollHeight, ...next.map((point) => point.top + viewportHeight)));
-  }, [enabled]);
+    const updateHeight = () => setDocumentHeight(document.documentElement.scrollHeight);
+    updateHeight();
+    window.addEventListener('resize', updateHeight);
+    return () => window.removeEventListener('resize', updateHeight);
+    // editableIndex is derived from the draft, which is stable for this PoC's fixed point count.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!enabled) return;
-    const syncResolvedRoute = (event: Event) => {
-      const detail = (event as CustomEvent<FlightPathResolvedRoute>).detail;
-      if (!detail || !Array.isArray(detail.points) || detail.points.length < 2) return;
-      const next = detail.points.map<GeometryPoint>((point) => ({ ...point }));
-      setGeometry(next);
-      setRailPath(detail.railPath);
-      setViewport({ width: Math.max(window.innerWidth, 1), height: Math.max(window.innerHeight, 1) });
-      setPageHeight(Math.max(document.documentElement.scrollHeight, ...next.map((point) => point.top + window.innerHeight)));
-    };
-    const syncRuntime = (event: Event) => {
-      const detail = (event as CustomEvent<FlightPathRuntimeState>).detail;
-      if (!detail) return;
-      if (runtimeMarkerRef.current) {
-        runtimeMarkerRef.current.style.left = `${detail.x.toFixed(3)}vw`;
-        runtimeMarkerRef.current.style.top = `${detail.y.toFixed(3)}vh`;
-        runtimeMarkerRef.current.style.setProperty('--marker-depth', detail.scale.toFixed(3));
-      }
-      if (runtimeReadoutRef.current) {
-        runtimeReadoutRef.current.value = [
-          `PATH ${detail.currentPathProgress.toFixed(4)}  →  ${detail.targetPathProgress.toFixed(4)}`,
-          `STATION ${detail.station || '–'}  ·  STATE ${detail.phase.toUpperCase()}`,
-          `DIRECTION ${detail.direction.toUpperCase()}`,
-        ].join('\n');
-      }
-    };
-    const handleResize = () => resolveFallbackGeometry();
-    window.addEventListener(FLIGHT_PATH_RESOLVED_EVENT, syncResolvedRoute);
-    window.addEventListener(FLIGHT_PATH_RUNTIME_EVENT, syncRuntime);
-    window.addEventListener('resize', handleResize);
-    resolveFallbackGeometry();
-    return () => {
-      window.removeEventListener(FLIGHT_PATH_RESOLVED_EVENT, syncResolvedRoute);
-      window.removeEventListener(FLIGHT_PATH_RUNTIME_EVENT, syncRuntime);
-      window.removeEventListener('resize', handleResize);
-    };
-  }, [enabled, resolveFallbackGeometry]);
-
-  useEffect(() => {
-    if (!enabled) return;
-    window.dispatchEvent(new CustomEvent<FlightPathConfig>(FLIGHT_PATH_CHANGE_EVENT, { detail: config }));
-    try { window.localStorage.setItem(FLIGHT_PATH_STORAGE_KEY, JSON.stringify(config)); } catch { /* Preview remains live. */ }
-  }, [config, enabled]);
+    const point = draft.points[editableIndex];
+    if (!point) return;
+    try {
+      window.localStorage.setItem(POC_STORAGE_KEY, JSON.stringify({ index: editableIndex, x: point.x, y: point.y }));
+    } catch {
+      // Live state still works without persistence.
+    }
+  }, [draft, editableIndex, enabled]);
 
   useEffect(() => {
     if (!enabled) return;
     const move = (event: PointerEvent) => {
-      const bezierDrag = bezierDragRef.current;
-      if (bezierDrag && event.pointerId === bezierDrag.pointerId) {
-        event.preventDefault();
-        const deltaX = (event.clientX - bezierDrag.startClientX) / bezierDrag.viewportWidth * 100;
-        const deltaY = (event.clientY - bezierDrag.startClientY) / bezierDrag.viewportHeight * 100;
-        let x = bezierDrag.startVector.x;
-        let y = bezierDrag.startVector.y;
-        let z = bezierDrag.startVector.z;
-        if (axisRef.current === 'view' || axisRef.current === 'x') x += deltaX;
-        if (axisRef.current === 'view' || axisRef.current === 'y') y += deltaY;
-        if (axisRef.current === 'z') z -= deltaY * .02;
-        if (event.shiftKey && axisRef.current === 'view') {
-          const length = Math.hypot(x, y);
-          const constrainedAngle = Math.round(Math.atan2(y, x) / (Math.PI / 4)) * (Math.PI / 4);
-          x = Math.cos(constrainedAngle) * length;
-          y = Math.sin(constrainedAngle) * length;
-        }
-        x = rounded(clamp(x, -150, 150));
-        y = rounded(clamp(y, -150, 150));
-        z = rounded(clamp(z, -2, 2));
-        const oppositeKind: BezierHandleKind = bezierDrag.kind === 'curveIn' ? 'curveOut' : 'curveIn';
-        let opposite = { ...bezierDrag.oppositeVector };
-        let handleMode = bezierDrag.handleMode;
-        const temporarilyFree = event.altKey && (handleMode === 'mirrored' || handleMode === 'aligned');
-        if (temporarilyFree) {
-          handleMode = 'free';
-        } else if (handleMode === 'mirrored') {
-          opposite = { x: rounded(-x), y: rounded(-y), z: rounded(-z) };
-        } else if (handleMode === 'aligned') {
-          const length = Math.hypot(x, y, z);
-          if (length > .0001 && bezierDrag.oppositeLength > .0001) {
-            opposite = {
-              x: rounded(-x / length * bezierDrag.oppositeLength),
-              y: rounded(-y / length * bezierDrag.oppositeLength),
-              z: rounded(-z / length * bezierDrag.oppositeLength),
-            };
-          }
-        }
-        const current = configRef.current;
-        const next = {
-          ...current,
-          points: current.points.map((point, index) => index === bezierDrag.pointIndex
-            ? { ...point, handleMode, [bezierDrag.kind]: { x, y, z }, [oppositeKind]: opposite }
-            : point),
-        };
-        setCurrentConfig(next);
-        setStatus('dirty');
-        return;
-      }
-      const drag = pointDragRef.current;
+      const drag = draggingRef.current;
       if (!drag || event.pointerId !== drag.pointerId) return;
-      event.preventDefault();
-      const hit = raycastPointerToDepthPlane(event.clientX, event.clientY, drag.depth);
-      if (!hit) return;
-      const viewportWidth = Math.max(window.innerWidth, 1);
-      const viewportHeight = Math.max(window.innerHeight, 1);
-      let x = drag.startX;
-      let y = drag.startY;
-      let scale = drag.startScale;
-      if (drag.axis === 'view' || drag.axis === 'x') {
-        x = clamp((hit.x + drag.offsetX) / viewportWidth * 100, 2, 98);
-      }
-      if (drag.axis === 'view' || drag.axis === 'y') {
-        /* Y is dragged relative to the drag start, at natural (uncompressed)
-           sensitivity: one viewport height of real mouse travel covers the
-           full local 0..100% range, regardless of how compressed the rail
-           is drawn. Routing this through the document-scale conversion used
-           for display made every pixel of mouse movement swing the value by
-           editorHeight/viewportHeight percent — instantly pinned the range. */
-        y = clamp(drag.startY - (hit.y - drag.startHitY) / viewportHeight * 100, 2, 98);
-      }
-      if (drag.axis === 'z') {
-        scale = clamp(drag.startScale + (hit.y - drag.startHitY) / viewportHeight * 1.5, .1, 2);
-      }
-      const current = configRef.current;
-      const next = {
-        ...current,
-        points: current.points.map((point, index) => index === drag.pointIndex
-          ? { ...point, x: rounded(x), y: rounded(y), scale: rounded(scale) }
-          : point),
-      };
-      setCurrentConfig(next);
-      setStatus('dirty');
+      const currentResolved = getResolvedFlightPath();
+      const anchorScroll = currentResolved?.route[editableIndex]?.scroll ?? 0;
+      const viewport: Viewport = { width: window.innerWidth, height: window.innerHeight };
+      const next = documentPointerToPathPoint(event.pageX, event.pageY, anchorScroll, viewport);
+      updateFlightPathPoint(editableIndex, { x: clamp(next.x, 2, 98), y: clamp(next.y, 2, 98) });
     };
     const finish = (event: PointerEvent) => {
-      const bezierDrag = bezierDragRef.current;
-      if (bezierDrag && bezierDrag.pointerId === event.pointerId) {
-        bezierDragRef.current = null;
-        delete document.documentElement.dataset.flightDragging;
-        if (!configsMatch(bezierDrag.before, configRef.current)) pushHistory(configRef.current);
-        return;
-      }
-      const drag = pointDragRef.current;
-      if (!drag || drag.pointerId !== event.pointerId) return;
-      pointDragRef.current = null;
-      delete document.documentElement.dataset.flightDragging;
-      if (!configsMatch(drag.before, configRef.current)) pushHistory(configRef.current);
+      if (draggingRef.current?.pointerId === event.pointerId) draggingRef.current = null;
     };
-    window.addEventListener('pointermove', move, { passive: false });
+    window.addEventListener('pointermove', move, { passive: true });
     window.addEventListener('pointerup', finish);
     window.addEventListener('pointercancel', finish);
     return () => {
@@ -404,360 +115,99 @@ export default function FlightPathEditor() {
       window.removeEventListener('pointerup', finish);
       window.removeEventListener('pointercancel', finish);
     };
-  }, [enabled, pushHistory, raycastPointerToDepthPlane, setCurrentConfig]);
+  }, [enabled, editableIndex]);
 
-  const startPointDrag = (event: ReactPointerEvent<HTMLButtonElement>, point: GeometryPoint) => {
-    setSelectedIndex(point.index);
+  if (!enabled) return null;
+
+  const startDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
     if (event.button !== 0) return;
-    const depth = depthForScale(point.scale);
-    const hit = raycastPointerToDepthPlane(event.clientX, event.clientY, depth);
-    if (!hit) return;
     event.preventDefault();
-    event.stopPropagation();
-    pointDragRef.current = {
-      pointerId: event.pointerId,
-      pointIndex: point.index,
-      routeScroll: point.routeScroll,
-      axis: axisRef.current,
-      depth,
-      startHitY: hit.y,
-      offsetX: point.left - hit.x,
-      offsetY: 0,
-      startX: point.x,
-      startY: point.y,
-      startScale: point.scale,
-      before: cloneConfig(configRef.current),
-    };
-    document.documentElement.dataset.flightDragging = 'true';
+    draggingRef.current = { pointerId: event.pointerId };
     try { event.currentTarget.setPointerCapture?.(event.pointerId); } catch { /* Synthetic test events do not own pointer capture. */ }
   };
 
-  const startBezierDrag = (
-    event: ReactPointerEvent<HTMLButtonElement>,
-    pointIndex: number,
-    kind: BezierHandleKind,
-    vector: FlightPathCurveHandle,
-    oppositeVector: FlightPathCurveHandle,
-  ) => {
-    if (event.button !== 0) return;
-    event.preventDefault();
-    event.stopPropagation();
-    setSelectedIndex(pointIndex);
-    bezierDragRef.current = {
-      pointerId: event.pointerId,
-      pointIndex,
-      kind,
-      startClientX: event.clientX,
-      startClientY: event.clientY,
-      startVector: { ...vector },
-      oppositeVector: { ...oppositeVector },
-      oppositeLength: Math.hypot(oppositeVector.x, oppositeVector.y, oppositeVector.z),
-      handleMode: configRef.current.points[pointIndex]?.handleMode ?? 'aligned',
-      viewportWidth: Math.max(window.innerWidth, 1),
-      viewportHeight: Math.max(window.innerHeight, 1),
-      before: cloneConfig(configRef.current),
-    };
-    document.documentElement.dataset.flightDragging = 'true';
-    try { event.currentTarget.setPointerCapture?.(event.pointerId); } catch { /* Synthetic test events do not own pointer capture. */ }
+  const resetPoint = () => {
+    const original = originalPointRef.current;
+    if (!original) return;
+    updateFlightPathPoint(editableIndex, { x: original.x, y: original.y });
   };
 
-  const updateSelected = useCallback((patch: Partial<FlightPathPoint>) => {
-    const current = configRef.current;
-    const selected = current.points[selectedIndex];
-    if (!selected) return;
-    const next = {
-      ...current,
-      points: current.points.map((point, index) => index === selectedIndex ? { ...point, ...patch } : point),
-    };
-    commitConfig(next);
-  }, [commitConfig, selectedIndex]);
-
-  const addPointAfterSelected = useCallback(() => {
-    const current = configRef.current;
-    if (current.points.length >= 100 || selectedIndex >= current.points.length - 1) return;
-    const from = current.points[selectedIndex];
-    const to = current.points[selectedIndex + 1];
-    const inserted: FlightPathPoint = {
-      id: to.id,
-      sectionOffset: rounded((from.sectionOffset + to.sectionOffset) * .5, 8),
-      x: rounded((from.x + to.x) * .5),
-      y: rounded((from.y + to.y) * .5),
-      scale: rounded((from.scale + to.scale) * .5),
-      rotation: rounded((from.rotation + to.rotation) * .5),
-      opacity: rounded((from.opacity + to.opacity) * .5),
-      type: 'control',
-      handleMode: 'aligned',
-    };
-    const points = [...current.points];
-    points.splice(selectedIndex + 1, 0, inserted);
-    const next = materializeBezierHandles({ ...current, points });
-    commitConfig(next);
-    setSelectedIndex(selectedIndex + 1);
-  }, [commitConfig, selectedIndex]);
-
-  const removeSelected = useCallback(() => {
-    const current = configRef.current;
-    const selected = current.points[selectedIndex];
-    if (!selected || selected.dockAnchor || current.points.length <= 4) return;
-    const points = current.points.filter((_, index) => index !== selectedIndex);
-    commitConfig({ ...current, points });
-    setSelectedIndex(Math.min(selectedIndex, points.length - 1));
-  }, [commitConfig, selectedIndex]);
-
-  const undo = useCallback(() => {
-    if (historyIndexRef.current <= 0) return;
-    historyIndexRef.current -= 1;
-    setCurrentConfig(historyRef.current[historyIndexRef.current]);
-    setSelectedIndex((index) => Math.min(index, historyRef.current[historyIndexRef.current].points.length - 1));
-    setStatus('dirty');
-    setHistoryVersion((version) => version + 1);
-  }, [setCurrentConfig]);
-
-  const redo = useCallback(() => {
-    if (historyIndexRef.current >= historyRef.current.length - 1) return;
-    historyIndexRef.current += 1;
-    setCurrentConfig(historyRef.current[historyIndexRef.current]);
-    setSelectedIndex((index) => Math.min(index, historyRef.current[historyIndexRef.current].points.length - 1));
-    setStatus('dirty');
-    setHistoryVersion((version) => version + 1);
-  }, [setCurrentConfig]);
-
-  useEffect(() => {
-    if (!enabled) return;
-    const handleKeyDown = (event: KeyboardEvent) => {
-      const target = event.target as HTMLElement | null;
-      const editingField = target?.matches('input, textarea, select, [contenteditable="true"]');
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'z') {
-        event.preventDefault();
-        if (event.shiftKey) redo(); else undo();
-        return;
-      }
-      if (editingField) return;
-      const key = event.key.toLowerCase();
-      if (key === 'x' || key === 'y' || key === 'z') {
-        setAxis(key);
-        return;
-      }
-      if (key === 'v' || key === 'escape') {
-        setAxis('view');
-        return;
-      }
-      if (event.key === 'Delete' || event.key === 'Backspace') {
-        event.preventDefault();
-        removeSelected();
-        return;
-      }
-      const selected = configRef.current.points[selectedIndex];
-      if (!selected || !event.key.startsWith('Arrow')) return;
-      event.preventDefault();
-      const step = event.shiftKey ? .1 : .5;
-      if (event.altKey && (event.key === 'ArrowUp' || event.key === 'ArrowDown')) {
-        updateSelected({ scale: rounded(clamp(selected.scale + (event.key === 'ArrowUp' ? .01 : -.01), .1, 2)) });
-      } else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
-        updateSelected({ x: rounded(clamp(selected.x + (event.key === 'ArrowRight' ? step : -step), 2, 98)) });
-      } else {
-        updateSelected({ y: rounded(clamp(selected.y + (event.key === 'ArrowDown' ? step : -step), 2, 98)) });
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [enabled, redo, removeSelected, selectedIndex, undo, updateSelected]);
-
-  const save = async () => {
-    setStatus('saving');
-    try {
-      const savedConfig = materializeBezierHandles(configRef.current);
-      setCurrentConfig(savedConfig);
-      const response = await fetch('/api/flight-path', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(savedConfig),
-      });
-      if (!response.ok) throw new Error('save failed');
-      setStatus('saved');
-      window.setTimeout(() => setStatus('idle'), 1800);
-    } catch {
-      setStatus('error');
-    }
-  };
-
-  const loadSaved = async () => {
-    setStatus('loading');
-    try {
-      const response = await fetch('/api/flight-path', { cache: 'no-store' });
-      if (!response.ok) throw new Error('load failed');
-      const loaded = await response.json() as FlightPathConfig;
-      if (!Array.isArray(loaded.points) || loaded.points.length < 4) throw new Error('invalid path');
-      const next = materializeBezierHandles(normalizeDockingConfig(loaded));
-      setCurrentConfig(next);
-      resetHistory(next);
-      setSelectedIndex(0);
-      setStatus('saved');
-      window.setTimeout(() => setStatus('idle'), 1800);
-    } catch {
-      setStatus('error');
-    }
-  };
-
-  const selected = config.points[selectedIndex] ?? config.points[0];
-  const editorHeight = useMemo(() => Math.max(pageHeight, ...geometry.map((point) => point.top + viewport.height)), [geometry, pageHeight, viewport.height]);
-  const dockingPointByIndex = useMemo(() => {
-    const mapped = new Map<number, (typeof DOCKING_STOPS)[number]>();
-    geometry.forEach((point) => {
-      const stop = dockingStopForAnchor(point.dockAnchor);
-      if (stop) mapped.set(point.index, stop);
-    });
-    return mapped;
-  }, [geometry]);
-  const controlNumberByIndex = useMemo(() => {
-    const mapped = new Map<number, number>();
-    let number = 0;
-    config.points.forEach((point, index) => {
-      if (point.dockAnchor) return;
-      number += 1;
-      mapped.set(index, number);
-    });
-    return mapped;
-  }, [config.points]);
-  const handlePathPoints = useMemo<FlightPathPoint[]>(() => [
-    FLIGHT_PATH_START_POINT,
-    ...geometry.map((point) => ({
-      ...point,
-      curveIn: config.points[point.index]?.curveIn,
-      curveOut: config.points[point.index]?.curveOut,
-      handleMode: config.points[point.index]?.handleMode,
-    })),
-  ], [config.points, geometry]);
-  const selectedGeometry = geometry.find((point) => point.index === selectedIndex);
-  const selectedHandles = selectedGeometry
-    ? resolveBezierHandles(handlePathPoints, selectedIndex + 1)
-    : null;
-  const selectedDock = dockingPointByIndex.get(selectedIndex);
-  const canUndo = historyIndexRef.current > 0;
-  const canRedo = historyIndexRef.current < historyRef.current.length - 1;
-  void historyVersion;
-  if (!enabled || !selected) return null;
+  const anchorPoint = resolved?.route[editableIndex];
+  const viewportSize: Viewport = resolved
+    ? { width: resolved.viewportWidth, height: resolved.viewportHeight }
+    : { width: 1, height: 1 };
+  const objectDocument = runtime ? pathSampleToDocument(runtime, runtime.scrollY, viewportSize) : null;
 
   return (
-    <div className={styles.flightPathEditor} style={{ height: editorHeight }} data-flight-path-editor data-drag-axis={axis}>
-      <div ref={railSceneRef} className={styles.flightPathRailLayer} style={{ height: editorHeight }}>
-        <svg className={styles.flightPathRail} width="100%" height={editorHeight} aria-label="Eine globale, durchgehende Flugschiene, gekoppelt an den Seiteninhalt">
-          <defs>
-            <filter id="flight-rail-glow" x="-60%" y="-10%" width="220%" height="120%">
-              <feGaussianBlur stdDeviation="5" result="blur" />
-              <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-            </filter>
-          </defs>
-          <path className={styles.flightPathRailShadow} d={railPath} />
-          <path className={styles.flightPathRailLine} d={railPath} filter="url(#flight-rail-glow)" />
-          <path className={styles.flightPathRailPulse} d={railPath} />
+    <div className={styles.flightPathEditor} style={{ height: documentHeight || undefined }} data-flight-path-editor-poc>
+      <div className={styles.flightPathRailLayer} style={{ height: documentHeight || undefined }}>
+        <svg className={styles.flightPathRail} width="100%" height={documentHeight || 1} aria-label="Flugbahn, aus der echten Scrollposition abgetastet - dieselbe Instanz wie das Objekt">
+          <path className={styles.flightPathRailShadow} d={resolved?.railPath ?? ''} />
+          <path className={styles.flightPathRailLine} d={resolved?.railPath ?? ''} />
         </svg>
       </div>
 
-      <div ref={runtimeMarkerRef} className={styles.flightPathProgressMarker} aria-hidden="true"><i /></div>
-      <output ref={runtimeReadoutRef} className={styles.flightPathRuntimeReadout}>PATH 0.0000{`\n`}STATION 01 · STATE HOLD{`\n`}DIRECTION IDLE</output>
-
-      <div ref={nodeLayerRef} className={styles.flightPathNodeLayer}>
-      {selectedGeometry && selectedHandles && (
-        <div className={styles.flightBezierOverlay} aria-label="Bézier-Kurvengriffe des ausgewählten Punkts">
-          <svg aria-hidden="true">
-            <line
-              x1={selectedGeometry.left}
-              y1={selectedGeometry.top}
-              x2={selectedGeometry.left + viewport.width * selectedHandles.curveIn.x / 100}
-              y2={selectedGeometry.top + viewport.height * selectedHandles.curveIn.y / 100}
-            />
-            {selectedIndex < geometry.length - 1 && <line
-              x1={selectedGeometry.left}
-              y1={selectedGeometry.top}
-              x2={selectedGeometry.left + viewport.width * selectedHandles.curveOut.x / 100}
-              y2={selectedGeometry.top + viewport.height * selectedHandles.curveOut.y / 100}
-            />}
-          </svg>
+      <div className={styles.flightPathNodeLayer}>
+        {anchorPoint && (
           <button
             type="button"
-            className={styles.flightBezierHandle}
-            style={{
-              left: selectedGeometry.left + viewport.width * selectedHandles.curveIn.x / 100,
-              top: selectedGeometry.top + viewport.height * selectedHandles.curveIn.y / 100,
-            }}
-            onPointerDown={(event) => startBezierDrag(event, selectedIndex, 'curveIn', selectedHandles.curveIn, selectedHandles.curveOut)}
-            aria-label="Eingehenden Bézier-Kurvengriff ziehen"
-          ><i /><span>IN</span></button>
-          {selectedIndex < geometry.length - 1 && <button
-            type="button"
-            className={`${styles.flightBezierHandle} ${styles.flightBezierHandleOut}`}
-            style={{
-              left: selectedGeometry.left + viewport.width * selectedHandles.curveOut.x / 100,
-              top: selectedGeometry.top + viewport.height * selectedHandles.curveOut.y / 100,
-            }}
-            onPointerDown={(event) => startBezierDrag(event, selectedIndex, 'curveOut', selectedHandles.curveOut, selectedHandles.curveIn)}
-            aria-label="Ausgehenden Bézier-Kurvengriff ziehen"
-          ><i /><span>OUT</span></button>}
-        </div>
-      )}
-      <div
-        className={`${styles.flightPathNode} ${styles.flightPathStartNode}`}
-        style={{
-          left: viewport.width * FLIGHT_PATH_START_POINT.x / 100,
-          top: viewport.height * FLIGHT_PATH_START_POINT.y / 100,
-          '--node-depth': FLIGHT_PATH_START_POINT.scale,
-        } as CSSProperties}
-        aria-label="Fester Startpunkt der Master-Curve"
-      >
-        <span className={styles.flightPathNodeDepth} />
-        <span className={styles.flightPathNodeCore}>S</span>
-        <span className={styles.flightPathNodeLabel}>OBJEKT-START<small>FEST · MASTER-CURVE BEGINN</small></span>
-      </div>
-
-      {geometry.map((point) => {
-        const dock = dockingPointByIndex.get(point.index);
-        const controlNumber = controlNumberByIndex.get(point.index);
-        const controlName = `CONTROL ${String(controlNumber ?? point.index + 1).padStart(2, '0')}`;
-        return (
-          <button
-            type="button"
-            key={`${point.dockAnchor ?? point.id}-${point.index}`}
-            className={`${styles.flightPathNode} ${dock ? styles.flightPathDockNode : ''} ${point.index === selectedIndex ? styles.flightPathNodeSelected : ''}`}
-            style={{ left: point.left, top: point.top, '--node-depth': clamp(point.scale, .25, 1.4) } as CSSProperties}
-            onPointerDown={(event) => startPointDrag(event, point)}
-            onClick={() => setSelectedIndex(point.index)}
-            aria-label={dock ? `Docking-Anker für Station ${dock.number} verschieben` : `${controlName} verschieben`}
-            data-dock-rail-point={dock ? 'true' : undefined}
-            data-dock-anchor={dock?.anchor}
+            className={styles.flightPathNode}
+            style={{ left: anchorPoint.documentX, top: anchorPoint.documentY, '--node-depth': 1 } as CSSProperties}
+            onPointerDown={startDrag}
+            aria-label="Einzigen Testpunkt zwischen Hero und erster Docking-Station verschieben"
           >
             <span className={styles.flightPathNodeDepth} />
-            <span className={styles.flightPathNodeCore}>{dock ? '◇' : '●'}</span>
+            <span className={styles.flightPathNodeCore}>●</span>
             <span className={styles.flightPathNodeLabel}>
-              {dock ? `DOCK ${dock.number} · ${dock.label}` : controlName}
-              <small>{`${axis.toUpperCase()}-DRAG · X ${point.x.toFixed(1)} · Y ${point.y.toFixed(1)} · Z ${point.scale.toFixed(2)}`}</small>
+              TEST-PUNKT
+              <small>X {anchorPoint.x.toFixed(1)} · Y {anchorPoint.y.toFixed(1)}</small>
             </span>
           </button>
-        );
-      })}
+        )}
+
+        {objectDocument && (
+          <div
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              left: objectDocument.documentX,
+              top: objectDocument.documentY,
+              width: 10,
+              height: 10,
+              marginLeft: -5,
+              marginTop: -5,
+              borderRadius: '50%',
+              background: 'rgba(80, 220, 140, .9)',
+              boxShadow: '0 0 0 2px rgba(80,220,140,.3), 0 0 12px rgba(80,220,140,.8)',
+              pointerEvents: 'none',
+              zIndex: 5,
+            }}
+          />
+        )}
       </div>
 
-      {panelCollapsed ? (
-        <button type="button" className={styles.flightPathPanelRestore} onClick={() => setPanelVisibility(false)}>REGLER EINBLENDEN</button>
-      ) : (
-        <aside ref={panel.panelRef} style={panel.panelStyle} className={styles.flightPathMiniToolbar}>
-          <header onPointerDown={panel.startDrag}>
-            <strong>{String(selectedIndex + 1).padStart(2, '0')} / {String(config.points.length).padStart(2, '0')}</strong>
-            <button type="button" onPointerDown={(event) => event.stopPropagation()} onClick={() => setPanelVisibility(true)}>−</button>
-          </header>
-          <div className={styles.flightPathPointActions}>
-            <button type="button" onClick={addPointAfterSelected} disabled={selectedIndex >= config.points.length - 1 || config.points.length >= 100}>POINT +</button>
-            <button type="button" onClick={removeSelected} disabled={Boolean(selectedDock) || config.points.length <= 4}>LÖSCHEN</button>
-            <button type="button" onClick={undo} disabled={!canUndo}>UNDO</button>
-            <button type="button" onClick={redo} disabled={!canRedo}>REDO</button>
-          </div>
-          <div className={styles.flightPathActions}>
-            <button type="button" onClick={loadSaved} disabled={status === 'loading' || status === 'saving'}>{status === 'loading' ? 'LÄDT…' : 'GESPEICHERT LADEN'}</button>
-            <button type="button" data-primary onClick={save} disabled={status === 'saving' || status === 'loading'}>{status === 'saving' ? 'SPEICHERT…' : status === 'saved' ? 'GESPEICHERT ✓' : status === 'error' ? 'FEHLER' : 'SPEICHERN'}</button>
-          </div>
-          <button type="button" className={styles.flightPathCloseButton} onClick={() => { const url = new URL(window.location.href); url.searchParams.delete('flight-editor'); window.location.href = url.toString(); }}>EDITOR SCHLIESSEN</button>
-        </aside>
-      )}
+      <output className={styles.flightPathRuntimeReadout} data-poc-readout>
+        {runtime
+          ? [
+            `distancePx  ${runtime.distancePx.toFixed(3)}`,
+            `scrollY  ${Math.round(runtime.scrollY)}`,
+            `STATION ${runtime.station || '–'} · ${runtime.phase.toUpperCase()}`,
+            `PATH ${runtime.currentPathProgress.toFixed(5)}`,
+          ].join('\n')
+          : 'wird initialisiert…'}
+      </output>
+
+      <button
+        type="button"
+        onClick={resetPoint}
+        style={{ position: 'fixed', right: '1rem', bottom: '1rem', zIndex: 50, padding: '.5rem .9rem', font: 'inherit', cursor: 'pointer', pointerEvents: 'auto' }}
+      >
+        TEST-PUNKT ZURÜCKSETZEN
+      </button>
     </div>
   );
 }
+
+// Kept for a possible future full editor: writing a brand-new draft wholesale
+// (not used by this PoC, which only ever patches the one test point).
+export { setFlightPathDraft };
