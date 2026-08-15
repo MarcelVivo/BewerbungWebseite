@@ -95,7 +95,7 @@ const midpoint = (from: FlightPathPoint, to: FlightPathPoint, template?: FlightP
 export function normalizeDockingPoints(source: FlightPathPoint[]): FlightPathPoint[] {
   const points: FlightPathPoint[] = source.map((point) => ({
     ...point,
-    type: point.dockAnchor ? 'dock' as const : 'control' as const,
+    type: point.dockAnchor ? 'dock' as const : point.type === 'end' ? 'end' as const : 'control' as const,
     handleMode: point.handleMode ?? 'aligned',
     curveIn: point.curveIn ? { ...point.curveIn, z: Number(point.curveIn.z) || 0 } : undefined,
     curveOut: point.curveOut ? { ...point.curveOut, z: Number(point.curveOut.z) || 0 } : undefined,

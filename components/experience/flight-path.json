@@ -8,7 +8,19 @@
       "y": 20,
       "scale": 0.95,
       "rotation": -6,
-      "opacity": 0.97
+      "opacity": 0.97,
+      "type": "control",
+      "handleMode": "free",
+      "curveIn": {
+        "x": -4.166667,
+        "y": -4,
+        "z": -0.016667
+      },
+      "curveOut": {
+        "x": 4.166667,
+        "y": 4,
+        "z": 0.016667
+      }
     },
     {
       "id": "journey-start",
@@ -17,7 +29,19 @@
       "y": 44,
       "scale": 1.05,
       "rotation": 4,
-      "opacity": 0.98
+      "opacity": 0.98,
+      "type": "control",
+      "handleMode": "free",
+      "curveIn": {
+        "x": -5.333333,
+        "y": -7.166667,
+        "z": 0.028333
+      },
+      "curveOut": {
+        "x": 5.333333,
+        "y": 7.166667,
+        "z": -0.028333
+      }
     },
     {
       "id": "journey-start",
@@ -30,7 +54,61 @@
       "dockAnchor": "hero",
       "dockNumber": "01",
       "dockLabel": "START",
-      "dockLocked": true
+      "dockLocked": true,
+      "type": "dock",
+      "handleMode": "free",
+      "curveIn": {
+        "x": 4.216667,
+        "y": 0.5,
+        "z": -0.006667
+      },
+      "curveOut": {
+        "x": -1.405556,
+        "y": -0.166667,
+        "z": 0.002222
+      }
+    },
+    {
+      "id": "fragmentierung",
+      "sectionOffset": 0.3,
+      "x": 71.751852,
+      "y": 57,
+      "scale": 0.861111,
+      "rotation": 10.3043,
+      "opacity": 0.98,
+      "type": "control",
+      "handleMode": "free",
+      "curveIn": {
+        "x": 4.785185,
+        "y": 3.296296,
+        "z": -0.044815
+      },
+      "curveOut": {
+        "x": -4.785185,
+        "y": -3.296296,
+        "z": 0.044815
+      }
+    },
+    {
+      "id": "fragmentierung",
+      "sectionOffset": 0.3,
+      "x": 57.137037,
+      "y": 46.444444,
+      "scale": 1.006667,
+      "rotation": 10.7645,
+      "opacity": 0.98,
+      "type": "control",
+      "handleMode": "free",
+      "curveIn": {
+        "x": 4.316667,
+        "y": 3.203704,
+        "z": -0.045185
+      },
+      "curveOut": {
+        "x": -4.316667,
+        "y": -3.203704,
+        "z": 0.045185
+      }
     },
     {
       "id": "fragmentierung",
@@ -43,7 +121,40 @@
       "dockAnchor": "problem",
       "dockNumber": "02",
       "dockLabel": "PROBLEM / FRAGMENTIERUNG",
-      "dockLocked": true
+      "dockLocked": true,
+      "type": "dock",
+      "handleMode": "free",
+      "curveIn": {
+        "x": 0,
+        "y": -0.111111,
+        "z": -0.003333
+      },
+      "curveOut": {
+        "x": 0,
+        "y": 0.166667,
+        "z": 0.005
+      }
+    },
+    {
+      "id": "journey-solutions",
+      "sectionOffset": 0.3,
+      "x": 66.58125,
+      "y": 51.5625,
+      "scale": 0.993125,
+      "rotation": 18.8017,
+      "opacity": 0.98,
+      "type": "control",
+      "handleMode": "free",
+      "curveIn": {
+        "x": -8.31875,
+        "y": -5.4375,
+        "z": 0.055625
+      },
+      "curveOut": {
+        "x": 8.31875,
+        "y": 5.4375,
+        "z": -0.055625
+      }
     },
     {
       "id": "journey-solutions",
@@ -52,7 +163,19 @@
       "y": 65,
       "scale": 0.84,
       "rotation": 27,
-      "opacity": 0.98
+      "opacity": 0.98,
+      "type": "control",
+      "handleMode": "free",
+      "curveIn": {
+        "x": 0.975,
+        "y": -2.083333,
+        "z": 0.0325
+      },
+      "curveOut": {
+        "x": -1.95,
+        "y": 4.166667,
+        "z": -0.065
+      }
     },
     {
       "id": "journey-solutions",
@@ -65,16 +188,61 @@
       "dockAnchor": "system",
       "dockNumber": "03",
       "dockLabel": "SYSTEM",
-      "dockLocked": true
+      "dockLocked": true,
+      "type": "dock",
+      "handleMode": "free",
+      "curveIn": {
+        "x": 6.995928,
+        "y": -1.140542,
+        "z": 0.001667
+      },
+      "curveOut": {
+        "x": -3.497964,
+        "y": 0.570271,
+        "z": -0.000833
+      }
+    },
+    {
+      "id": "verkaufssystem",
+      "sectionOffset": 0.3,
+      "x": 35.036949,
+      "y": 68.528802,
+      "scale": 0.741875,
+      "rotation": -2.7395,
+      "opacity": 0.98,
+      "type": "control",
+      "handleMode": "free",
+      "curveIn": {
+        "x": -0.930001,
+        "y": -1.044736,
+        "z": -0.025208
+      },
+      "curveOut": {
+        "x": 0.930001,
+        "y": 1.044736,
+        "z": 0.025208
+      }
     },
     {
       "id": "journey-solutions",
       "sectionOffset": 0.9013353115727003,
-      "x": 40.02442904463041,
-      "y": 71.84324919871796,
+      "x": 40.024429,
+      "y": 71.843249,
       "scale": 0.83,
       "rotation": 30,
-      "opacity": 0.98
+      "opacity": 0.98,
+      "type": "control",
+      "handleMode": "free",
+      "curveIn": {
+        "x": -1.80239,
+        "y": -1.094034,
+        "z": -0.03
+      },
+      "curveOut": {
+        "x": 3.60478,
+        "y": 2.188068,
+        "z": 0.06
+      }
     },
     {
       "id": "verkaufssystem",
@@ -87,16 +255,61 @@
       "dockAnchor": "website",
       "dockNumber": "04",
       "dockLabel": "WEBSITE / VERKAUF",
-      "dockLocked": true
+      "dockLocked": true,
+      "type": "dock",
+      "handleMode": "free",
+      "curveIn": {
+        "x": -6.546101,
+        "y": 0.498214,
+        "z": 0.026667
+      },
+      "curveOut": {
+        "x": 3.273051,
+        "y": -0.249107,
+        "z": -0.013333
+      }
+    },
+    {
+      "id": "marketing-engine",
+      "sectionOffset": 0.3,
+      "x": 72.521441,
+      "y": 75.937381,
+      "scale": 0.879375,
+      "rotation": -2.5907,
+      "opacity": 0.98,
+      "type": "control",
+      "handleMode": "free",
+      "curveIn": {
+        "x": -4.300423,
+        "y": 1.795325,
+        "z": 0.086042
+      },
+      "curveOut": {
+        "x": 4.300423,
+        "y": -1.795325,
+        "z": -0.086042
+      }
     },
     {
       "id": "marketing-engine",
       "sectionOffset": 0.03501056235431235,
-      "x": 79.30103730822874,
-      "y": 68.85396634615385,
+      "x": 79.301037,
+      "y": 68.853966,
       "scale": 0.67,
       "rotation": -27,
-      "opacity": 0.98
+      "opacity": 0.98,
+      "type": "control",
+      "handleMode": "free",
+      "curveIn": {
+        "x": 0.80239,
+        "y": 2.844034,
+        "z": 0.0325
+      },
+      "curveOut": {
+        "x": -1.60478,
+        "y": -5.688068,
+        "z": -0.065
+      }
     },
     {
       "id": "marketing-engine",
@@ -109,16 +322,61 @@
       "dockAnchor": "marketing",
       "dockNumber": "05",
       "dockLabel": "MARKETING",
-      "dockLocked": true
+      "dockLocked": true,
+      "type": "dock",
+      "handleMode": "free",
+      "curveIn": {
+        "x": 0.493684,
+        "y": 0.69386,
+        "z": -0.028333
+      },
+      "curveOut": {
+        "x": -0.246842,
+        "y": -0.34693,
+        "z": 0.014167
+      }
+    },
+    {
+      "id": "business-os",
+      "sectionOffset": 0.3,
+      "x": 61.078842,
+      "y": 52.930257,
+      "scale": 0.775,
+      "rotation": -3.342,
+      "opacity": 0.98,
+      "type": "control",
+      "handleMode": "free",
+      "curveIn": {
+        "x": -6.01128,
+        "y": -4.457785,
+        "z": -0.042083
+      },
+      "curveOut": {
+        "x": 6.01128,
+        "y": 4.457785,
+        "z": 0.042083
+      }
     },
     {
       "id": "business-os",
       "sectionOffset": 0.014967017590618336,
-      "x": 76.33893392608091,
-      "y": 64.69080528846155,
+      "x": 76.338934,
+      "y": 64.690805,
       "scale": 0.84,
       "rotation": 30,
-      "opacity": 0.98
+      "opacity": 0.98,
+      "type": "control",
+      "handleMode": "free",
+      "curveIn": {
+        "x": -2.540658,
+        "y": -2.206597,
+        "z": 0.0125
+      },
+      "curveOut": {
+        "x": 5.081316,
+        "y": 4.413194,
+        "z": -0.025
+      }
     },
     {
       "id": "business-os",
@@ -131,16 +389,61 @@
       "dockAnchor": "process",
       "dockNumber": "06",
       "dockLabel": "PROZESSE",
-      "dockLocked": true
+      "dockLocked": true,
+      "type": "dock",
+      "handleMode": "free",
+      "curveIn": {
+        "x": -1.90264,
+        "y": -2.196681,
+        "z": 0.023333
+      },
+      "curveOut": {
+        "x": 0.95132,
+        "y": 1.098341,
+        "z": -0.011667
+      }
+    },
+    {
+      "id": "daten-intelligenz",
+      "sectionOffset": 0.3,
+      "x": 84.532576,
+      "y": 76.454283,
+      "scale": 0.605625,
+      "rotation": 30,
+      "opacity": 0.98,
+      "type": "control",
+      "handleMode": "free",
+      "curveIn": {
+        "x": -1.47814,
+        "y": -1.641846,
+        "z": -0.049375
+      },
+      "curveOut": {
+        "x": 1.47814,
+        "y": 1.641846,
+        "z": 0.049375
+      }
     },
     {
       "id": "business-os",
       "sectionOffset": 0.7409798107675906,
-      "x": 87.75477248953977,
-      "y": 77.8708934294872,
+      "x": 87.754772,
+      "y": 77.870893,
       "scale": 0.7,
       "rotation": 30,
-      "opacity": 0.98
+      "opacity": 0.98,
+      "type": "control",
+      "handleMode": "free",
+      "curveIn": {
+        "x": -0.402997,
+        "y": 1.273997,
+        "z": 0.005833
+      },
+      "curveOut": {
+        "x": 0.805993,
+        "y": -2.547993,
+        "z": -0.011667
+      }
     },
     {
       "id": "daten-intelligenz",
@@ -153,16 +456,61 @@
       "dockAnchor": "data",
       "dockNumber": "07",
       "dockLabel": "DATEN",
-      "dockLocked": true
+      "dockLocked": true,
+      "type": "dock",
+      "handleMode": "free",
+      "curveIn": {
+        "x": 3.462325,
+        "y": -0.120276,
+        "z": 0.008333
+      },
+      "curveOut": {
+        "x": -1.731163,
+        "y": 0.060138,
+        "z": -0.004167
+      }
+    },
+    {
+      "id": "journey-references",
+      "sectionOffset": 0.3,
+      "x": 74.536395,
+      "y": 66.096524,
+      "scale": 0.534375,
+      "rotation": 4.9993,
+      "opacity": 0.98,
+      "type": "control",
+      "handleMode": "free",
+      "curveIn": {
+        "x": 4.258824,
+        "y": -5.138482,
+        "z": -0.046875
+      },
+      "curveOut": {
+        "x": -4.258824,
+        "y": 5.138482,
+        "z": 0.046875
+      }
     },
     {
       "id": "journey-references",
       "sectionOffset": 0.048589644513137555,
-      "x": 66.98082164274786,
-      "y": 78.59254912853311,
+      "x": 66.980822,
+      "y": 78.592549,
       "scale": 0.65,
       "rotation": -12,
-      "opacity": 0.98
+      "opacity": 0.98,
+      "type": "control",
+      "handleMode": "free",
+      "curveIn": {
+        "x": -0.423427,
+        "y": -1.787276,
+        "z": -0.016667
+      },
+      "curveOut": {
+        "x": 0.846854,
+        "y": 3.574553,
+        "z": 0.033333
+      }
     },
     {
       "id": "journey-references",
@@ -175,16 +523,61 @@
       "dockAnchor": "projects",
       "dockNumber": "08",
       "dockLabel": "PROJEKTE",
-      "dockLocked": true
+      "dockLocked": true,
+      "type": "dock",
+      "handleMode": "free",
+      "curveIn": {
+        "x": 4.21352,
+        "y": -1.01454,
+        "z": 0.023333
+      },
+      "curveOut": {
+        "x": -2.10676,
+        "y": 0.50727,
+        "z": -0.011667
+      }
+    },
+    {
+      "id": "journey-about",
+      "sectionOffset": 0.3,
+      "x": 68.872579,
+      "y": 82.142016,
+      "scale": 0.57875,
+      "rotation": 12.621,
+      "opacity": 0.98,
+      "type": "control",
+      "handleMode": "free",
+      "curveIn": {
+        "x": 10.182858,
+        "y": -1.834302,
+        "z": 0.029583
+      },
+      "curveOut": {
+        "x": -10.182858,
+        "y": 1.834302,
+        "z": -0.029583
+      }
     },
     {
       "id": "journey-references",
       "sectionOffset": 0.8468894899536321,
-      "x": 41.699702395885936,
-      "y": 84.67978871186644,
+      "x": 41.699702,
+      "y": 84.679789,
       "scale": 0.51,
       "rotation": -9,
-      "opacity": 0.98
+      "opacity": 0.98,
+      "type": "control",
+      "handleMode": "free",
+      "curveIn": {
+        "x": 5.867081,
+        "y": 0.80321,
+        "z": 0.01
+      },
+      "curveOut": {
+        "x": -11.734162,
+        "y": -1.60642,
+        "z": -0.02
+      }
     },
     {
       "id": "journey-about",
@@ -197,16 +590,61 @@
       "dockAnchor": "about",
       "dockNumber": "09",
       "dockLabel": "UEBER MICH",
-      "dockLocked": true
+      "dockLocked": true,
+      "type": "dock",
+      "handleMode": "free",
+      "curveIn": {
+        "x": 3.816448,
+        "y": -0.474509,
+        "z": -0.068333
+      },
+      "curveOut": {
+        "x": -1.908224,
+        "y": 0.237255,
+        "z": 0.034167
+      }
+    },
+    {
+      "id": "journey-contact",
+      "sectionOffset": 0.3,
+      "x": 18.672112,
+      "y": 77.102702,
+      "scale": 0.735625,
+      "rotation": -1.1676,
+      "opacity": 0.98,
+      "type": "control",
+      "handleMode": "free",
+      "curveIn": {
+        "x": -0.411567,
+        "y": -4.542844,
+        "z": -0.083958
+      },
+      "curveOut": {
+        "x": 0.411567,
+        "y": 4.542844,
+        "z": 0.083958
+      }
     },
     {
       "id": "journey-contact",
       "sectionOffset": 0.029418859649122806,
-      "x": 18.801014285704618,
-      "y": 87.52684400032798,
+      "x": 18.801014,
+      "y": 87.526844,
       "scale": 0.92,
       "rotation": 30,
-      "opacity": 0.98
+      "opacity": 0.98,
+      "type": "control",
+      "handleMode": "free",
+      "curveIn": {
+        "x": 0.937031,
+        "y": -1.118214,
+        "z": -0.02
+      },
+      "curveOut": {
+        "x": -1.874061,
+        "y": 2.236428,
+        "z": 0.04
+      }
     },
     {
       "id": "journey-contact",
@@ -219,7 +657,47 @@
       "dockAnchor": "contact",
       "dockNumber": "10",
       "dockLabel": "KONTAKT",
-      "dockLocked": true
+      "dockLocked": true,
+      "type": "dock",
+      "handleMode": "free",
+      "curveIn": {
+        "x": 3.348461,
+        "y": 2.036091,
+        "z": 0.05
+      }
+    },
+    {
+      "id": "journey-contact",
+      "sectionOffset": 0.5,
+      "x": 12,
+      "y": 85,
+      "scale": 0.7,
+      "rotation": -15,
+      "opacity": 0.98,
+      "type": "control",
+      "handleMode": "aligned"
+    },
+    {
+      "id": "journey-contact",
+      "sectionOffset": 0.65,
+      "x": 14,
+      "y": 88,
+      "scale": 0.65,
+      "rotation": -10,
+      "opacity": 0.98,
+      "type": "control",
+      "handleMode": "aligned"
+    },
+    {
+      "id": "journey-contact",
+      "sectionOffset": 0.8,
+      "x": 16,
+      "y": 91,
+      "scale": 0.6,
+      "rotation": -5,
+      "opacity": 0.95,
+      "type": "end",
+      "handleMode": "aligned"
     }
   ]
 }

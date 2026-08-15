@@ -10,7 +10,7 @@ export type FlightPathPoint = {
   dockNumber?: string;
   dockLabel?: string;
   dockLocked?: boolean;
-  type?: 'control' | 'dock';
+  type?: 'control' | 'dock' | 'start' | 'end';
   curveIn?: FlightPathCurveHandle;
   curveOut?: FlightPathCurveHandle;
   handleMode?: FlightPathHandleMode;

@@ -42,15 +42,20 @@ export type FlightPathRuntimeState = {
   currentPathProgress: number;
   targetPathProgress: number;
   station: string;
+  activeSectionId: string;
   phase: ScrollPathPhase;
+  /** Finer-grained label derived from phase + section/transit progress, for the debug panel only. */
+  phaseLabel: 'TRANSIT' | 'ARRIVAL' | 'HOLD' | 'DEPARTURE';
+  segmentIndex: number;
   /** The rendered object wrapper's position, in the same 0-100 path space as every other point. */
   x: number;
   y: number;
   scale: number;
   routeScroll: number;
   scrollY: number;
-  /** Distance in px between the object wrapper's document position and the rail's sample at the same
-   *  scrollY, both derived from the shared masterPath instance. The PoC's acceptance criterion. */
+  /** Independent DOM/SVG measurement in px between the object wrapper's getBoundingClientRect() center
+   *  and the rail path's getPointAtLength()+getScreenCTM() point at the same document Y - not derived
+   *  from re-reading this store, so it actually verifies what the browser paints. */
   distancePx: number;
 };
 

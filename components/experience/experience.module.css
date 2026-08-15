@@ -565,6 +565,73 @@
   font-size: .46rem;
 }
 
+/* Anchor color coding: start=green, dock=gold, intermediate anchor=blue, end=red.
+   Layered on top of the existing .flightPathNode/.flightPathDockNode base styles
+   as additional modifier classes so the shared glow/ring/label structure stays
+   the same and only the color story changes. */
+.flightPathNodeStart {
+  border-radius: .35rem;
+  border-color: rgba(110, 231, 183, .92);
+  background: linear-gradient(135deg, #eafff5, #34d399 52%, #065f46);
+  cursor: default;
+}
+.flightPathNodeStart::before, .flightPathNodeStart::after { border-radius: .35rem; }
+.flightPathNodeStart .flightPathNodeCore { color: #052e22; font-weight: 900; }
+.flightPathNodeStart .flightPathNodeDepth { background: rgba(16, 122, 87, .55); }
+
+.flightPathNodeIntermediate {
+  border-color: rgba(122, 178, 255, .85);
+  background: radial-gradient(circle at 38% 32%, #d6e8ff 0 5%, #3672d6 7%, #0c1a30 43%, #050608 73%);
+  box-shadow: 0 0 0 1px rgba(20, 60, 120, .32), 0 0 1.2rem rgba(90, 155, 235, .32), inset 0 0 .8rem rgba(150, 200, 255, .17);
+}
+.flightPathNodeIntermediate::before { border-color: rgba(122, 178, 255, .24); }
+.flightPathNodeIntermediate::after { border-color: rgba(45, 95, 165, .45); }
+.flightPathNodeIntermediate .flightPathNodeDepth { background: rgba(45, 95, 180, .55); }
+.flightPathNodeIntermediate .flightPathNodeCore { color: #e2f0ff; }
+.flightPathNodeIntermediate .flightPathNodeLabel { border-color: rgba(122, 178, 255, .3); }
+
+.flightPathDockNode.flightPathNodeGold::before {
+  border-color: #f6c453;
+  outline-color: rgba(255, 205, 90, .78);
+  background:
+    radial-gradient(circle, #fff 0 5%, #f6c453 6% 12%, transparent 13%),
+    linear-gradient(135deg, rgba(246, 196, 83, .38), rgba(255, 180, 60, .2));
+  box-shadow: 0 0 15px rgba(246, 196, 83, .82), 0 0 30px rgba(255, 180, 60, .4);
+}
+.flightPathDockNode.flightPathNodeGold .flightPathNodeDepth { background: rgba(246, 196, 83, .55); }
+.flightPathDockNode.flightPathNodeGold .flightPathNodeCore { color: #fff6df; text-shadow: 0 0 8px rgba(246, 196, 83, .95); }
+.flightPathDockNode.flightPathNodeGold .flightPathNodeLabel { border-color: rgba(246, 196, 83, .5); border-left-color: #f6c453; }
+.flightPathDockNode.flightPathNodeGold .flightPathNodeLabel small { color: rgba(255, 205, 90, .86); }
+.flightPathDockNode.flightPathNodeGold.flightPathNodeSelected::before { border-color: #fff; box-shadow: 0 0 0 3px rgba(246, 196, 83, .2), 0 0 24px rgba(246, 196, 83, 1), 0 0 42px rgba(255, 180, 60, .58); }
+
+.flightPathNodeEnd {
+  border-color: rgba(255, 121, 121, .92);
+  background: radial-gradient(circle at 38% 32%, #ffd9d9 0 5%, #c23b3b 7%, #2a0a0a 43%, #050605 73%);
+  box-shadow: 0 0 0 1px rgba(120, 20, 20, .32), 0 0 1.2rem rgba(230, 80, 80, .32), inset 0 0 .8rem rgba(255, 150, 150, .17);
+}
+.flightPathNodeEnd::before { border-color: rgba(255, 121, 121, .24); }
+.flightPathNodeEnd::after { border-color: rgba(150, 30, 30, .45); }
+.flightPathNodeEnd .flightPathNodeDepth { background: rgba(150, 30, 30, .55); }
+.flightPathNodeEnd .flightPathNodeCore { color: #ffecec; }
+.flightPathNodeEnd .flightPathNodeLabel { border-color: rgba(255, 121, 121, .3); }
+
+.flightPathDebugPanel {
+  position: fixed;
+  z-index: 190;
+  right: 1rem;
+  bottom: 1rem;
+  min-width: 15rem;
+  padding: .7rem .85rem;
+  border: 1px solid rgba(231, 197, 106, .28);
+  background: rgba(4, 5, 4, .88);
+  color: rgba(240, 235, 215, .92);
+  font: 650 .62rem/1.55 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .04em;
+  backdrop-filter: blur(10px);
+  white-space: pre;
+}
+.flightPathDebugPanel strong { color: #f6c453; }
+
 .flightPathSegmentHandle {
   position: absolute;
   width: 3rem;

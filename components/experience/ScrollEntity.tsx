@@ -11,6 +11,7 @@ import {
   setFlightPathRuntime,
   setResolvedFlightPath,
   subscribeFlightPathDraft,
+  type FlightPathRuntimeState,
   type ResolvedFlightPathPoint,
 } from './flightPathStore';
 import { pathSampleToDocument } from './flightPathTransforms';
@@ -257,7 +258,7 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
 
     let frame = 0;
     const urlParameters = new URLSearchParams(window.location.search);
-    const flightEditorActive = urlParameters.get('flight-editor') === '1';
+    const flightEditorActive = urlParameters.get('flight-editor') === '1' || urlParameters.get('flightDebug') === '1';
     const debugPath = urlParameters.get('debug-path') === '1';
     debugOutput.hidden = !debugPath;
     // The draft (points + followSpeed) always comes from the shared store -
@@ -398,6 +399,23 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
           };
         }
       });
+
+      // Points past the last dock (e.g. the editor-only "Ziel" anchor and its
+      // intermediates) aren't touched by the interpolation above and keep
+      // their own sectionOffset-derived scroll, which can exceed the page's
+      // real scrollable height. Never visited by the runtime object, but the
+      // editor still renders their anchor/label there, and an out-of-range
+      // document position would silently grow document.scrollHeight beyond
+      // what the rail (correctly capped at maximumScroll) draws.
+      const lastDockIndex = dockIndexes[dockIndexes.length - 1] ?? -1;
+      for (let index = lastDockIndex + 1; index < route.length; index += 1) {
+        if (route[index].scroll <= maximumScroll) continue;
+        route[index] = {
+          ...route[index],
+          scroll: maximumScroll,
+          documentY: maximumScroll + viewportHeight * route[index].y / 100,
+        };
+      }
 
       pathRoute = [{
         ...FLIGHT_PATH_START_POINT,
@@ -655,33 +673,55 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       root.dataset.dockPhase = pathTarget.phase;
 
       if (flightEditorActive && masterPath) {
-        // The precision test: sample the exact same masterPath instance at
-        // the progress this exact live scrollY maps to right now (the same
-        // call the rail itself is built from), and compare that "should be"
-        // document position to the object wrapper's actual rendered
-        // position. If the architecture truly shares one instance and one
-        // set of transforms, this stays sub-pixel.
+        // Real, independent DOM/SVG measurement - not a second read of the
+        // same store value. The object's position comes from the rendered
+        // wrapper's own layout box; the rail's position comes from walking
+        // the actually-rendered <path> geometry via getPointAtLength +
+        // getScreenCTM. Two different browser APIs measuring two different
+        // elements, exactly like the automated pixel test.
         const scrollYNow = window.scrollY;
-        const viewportNow = { width: window.innerWidth, height: window.innerHeight };
-        const referenceTarget = mapScrollToPathProgress(scrollYNow, viewportNow.height, dockingProgress);
-        const referenceSample = sampleMasterFlightPath(masterPath, referenceTarget.targetPathProgress);
-        const objectDocument = pathSampleToDocument(current, scrollYNow, viewportNow);
-        const referenceDocument = pathSampleToDocument(referenceSample.position, scrollYNow, viewportNow);
-        const distancePx = Math.hypot(
-          objectDocument.documentX - referenceDocument.documentX,
-          objectDocument.documentY - referenceDocument.documentY,
-        );
+        let distancePx = 0;
+        const railPathElement = document.querySelector<SVGPathElement>('[data-flight-path-editor-root] path[data-flight-path-rail-line]');
+        if (railPathElement) {
+          const entityRect = entity.getBoundingClientRect();
+          const objectScreen = { x: entityRect.left + entityRect.width / 2, y: entityRect.top + entityRect.height / 2 };
+          const targetDocumentY = objectScreen.y + scrollYNow;
+          const totalLength = railPathElement.getTotalLength();
+          let lo = 0;
+          let hi = totalLength;
+          for (let i = 0; i < 24; i += 1) {
+            const mid = (lo + hi) / 2;
+            if (railPathElement.getPointAtLength(mid).y < targetDocumentY) lo = mid; else hi = mid;
+          }
+          const svgPoint = railPathElement.getPointAtLength((lo + hi) / 2);
+          const ctm = railPathElement.getScreenCTM();
+          if (ctm) {
+            const screenPoint = new DOMPoint(svgPoint.x, svgPoint.y).matrixTransform(ctm);
+            distancePx = Math.hypot(objectScreen.x - screenPoint.x, objectScreen.y - screenPoint.y);
+          }
+        }
+
+        const segmentIndex = Number(entity.dataset.pathSegment ?? -1);
+        const phaseLabel: FlightPathRuntimeState['phaseLabel'] = pathTarget.phase === 'transit'
+          ? (pathTarget.transitProgress < 0.08 ? 'ARRIVAL' : 'TRANSIT')
+          : docked
+            ? (pathTarget.sectionProgress > 0.92 ? 'DEPARTURE' : 'HOLD')
+            : 'ARRIVAL';
+
         setFlightPathRuntime({
           currentPathProgress,
           targetPathProgress,
           station: activeStop?.number ?? '',
+          activeSectionId: pathTarget.activeSectionId,
           phase: pathTarget.phase,
+          phaseLabel,
+          segmentIndex,
+          distancePx,
           x: current.x,
           y: current.y,
           scale: current.scale,
           routeScroll: currentRouteScroll,
           scrollY: scrollYNow,
-          distancePx,
         });
       }
 
