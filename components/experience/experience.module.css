@@ -556,6 +556,10 @@
   font: 650 .55rem/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
   letter-spacing: .08em;
   backdrop-filter: blur(12px);
+  /* Purely informational text floating outside its anchor's own circular hit-area - it must
+     never intercept clicks meant for a different, nearby anchor/handle/create-affordance that
+     happens to render underneath it (found live-testing a second handle drag near a label). */
+  pointer-events: none;
 }
 
 .flightPathNodeLabel small {
@@ -787,6 +791,46 @@
 }
 
 .flightBezierHandleOut i { background: linear-gradient(135deg, #fff1b5, #a77b20 55%, #70162a); }
+
+/* A retracted (zero-length) handle on the selected anchor has nothing to grab where it actually
+   sits, so this smaller "create" affordance renders a short, fixed distance away instead - dragging
+   it grows a real curveIn/curveOut from zero, same drag handler as a normal handle. */
+.flightBezierHandleCreate {
+  position: absolute;
+  width: 1.7rem;
+  height: 1.7rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+  touch-action: none;
+  cursor: grab;
+}
+.flightBezierHandleCreate:active { cursor: grabbing; }
+.flightBezierHandleCreate i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: .64rem;
+  height: .64rem;
+  border: 1px dashed #ffefb0;
+  border-radius: 50%;
+  background: rgba(231,197,106,.1);
+  box-shadow: 0 0 .7rem rgba(231,197,106,.45);
+  transform: translate(-50%, -50%);
+}
+.flightBezierHandleCreateOut i { border-color: #fff1b5; }
+.flightBezierHandleCreate::after {
+  content: '+';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -55%);
+  font: 700 .64rem/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: #ffefb0;
+  pointer-events: none;
+}
 .flightBezierHandle span {
   position: absolute;
   left: 50%;

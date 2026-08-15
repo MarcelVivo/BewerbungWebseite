@@ -470,6 +470,26 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
           if (Number.isFinite(dock.arrivalScroll)) scrollSamples.add(clamp(dock.arrivalScroll, 0, maximumScroll));
           if (Number.isFinite(dock.departureScroll)) scrollSamples.add(clamp(dock.departureScroll, 0, maximumScroll));
         });
+        // The uniform grid above spaces samples across the *whole* scroll range, so a single
+        // Bezier segment with a small scroll span (e.g. two consecutive anchors that sit only
+        // ~200px of scroll apart) gets very few of them. That's fine while the segment's own
+        // on-screen shape is simple, but the editor now lets a handle be dragged out from
+        // scratch on any segment - including ones between anchors that share the same x/y - and
+        // a sizeable handle there produces a tight visual loop within that tiny scroll span. A
+        // sparse polyline corner-cuts a loop like that by several px (independently measured up
+        // to ~7px). Each pathRoute[i]->pathRoute[i+1] pair is exactly one master-curve segment
+        // (see masterFlightPath.ts's build()), so guarantee a minimum sample count within every
+        // individual segment's own scroll span, regardless of how short that span is.
+        const MIN_SAMPLES_PER_SEGMENT = 40;
+        for (let index = 0; index < pathRoute.length - 1; index += 1) {
+          const segmentStartScroll = pathRoute[index].scroll;
+          const segmentEndScroll = pathRoute[index + 1].scroll;
+          const span = segmentEndScroll - segmentStartScroll;
+          if (span <= 0) continue;
+          for (let step = 0; step <= MIN_SAMPLES_PER_SEGMENT; step += 1) {
+            scrollSamples.add(clamp(segmentStartScroll + (span * step) / MIN_SAMPLES_PER_SEGMENT, 0, maximumScroll));
+          }
+        }
         const sortedScrollSamples = Array.from(scrollSamples).sort((a, b) => a - b);
         const railCommands: string[] = sortedScrollSamples.map((scrollSample, index) => {
           const sampleTarget = mapScrollToPathProgress(scrollSample, viewportHeight, dockingProgress);

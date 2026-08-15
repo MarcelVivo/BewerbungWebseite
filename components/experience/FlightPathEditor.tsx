@@ -60,6 +60,15 @@ type AnchorView = {
   curveOut: FlightPathCurveHandle;
   curveInDoc: { documentX: number; documentY: number } | null;
   curveOutDoc: { documentX: number; documentY: number } | null;
+  /** Structurally valid (curveIn for every point but the first, curveOut for every point but the
+   *  last) but currently within ANCHOR_HANDLE_CLEARANCE_PX of the anchor on screen, so no
+   *  curveInDoc/curveOutDoc to grab - a small "create handle" affordance renders instead, but only
+   *  while this anchor is selected. Placed along the handle's real (if short) direction, or a
+   *  fixed default when the handle has literally zero length. */
+  curveInCreatable: boolean;
+  curveOutCreatable: boolean;
+  curveInCreateDir: { dx: number; dy: number };
+  curveOutCreateDir: { dx: number; dy: number };
 };
 
 type AnchorDrag = { type: 'anchor'; pointerId: number; target: AnchorTarget; startX: number; startY: number; scroll: number };
@@ -120,11 +129,22 @@ const snapAngle = (x: number, y: number) => {
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
-/** A handle this short has no direction to show or grab - it renders exactly on top of its own
- *  anchor (e.g. the start point's auto-tangent is zero when its neighbor shares its x/y), which
- *  would otherwise block clicks on the anchor underneath. Real Bezier editors don't show a
- *  draggable handle for a true cusp either; below this length we simply don't render one. */
-const HANDLE_MIN_LENGTH = 0.05;
+/** Anchor buttons are ~44px hit circles (~38px for dock anchors' bigger 4.2rem variant, e.g. hero's
+ *  ~71px at this depth-scale); a handle whose on-screen distance from its own anchor is smaller
+ *  than their combined radius renders (partly or fully) underneath the anchor button, which always
+ *  wins the click since it paints later. This must be measured in actual document pixels, not
+ *  path-space percent - the two axes scale differently (viewport width vs height) and a path-space
+ *  threshold that hides a truly-zero handle (e.g. the start point's auto-tangent, whose neighbor
+ *  shares its x/y) does NOT reliably catch a handle that is merely short on screen, like a real,
+ *  non-zero, migrated handle a few percent long (found live-testing hero's dock handle, whose
+ *  ~22px offset still sat inside its own dock-sized anchor's ~36px radius). Below this clearance
+ *  the normal handle button doesn't render at all; a small "create" affordance (see
+ *  curveInCreatable/curveOutCreatable) takes its place instead, positioned at the same clearance so
+ *  it never overlaps the largest (dock) anchor variant either. */
+const ANCHOR_HANDLE_CLEARANCE_PX = 55;
+/** Fixed default direction for the create-affordance when the handle has literally zero length
+ *  (no direction to place it along). Used for curveOut; curveIn mirrors it. */
+const DEFAULT_CREATE_DIR = { dx: 1 / Math.SQRT2, dy: -1 / Math.SQRT2 };
 
 export default function FlightPathEditor() {
   const enabled = useEditorEnabled();
@@ -142,12 +162,19 @@ export default function FlightPathEditor() {
     updateHeight();
     window.addEventListener('resize', updateHeight);
     // Test-only introspection hook so the store's real state can be verified
-    // directly (not inferred from rendered pixel positions). Only ever
-    // attached in editor mode.
+    // directly (not inferred from rendered pixel positions), plus the same
+    // setters the UI itself calls - used to set up handle-mode combinations
+    // (e.g. mirrored/corner) that no production point currently uses, so
+    // those drag-math branches can still be exercised through a real drag.
+    // Only ever attached in editor mode; already fully mutable via the
+    // visible UI in that mode, so this adds no new capability, only a
+    // faster way to reach it from a test script.
     (window as unknown as { __flightPathDebug?: unknown }).__flightPathDebug = {
       getDraft: getFlightPathDraft,
       getResolved: getResolvedFlightPath,
       getRuntime: getFlightPathRuntime,
+      updatePoint: updateFlightPathPoint,
+      updateStart: updateFlightPathStart,
     };
     return () => window.removeEventListener('resize', updateHeight);
   }, [enabled]);
@@ -275,6 +302,23 @@ export default function FlightPathEditor() {
     const handles = resolveBezierHandles(pathRoute, pathRouteIndex);
     const isLast = pathRouteIndex === pathRoute.length - 1;
     const target: AnchorTarget = pathRouteIndex === 0 ? { kind: 'start' } : { kind: 'point', index: pathRouteIndex - 1 };
+    const curveInEligible = pathRouteIndex > 0;
+    const curveOutEligible = !isLast;
+
+    const curveInRawDoc = curveInEligible
+      ? pathSampleToDocument({ x: point.x + handles.curveIn.x, y: point.y + handles.curveIn.y }, point.scroll, viewport)
+      : null;
+    const curveOutRawDoc = curveOutEligible
+      ? pathSampleToDocument({ x: point.x + handles.curveOut.x, y: point.y + handles.curveOut.y }, point.scroll, viewport)
+      : null;
+    const curveInPixelDist = curveInRawDoc ? Math.hypot(curveInRawDoc.documentX - point.documentX, curveInRawDoc.documentY - point.documentY) : 0;
+    const curveOutPixelDist = curveOutRawDoc ? Math.hypot(curveOutRawDoc.documentX - point.documentX, curveOutRawDoc.documentY - point.documentY) : 0;
+    const curveInFar = curveInPixelDist > ANCHOR_HANDLE_CLEARANCE_PX;
+    const curveOutFar = curveOutPixelDist > ANCHOR_HANDLE_CLEARANCE_PX;
+
+    const dirFor = (raw: { documentX: number; documentY: number } | null, dist: number, fallback: { dx: number; dy: number }) =>
+      raw && dist > 0.5 ? { dx: (raw.documentX - point.documentX) / dist, dy: (raw.documentY - point.documentY) / dist } : fallback;
+
     return {
       key: `${point.dockAnchor ?? point.type ?? 'control'}-${pathRouteIndex}`,
       pathRouteIndex,
@@ -288,12 +332,12 @@ export default function FlightPathEditor() {
       scroll: point.scroll,
       curveIn: handles.curveIn,
       curveOut: handles.curveOut,
-      curveInDoc: pathRouteIndex > 0 && Math.hypot(handles.curveIn.x, handles.curveIn.y) > HANDLE_MIN_LENGTH
-        ? pathSampleToDocument({ x: point.x + handles.curveIn.x, y: point.y + handles.curveIn.y }, point.scroll, viewport)
-        : null,
-      curveOutDoc: !isLast && Math.hypot(handles.curveOut.x, handles.curveOut.y) > HANDLE_MIN_LENGTH
-        ? pathSampleToDocument({ x: point.x + handles.curveOut.x, y: point.y + handles.curveOut.y }, point.scroll, viewport)
-        : null,
+      curveInDoc: curveInEligible && curveInFar ? curveInRawDoc : null,
+      curveOutDoc: curveOutEligible && curveOutFar ? curveOutRawDoc : null,
+      curveInCreatable: curveInEligible && !curveInFar,
+      curveOutCreatable: curveOutEligible && !curveOutFar,
+      curveInCreateDir: dirFor(curveInRawDoc, curveInPixelDist, { dx: -DEFAULT_CREATE_DIR.dx, dy: -DEFAULT_CREATE_DIR.dy }),
+      curveOutCreateDir: dirFor(curveOutRawDoc, curveOutPixelDist, DEFAULT_CREATE_DIR),
     };
   });
 
@@ -387,6 +431,34 @@ export default function FlightPathEditor() {
                 aria-label="Ausgehenden Bézier-Griff ziehen"
                 data-anchor-key={anchor.key}
                 data-handle-kind="curveOut"
+              >
+                <i />
+              </button>
+            )}
+            {anchor.key === selectedKey && anchor.curveInCreatable && (
+              <button
+                type="button"
+                className={styles.flightBezierHandleCreate}
+                style={{ left: anchor.documentX + anchor.curveInCreateDir.dx * ANCHOR_HANDLE_CLEARANCE_PX, top: anchor.documentY + anchor.curveInCreateDir.dy * ANCHOR_HANDLE_CLEARANCE_PX }}
+                onPointerDown={(event) => startHandleDrag(event, anchor, 'curveIn')}
+                aria-label="Eingehenden Bézier-Griff erzeugen"
+                data-anchor-key={anchor.key}
+                data-handle-kind="curveIn"
+                data-handle-create="true"
+              >
+                <i />
+              </button>
+            )}
+            {anchor.key === selectedKey && anchor.curveOutCreatable && (
+              <button
+                type="button"
+                className={`${styles.flightBezierHandleCreate} ${styles.flightBezierHandleCreateOut}`}
+                style={{ left: anchor.documentX + anchor.curveOutCreateDir.dx * ANCHOR_HANDLE_CLEARANCE_PX, top: anchor.documentY + anchor.curveOutCreateDir.dy * ANCHOR_HANDLE_CLEARANCE_PX }}
+                onPointerDown={(event) => startHandleDrag(event, anchor, 'curveOut')}
+                aria-label="Ausgehenden Bézier-Griff erzeugen"
+                data-anchor-key={anchor.key}
+                data-handle-kind="curveOut"
+                data-handle-create="true"
               >
                 <i />
               </button>
