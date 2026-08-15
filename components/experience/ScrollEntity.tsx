@@ -65,6 +65,11 @@ const INTRO_POSITION = {
 
 const clamp = (value: number, min = 0, max = 1) => Math.min(max, Math.max(min, value));
 const mix = (from: number, to: number, amount: number) => from + (to - from) * amount;
+// A station only reads as a real "landing" if the follower actually rests there for a
+// moment before the next transit's curve pulls it onward. Sections with little natural
+// scroll room after their own dock (e.g. a single-viewport hero) could otherwise collapse
+// this to near zero, so every dock keeps at least this much hold distance.
+const MIN_HOLD_VIEWPORTS = 0.4;
 
 export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
   const entityRef = useRef<HTMLDivElement | null>(null);
@@ -375,7 +380,7 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
         route[routeIndex] = {
           ...route[routeIndex],
           departureScroll: nextStop
-            ? Math.max(route[routeIndex].scroll, nextSectionTop - viewportHeight)
+            ? Math.max(route[routeIndex].scroll + viewportHeight * MIN_HOLD_VIEWPORTS, nextSectionTop - viewportHeight)
             : maximumScroll,
         };
       });
