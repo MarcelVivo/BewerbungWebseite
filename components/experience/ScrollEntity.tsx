@@ -8,7 +8,7 @@ import flightPath from './flight-path.json';
 import FlightPathEditor from './FlightPathEditor';
 import TitleDepthLayer from './TitleDepthLayer';
 import { FLIGHT_PATH_CHANGE_EVENT, FLIGHT_PATH_RESOLVED_EVENT, FLIGHT_PATH_RUNTIME_EVENT, FLIGHT_PATH_STORAGE_KEY, type FlightPathConfig, type FlightPathPoint, type FlightPathResolvedPoint, type FlightPathResolvedRoute, type FlightPathRuntimeState } from './flightPathTypes';
-import { DOCKING_STOPS, FLIGHT_PATH_START_POINT, normalizeDockingPoints } from './dockingRoute';
+import { DOCKING_STOPS, FLIGHT_PATH_START_POINT, dockingStopForAnchor, normalizeDockingPoints } from './dockingRoute';
 import { createMasterFlightPath, sampleMasterFlightPath, type MasterFlightPath } from './masterFlightPath';
 import {
   DOCK_EPSILON,
@@ -330,7 +330,18 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
         };
         const rect = section.getBoundingClientRect();
         const absoluteTop = window.scrollY + rect.top;
-        const scroll = absoluteTop + rect.height * point.sectionOffset - viewportHeight * .5;
+        const stop = dockingStopForAnchor(point.dockAnchor);
+        // Docking stations keep their own well-tuned "when does this station
+        // arrive" formula (a fraction of the section's scrollable distance,
+        // matched to its rest offset), independent of x/y/scale which are now
+        // freely editable. Reusing the generic control-point sectionOffset
+        // formula for docks shifted their arrival scroll, so the object's
+        // target progress raced ahead of what the damping could track.
+        const scroll = stop
+          ? stop.anchor === 'hero'
+            ? absoluteTop + viewportHeight * .62
+            : absoluteTop + Math.max(section.offsetHeight - viewportHeight, viewportHeight * .65, 1) * stop.rest
+          : absoluteTop + rect.height * point.sectionOffset - viewportHeight * .5;
         // Keep the route's virtual tail beyond the browser's physical maximum
         // scroll. Otherwise all contact points collapse onto one value and the
         // final docking node becomes ambiguous.

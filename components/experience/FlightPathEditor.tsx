@@ -231,7 +231,12 @@ export default function FlightPathEditor() {
       const section = document.getElementById(point.id);
       const rect = section?.getBoundingClientRect();
       const sectionTop = rect ? window.scrollY + rect.top : 0;
-      const routeScroll = Math.max(0, sectionTop + (rect?.height ?? viewportHeight) * point.sectionOffset - viewportHeight * .5);
+      const stop = dockingStopForAnchor(point.dockAnchor);
+      const routeScroll = Math.max(0, stop
+        ? stop.anchor === 'hero'
+          ? sectionTop + viewportHeight * .62
+          : sectionTop + Math.max((section?.offsetHeight ?? viewportHeight) - viewportHeight, viewportHeight * .65, 1) * stop.rest
+        : sectionTop + (rect?.height ?? viewportHeight) * point.sectionOffset - viewportHeight * .5);
       return {
         ...point,
         index,
