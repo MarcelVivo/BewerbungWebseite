@@ -658,6 +658,7 @@
       "dockNumber": "10",
       "dockLabel": "KONTAKT",
       "dockLocked": true,
+      "isTerminal": true,
       "type": "dock",
       "handleMode": "free",
       "curveIn": {
@@ -665,39 +666,6 @@
         "y": 2.036091,
         "z": 0.05
       }
-    },
-    {
-      "id": "journey-contact",
-      "sectionOffset": 0.5,
-      "x": 12,
-      "y": 85,
-      "scale": 0.7,
-      "rotation": -15,
-      "opacity": 0.98,
-      "type": "control",
-      "handleMode": "aligned"
-    },
-    {
-      "id": "journey-contact",
-      "sectionOffset": 0.65,
-      "x": 14,
-      "y": 88,
-      "scale": 0.65,
-      "rotation": -10,
-      "opacity": 0.98,
-      "type": "control",
-      "handleMode": "aligned"
-    },
-    {
-      "id": "journey-contact",
-      "sectionOffset": 0.8,
-      "x": 16,
-      "y": 91,
-      "scale": 0.6,
-      "rotation": -5,
-      "opacity": 0.95,
-      "type": "end",
-      "handleMode": "aligned"
     }
   ]
 }

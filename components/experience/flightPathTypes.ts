@@ -10,7 +10,10 @@ export type FlightPathPoint = {
   dockNumber?: string;
   dockLabel?: string;
   dockLocked?: boolean;
-  type?: 'control' | 'dock' | 'start' | 'end';
+  /** True only on the final docking station, which doubles as the flight path's terminal anchor -
+   *  there is no separate, unreachable "end" point after it. Keeps its full docking function. */
+  isTerminal?: boolean;
+  type?: 'control' | 'dock' | 'start';
   curveIn?: FlightPathCurveHandle;
   curveOut?: FlightPathCurveHandle;
   handleMode?: FlightPathHandleMode;

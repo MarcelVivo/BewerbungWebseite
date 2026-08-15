@@ -3,8 +3,15 @@
 /**
  * Full flight-path editor - Schritt 1: complete point structure and
  * visualization only. No dragging yet (that's Schritt 2). Every anchor and
- * every Bezier handle for the whole route (start, 10 docks, end, and all
- * intermediate anchors) is rendered read-only, colour-coded, and labelled.
+ * every Bezier handle for the whole route (start, 10 docks - the 10th
+ * doubling as the terminal anchor - and all intermediate anchors) is
+ * rendered read-only, colour-coded, and labelled.
+ *
+ * There is deliberately no separate "end" point after the last dock: any
+ * anchor that doesn't influence the real scroll-driven object movement is
+ * disallowed (a stray point there was found and removed - see git history).
+ * The last docking station IS the flight path's terminus; it keeps its full
+ * docking function and is additionally flagged isTerminal for styling.
  *
  * Architecture invariants (must not be reintroduced/violated):
  * - flightPathStore.ts is the only source of truth for points.
@@ -28,7 +35,7 @@ import { resolveBezierHandles } from './masterFlightPath';
 import type { FlightPathPoint } from './flightPathTypes';
 import styles from './experience.module.css';
 
-type AnchorKind = 'start' | 'dock' | 'control' | 'end';
+type AnchorKind = 'start' | 'dock' | 'control';
 
 type AnchorView = {
   key: string;
@@ -51,16 +58,11 @@ function useEditorEnabled() {
   return enabled;
 }
 
-const anchorKindOf = (point: FlightPathPoint): AnchorKind => {
-  if (point.dockAnchor) return 'dock';
-  if (point.type === 'end') return 'end';
-  return 'control';
-};
+const anchorKindOf = (point: FlightPathPoint): AnchorKind => (point.dockAnchor ? 'dock' : 'control');
 
 const nodeClassFor = (kind: AnchorKind, isFirst: boolean) => {
   if (kind === 'dock') return `${styles.flightPathNode} ${styles.flightPathDockNode} ${styles.flightPathNodeGold}`;
   if (isFirst) return `${styles.flightPathNode} ${styles.flightPathNodeStart}`;
-  if (kind === 'end') return `${styles.flightPathNode} ${styles.flightPathNodeEnd}`;
   return `${styles.flightPathNode} ${styles.flightPathNodeIntermediate}`;
 };
 
@@ -127,7 +129,7 @@ export default function FlightPathEditor() {
           className={styles.flightPathRail}
           width="100%"
           height={documentHeight || 1}
-          aria-label="Vollständige Flugbahn: Start, alle Docking-Stationen, Ziel - aus der realen Scrollzuordnung abgetastet"
+          aria-label="Vollständige Flugbahn: Start bis zur letzten Docking-Station (zugleich Ziel) - aus der realen Scrollzuordnung abgetastet"
         >
           <path className={styles.flightPathRailShadow} d={resolved.railPath} />
           <path className={styles.flightPathRailLine} data-flight-path-rail-line d={resolved.railPath} />
@@ -164,12 +166,10 @@ export default function FlightPathEditor() {
         {anchors.map((anchor) => {
           const isMain = anchor.kind !== 'control';
           if (isMain) hauptankerNumber += 1;
+          const isTerminal = Boolean(anchor.point.isTerminal);
           const progress = resolved.masterPath.getNodeProgress(anchor.pathRouteIndex);
-          const label = anchor.kind === 'start'
-            ? 'START'
-            : anchor.kind === 'end'
-              ? 'ZIEL'
-              : anchor.point.dockLabel ?? `DOCK ${anchor.point.dockNumber ?? ''}`;
+          const baseLabel = anchor.kind === 'start' ? 'START' : anchor.point.dockLabel ?? `DOCK ${anchor.point.dockNumber ?? ''}`;
+          const label = isTerminal ? `${baseLabel} · ZIEL` : baseLabel;
 
           return (
             <div
@@ -179,6 +179,7 @@ export default function FlightPathEditor() {
               aria-hidden="true"
             >
               <span className={styles.flightPathNodeDepth} />
+              {isTerminal && <i className={styles.flightPathTerminalRing} />}
               <span className={styles.flightPathNodeCore}>{anchor.kind === 'dock' ? '◇' : anchor.kind === 'control' ? '●' : '★'}</span>
               {isMain && (
                 <span className={styles.flightPathNodeLabel}>
@@ -205,7 +206,7 @@ export default function FlightPathEditor() {
             station        {runtime.station || '–'}{'\n'}
             phase          {runtime.phaseLabel}{'\n'}
             <span style={{ color: distanceOk ? '#6ee7b7' : '#ff8080' }}>distancePx     {distancePxLabel}</span>{'\n'}
-            points         {draft.points.length} (+ start + end)
+            points         {draft.points.length} (+ start) · terminal=last dock
           </>
         ) : 'wird initialisiert…'}
       </div>
