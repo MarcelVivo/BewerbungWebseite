@@ -25,17 +25,29 @@ import {
   beginFlightPathHistoryEntry,
   cancelFlightPathHistoryEntry,
   commitFlightPathHistoryEntry,
+  discardFlightPathDraft,
+  enableFlightPathDraftPersistence,
   getFlightPathDraft,
+  getFlightPathHistoryState,
+  getOriginalFlightPathConfig,
   getResolvedFlightPath,
   getFlightPathRuntime,
   redoFlightPath,
+  resetFlightPathPoint,
+  resetFlightPathRoute,
+  resetFlightPathSegment,
+  restoreFlightPathDraftFromStorage,
+  saveFlightPathPersistently,
   subscribeFlightPathDraft,
+  subscribeFlightPathHistory,
   subscribeResolvedFlightPath,
   subscribeFlightPathRuntime,
   undoFlightPath,
   updateDockRingPosition,
+  updateFlightPathFollowSpeed,
   updateFlightPathPoint,
   updateFlightPathStart,
+  type FlightPathAnchorTarget,
 } from './flightPathStore';
 import { documentPointerToPathPoint, pathSampleToDocument, type Viewport } from './flightPathTransforms';
 import { resolveBezierHandles } from './masterFlightPath';
@@ -44,8 +56,10 @@ import styles from './experience.module.css';
 
 type AnchorKind = 'start' | 'dock' | 'control';
 
-/** Identifies which store setter an anchor's drag should call - never a local copy. */
-type AnchorTarget = { kind: 'start' } | { kind: 'point'; index: number };
+/** Identifies which store setter an anchor's drag should call - never a local copy. Re-exported
+ *  by flightPathStore.ts itself so reset actions and this file's drag/selection code share one
+ *  definition. */
+type AnchorTarget = FlightPathAnchorTarget;
 
 type AnchorView = {
   key: string;
@@ -146,21 +160,37 @@ const ANCHOR_HANDLE_CLEARANCE_PX = 55;
  *  (no direction to place it along). Used for curveOut; curveIn mirrors it. */
 const DEFAULT_CREATE_DIR = { dx: 1 / Math.SQRT2, dy: -1 / Math.SQRT2 };
 
+type SaveState = { status: 'idle' | 'saving' | 'saved' | 'error'; error?: string };
+
+/** useSyncExternalStore's getServerSnapshot must return the same reference on every call, or
+ *  React logs "getServerSnapshot should be cached" and can loop - a fresh object literal here
+ *  broke that contract (see flightPathStore.ts's own cachedHistoryState for the matching fix on
+ *  the client-snapshot side). */
+const DEFAULT_HISTORY_STATE = { canUndo: false, canRedo: false };
+
 export default function FlightPathEditor() {
   const enabled = useEditorEnabled();
   const [documentHeight, setDocumentHeight] = useState(0);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const [saveState, setSaveState] = useState<SaveState>({ status: 'idle' });
+  const [copyLabel, setCopyLabel] = useState('KONFIGURATION KOPIEREN');
   const dragRef = useRef<ActiveDrag | null>(null);
 
   const draft = useSyncExternalStore(subscribeFlightPathDraft, getFlightPathDraft, getFlightPathDraft);
   const resolved = useSyncExternalStore(subscribeResolvedFlightPath, getResolvedFlightPath, () => null);
   const runtime = useSyncExternalStore(subscribeFlightPathRuntime, getFlightPathRuntime, () => null);
+  const historyState = useSyncExternalStore(subscribeFlightPathHistory, getFlightPathHistoryState, () => DEFAULT_HISTORY_STATE);
 
   useEffect(() => {
     if (!enabled) return;
     const updateHeight = () => setDocumentHeight(document.documentElement.scrollHeight);
     updateHeight();
     window.addEventListener('resize', updateHeight);
+    // Restore a previously auto-saved draft before enabling further persistence, so this
+    // restoration itself doesn't immediately re-save an identical copy. Read only ever happens
+    // here, gated on editor mode being confirmed - never on a production page load.
+    restoreFlightPathDraftFromStorage();
+    enableFlightPathDraftPersistence();
     // Test-only introspection hook so the store's real state can be verified
     // directly (not inferred from rendered pixel positions), plus the same
     // setters the UI itself calls - used to set up handle-mode combinations
@@ -375,11 +405,72 @@ export default function FlightPathEditor() {
     try { event.currentTarget.setPointerCapture(event.pointerId); } catch { /* Synthetic test events do not own pointer capture. */ }
   };
 
+  // Every panel input (number field or handle-mode select) below groups its own gesture into
+  // exactly one undo step the same way anchor/handle dragging does: begin on focus, live-update
+  // on change (so the preview tracks keystroke-by-keystroke, same store, same frame), commit on
+  // blur. A select's one onChange event is wrapped synchronously instead, since there is no
+  // separate focus/blur gesture to span.
+  const handleFieldFocus = () => beginFlightPathHistoryEntry();
+  const handleFieldBlur = () => commitFlightPathHistoryEntry();
+  const handleHandleModeChange = (target: AnchorTarget, handleMode: FlightPathHandleMode) => {
+    beginFlightPathHistoryEntry();
+    updateAnchor(target, { handleMode });
+    commitFlightPathHistoryEntry();
+  };
+  const handleFollowSpeedChange = (value: number) => updateFlightPathFollowSpeed(value);
+
+  const handleResetPoint = (target: AnchorTarget) => resetFlightPathPoint(target);
+  const handleResetSegment = (segmentIndex: number) => resetFlightPathSegment(segmentIndex);
+  const handleResetRoute = () => {
+    if (window.confirm('Gesamte Flugbahn auf den zuletzt gespeicherten Stand zurücksetzen?')) resetFlightPathRoute();
+  };
+  const handleDiscardDraft = () => {
+    if (window.confirm('Entwurf verwerfen und zur zuletzt gespeicherten Konfiguration zurückkehren? Das kann nicht rückgängig gemacht werden.')) {
+      discardFlightPathDraft();
+      setSaveState({ status: 'idle' });
+    }
+  };
+
+  const handleCopyConfig = async () => {
+    const current = getFlightPathDraft();
+    const payload = JSON.stringify({ followSpeed: current.followSpeed, start: current.start, points: current.points, dockRings: current.dockRings }, null, 2);
+    try {
+      await navigator.clipboard.writeText(payload);
+      setCopyLabel('KOPIERT ✓');
+    } catch {
+      setCopyLabel('KOPIEREN FEHLGESCHLAGEN');
+    }
+    window.setTimeout(() => setCopyLabel('KONFIGURATION KOPIEREN'), 2200);
+  };
+
+  const handleSave = async () => {
+    setSaveState({ status: 'saving' });
+    const result = await saveFlightPathPersistently();
+    setSaveState(result.ok ? { status: 'saved' } : { status: 'error', error: result.error });
+    if (result.ok) window.setTimeout(() => setSaveState((current) => (current.status === 'saved' ? { status: 'idle' } : current)), 2600);
+  };
+
+  const handleSaveAndLeave = async () => {
+    setSaveState({ status: 'saving' });
+    const result = await saveFlightPathPersistently();
+    if (!result.ok) {
+      setSaveState({ status: 'error', error: result.error });
+      return;
+    }
+    const url = new URL(window.location.href);
+    url.searchParams.delete('flight-editor');
+    url.searchParams.delete('flightDebug');
+    window.location.assign(url.toString());
+  };
+
   let hauptankerNumber = 0;
 
   const distancePxLabel = runtime ? runtime.distancePx.toFixed(3) : '–';
   const distanceOk = runtime ? runtime.distancePx < 1 : true;
   const selectedAnchor = anchors.find((anchor) => anchor.key === selectedKey) ?? null;
+  const originalForSelected = selectedAnchor
+    ? (selectedAnchor.target.kind === 'start' ? getOriginalFlightPathConfig().start : getOriginalFlightPathConfig().points[selectedAnchor.target.index])
+    : null;
 
   return (
     <div className={styles.flightPathEditor} data-flight-path-editor-root style={{ height: documentHeight || undefined }}>
@@ -519,6 +610,95 @@ export default function FlightPathEditor() {
           </>
         ) : 'wird initialisiert…'}
       </div>
+
+      <aside className={styles.flightPathSettingsPanel} data-flight-path-settings-panel>
+        <h3>FLUGBAHN-EINSTELLUNGEN</h3>
+
+        <label>
+          FOLGEGESCHWINDIGKEIT
+          <input
+            type="number"
+            min={.1}
+            max={4}
+            step={.05}
+            value={draft.followSpeed}
+            onFocus={handleFieldFocus}
+            onBlur={handleFieldBlur}
+            onChange={(event) => handleFollowSpeedChange(clamp(Number(event.target.value), .1, 4))}
+            data-field="followSpeed"
+          />
+        </label>
+
+        <h4>AUSGEWÄHLTER ANKER</h4>
+        {selectedAnchor ? (
+          <>
+            <div>{selectedAnchor.kind === 'start' ? 'START' : selectedAnchor.kind === 'dock' ? (selectedAnchor.point.dockLabel ?? 'DOCK') : 'ZWISCHENANKER'} · {selectedAnchor.point.id}</div>
+
+            <label>X <input type="number" min={2} max={98} step={.1} value={Number(selectedAnchor.point.x.toFixed(3))} onFocus={handleFieldFocus} onBlur={handleFieldBlur} onChange={(event) => updateAnchor(selectedAnchor.target, { x: clamp(Number(event.target.value), 2, 98) })} data-field="x" /></label>
+            <label>Y <input type="number" min={2} max={98} step={.1} value={Number(selectedAnchor.point.y.toFixed(3))} onFocus={handleFieldFocus} onBlur={handleFieldBlur} onChange={(event) => updateAnchor(selectedAnchor.target, { y: clamp(Number(event.target.value), 2, 98) })} data-field="y" /></label>
+            <label>ROTATION <input type="number" min={-180} max={180} step={.5} value={Number(selectedAnchor.point.rotation.toFixed(2))} onFocus={handleFieldFocus} onBlur={handleFieldBlur} onChange={(event) => updateAnchor(selectedAnchor.target, { rotation: clamp(Number(event.target.value), -360, 360) })} data-field="rotation" /></label>
+            <label>OPAZITÄT <input type="number" min={0} max={1} step={.01} value={Number(selectedAnchor.point.opacity.toFixed(3))} onFocus={handleFieldFocus} onBlur={handleFieldBlur} onChange={(event) => updateAnchor(selectedAnchor.target, { opacity: clamp(Number(event.target.value), 0, 1) })} data-field="opacity" /></label>
+            <label>SKALIERUNG <input type="number" min={.1} max={2} step={.01} value={Number(selectedAnchor.point.scale.toFixed(3))} onFocus={handleFieldFocus} onBlur={handleFieldBlur} onChange={(event) => updateAnchor(selectedAnchor.target, { scale: clamp(Number(event.target.value), .1, 2) })} data-field="scale" /></label>
+
+            <label>
+              HANDLE-MODUS
+              <select
+                value={selectedAnchor.point.handleMode ?? 'aligned'}
+                onChange={(event) => handleHandleModeChange(selectedAnchor.target, event.target.value as FlightPathHandleMode)}
+                data-field="handleMode"
+              >
+                <option value="mirrored">mirrored</option>
+                <option value="aligned">aligned</option>
+                <option value="free">free</option>
+                <option value="corner">corner</option>
+              </select>
+            </label>
+
+            {originalForSelected && (
+              <button type="button" onClick={() => handleResetPoint(selectedAnchor.target)} data-action="reset-point">
+                DIESEN PUNKT ZURÜCKSETZEN
+              </button>
+            )}
+            <div className={styles.flightPathSettingsRow}>
+              {selectedAnchor.pathRouteIndex > 0 && (
+                <button type="button" onClick={() => handleResetSegment(selectedAnchor.pathRouteIndex - 1)} data-action="reset-segment-before">
+                  SEGMENT DAVOR
+                </button>
+              )}
+              {selectedAnchor.pathRouteIndex < pathRoute.length - 1 && (
+                <button type="button" onClick={() => handleResetSegment(selectedAnchor.pathRouteIndex)} data-action="reset-segment-after">
+                  SEGMENT DANACH
+                </button>
+              )}
+            </div>
+          </>
+        ) : (
+          <div className={styles.flightPathSettingsEmpty}>Kein Anker ausgewählt - auf einen Ankerpunkt klicken.</div>
+        )}
+
+        <h4>VERLAUF</h4>
+        <div className={styles.flightPathSettingsRow}>
+          <button type="button" onClick={() => undoFlightPath()} disabled={!historyState.canUndo} data-action="undo">RÜCKGÄNGIG</button>
+          <button type="button" onClick={() => redoFlightPath()} disabled={!historyState.canRedo} data-action="redo">WIEDERHOLEN</button>
+        </div>
+
+        <h4>ENTWURF</h4>
+        <button type="button" onClick={handleResetRoute} data-action="reset-route">GESAMTE ROUTE ZURÜCKSETZEN</button>
+        <button type="button" className={styles.flightPathSettingsDanger} onClick={handleDiscardDraft} data-action="discard-draft">ENTWURF VERWERFEN</button>
+        <button type="button" onClick={handleCopyConfig} data-action="copy-config">{copyLabel}</button>
+
+        <h4>SPEICHERN</h4>
+        <div className={styles.flightPathSettingsRow}>
+          <button type="button" className={styles.flightPathSettingsPrimary} onClick={handleSave} disabled={saveState.status === 'saving'} data-action="save">
+            {saveState.status === 'saving' ? 'SPEICHERT…' : 'SPEICHERN'}
+          </button>
+          <button type="button" onClick={handleSaveAndLeave} disabled={saveState.status === 'saving'} data-action="save-and-leave">
+            SPEICHERN &amp; VERLASSEN
+          </button>
+        </div>
+        {saveState.status === 'saved' && <div className={styles.flightPathSettingsOk} data-save-status="saved">Gespeichert ✓</div>}
+        {saveState.status === 'error' && <div className={styles.flightPathSettingsError} data-save-status="error">{saveState.error}</div>}
+      </aside>
     </div>
   );
 }

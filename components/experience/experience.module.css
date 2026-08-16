@@ -644,6 +644,76 @@
 }
 .flightPathDebugPanel strong { color: #f6c453; }
 
+.flightPathSettingsPanel {
+  position: fixed;
+  z-index: 191;
+  left: 1rem;
+  top: 1rem;
+  width: 17rem;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  padding: .8rem .9rem 1rem;
+  border: 1px solid rgba(231, 197, 106, .28);
+  background: rgba(4, 5, 4, .92);
+  color: rgba(240, 235, 215, .92);
+  font: 650 .62rem/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .03em;
+  backdrop-filter: blur(10px);
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  gap: .55rem;
+}
+.flightPathSettingsPanel h3 { margin: 0; color: #f6c453; font-size: .68rem; letter-spacing: .08em; }
+.flightPathSettingsPanel h4 {
+  margin: .3rem 0 0;
+  padding-top: .5rem;
+  border-top: 1px solid rgba(231, 197, 106, .16);
+  color: rgba(231, 197, 106, .78);
+  font-size: .58rem;
+  letter-spacing: .1em;
+}
+.flightPathSettingsPanel label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+}
+.flightPathSettingsPanel input[type='number'] {
+  width: 5.4rem;
+  padding: .18rem .32rem;
+  border: 1px solid rgba(231, 197, 106, .3);
+  background: rgba(255, 255, 255, .04);
+  color: inherit;
+  font: inherit;
+}
+.flightPathSettingsPanel select {
+  padding: .18rem .32rem;
+  border: 1px solid rgba(231, 197, 106, .3);
+  background: rgba(255, 255, 255, .04);
+  color: inherit;
+  font: inherit;
+}
+.flightPathSettingsPanel button {
+  padding: .32rem .5rem;
+  border: 1px solid rgba(231, 197, 106, .32);
+  background: rgba(231, 197, 106, .08);
+  color: rgba(240, 235, 215, .92);
+  font: 650 .58rem/1.3 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .05em;
+  cursor: pointer;
+  text-align: left;
+}
+.flightPathSettingsPanel button:hover { background: rgba(231, 197, 106, .18); }
+.flightPathSettingsPanel button:disabled { opacity: .4; cursor: default; }
+.flightPathSettingsPanel .flightPathSettingsRow { display: flex; gap: .4rem; }
+.flightPathSettingsPanel .flightPathSettingsRow button { flex: 1; }
+.flightPathSettingsPanel .flightPathSettingsPrimary { background: rgba(231, 197, 106, .22); border-color: #f6c453; }
+.flightPathSettingsPanel .flightPathSettingsDanger { border-color: rgba(255, 128, 128, .45); color: #ffb3b3; }
+.flightPathSettingsPanel .flightPathSettingsError { color: #ff8080; white-space: pre-wrap; }
+.flightPathSettingsPanel .flightPathSettingsOk { color: #6ee7b7; }
+.flightPathSettingsPanel .flightPathSettingsEmpty { color: rgba(240, 235, 215, .55); }
+
 .flightPathSegmentHandle {
   position: absolute;
   width: 3rem;
