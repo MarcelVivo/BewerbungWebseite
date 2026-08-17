@@ -692,6 +692,32 @@ export default function FlightPathEditor() {
       </div>
 
       <div className={styles.flightPathNodeLayer}>
+        {/* Renders first (bottom layer) so every precise point marker below -
+            handles, create-affordances and main anchors alike - always wins
+            pointer capture over this broad catch-all zone wherever they
+            overlap. A dock's own aligned-mode handles, or a neighbouring
+            control point's handles, often sit well within a ring's hit
+            radius; if the ring layer were on top there, grabbing what looks
+            like a small blue handle would silently drag the ring (and its
+            locked flight-path point) instead - moving the real docking
+            anchor and leaving the object hovering off-station. */}
+        {anchors.filter((anchor) => anchor.kind === 'dock' && anchor.point.dockAnchor).map((anchor) => {
+          const rect = dockRingRects[anchor.point.dockAnchor as string];
+          if (!rect) return null;
+          return (
+            <button
+              key={`ring-hit-${anchor.key}`}
+              type="button"
+              className={styles.flightPathRingHitZone}
+              style={{ position: 'fixed', left: rect.x, top: rect.y, width: rect.width, height: rect.height }}
+              onPointerDown={(event) => startAnchorDrag(event, anchor)}
+              onClick={() => setSelectedKey(anchor.key)}
+              aria-label={`Docking-Station ${anchor.point.dockLabel ?? ''} samt Ring verschieben`}
+              data-ring-hit-zone={anchor.key}
+            />
+          );
+        })}
+
         {anchors.map((anchor) => (
           <div key={`handles-${anchor.key}`}>
             {anchor.curveInDoc && (
@@ -758,23 +784,6 @@ export default function FlightPathEditor() {
             )}
           </div>
         ))}
-
-        {anchors.filter((anchor) => anchor.kind === 'dock' && anchor.point.dockAnchor).map((anchor) => {
-          const rect = dockRingRects[anchor.point.dockAnchor as string];
-          if (!rect) return null;
-          return (
-            <button
-              key={`ring-hit-${anchor.key}`}
-              type="button"
-              className={styles.flightPathRingHitZone}
-              style={{ position: 'fixed', left: rect.x, top: rect.y, width: rect.width, height: rect.height }}
-              onPointerDown={(event) => startAnchorDrag(event, anchor)}
-              onClick={() => setSelectedKey(anchor.key)}
-              aria-label={`Docking-Station ${anchor.point.dockLabel ?? ''} samt Ring verschieben`}
-              data-ring-hit-zone={anchor.key}
-            />
-          );
-        })}
 
         {anchors.map((anchor) => {
           const isMain = anchor.kind !== 'control';
