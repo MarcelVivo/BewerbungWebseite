@@ -192,8 +192,6 @@
   position: fixed !important;
   margin: 0 !important;
   max-width: none !important;
-  transform: none !important;
-  transform-origin: center !important;
   pointer-events: none !important;
   box-sizing: border-box;
 }

@@ -97,21 +97,23 @@ export default function TitleDepthLayer() {
         const rect = source.getBoundingClientRect();
         const revealParent = source.closest<HTMLElement>('[data-reveal]') ?? source.closest<HTMLElement>(`.${styles.heroCopy}`);
         const revealStyle = revealParent ? window.getComputedStyle(revealParent) : null;
+        // getBoundingClientRect() reflects any ancestor CSS transform (e.g.
+        // the compacted sections' --fit-scale), but copyTextAppearance()
+        // reads computed font-size, which does not - so the clone must be
+        // scaled by the same ratio or it renders at full size and spills
+        // into the following text. anchor-size() has the identical gap: it
+        // reports the anchor's untransformed layout size, so this applies
+        // regardless of whether native anchor positioning is used.
+        const naturalWidth = Math.max(source.offsetWidth, 1);
+        const scale = naturalWidth ? rect.width / naturalWidth : 1;
         if (!nativeAnchors) {
-          // getBoundingClientRect() reflects any ancestor CSS transform (e.g.
-          // the compacted sections' --fit-scale), but copyTextAppearance()
-          // reads computed font-size, which does not. Sizing the clone box to
-          // the source's untransformed layout size and then scaling the whole
-          // clone by the same ratio keeps text and box scaling together.
-          const naturalWidth = Math.max(source.offsetWidth, 1);
-          const scale = naturalWidth ? rect.width / naturalWidth : 1;
           clone.style.left = `${rect.left}px`;
           clone.style.top = `${rect.top}px`;
           clone.style.width = `${source.offsetWidth}px`;
           clone.style.height = `${source.offsetHeight}px`;
-          clone.style.transform = scale !== 1 ? `scale(${scale})` : '';
-          clone.style.transformOrigin = 'top left';
         }
+        clone.style.transform = scale !== 1 ? `scale(${scale})` : '';
+        clone.style.transformOrigin = 'top left';
         clone.style.opacity = revealStyle?.opacity ?? window.getComputedStyle(source).opacity;
         clone.style.visibility = rect.bottom < -40 || rect.top > window.innerHeight + 40 ? 'hidden' : 'visible';
       });
