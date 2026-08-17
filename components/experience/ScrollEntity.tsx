@@ -216,15 +216,31 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
     let previousVideoTime = 0;
     let loopReassembly = false;
 
+    // The video decodes at its own native frame rate (well under the 60fps
+    // render loop); re-uploading the same decoded pixels to the GPU via
+    // texImage2D on every rAF tick was pure waste and the single costliest
+    // call in this loop. requestVideoFrameCallback fires exactly once per
+    // real decoded frame, so it's the correct signal for "a new upload is
+    // actually needed" - unlike video.currentTime, which some browsers
+    // report as a continuously interpolated clock rather than a frame-
+    // quantized value.
+    let newVideoFrameAvailable = true;
+    const supportsVideoFrameCallback = typeof video.requestVideoFrameCallback === 'function';
+    let videoFrameCallbackHandle = 0;
+    const scheduleVideoFrameCallback = () => {
+      videoFrameCallbackHandle = video.requestVideoFrameCallback(() => {
+        newVideoFrameAvailable = true;
+        scheduleVideoFrameCallback();
+      });
+    };
+    if (supportsVideoFrameCallback) scheduleVideoFrameCallback();
+
     const renderCore = () => {
       if (!coreRendererAvailable || !gl || !texture || !switchOffLocation || reducedMotion.matches || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
         coreCanvas.style.opacity = '0';
         fallback.style.opacity = '1';
         return;
       }
-      gl.clear(gl.COLOR_BUFFER_BIT);
-      gl.bindTexture(gl.TEXTURE_2D, texture);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
       const heroPhase = root.dataset.heroPhase ?? 'revealed';
       if (heroPhase !== lastHeroPhase) {
         if (heroPhase === 'ignition') introIgnitionStartedAt = performance.now();
@@ -234,6 +250,20 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
         }
         lastHeroPhase = heroPhase;
       }
+      const introElapsed = introIgnitionStartedAt ? performance.now() - introIgnitionStartedAt : 9999;
+      const duringIgnitionEffect = introElapsed < 820;
+      // Nothing the shader draws can have changed since the last call: no
+      // new decoded pixels, and the one wall-clock-driven effect (the
+      // ignition power-up disruption) isn't currently animating.
+      if (supportsVideoFrameCallback && !newVideoFrameAvailable && !duringIgnitionEffect) {
+        coreCanvas.style.opacity = '1';
+        fallback.style.opacity = '0';
+        return;
+      }
+      newVideoFrameAvailable = false;
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
       const time = video.currentTime;
       const duration = Number.isFinite(video.duration) && video.duration > 1 ? video.duration : 30.125;
       const pulse = (center: number, radius: number, strength: number) => {
@@ -245,9 +275,8 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       const switchOn = loopReassembly && time < .26 ? 1 - time / .26 : 0;
       const endStart = duration - .38;
       const switchOff = time > endStart ? (time - endStart) / .38 : 0;
-      const introElapsed = introIgnitionStartedAt ? performance.now() - introIgnitionStartedAt : 9999;
       const introProgress = Math.min(1, Math.max(0, introElapsed / 820));
-      const introDisruption = introElapsed < 820 ? Math.sin(introProgress * Math.PI) * .98 : 0;
+      const introDisruption = duringIgnitionEffect ? Math.sin(introProgress * Math.PI) * .98 : 0;
       const microInterruptions = Math.max(
         pulse(7.15, .11, .28),
         pulse(15.06, .13, .36),
@@ -680,16 +709,22 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
         particle.x += particle.vx + Math.sin(particle.phase + age * 8) * .035;
         particle.y += particle.vy + Math.cos(particle.phase + age * 7) * .025;
 
+        // A radial gradient reaches the same soft glow as the previous
+        // shadowBlur fill without its expensive offscreen blur-and-composite
+        // pass - shadowBlur on up to 120 shapes every frame was the single
+        // costliest part of this loop.
+        const radius = Math.max(.22, particle.size * (1 - age * .52));
+        const glowRadius = radius * 2.4;
+        const [r, g, b] = particle.color === 'gold' ? [240, 203, 108] : [151, 36, 54];
+        const coreAlpha = particle.color === 'gold' ? dissolve * .72 : dissolve * .62;
+        const glow = context.createRadialGradient(particle.x, particle.y, 0, particle.x, particle.y, glowRadius);
+        glow.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${coreAlpha})`);
+        glow.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
         context.beginPath();
-        context.arc(particle.x, particle.y, Math.max(.22, particle.size * (1 - age * .52)), 0, Math.PI * 2);
-        context.fillStyle = particle.color === 'gold'
-          ? `rgba(240, 203, 108, ${dissolve * .72})`
-          : `rgba(151, 36, 54, ${dissolve * .62})`;
-        context.shadowBlur = particle.color === 'gold' ? 5 : 3;
-        context.shadowColor = particle.color === 'gold' ? 'rgba(231,197,106,.65)' : 'rgba(121,22,41,.58)';
+        context.arc(particle.x, particle.y, glowRadius, 0, Math.PI * 2);
+        context.fillStyle = glow;
         context.fill();
       }
-      context.shadowBlur = 0;
       context.globalCompositeOperation = 'source-over';
     };
 
@@ -876,6 +911,7 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
 
     return () => {
       if (frame) window.cancelAnimationFrame(frame);
+      if (supportsVideoFrameCallback) video.cancelVideoFrameCallback(videoFrameCallbackHandle);
       video.pause();
       if (gl && texture) gl.deleteTexture(texture);
       if (gl && buffer) gl.deleteBuffer(buffer);
