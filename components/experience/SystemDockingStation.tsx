@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
+import { createPortal } from 'react-dom';
 import savedDock from './system-dock.json';
 import styles from './experience.module.css';
 import { neighboringDockingStops, scrollToDockingStation } from './dockingRoute';
@@ -156,7 +157,7 @@ export default function SystemDockingStation() {
         </div>
       )}
 
-      {editorEnabled && (
+      {editorEnabled && createPortal(
         <aside ref={calibrationPanel.panelRef} style={calibrationPanel.panelStyle} className={styles.systemDockCalibration} aria-label="System-Dockingstation kalibrieren">
           <header onPointerDown={calibrationPanel.startDrag}><strong>SYSTEM DOCK</strong><span>CALIBRATION · DRAG</span></header>
           <label>X <input type="range" min="8" max="92" step=".05" value={ringPosition.x} onChange={(event) => updateDockRingPosition(ANCHOR, { x: Number(event.target.value) })} /><output>{ringPosition.x.toFixed(2)}</output></label>
@@ -177,7 +178,8 @@ export default function SystemDockingStation() {
             {PREV_STOP && <button type="button" onClick={() => { window.location.href = `?dock-editor=${PREV_STOP.anchor}`; }}>← {PREV_STOP.label}</button>}
             {NEXT_STOP && <button type="button" onClick={() => { window.location.href = `?dock-editor=${NEXT_STOP.anchor}`; }}>{NEXT_STOP.label} →</button>}
           </footer>
-        </aside>
+        </aside>,
+        document.body,
       )}
     </>
   );
