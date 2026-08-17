@@ -67,6 +67,10 @@ const mix = (from: number, to: number, amount: number) => from + (to - from) * a
 // scroll room after their own dock (e.g. a single-viewport hero) could otherwise collapse
 // this to near zero, so every dock keeps at least this much hold distance.
 const MIN_HOLD_VIEWPORTS = 0.4;
+// How far the lower tip banks into the horizontal direction of travel while
+// flying. Kept small ("leicht") so straight vertical motion reads as upright
+// and diagonal motion only leans, never rolls onto its side.
+const HEADING_TILT_MAX_DEGREES = 8;
 
 export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
   const entityRef = useRef<HTMLDivElement | null>(null);
@@ -532,11 +536,23 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       pathFollower.position.copy(sample.position);
       entity.dataset.pathSegment = String(sample.segmentIndex);
       entity.dataset.pathCurveProgress = sample.curveProgress.toFixed(6);
+      // Bank the lower tip into the horizontal component of the real travel
+      // direction: pure vertical motion (straight up or down) keeps the
+      // object upright, diagonal motion leans the tip toward that side.
+      // Convert the tangent out of vw/vh percentage space into real screen
+      // pixels first so viewport aspect ratio can't skew which way reads as
+      // "diagonal".
+      const headingDx = sample.tangent.x * window.innerWidth;
+      const headingDy = sample.tangent.y * window.innerHeight;
+      const headingSpeed = Math.hypot(headingDx, headingDy);
+      const headingTilt = headingSpeed > 0.0001
+        ? clamp(headingDx / headingSpeed, -1, 1) * HEADING_TILT_MAX_DEGREES
+        : 0;
       return {
         x: pathFollower.position.x,
         y: pathFollower.position.y,
         scale: clamp(pathFollower.position.z, .1, 2),
-        rotation: clamp(sample.rotation, -6, 6),
+        rotation: headingTilt,
         opacity: sample.opacity,
       };
     };
