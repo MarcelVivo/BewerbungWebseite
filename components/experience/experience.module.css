@@ -2377,6 +2377,11 @@
 .casesSection .pauseSticky,
 .aboutSection .pauseSticky,
 .finalSection .pauseSticky { z-index: 1; }
+/* About's portrait photo is a large opaque image sitting exactly where the
+   docking ring needs to show - the shared z-index:0 docking layer (above)
+   reads as fully hidden behind it instead of wrapping the floating object
+   in front of the photo like every other station's ring does. */
+.aboutSection > .sectionDockLayer { z-index: 2; }
 .heroSticky > .sectionDockLayer { position: absolute; inset: 0; width: auto; height: auto; margin: 0; }
 .sectionDockLayer[data-editor='true'] { z-index: 12; }
 .sectionDockLayer[data-editor='true'] .systemDockCalibration { pointer-events: auto; }
