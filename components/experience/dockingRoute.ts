@@ -52,3 +52,39 @@ export function normalizeDockingPoints(source: FlightPathPoint[]): FlightPathPoi
 }
 
 export const dockingStopForAnchor = (anchor?: string) => DOCKING_STOPS.find((stop) => stop.anchor === anchor);
+
+/** Prev/next neighbours in page order for the `?dock-editor=<station>` calibrator's
+ *  station-to-station navigation - null past either end (problem has no prev, contact no next). */
+export function neighboringDockingStops(anchor: string): { prev: DockingStop | null; next: DockingStop | null } {
+  const index = DOCKING_STOPS.findIndex((stop) => stop.anchor === anchor);
+  return {
+    prev: index > 0 ? DOCKING_STOPS[index - 1] : null,
+    next: index >= 0 && index < DOCKING_STOPS.length - 1 ? DOCKING_STOPS[index + 1] : null,
+  };
+}
+
+/** Scrolls to the exact scrollY at which this station's ring is actually
+ *  docked/visible - a plain scrollIntoView() on the section only guarantees
+ *  the section itself is on screen, not that its sticky docking layer has
+ *  reached its held position within that (often multi-viewport-tall)
+ *  section. Mirrors the same arrival formula ScrollEntity.tsx uses to
+ *  resolve each dock's own "arrived" scrollY. */
+export function scrollToDockingStation(anchor: string) {
+  const stop = dockingStopForAnchor(anchor);
+  if (!stop) return;
+  const jump = () => {
+    const section = document.getElementById(stop.sectionId);
+    if (!section) return;
+    const rect = section.getBoundingClientRect();
+    const absoluteTop = window.scrollY + rect.top;
+    const viewportHeight = window.innerHeight;
+    const scroll = absoluteTop + Math.max(section.offsetHeight - viewportHeight, viewportHeight * .65, 1) * stop.rest;
+    window.scrollTo({ top: Math.max(0, scroll), behavior: 'auto' });
+  };
+  // Late-loading media/fonts still shift section heights well after mount,
+  // which silently invalidates a scroll computed too early - one immediate
+  // jump plus a couple of re-corrections once the page has actually settled.
+  jump();
+  window.setTimeout(jump, 300);
+  window.setTimeout(jump, 900);
+}

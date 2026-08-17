@@ -8,6 +8,7 @@ import heroDock from './hero-dock.json';
 import processDock from './process-dock.json';
 import projectsDock from './projects-dock.json';
 import styles from './experience.module.css';
+import { neighboringDockingStops, scrollToDockingStation } from './dockingRoute';
 import { getFlightPathDraft, subscribeFlightPathDraft, updateDockRingPosition } from './flightPathStore';
 import { useDraggableCalibrationPanel } from './useDraggableCalibrationPanel';
 
@@ -24,19 +25,6 @@ const stationConfig: Record<StationId, DockConfig> = {
   contact: contactDock,
 };
 const stationEditorNumber: Record<StationId, string> = { hero: '1', process: '6', data: '7', projects: '8', about: '9', contact: '10' };
-/** Every one of these stations sits deep inside its own section, which only
- *  reaches its docked/visible position once scrolled into view - the
- *  calibration panel itself is fixed-position and appears immediately, so
- *  without this a slider drag looks like it does nothing: the ring is
- *  updating correctly, just thousands of pixels below the fold. */
-const stationSectionId: Record<StationId, string> = {
-  hero: 'hero',
-  process: 'business-os',
-  data: 'daten-intelligenz',
-  projects: 'journey-references',
-  about: 'journey-about',
-  contact: 'journey-contact',
-};
 const stationDisplay: Record<StationId, { number: string; label: string }> = {
   hero: { number: '01', label: 'START' },
   process: { number: '06', label: 'PROZESSE' },
@@ -56,6 +44,7 @@ export default function SectionDockingStation({ station }: { station: StationId 
   const [config, setConfig] = useState<LocalDockConfig>(defaultDock);
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const calibrationPanel = useDraggableCalibrationPanel(`ms-${station}-dock-panel-v1`);
+  const { prev: prevStop, next: nextStop } = neighboringDockingStops(station);
   const ringPosition = useSyncExternalStore(
     subscribeFlightPathDraft,
     () => getFlightPathDraft().dockRings[station],
@@ -67,7 +56,7 @@ export default function SectionDockingStation({ station }: { station: StationId 
     const enabled = editor === station || editor === stationEditorNumber[station];
     setEditorEnabled(enabled);
     if (!enabled) return;
-    document.getElementById(stationSectionId[station])?.scrollIntoView({ block: 'center' });
+    scrollToDockingStation(station);
     try {
       const stored = window.localStorage.getItem(storageKey);
       if (stored) {
@@ -164,6 +153,12 @@ export default function SectionDockingStation({ station }: { station: StationId 
           <label>OY <input type="range" min="-20" max="20" step=".1" value={config.objectY} onChange={(event) => setConfig((current) => ({ ...current, objectY: Number(event.target.value) }))} /><output>{config.objectY.toFixed(1)}</output></label>
           <label>S <input type="range" min=".3" max="1.2" step=".01" value={config.scale} onChange={(event) => setConfig((current) => ({ ...current, scale: Number(event.target.value) }))} /><output>{config.scale.toFixed(2)}</output></label>
           <footer><button type="button" onClick={() => { setConfig(defaultDock); updateDockRingPosition(station, { x: defaultDock.x, y: defaultDock.y }); }}>RESET</button><button type="button" className={styles.problemDockSave} onClick={saveToWebsite} disabled={saveState === 'saving'}>{saveState === 'saving' ? 'SPEICHERT…' : saveState === 'saved' ? 'GESPEICHERT ✓' : saveState === 'error' ? 'FEHLER' : 'IN WEBSITE SPEICHERN'}</button></footer>
+          {(prevStop || nextStop) && (
+            <footer>
+              {prevStop && <button type="button" onClick={() => { window.location.href = `?dock-editor=${prevStop.anchor}`; }}>← {prevStop.label}</button>}
+              {nextStop && <button type="button" onClick={() => { window.location.href = `?dock-editor=${nextStop.anchor}`; }}>{nextStop.label} →</button>}
+            </footer>
+          )}
         </aside>
       )}
     </div>

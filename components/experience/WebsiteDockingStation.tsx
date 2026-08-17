@@ -3,10 +3,12 @@
 import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
 import savedDock from './website-dock.json';
 import styles from './experience.module.css';
+import { neighboringDockingStops, scrollToDockingStation } from './dockingRoute';
 import { getFlightPathDraft, subscribeFlightPathDraft, updateDockRingPosition } from './flightPathStore';
 import { useDraggableCalibrationPanel } from './useDraggableCalibrationPanel';
 
 const ANCHOR = 'website';
+const { prev: PREV_STOP, next: NEXT_STOP } = neighboringDockingStops(ANCHOR);
 
 type DockConfig = {
   x: number;
@@ -44,6 +46,7 @@ export default function WebsiteDockingStation() {
     const enabled = editor === 'website' || editor === '4';
     setEditorEnabled(enabled);
     if (!enabled) return;
+    scrollToDockingStation(ANCHOR);
     try {
       const stored = window.localStorage.getItem(STORAGE_KEY);
       if (stored) {
@@ -166,6 +169,10 @@ export default function WebsiteDockingStation() {
             <button type="button" className={styles.problemDockSave} onClick={saveToWebsite} disabled={saveState === 'saving'}>
               {saveState === 'saving' ? 'SPEICHERT…' : saveState === 'saved' ? 'GESPEICHERT ✓' : saveState === 'error' ? 'FEHLER' : 'IN WEBSITE SPEICHERN'}
             </button>
+          </footer>
+          <footer>
+            {PREV_STOP && <button type="button" onClick={() => { window.location.href = `?dock-editor=${PREV_STOP.anchor}`; }}>← {PREV_STOP.label}</button>}
+            {NEXT_STOP && <button type="button" onClick={() => { window.location.href = `?dock-editor=${NEXT_STOP.anchor}`; }}>{NEXT_STOP.label} →</button>}
           </footer>
         </aside>
       )}

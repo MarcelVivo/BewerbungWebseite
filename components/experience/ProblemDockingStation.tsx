@@ -3,10 +3,12 @@
 import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
 import savedDock from './problem-dock.json';
 import styles from './experience.module.css';
+import { neighboringDockingStops, scrollToDockingStation } from './dockingRoute';
 import { getFlightPathDraft, subscribeFlightPathDraft, updateDockRingPosition } from './flightPathStore';
 import { useDraggableCalibrationPanel } from './useDraggableCalibrationPanel';
 
 const ANCHOR = 'problem';
+const { next: NEXT_STOP } = neighboringDockingStops(ANCHOR);
 
 type DockConfig = {
   x: number;
@@ -44,6 +46,7 @@ export default function ProblemDockingStation() {
     const editor = params.get('dock-editor');
     const enabled = editor === 'problem' || editor === '2';
     setEditorEnabled(enabled);
+    if (enabled) scrollToDockingStation(ANCHOR);
 
     try {
       const stored = window.localStorage.getItem(STORAGE_KEY);
@@ -174,6 +177,13 @@ export default function ProblemDockingStation() {
               {saveState === 'saving' ? 'SPEICHERT…' : saveState === 'saved' ? 'GESPEICHERT ✓' : saveState === 'error' ? 'FEHLER' : 'IN WEBSITE SPEICHERN'}
             </button>
           </footer>
+          {NEXT_STOP && (
+            <footer>
+              <button type="button" onClick={() => { window.location.href = `?dock-editor=${NEXT_STOP.anchor}`; }}>
+                NÄCHSTE STATION: {NEXT_STOP.label} →
+              </button>
+            </footer>
+          )}
         </aside>
       )}
     </>
