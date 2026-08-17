@@ -331,9 +331,7 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
         // formula for docks shifted their arrival scroll, so the object's
         // target progress raced ahead of what the damping could track.
         const scroll = stop
-          ? stop.anchor === 'hero'
-            ? absoluteTop + viewportHeight * .62
-            : absoluteTop + Math.max(section.offsetHeight - viewportHeight, viewportHeight * .65, 1) * stop.rest
+          ? absoluteTop + Math.max(section.offsetHeight - viewportHeight, viewportHeight * .65, 1) * stop.rest
           : absoluteTop + rect.height * point.sectionOffset - viewportHeight * .5;
         // Keep the route's virtual tail beyond the browser's physical maximum
         // scroll. Otherwise all contact points collapse onto one value and the
@@ -372,11 +370,32 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
             : maximumScroll,
         };
       });
+      // Control points between docks get their scroll from where they actually
+      // sit on the master curve (arc-length progress), not from their raw
+      // array index. mapScrollToPathProgress() ramps path progress *linearly
+      // in scroll* between two docks; inverting that ramp at a point's real
+      // progress is what puts its assigned scroll back where the curve (and
+      // the rail line/object built from it) actually pass through its x/y.
+      // Index-based interpolation ignored how unevenly points are spaced
+      // along the curve - measured up to ~210px off on a sharply curved or
+      // asymmetric segment. Geometry (x/y/scale) never depends on .scroll, so
+      // this preview build's placeholder scroll values don't affect progress;
+      // the real pathRoute/masterPath below still gets built fresh afterward.
+      const previewPathRoute: ResolvedPoint[] = [
+        { ...draft.start, scroll: 0, documentX: viewportWidth * draft.start.x / 100, documentY: viewportHeight * draft.start.y / 100 },
+        ...route,
+      ];
+      const progressModel = masterPath ?? createMasterFlightPath(previewPathRoute);
+      if (masterPath) progressModel.updateFromNodes(previewPathRoute);
+      const nodeProgress = (routeIndex: number) => progressModel.getNodeProgress(routeIndex + 1);
+
       const firstDockIndex = dockIndexes[0] ?? -1;
       if (firstDockIndex > 0) {
         const firstDockScroll = route[firstDockIndex].scroll;
+        const firstDockProgress = nodeProgress(firstDockIndex);
         for (let index = 0; index < firstDockIndex; index += 1) {
-          const scroll = firstDockScroll * (index + 1) / (firstDockIndex + 1);
+          const amount = firstDockProgress > 0.000001 ? nodeProgress(index) / firstDockProgress : (index + 1) / (firstDockIndex + 1);
+          const scroll = firstDockScroll * amount;
           route[index] = {
             ...route[index],
             scroll,
@@ -388,8 +407,10 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
         const toIndex = dockIndexes[dockOrder + 1];
         const fromScroll = route[fromIndex].departureScroll ?? route[fromIndex].scroll;
         const toScroll = route[toIndex].scroll;
+        const fromProgress = nodeProgress(fromIndex);
+        const progressSpan = nodeProgress(toIndex) - fromProgress;
         for (let index = fromIndex + 1; index < toIndex; index += 1) {
-          const amount = (index - fromIndex) / (toIndex - fromIndex);
+          const amount = progressSpan > 0.000001 ? (nodeProgress(index) - fromProgress) / progressSpan : (index - fromIndex) / (toIndex - fromIndex);
           const scroll = mix(fromScroll, toScroll, amount);
           route[index] = {
             ...route[index],

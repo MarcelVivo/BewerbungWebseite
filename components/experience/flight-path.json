@@ -14,118 +14,31 @@
   "points": [
     {
       "id": "journey-start",
-      "sectionOffset": 0.14285714285714285,
-      "x": 50,
-      "y": 20,
-      "scale": 0.95,
-      "rotation": -6,
-      "opacity": 0.97,
-      "type": "control",
-      "handleMode": "free",
-      "curveIn": {
-        "x": -4.166667,
-        "y": -4,
-        "z": -0.016667
-      },
-      "curveOut": {
-        "x": 4.166667,
-        "y": 4,
-        "z": 0.016667
-      }
-    },
-    {
-      "id": "journey-start",
       "sectionOffset": 0.2,
-      "x": 75,
-      "y": 44,
-      "scale": 1.05,
-      "rotation": 4,
-      "opacity": 0.98,
+      "x": 48.134036,
+      "y": 25.633156,
+      "scale": 0.864833,
+      "rotation": -0.3333,
+      "opacity": 0.9667,
       "type": "control",
-      "handleMode": "free",
-      "curveIn": {
-        "x": -5.333333,
-        "y": -7.166667,
-        "z": 0.028333
-      },
-      "curveOut": {
-        "x": 5.333333,
-        "y": 7.166667,
-        "z": -0.028333
-      }
-    },
-    {
-      "id": "journey-start",
-      "sectionOffset": 0.2857142857142857,
-      "x": 82,
-      "y": 63,
-      "scale": 0.78,
-      "rotation": 10,
-      "opacity": 0.98,
-      "dockAnchor": "hero",
-      "dockNumber": "01",
-      "dockLabel": "START",
-      "dockLocked": true,
-      "type": "dock",
-      "handleMode": "free",
-      "curveIn": {
-        "x": 4.216667,
-        "y": 0.5,
-        "z": -0.006667
-      },
-      "curveOut": {
-        "x": -1.405556,
-        "y": -0.166667,
-        "z": 0.002222
-      }
+      "handleMode": "aligned"
     },
     {
       "id": "fragmentierung",
-      "sectionOffset": 0.3,
-      "x": 71.751852,
-      "y": 57,
-      "scale": 0.861111,
-      "rotation": 10.3043,
-      "opacity": 0.98,
+      "sectionOffset": 0.4,
+      "x": 48.034036,
+      "y": 31.29749,
+      "scale": 0.864833,
+      "rotation": 5.3333,
+      "opacity": 0.9733,
       "type": "control",
-      "handleMode": "free",
-      "curveIn": {
-        "x": 4.785185,
-        "y": 3.296296,
-        "z": -0.044815
-      },
-      "curveOut": {
-        "x": -4.785185,
-        "y": -3.296296,
-        "z": 0.044815
-      }
-    },
-    {
-      "id": "fragmentierung",
-      "sectionOffset": 0.3,
-      "x": 57.137037,
-      "y": 46.444444,
-      "scale": 1.006667,
-      "rotation": 10.7645,
-      "opacity": 0.98,
-      "type": "control",
-      "handleMode": "free",
-      "curveIn": {
-        "x": 4.316667,
-        "y": 3.203704,
-        "z": -0.045185
-      },
-      "curveOut": {
-        "x": -4.316667,
-        "y": -3.203704,
-        "z": 0.045185
-      }
+      "handleMode": "aligned"
     },
     {
       "id": "fragmentierung",
       "sectionOffset": 0.6336996336996337,
       "x": 49.7,
-      "y": 41,
+      "y": 36.993,
       "scale": 1.09,
       "rotation": 11,
       "opacity": 0.98,
@@ -134,66 +47,36 @@
       "dockLabel": "PROBLEM / FRAGMENTIERUNG",
       "dockLocked": true,
       "type": "dock",
-      "handleMode": "free",
-      "curveIn": {
-        "x": 0,
-        "y": -0.111111,
-        "z": -0.003333
-      },
-      "curveOut": {
-        "x": 0,
-        "y": 0.166667,
-        "z": 0.005
-      }
+      "handleMode": "aligned"
     },
     {
       "id": "journey-solutions",
       "sectionOffset": 0.3,
-      "x": 66.58125,
-      "y": 51.5625,
-      "scale": 0.993125,
-      "rotation": 18.8017,
+      "x": 42.880841,
+      "y": 51.587219,
+      "scale": 0.821532,
+      "rotation": -2.6667,
       "opacity": 0.98,
       "type": "control",
-      "handleMode": "free",
-      "curveIn": {
-        "x": -8.31875,
-        "y": -5.4375,
-        "z": 0.055625
-      },
-      "curveOut": {
-        "x": 8.31875,
-        "y": 5.4375,
-        "z": -0.055625
-      }
+      "handleMode": "aligned"
     },
     {
       "id": "journey-solutions",
       "sectionOffset": 0.04599406528189911,
-      "x": 82,
-      "y": 65,
-      "scale": 0.84,
-      "rotation": 27,
+      "x": 32.518841,
+      "y": 62.950885,
+      "scale": 0.821532,
+      "rotation": -16.3333,
       "opacity": 0.98,
       "type": "control",
-      "handleMode": "free",
-      "curveIn": {
-        "x": 0.975,
-        "y": -2.083333,
-        "z": 0.0325
-      },
-      "curveOut": {
-        "x": -1.95,
-        "y": 4.166667,
-        "z": -0.065
-      }
+      "handleMode": "aligned"
     },
     {
       "id": "journey-solutions",
       "sectionOffset": 0.3857566765578635,
-      "x": 38,
-      "y": 66,
-      "scale": 0.7,
+      "x": 18.614,
+      "y": 71.084,
+      "scale": 1.09,
       "rotation": -30,
       "opacity": 0.98,
       "dockAnchor": "system",
@@ -201,66 +84,36 @@
       "dockLabel": "SYSTEM",
       "dockLocked": true,
       "type": "dock",
-      "handleMode": "free",
-      "curveIn": {
-        "x": 6.995928,
-        "y": -1.140542,
-        "z": 0.001667
-      },
-      "curveOut": {
-        "x": -3.497964,
-        "y": 0.570271,
-        "z": -0.000833
-      }
+      "handleMode": "aligned"
     },
     {
       "id": "verkaufssystem",
       "sectionOffset": 0.3,
-      "x": 35.036949,
-      "y": 68.528802,
-      "scale": 0.741875,
-      "rotation": -2.7395,
+      "x": 38.617523,
+      "y": 75.291401,
+      "scale": 0.908135,
+      "rotation": -10.6667,
       "opacity": 0.98,
       "type": "control",
-      "handleMode": "free",
-      "curveIn": {
-        "x": -0.930001,
-        "y": -1.044736,
-        "z": -0.025208
-      },
-      "curveOut": {
-        "x": 0.930001,
-        "y": 1.044736,
-        "z": 0.025208
-      }
+      "handleMode": "aligned"
     },
     {
       "id": "journey-solutions",
       "sectionOffset": 0.9013353115727003,
-      "x": 40.024429,
-      "y": 71.843249,
-      "scale": 0.83,
-      "rotation": 30,
+      "x": 58.362857,
+      "y": 74.309067,
+      "scale": 0.908135,
+      "rotation": 8.6667,
       "opacity": 0.98,
       "type": "control",
-      "handleMode": "free",
-      "curveIn": {
-        "x": -1.80239,
-        "y": -1.094034,
-        "z": -0.03
-      },
-      "curveOut": {
-        "x": 3.60478,
-        "y": 2.188068,
-        "z": 0.06
-      }
+      "handleMode": "aligned"
     },
     {
       "id": "verkaufssystem",
       "sectionOffset": 0.24771452505827507,
-      "x": 59.628682880055806,
-      "y": 79.12840544871796,
-      "scale": 1.06,
+      "x": 77.85,
+      "y": 68.137,
+      "scale": 1.09,
       "rotation": 28,
       "opacity": 0.98,
       "dockAnchor": "website",
@@ -268,66 +121,36 @@
       "dockLabel": "WEBSITE / VERKAUF",
       "dockLocked": true,
       "type": "dock",
-      "handleMode": "free",
-      "curveIn": {
-        "x": -6.546101,
-        "y": 0.498214,
-        "z": 0.026667
-      },
-      "curveOut": {
-        "x": 3.273051,
-        "y": -0.249107,
-        "z": -0.013333
-      }
+      "handleMode": "aligned"
     },
     {
       "id": "marketing-engine",
       "sectionOffset": 0.3,
-      "x": 72.521441,
-      "y": 75.937381,
-      "scale": 0.879375,
-      "rotation": -2.5907,
+      "x": 55.543964,
+      "y": 66.736471,
+      "scale": 0.795551,
+      "rotation": 9.6667,
       "opacity": 0.98,
       "type": "control",
-      "handleMode": "free",
-      "curveIn": {
-        "x": -4.300423,
-        "y": 1.795325,
-        "z": 0.086042
-      },
-      "curveOut": {
-        "x": 4.300423,
-        "y": -1.795325,
-        "z": -0.086042
-      }
+      "handleMode": "aligned"
     },
     {
       "id": "marketing-engine",
       "sectionOffset": 0.03501056235431235,
-      "x": 79.301037,
-      "y": 68.853966,
-      "scale": 0.67,
-      "rotation": -27,
+      "x": 34.760298,
+      "y": 60.367804,
+      "scale": 0.795551,
+      "rotation": -8.6667,
       "opacity": 0.98,
       "type": "control",
-      "handleMode": "free",
-      "curveIn": {
-        "x": 0.80239,
-        "y": 2.844034,
-        "z": 0.0325
-      },
-      "curveOut": {
-        "x": -1.60478,
-        "y": -5.688068,
-        "z": -0.065
-      }
+      "handleMode": "aligned"
     },
     {
       "id": "marketing-engine",
       "sectionOffset": 0.2861760635198135,
-      "x": 50,
-      "y": 45,
-      "scale": 0.67,
+      "x": 15.499,
+      "y": 49.031,
+      "scale": 1.09,
       "rotation": -27,
       "opacity": 0.98,
       "dockAnchor": "marketing",
@@ -335,66 +158,36 @@
       "dockLabel": "MARKETING",
       "dockLocked": true,
       "type": "dock",
-      "handleMode": "free",
-      "curveIn": {
-        "x": 0.493684,
-        "y": 0.69386,
-        "z": -0.028333
-      },
-      "curveOut": {
-        "x": -0.246842,
-        "y": -0.34693,
-        "z": 0.014167
-      }
+      "handleMode": "aligned"
     },
     {
       "id": "business-os",
       "sectionOffset": 0.3,
-      "x": 61.078842,
-      "y": 52.930257,
-      "scale": 0.775,
-      "rotation": -3.342,
+      "x": 36.987889,
+      "y": 62.035534,
+      "scale": 0.890814,
+      "rotation": -8.0,
       "opacity": 0.98,
       "type": "control",
-      "handleMode": "free",
-      "curveIn": {
-        "x": -6.01128,
-        "y": -4.457785,
-        "z": -0.042083
-      },
-      "curveOut": {
-        "x": 6.01128,
-        "y": 4.457785,
-        "z": 0.042083
-      }
+      "handleMode": "aligned"
     },
     {
       "id": "business-os",
       "sectionOffset": 0.014967017590618336,
-      "x": 76.338934,
-      "y": 64.690805,
-      "scale": 0.84,
-      "rotation": 30,
+      "x": 60.189223,
+      "y": 70.134201,
+      "scale": 0.890814,
+      "rotation": 11.0,
       "opacity": 0.98,
       "type": "control",
-      "handleMode": "free",
-      "curveIn": {
-        "x": -2.540658,
-        "y": -2.206597,
-        "z": 0.0125
-      },
-      "curveOut": {
-        "x": 5.081316,
-        "y": 4.413194,
-        "z": -0.025
-      }
+      "handleMode": "aligned"
     },
     {
       "id": "business-os",
       "sectionOffset": 0.4312783182302772,
-      "x": 80.48789443863322,
-      "y": 71.47916666666667,
-      "scale": 0.52,
+      "x": 85.103,
+      "y": 73.327,
+      "scale": 1.09,
       "rotation": 30,
       "opacity": 0.98,
       "dockAnchor": "process",
@@ -402,66 +195,36 @@
       "dockLabel": "PROZESSE",
       "dockLocked": true,
       "type": "dock",
-      "handleMode": "free",
-      "curveIn": {
-        "x": -1.90264,
-        "y": -2.196681,
-        "z": 0.023333
-      },
-      "curveOut": {
-        "x": 0.95132,
-        "y": 1.098341,
-        "z": -0.011667
-      }
+      "handleMode": "aligned"
     },
     {
       "id": "daten-intelligenz",
       "sectionOffset": 0.3,
-      "x": 84.532576,
-      "y": 76.454283,
-      "scale": 0.605625,
-      "rotation": 30,
+      "x": 68.991739,
+      "y": 66.70029,
+      "scale": 0.838853,
+      "rotation": 27.3333,
       "opacity": 0.98,
       "type": "control",
-      "handleMode": "free",
-      "curveIn": {
-        "x": -1.47814,
-        "y": -1.641846,
-        "z": -0.049375
-      },
-      "curveOut": {
-        "x": 1.47814,
-        "y": 1.641846,
-        "z": 0.049375
-      }
+      "handleMode": "aligned"
     },
     {
       "id": "business-os",
       "sectionOffset": 0.7409798107675906,
-      "x": 87.754772,
-      "y": 77.870893,
-      "scale": 0.7,
-      "rotation": 30,
+      "x": 56.190739,
+      "y": 56.082623,
+      "scale": 0.838853,
+      "rotation": 24.6667,
       "opacity": 0.98,
       "type": "control",
-      "handleMode": "free",
-      "curveIn": {
-        "x": -0.402997,
-        "y": 1.273997,
-        "z": 0.005833
-      },
-      "curveOut": {
-        "x": 0.805993,
-        "y": -2.547993,
-        "z": -0.011667
-      }
+      "handleMode": "aligned"
     },
     {
       "id": "daten-intelligenz",
       "sectionOffset": 0.46043481903485256,
-      "x": 85.32385250048844,
-      "y": 56.191206981097196,
-      "scale": 0.45,
+      "x": 46.7,
+      "y": 41.474,
+      "scale": 1.09,
       "rotation": 22,
       "opacity": 0.98,
       "dockAnchor": "data",
@@ -469,66 +232,36 @@
       "dockLabel": "DATEN",
       "dockLocked": true,
       "type": "dock",
-      "handleMode": "free",
-      "curveIn": {
-        "x": 3.462325,
-        "y": -0.120276,
-        "z": 0.008333
-      },
-      "curveOut": {
-        "x": -1.731163,
-        "y": 0.060138,
-        "z": -0.004167
-      }
+      "handleMode": "aligned"
     },
     {
       "id": "journey-references",
       "sectionOffset": 0.3,
-      "x": 74.536395,
-      "y": 66.096524,
-      "scale": 0.534375,
-      "rotation": 4.9993,
+      "x": 56.519454,
+      "y": 40.900745,
+      "scale": 0.925455,
+      "rotation": 24.6667,
       "opacity": 0.98,
       "type": "control",
-      "handleMode": "free",
-      "curveIn": {
-        "x": 4.258824,
-        "y": -5.138482,
-        "z": -0.046875
-      },
-      "curveOut": {
-        "x": -4.258824,
-        "y": 5.138482,
-        "z": 0.046875
-      }
+      "handleMode": "aligned"
     },
     {
       "id": "journey-references",
       "sectionOffset": 0.048589644513137555,
-      "x": 66.980822,
-      "y": 78.592549,
-      "scale": 0.65,
-      "rotation": -12,
+      "x": 65.306121,
+      "y": 37.588078,
+      "scale": 0.925455,
+      "rotation": 27.3333,
       "opacity": 0.98,
       "type": "control",
-      "handleMode": "free",
-      "curveIn": {
-        "x": -0.423427,
-        "y": -1.787276,
-        "z": -0.016667
-      },
-      "curveOut": {
-        "x": 0.846854,
-        "y": 3.574553,
-        "z": 0.033333
-      }
+      "handleMode": "aligned"
     },
     {
       "id": "journey-references",
       "sectionOffset": 0.40484930448222567,
-      "x": 90.40497392656934,
-      "y": 77.63852268622541,
-      "scale": 0.65,
+      "x": 73.06,
+      "y": 31.536,
+      "scale": 1.09,
       "rotation": 30,
       "opacity": 0.98,
       "dockAnchor": "projects",
@@ -536,66 +269,36 @@
       "dockLabel": "PROJEKTE",
       "dockLocked": true,
       "type": "dock",
-      "handleMode": "free",
-      "curveIn": {
-        "x": 4.21352,
-        "y": -1.01454,
-        "z": 0.023333
-      },
-      "curveOut": {
-        "x": -2.10676,
-        "y": 0.50727,
-        "z": -0.011667
-      }
+      "handleMode": "aligned"
     },
     {
       "id": "journey-about",
       "sectionOffset": 0.3,
-      "x": 68.872579,
-      "y": 82.142016,
-      "scale": 0.57875,
-      "rotation": 12.621,
+      "x": 62.044138,
+      "y": 43.019465,
+      "scale": 0.804212,
+      "rotation": 10.0,
       "opacity": 0.98,
       "type": "control",
-      "handleMode": "free",
-      "curveIn": {
-        "x": 10.182858,
-        "y": -1.834302,
-        "z": 0.029583
-      },
-      "curveOut": {
-        "x": -10.182858,
-        "y": 1.834302,
-        "z": -0.029583
-      }
+      "handleMode": "aligned"
     },
     {
       "id": "journey-references",
       "sectionOffset": 0.8468894899536321,
-      "x": 41.699702,
-      "y": 84.679789,
-      "scale": 0.51,
-      "rotation": -9,
+      "x": 48.741138,
+      "y": 50.355465,
+      "scale": 0.804212,
+      "rotation": -10.0,
       "opacity": 0.98,
       "type": "control",
-      "handleMode": "free",
-      "curveIn": {
-        "x": 5.867081,
-        "y": 0.80321,
-        "z": 0.01
-      },
-      "curveOut": {
-        "x": -11.734162,
-        "y": -1.60642,
-        "z": -0.02
-      }
+      "handleMode": "aligned"
     },
     {
       "id": "journey-about",
       "sectionOffset": 0.5894668018787361,
-      "x": 20,
-      "y": 68,
-      "scale": 0.53,
+      "x": 33.151,
+      "y": 53.544,
+      "scale": 1.09,
       "rotation": -30,
       "opacity": 0.98,
       "dockAnchor": "about",
@@ -603,66 +306,36 @@
       "dockLabel": "UEBER MICH",
       "dockLocked": true,
       "type": "dock",
-      "handleMode": "free",
-      "curveIn": {
-        "x": 3.816448,
-        "y": -0.474509,
-        "z": -0.068333
-      },
-      "curveOut": {
-        "x": -1.908224,
-        "y": 0.237255,
-        "z": 0.034167
-      }
+      "handleMode": "aligned"
     },
     {
       "id": "journey-contact",
       "sectionOffset": 0.3,
-      "x": 18.672112,
-      "y": 77.102702,
-      "scale": 0.735625,
-      "rotation": -1.1676,
+      "x": 26.605618,
+      "y": 55.339529,
+      "scale": 0.873494,
+      "rotation": -26.3333,
       "opacity": 0.98,
       "type": "control",
-      "handleMode": "free",
-      "curveIn": {
-        "x": -0.411567,
-        "y": -4.542844,
-        "z": -0.083958
-      },
-      "curveOut": {
-        "x": 0.411567,
-        "y": 4.542844,
-        "z": 0.083958
-      }
+      "handleMode": "aligned"
     },
     {
       "id": "journey-contact",
       "sectionOffset": 0.029418859649122806,
-      "x": 18.801014,
-      "y": 87.526844,
-      "scale": 0.92,
-      "rotation": 30,
+      "x": 21.150284,
+      "y": 58.835862,
+      "scale": 0.873494,
+      "rotation": -22.6667,
       "opacity": 0.98,
       "type": "control",
-      "handleMode": "free",
-      "curveIn": {
-        "x": 0.937031,
-        "y": -1.118214,
-        "z": -0.02
-      },
-      "curveOut": {
-        "x": -1.874061,
-        "y": 2.236428,
-        "z": 0.04
-      }
+      "handleMode": "aligned"
     },
     {
       "id": "journey-contact",
       "sectionOffset": 0.371875,
-      "x": 8.755632050697644,
-      "y": 81.4185707631485,
-      "scale": 0.77,
+      "x": 16.785,
+      "y": 64.033,
+      "scale": 1.09,
       "rotation": -19,
       "opacity": 0.98,
       "dockAnchor": "contact",
@@ -671,12 +344,7 @@
       "dockLocked": true,
       "isTerminal": true,
       "type": "dock",
-      "handleMode": "free",
-      "curveIn": {
-        "x": 3.348461,
-        "y": 2.036091,
-        "z": 0.05
-      }
+      "handleMode": "aligned"
     }
   ]
 }

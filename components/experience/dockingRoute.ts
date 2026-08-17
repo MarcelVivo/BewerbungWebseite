@@ -1,16 +1,15 @@
 import type { FlightPathPoint } from './flightPathTypes';
 
 export const DOCKING_STOPS = [
-  { sectionId: 'journey-start', anchor: 'hero', rest: 0, pointOccurrence: 0, number: '01', label: 'START' },
-  { sectionId: 'fragmentierung', anchor: 'problem', rest: .48, pointOccurrence: 2, number: '02', label: 'PROBLEM / FRAGMENTIERUNG' },
-  { sectionId: 'journey-solutions', anchor: 'system', rest: .42, pointOccurrence: 1, number: '03', label: 'SYSTEM' },
-  { sectionId: 'verkaufssystem', anchor: 'website', rest: .48, pointOccurrence: 1, number: '04', label: 'WEBSITE / VERKAUF' },
-  { sectionId: 'marketing-engine', anchor: 'marketing', rest: .48, pointOccurrence: 1, number: '05', label: 'MARKETING' },
-  { sectionId: 'business-os', anchor: 'process', rest: .45, pointOccurrence: 2, number: '06', label: 'PROZESSE' },
-  { sectionId: 'daten-intelligenz', anchor: 'data', rest: .45, pointOccurrence: 1, number: '07', label: 'DATEN' },
-  { sectionId: 'journey-references', anchor: 'projects', rest: .45, pointOccurrence: 1, number: '08', label: 'PROJEKTE' },
-  { sectionId: 'journey-about', anchor: 'about', rest: .45, pointOccurrence: 1, number: '09', label: 'UEBER MICH' },
-  { sectionId: 'journey-contact', anchor: 'contact', rest: .42, pointOccurrence: 1, number: '10', label: 'KONTAKT' },
+  { sectionId: 'fragmentierung', anchor: 'problem', rest: .48, pointOccurrence: 2, number: '01', label: 'PROBLEM / FRAGMENTIERUNG' },
+  { sectionId: 'journey-solutions', anchor: 'system', rest: .42, pointOccurrence: 1, number: '02', label: 'SYSTEM' },
+  { sectionId: 'verkaufssystem', anchor: 'website', rest: .48, pointOccurrence: 1, number: '03', label: 'WEBSITE / VERKAUF' },
+  { sectionId: 'marketing-engine', anchor: 'marketing', rest: .48, pointOccurrence: 1, number: '04', label: 'MARKETING' },
+  { sectionId: 'business-os', anchor: 'process', rest: .45, pointOccurrence: 2, number: '05', label: 'PROZESSE' },
+  { sectionId: 'daten-intelligenz', anchor: 'data', rest: .45, pointOccurrence: 1, number: '06', label: 'DATEN' },
+  { sectionId: 'journey-references', anchor: 'projects', rest: .45, pointOccurrence: 1, number: '07', label: 'PROJEKTE' },
+  { sectionId: 'journey-about', anchor: 'about', rest: .45, pointOccurrence: 1, number: '08', label: 'UEBER MICH' },
+  { sectionId: 'journey-contact', anchor: 'contact', rest: .42, pointOccurrence: 1, number: '09', label: 'KONTAKT' },
 ] as const;
 
 export type DockingStop = (typeof DOCKING_STOPS)[number];

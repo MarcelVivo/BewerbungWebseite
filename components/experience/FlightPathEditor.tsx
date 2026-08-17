@@ -41,7 +41,6 @@ import {
   subscribeFlightPathDraft,
   subscribeFlightPathHistory,
   subscribeResolvedFlightPath,
-  subscribeFlightPathRuntime,
   undoFlightPath,
   updateDockRingPosition,
   updateFlightPathFollowSpeed,
@@ -52,7 +51,10 @@ import {
 import { documentPointerToPathPoint, pathSampleToDocument, type Viewport } from './flightPathTransforms';
 import { resolveBezierHandles } from './masterFlightPath';
 import type { FlightPathCurveHandle, FlightPathHandleMode, FlightPathPoint } from './flightPathTypes';
+import { useDraggableCalibrationPanel } from './useDraggableCalibrationPanel';
 import styles from './experience.module.css';
+
+const SETTINGS_PANEL_COLLAPSED_STORAGE_KEY = 'ms-flight-path-settings-collapsed-v1';
 
 type AnchorKind = 'start' | 'dock' | 'control';
 
@@ -133,6 +135,39 @@ const updateAnchor = (target: AnchorTarget, patch: Partial<FlightPathPoint>) => 
   else updateFlightPathPoint(target.index, patch);
 };
 
+/** Where a dock anchor rests relative to its real docking station's ring,
+ *  expressed as a multiple of the ring's own on-screen radius (0 = ring
+ *  center, negative = above, positive = below) - independent of viewport
+ *  size, so a value tuned once looks right on any screen. Reads/writes the
+ *  ring's live rect directly (same DOM query the dock-tracking effect
+ *  above uses) rather than going through path-space percent math, since
+ *  that's the mental model this is meant to replace: "how far off the
+ *  ring's center" instead of an abstract y percentage. */
+const getDockRingRect = (dockAnchor: string) => document.querySelector<HTMLElement>(`[data-docking-anchor="${dockAnchor}"]`)?.getBoundingClientRect() ?? null;
+
+const getDockOffsetRatio = (point: FlightPathPoint, axis: 'x' | 'y'): number | null => {
+  if (!point.dockAnchor) return null;
+  const rect = getDockRingRect(point.dockAnchor);
+  if (!rect) return null;
+  const viewportSize = axis === 'x' ? window.innerWidth : window.innerHeight;
+  const ringCenter = axis === 'x' ? rect.left + rect.width / 2 : rect.top + rect.height / 2;
+  const ringRadius = (axis === 'x' ? rect.width : rect.height) / 2;
+  const entityScreenPos = ((axis === 'x' ? point.x : point.y) / 100) * viewportSize;
+  return ringRadius > 0 ? (entityScreenPos - ringCenter) / ringRadius : null;
+};
+
+const applyDockOffsetRatio = (target: AnchorTarget, point: FlightPathPoint, axis: 'x' | 'y', ratio: number) => {
+  if (!point.dockAnchor || !Number.isFinite(ratio)) return;
+  const rect = getDockRingRect(point.dockAnchor);
+  if (!rect) return;
+  const viewportSize = axis === 'x' ? window.innerWidth : window.innerHeight;
+  const ringCenter = axis === 'x' ? rect.left + rect.width / 2 : rect.top + rect.height / 2;
+  const ringRadius = (axis === 'x' ? rect.width : rect.height) / 2;
+  const targetScreenPos = ringCenter + ratio * ringRadius;
+  const targetPercent = clamp((targetScreenPos / viewportSize) * 100, 2, 98);
+  updateAnchor(target, axis === 'x' ? { x: targetPercent } : { y: targetPercent });
+};
+
 /** Shift: snap a delta's angle to the nearest 45°, keeping its magnitude. */
 const snapAngle = (x: number, y: number) => {
   const length = Math.hypot(x, y);
@@ -174,12 +209,142 @@ export default function FlightPathEditor() {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<SaveState>({ status: 'idle' });
   const [copyLabel, setCopyLabel] = useState('KONFIGURATION KOPIEREN');
+  const [settingsCollapsed, setSettingsCollapsed] = useState(false);
   const dragRef = useRef<ActiveDrag | null>(null);
+  const settingsPanel = useDraggableCalibrationPanel('ms-flight-path-settings-panel-v1');
+
+  useEffect(() => {
+    try {
+      setSettingsCollapsed(window.localStorage.getItem(SETTINGS_PANEL_COLLAPSED_STORAGE_KEY) === '1');
+    } catch {
+      // Panel just stays expanded when persistence is unavailable.
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(SETTINGS_PANEL_COLLAPSED_STORAGE_KEY, settingsCollapsed ? '1' : '0');
+    } catch {
+      // Collapse state simply won't survive a reload when persistence is unavailable.
+    }
+  }, [settingsCollapsed]);
 
   const draft = useSyncExternalStore(subscribeFlightPathDraft, getFlightPathDraft, getFlightPathDraft);
   const resolved = useSyncExternalStore(subscribeResolvedFlightPath, getResolvedFlightPath, () => null);
-  const runtime = useSyncExternalStore(subscribeFlightPathRuntime, getFlightPathRuntime, () => null);
   const historyState = useSyncExternalStore(subscribeFlightPathHistory, getFlightPathHistoryState, () => DEFAULT_HISTORY_STATE);
+
+  // The real docking-station ring is already draggable-together-with-its-anchor
+  // (the pointermove handler below calls updateDockRingPosition alongside
+  // updateAnchor whenever a dock's own point is dragged) - but only the small
+  // anchor node itself is a drag target, and the ring is usually much bigger
+  // than that. This tracks every ring's live on-screen rect (regardless of
+  // scroll/hold state, unlike dockScreenPositions above) purely so a
+  // same-size invisible hit zone can be rendered over the ring, wired to the
+  // exact same startAnchorDrag handler - grabbing anywhere on the ring moves
+  // both the ring and the point together, same as grabbing the small node.
+  const [dockRingRects, setDockRingRects] = useState<Record<string, { x: number; y: number; width: number; height: number } | undefined>>({});
+  useEffect(() => {
+    if (!enabled) return;
+    const dockAnchorIds = Array.from(new Set(draft.points.map((point) => point.dockAnchor).filter((id): id is string => Boolean(id))));
+    if (dockAnchorIds.length === 0) return;
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      setDockRingRects((previous) => {
+        let changed = false;
+        const next = { ...previous };
+        dockAnchorIds.forEach((anchorId) => {
+          const stationEl = document.querySelector<HTMLElement>(`[data-docking-anchor="${anchorId}"]`);
+          if (!stationEl) {
+            if (next[anchorId]) { next[anchorId] = undefined; changed = true; }
+            return;
+          }
+          const rect = stationEl.getBoundingClientRect();
+          const before = previous[anchorId];
+          if (!before || Math.abs(before.x - rect.left) > .5 || Math.abs(before.y - rect.top) > .5 || Math.abs(before.width - rect.width) > .5) {
+            next[anchorId] = { x: rect.left, y: rect.top, width: rect.width, height: rect.height };
+            changed = true;
+          }
+        });
+        return changed ? next : previous;
+      });
+    };
+    const schedule = () => { if (!frame) frame = window.requestAnimationFrame(update); };
+    update();
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', schedule);
+      window.removeEventListener('resize', schedule);
+    };
+  }, [enabled, draft.points]);
+
+  // Dock anchors mark real docking stations, which are rendered inside a
+  // `position: sticky` layer - the station itself stays put on screen for its
+  // whole section while the page scrolls under it. The anchor's own document-
+  // space position (scroll + viewport%) only ever matches that on-screen spot
+  // at the exact scrollY it was computed from; everywhere else it drifts,
+  // since a plain absolutely-positioned element has no way to "stick" like
+  // its real counterpart. Tracking each dock's live screen rect here (+ its
+  // authored object offset) and switching that anchor to `position: fixed`
+  // keeps it glued to the real station - but ONLY while the object is
+  // actually holding there (arrival..departure scroll). The station's own
+  // sticky container spans its whole section, i.e. it's already viewport-
+  // fixed well before/after that hold window, while the rail is still
+  // showing the real transit trajectory through document space for that
+  // stretch. Tracking outside the hold window snapped the anchor to its
+  // final spot early, visibly detaching it from the still-approaching rail.
+  const [dockScreenPositions, setDockScreenPositions] = useState<Record<string, { x: number; y: number } | undefined>>({});
+  useEffect(() => {
+    if (!enabled || !resolved) return;
+    const docks = resolved.route
+      .filter((point): point is typeof point & { dockAnchor: string } => Boolean(point.dockAnchor))
+      .map((point) => ({ id: point.dockAnchor, arrival: point.scroll, departure: point.departureScroll ?? point.scroll }));
+    if (docks.length === 0) return;
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const scrollY = window.scrollY;
+      setDockScreenPositions((previous) => {
+        let changed = false;
+        const next = { ...previous };
+        docks.forEach(({ id: anchorId, arrival, departure }) => {
+          if (scrollY < arrival || scrollY > departure) {
+            if (next[anchorId]) { next[anchorId] = undefined; changed = true; }
+            return;
+          }
+          const stationEl = document.querySelector<HTMLElement>(`[data-docking-anchor="${anchorId}"]`);
+          const stage = stationEl?.parentElement;
+          if (!stationEl || !stage) {
+            if (next[anchorId]) { next[anchorId] = undefined; changed = true; }
+            return;
+          }
+          const stationRect = stationEl.getBoundingClientRect();
+          const stageRect = stage.getBoundingClientRect();
+          const objectX = Number(stationEl.dataset.dockObjectX ?? 0);
+          const objectY = Number(stationEl.dataset.dockObjectY ?? 0);
+          const x = stationRect.left + stationRect.width / 2 + (objectX / 100) * stageRect.width;
+          const y = stationRect.top + stationRect.height / 2 + (objectY / 100) * stageRect.height;
+          const before = previous[anchorId];
+          if (!before || Math.abs(before.x - x) > .5 || Math.abs(before.y - y) > .5) {
+            next[anchorId] = { x, y };
+            changed = true;
+          }
+        });
+        return changed ? next : previous;
+      });
+    };
+    const schedule = () => { if (!frame) frame = window.requestAnimationFrame(update); };
+    update();
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', schedule);
+      window.removeEventListener('resize', schedule);
+    };
+  }, [enabled, resolved]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -465,8 +630,34 @@ export default function FlightPathEditor() {
 
   let hauptankerNumber = 0;
 
-  const distancePxLabel = runtime ? runtime.distancePx.toFixed(3) : '–';
-  const distanceOk = runtime ? runtime.distancePx < 1 : true;
+  // A live-tracked dock anchor (see dockScreenPositions above) renders at a
+  // `position: fixed` viewport spot instead of its static document position -
+  // its handles and their connector lines must follow the same origin, or
+  // they stay behind at the anchor's old document position while the anchor
+  // itself jumps away, making the handle impossible to find/grab.
+  const anchorOrigin = (anchor: AnchorView) => {
+    const dockScreenPos = anchor.point.dockAnchor ? dockScreenPositions[anchor.point.dockAnchor] : undefined;
+    return dockScreenPos
+      ? { x: dockScreenPos.x, y: dockScreenPos.y, fixed: true as const }
+      : { x: anchor.documentX, y: anchor.documentY, fixed: false as const };
+  };
+  const handleStyle = (anchor: AnchorView, handleDocumentX: number, handleDocumentY: number): CSSProperties => {
+    const origin = anchorOrigin(anchor);
+    if (!origin.fixed) return { left: handleDocumentX, top: handleDocumentY };
+    return {
+      position: 'fixed',
+      left: origin.x + (handleDocumentX - anchor.documentX),
+      top: origin.y + (handleDocumentY - anchor.documentY),
+    };
+  };
+  // SVG can't use `position: fixed`, so the connector lines instead get the
+  // document-space coordinate that currently renders at that same viewport
+  // spot (fixedY + scrollY) - visually identical to the buttons above.
+  const svgOrigin = (anchor: AnchorView) => {
+    const origin = anchorOrigin(anchor);
+    return origin.fixed ? { x: origin.x, y: origin.y + window.scrollY } : { x: origin.x, y: origin.y };
+  };
+
   const selectedAnchor = anchors.find((anchor) => anchor.key === selectedKey) ?? null;
   const originalForSelected = selectedAnchor
     ? (selectedAnchor.target.kind === 'start' ? getOriginalFlightPathConfig().start : getOriginalFlightPathConfig().points[selectedAnchor.target.index])
@@ -488,12 +679,15 @@ export default function FlightPathEditor() {
 
       <div className={styles.flightBezierOverlay} aria-hidden="true">
         <svg>
-          {anchors.map((anchor) => (
-            <g key={`lines-${anchor.key}`}>
-              {anchor.curveInDoc && <line x1={anchor.documentX} y1={anchor.documentY} x2={anchor.curveInDoc.documentX} y2={anchor.curveInDoc.documentY} />}
-              {anchor.curveOutDoc && <line x1={anchor.documentX} y1={anchor.documentY} x2={anchor.curveOutDoc.documentX} y2={anchor.curveOutDoc.documentY} />}
-            </g>
-          ))}
+          {anchors.map((anchor) => {
+            const origin = svgOrigin(anchor);
+            return (
+              <g key={`lines-${anchor.key}`}>
+                {anchor.curveInDoc && <line x1={origin.x} y1={origin.y} x2={origin.x + (anchor.curveInDoc.documentX - anchor.documentX)} y2={origin.y + (anchor.curveInDoc.documentY - anchor.documentY)} />}
+                {anchor.curveOutDoc && <line x1={origin.x} y1={origin.y} x2={origin.x + (anchor.curveOutDoc.documentX - anchor.documentX)} y2={origin.y + (anchor.curveOutDoc.documentY - anchor.documentY)} />}
+              </g>
+            );
+          })}
         </svg>
       </div>
 
@@ -504,7 +698,7 @@ export default function FlightPathEditor() {
               <button
                 type="button"
                 className={styles.flightBezierHandle}
-                style={{ left: anchor.curveInDoc.documentX, top: anchor.curveInDoc.documentY }}
+                style={handleStyle(anchor, anchor.curveInDoc.documentX, anchor.curveInDoc.documentY)}
                 onPointerDown={(event) => startHandleDrag(event, anchor, 'curveIn')}
                 aria-label="Eingehenden Bézier-Griff ziehen"
                 data-anchor-key={anchor.key}
@@ -517,7 +711,7 @@ export default function FlightPathEditor() {
               <button
                 type="button"
                 className={`${styles.flightBezierHandle} ${styles.flightBezierHandleOut}`}
-                style={{ left: anchor.curveOutDoc.documentX, top: anchor.curveOutDoc.documentY }}
+                style={handleStyle(anchor, anchor.curveOutDoc.documentX, anchor.curveOutDoc.documentY)}
                 onPointerDown={(event) => startHandleDrag(event, anchor, 'curveOut')}
                 aria-label="Ausgehenden Bézier-Griff ziehen"
                 data-anchor-key={anchor.key}
@@ -530,7 +724,11 @@ export default function FlightPathEditor() {
               <button
                 type="button"
                 className={styles.flightBezierHandleCreate}
-                style={{ left: anchor.documentX + anchor.curveInCreateDir.dx * ANCHOR_HANDLE_CLEARANCE_PX, top: anchor.documentY + anchor.curveInCreateDir.dy * ANCHOR_HANDLE_CLEARANCE_PX }}
+                style={handleStyle(
+                  anchor,
+                  anchor.documentX + anchor.curveInCreateDir.dx * ANCHOR_HANDLE_CLEARANCE_PX,
+                  anchor.documentY + anchor.curveInCreateDir.dy * ANCHOR_HANDLE_CLEARANCE_PX,
+                )}
                 onPointerDown={(event) => startHandleDrag(event, anchor, 'curveIn')}
                 aria-label="Eingehenden Bézier-Griff erzeugen"
                 data-anchor-key={anchor.key}
@@ -544,7 +742,11 @@ export default function FlightPathEditor() {
               <button
                 type="button"
                 className={`${styles.flightBezierHandleCreate} ${styles.flightBezierHandleCreateOut}`}
-                style={{ left: anchor.documentX + anchor.curveOutCreateDir.dx * ANCHOR_HANDLE_CLEARANCE_PX, top: anchor.documentY + anchor.curveOutCreateDir.dy * ANCHOR_HANDLE_CLEARANCE_PX }}
+                style={handleStyle(
+                  anchor,
+                  anchor.documentX + anchor.curveOutCreateDir.dx * ANCHOR_HANDLE_CLEARANCE_PX,
+                  anchor.documentY + anchor.curveOutCreateDir.dy * ANCHOR_HANDLE_CLEARANCE_PX,
+                )}
                 onPointerDown={(event) => startHandleDrag(event, anchor, 'curveOut')}
                 aria-label="Ausgehenden Bézier-Griff erzeugen"
                 data-anchor-key={anchor.key}
@@ -557,6 +759,23 @@ export default function FlightPathEditor() {
           </div>
         ))}
 
+        {anchors.filter((anchor) => anchor.kind === 'dock' && anchor.point.dockAnchor).map((anchor) => {
+          const rect = dockRingRects[anchor.point.dockAnchor as string];
+          if (!rect) return null;
+          return (
+            <button
+              key={`ring-hit-${anchor.key}`}
+              type="button"
+              className={styles.flightPathRingHitZone}
+              style={{ position: 'fixed', left: rect.x, top: rect.y, width: rect.width, height: rect.height }}
+              onPointerDown={(event) => startAnchorDrag(event, anchor)}
+              onClick={() => setSelectedKey(anchor.key)}
+              aria-label={`Docking-Station ${anchor.point.dockLabel ?? ''} samt Ring verschieben`}
+              data-ring-hit-zone={anchor.key}
+            />
+          );
+        })}
+
         {anchors.map((anchor) => {
           const isMain = anchor.kind !== 'control';
           if (isMain) hauptankerNumber += 1;
@@ -565,13 +784,18 @@ export default function FlightPathEditor() {
           const baseLabel = anchor.kind === 'start' ? 'START' : anchor.point.dockLabel ?? `DOCK ${anchor.point.dockNumber ?? ''}`;
           const label = isTerminal ? `${baseLabel} · ZIEL` : baseLabel;
           const isSelected = anchor.key === selectedKey;
+          const dockScreenPos = anchor.point.dockAnchor ? dockScreenPositions[anchor.point.dockAnchor] : undefined;
 
           return (
             <button
               type="button"
               key={`node-${anchor.key}`}
               className={nodeClassFor(anchor.kind, anchor.kind === 'start', isSelected)}
-              style={{ left: anchor.documentX, top: anchor.documentY, '--node-depth': 1 } as CSSProperties}
+              style={
+                dockScreenPos
+                  ? { position: 'fixed', left: dockScreenPos.x, top: dockScreenPos.y, '--node-depth': 1 } as CSSProperties
+                  : { left: anchor.documentX, top: anchor.documentY, '--node-depth': 1 } as CSSProperties
+              }
               onPointerDown={(event) => startAnchorDrag(event, anchor)}
               onClick={() => setSelectedKey(anchor.key)}
               aria-label={anchor.kind === 'start' ? 'Startpunkt verschieben' : anchor.kind === 'dock' ? `Docking-Anker ${anchor.point.dockLabel} verschieben` : 'Zwischenanker verschieben'}
@@ -594,26 +818,30 @@ export default function FlightPathEditor() {
         })}
       </div>
 
-      <div className={styles.flightPathDebugPanel} data-flight-path-debug>
-        {runtime ? (
-          <>
-            <strong>FLIGHT PATH DEBUG</strong>{'\n'}
-            scrollY        {Math.round(runtime.scrollY)}{'\n'}
-            path progress  {runtime.currentPathProgress.toFixed(5)}{'\n'}
-            segment        {runtime.segmentIndex}{'\n'}
-            section        {runtime.activeSectionId}{'\n'}
-            station        {runtime.station || '–'}{'\n'}
-            phase          {runtime.phaseLabel}{'\n'}
-            <span style={{ color: distanceOk ? '#6ee7b7' : '#ff8080' }}>distancePx     {distancePxLabel}</span>{'\n'}
-            points         {draft.points.length} (+ start) · terminal=last dock{'\n'}
-            selected       {selectedAnchor ? `${selectedAnchor.kind.toUpperCase()} · ${selectedAnchor.point.handleMode ?? 'aligned'}` : '–'}
-          </>
-        ) : 'wird initialisiert…'}
-      </div>
+      <aside
+        ref={settingsPanel.panelRef}
+        style={settingsPanel.panelStyle}
+        className={styles.flightPathSettingsPanel}
+        data-flight-path-settings-panel
+        data-collapsed={settingsCollapsed || undefined}
+      >
+        <div className={styles.flightPathSettingsHeader} onPointerDown={settingsPanel.startDrag} data-action="drag-settings-panel">
+          <h3>FLUGBAHN-EINSTELLUNGEN</h3>
+          <button
+            type="button"
+            className={styles.flightPathSettingsToggle}
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={() => setSettingsCollapsed((prev) => !prev)}
+            aria-expanded={!settingsCollapsed}
+            aria-label={settingsCollapsed ? 'Einstellungen einblenden' : 'Einstellungen ausblenden'}
+            data-action="toggle-settings-panel"
+          >
+            {settingsCollapsed ? '▸' : '▾'}
+          </button>
+        </div>
 
-      <aside className={styles.flightPathSettingsPanel} data-flight-path-settings-panel>
-        <h3>FLUGBAHN-EINSTELLUNGEN</h3>
-
+        {!settingsCollapsed && (
+        <>
         <label>
           FOLGEGESCHWINDIGKEIT
           <input
@@ -639,6 +867,43 @@ export default function FlightPathEditor() {
             <label>ROTATION <input type="number" min={-180} max={180} step={.5} value={Number(selectedAnchor.point.rotation.toFixed(2))} onFocus={handleFieldFocus} onBlur={handleFieldBlur} onChange={(event) => updateAnchor(selectedAnchor.target, { rotation: clamp(Number(event.target.value), -360, 360) })} data-field="rotation" /></label>
             <label>OPAZITÄT <input type="number" min={0} max={1} step={.01} value={Number(selectedAnchor.point.opacity.toFixed(3))} onFocus={handleFieldFocus} onBlur={handleFieldBlur} onChange={(event) => updateAnchor(selectedAnchor.target, { opacity: clamp(Number(event.target.value), 0, 1) })} data-field="opacity" /></label>
             <label>SKALIERUNG <input type="number" min={.1} max={2} step={.01} value={Number(selectedAnchor.point.scale.toFixed(3))} onFocus={handleFieldFocus} onBlur={handleFieldBlur} onChange={(event) => updateAnchor(selectedAnchor.target, { scale: clamp(Number(event.target.value), .1, 2) })} data-field="scale" /></label>
+
+            {selectedAnchor.kind === 'dock' && selectedAnchor.point.dockAnchor && (
+              <>
+                <h4>POSITION AUF DOCKING-STATION</h4>
+                <p className={styles.flightPathSettingsEmpty}>Versatz vom Ring-Mittelpunkt, als Vielfaches des Ring-Radius (0 = Mitte, negativ = höher, positiv = tiefer).</p>
+                <label
+                  key={`dock-offset-x-${selectedAnchor.key}`}
+                  title="Horizontaler Versatz"
+                >
+                  VERSATZ X
+                  <input
+                    type="number"
+                    step=".01"
+                    defaultValue={getDockOffsetRatio(selectedAnchor.point, 'x') ?? 0}
+                    onFocus={handleFieldFocus}
+                    onBlur={handleFieldBlur}
+                    onChange={(event) => applyDockOffsetRatio(selectedAnchor.target, selectedAnchor.point, 'x', Number(event.target.value))}
+                    data-field="dock-offset-x"
+                  />
+                </label>
+                <label
+                  key={`dock-offset-y-${selectedAnchor.key}`}
+                  title="Vertikaler Versatz"
+                >
+                  VERSATZ Y
+                  <input
+                    type="number"
+                    step=".01"
+                    defaultValue={getDockOffsetRatio(selectedAnchor.point, 'y') ?? 0}
+                    onFocus={handleFieldFocus}
+                    onBlur={handleFieldBlur}
+                    onChange={(event) => applyDockOffsetRatio(selectedAnchor.target, selectedAnchor.point, 'y', Number(event.target.value))}
+                    data-field="dock-offset-y"
+                  />
+                </label>
+              </>
+            )}
 
             <label>
               HANDLE-MODUS
@@ -698,6 +963,8 @@ export default function FlightPathEditor() {
         </div>
         {saveState.status === 'saved' && <div className={styles.flightPathSettingsOk} data-save-status="saved">Gespeichert ✓</div>}
         {saveState.status === 'error' && <div className={styles.flightPathSettingsError} data-save-status="error">{saveState.error}</div>}
+        </>
+        )}
       </aside>
     </div>
   );

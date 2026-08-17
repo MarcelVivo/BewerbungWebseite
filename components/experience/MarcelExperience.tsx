@@ -475,7 +475,7 @@ export default function MarcelExperience() {
             </div>
             <ProblemDockingStation />
             <div className={`${styles.sectionGrid} ${styles.problemContent}`}>
-              <div className={styles.sectionCopy} data-reveal>
+              <div className={styles.sectionCopy} data-reveal="left">
                 <p className={styles.eyebrow}><span />{c.problemEyebrow}</p>
                 <h2>{c.problemTitle}<br /><em>{c.problemTitleGold}</em></h2>
                 <p className={styles.sectionLead}>{c.problemText}</p>
@@ -493,7 +493,7 @@ export default function MarcelExperience() {
         <span id="mobile-solutions" className={styles.aliasAnchor} />
         <section id="journey-solutions" className={`${styles.section} ${styles.systemSection} ${styles.layoutRight}`}>
           <div className={styles.systemPauseSticky}>
-            <div className={styles.systemComposer} data-reveal>
+            <div className={styles.systemComposer} data-reveal="right">
               <div className={styles.systemControlColumn}>
                 <div className={styles.sectionHeader}>
                   <p className={styles.eyebrow}><span />{c.systemEyebrow}</p>
@@ -514,7 +514,7 @@ export default function MarcelExperience() {
                 <div className={styles.moduleReadout}><span>0{activeModule + 1}</span><strong>{MODULES[lang][activeModule][1]}</strong><small>ACTIVE MODULE</small></div>
               </div>
             </div>
-            <div className={styles.systemPrinciple} data-reveal><p>{c.systemPrinciple}</p><a href="#journey-contact">{c.systemCta}<ArrowUpRight size={16} /></a></div>
+            <div className={styles.systemPrinciple} data-reveal="up"><p>{c.systemPrinciple}</p><a href="#journey-contact">{c.systemCta}<ArrowUpRight size={16} /></a></div>
           </div>
         </section>
 
@@ -532,7 +532,7 @@ export default function MarcelExperience() {
               />
             </div>
             <WebsiteDockingStation />
-            <div className={`${styles.sectionHeader} ${styles.salesHeader}`} data-reveal>
+            <div className={`${styles.sectionHeader} ${styles.salesHeader}`} data-reveal="left">
               <p className={styles.eyebrow}><span />{c.webEyebrow}</p>
               <h2>{c.webTitle}<br /><em>{c.webTitleGold}</em></h2>
               <p>{c.webText}</p>
@@ -561,12 +561,12 @@ export default function MarcelExperience() {
               />
             </div>
             <MarketingDockingStation />
-            <div className={`${styles.sectionCopy} ${styles.marketingHeader}`} data-reveal>
+            <div className={`${styles.sectionCopy} ${styles.marketingHeader}`} data-reveal="right">
               <p className={styles.eyebrow}><span />{c.marketingEyebrow}</p>
               <h2>{c.marketingTitle}</h2>
               <p className={styles.sectionLead}>{c.marketingText}</p>
             </div>
-            <article className={`${styles.searchCard} ${styles.marketingSearchHud}`} data-reveal>
+            <article className={`${styles.searchCard} ${styles.marketingSearchHud}`} data-reveal="up">
               <div className={styles.searchCardTop}><Search size={20} /><span>SEARCH / ANSWER SYSTEMS</span><i>INDEXABLE</i></div>
               <div className={styles.marketingSearchCopy}><h3>{c.geoTitle}</h3><p>{c.geoText}</p></div>
               <div className={styles.searchFeatures}>{SEARCH_FEATURES[lang].map((feature) => <span key={feature}><Check size={12} />{feature}</span>)}</div>
@@ -581,20 +581,20 @@ export default function MarcelExperience() {
           <span id="journey-value" className={styles.aliasAnchor} />
           <div className={styles.pauseSticky}>
             <div className={styles.pauseFit} data-fit>
-              <div className={styles.sectionHeader} data-reveal>
+              <div className={styles.sectionHeader} data-reveal="left">
                 <p className={styles.eyebrow}><span />{c.osEyebrow}</p>
                 <h2>{c.osTitle}</h2>
                 <p>{c.osText}</p>
               </div>
               <div className={styles.osLayout}>
-                <div className={styles.operatingModules} data-reveal>
+                <div className={styles.operatingModules} data-reveal="left">
                   {OPERATING_MODULES[lang].map(([title, detail], index) => <div key={title}><span>0{index + 1}</span><div><strong>{title}</strong><small>{detail}</small></div><i /></div>)}
                 </div>
-                <div data-reveal><DashboardMockup lang={lang} /></div>
+                <div data-reveal="right"><DashboardMockup lang={lang} /></div>
               </div>
-              <div className={styles.dashboardCopy} data-reveal><p>{c.dashboardEyebrow}</p><h3>{c.dashboardTitle}</h3><span>{c.dashboardText}</span></div>
+              <div className={styles.dashboardCopy} data-reveal="up"><p>{c.dashboardEyebrow}</p><h3>{c.dashboardTitle}</h3><span>{c.dashboardText}</span></div>
 
-              <div className={styles.azExperience} data-reveal>
+              <div className={styles.azExperience} data-reveal="up">
                 <div className={styles.azCopy}><p className={styles.eyebrow}><span />{c.azEyebrow}</p><h3>{c.azTitle}</h3><p>{c.azText}</p></div>
                 <div className={styles.azPicker}>
                   <div className={styles.azLetters} role="tablist" aria-label={c.azTitle}>
@@ -612,18 +612,18 @@ export default function MarcelExperience() {
           <div className={styles.pauseSticky}>
             <div className={styles.pauseFit} data-fit>
               <div className={styles.dataLayout}>
-                <div className={styles.sectionCopy} data-reveal>
+                <div className={styles.sectionCopy} data-reveal="right">
                   <p className={styles.eyebrow}><span />{c.dataEyebrow}</p>
                   <h2>{c.dataTitle}</h2>
                   <p className={styles.sectionLead}>{c.dataText}</p>
                   <ArchitectureStack lang={lang} />
                 </div>
                 <div className={styles.trustCards}>
-                  <article data-reveal><span><ShieldCheck size={22} /></span><p>SECURITY BY DESIGN</p><h3>{c.securityTitle}</h3><div>{c.securityText}</div><footer>{['AUTH', 'ROLES', 'RLS', 'BACKUP', 'LOG'].map((item) => <i key={item}>{item}</i>)}</footer></article>
-                  <article data-reveal><span><Bot size={22} /></span><p>CONTROLLED AI FLOW</p><h3>{c.aiTitle}</h3><div>{c.aiText}</div><footer>{['CLASSIFY', 'DRAFT', 'REVIEW', 'ACT'].map((item) => <i key={item}>{item}</i>)}</footer></article>
+                  <article data-reveal="up"><span><ShieldCheck size={22} /></span><p>SECURITY BY DESIGN</p><h3>{c.securityTitle}</h3><div>{c.securityText}</div><footer>{['AUTH', 'ROLES', 'RLS', 'BACKUP', 'LOG'].map((item) => <i key={item}>{item}</i>)}</footer></article>
+                  <article data-reveal="up"><span><Bot size={22} /></span><p>CONTROLLED AI FLOW</p><h3>{c.aiTitle}</h3><div>{c.aiText}</div><footer>{['CLASSIFY', 'DRAFT', 'REVIEW', 'ACT'].map((item) => <i key={item}>{item}</i>)}</footer></article>
                 </div>
               </div>
-              <dl className={styles.machineReadable} data-reveal>
+              <dl className={styles.machineReadable} data-reveal="up">
                 <div><dt>{lang === 'de' ? 'Was baut marcelspahr.ch?' : 'What does marcelspahr.ch build?'}</dt><dd>{lang === 'de' ? 'Individuelle digitale Unternehmenssysteme aus Website, Marketing, Software, Daten und Automationen.' : 'Custom digital business systems combining websites, marketing, software, data and automation.'}</dd></div>
                 <div><dt>{lang === 'de' ? 'Für wen?' : 'For whom?'}</dt><dd>{lang === 'de' ? 'Für Schweizer KMU und Start-ups, die digitale Werkzeuge und Prozesse zu einem verlässlichen System verbinden wollen.' : 'For Swiss SMEs and startups that want to connect digital tools and processes into one dependable system.'}</dd></div>
                 <div><dt>{lang === 'de' ? 'Wie beginnt ein Projekt?' : 'How does a project begin?'}</dt><dd>{lang === 'de' ? 'Mit einer Analyse von Unternehmen, Zielen, Menschen, Engpässen, Daten und bestehenden Systemen.' : 'With an analysis of the company, goals, people, bottlenecks, data and existing systems.'}</dd></div>
@@ -639,7 +639,7 @@ export default function MarcelExperience() {
           <div id="portfolio" className={styles.aliasAnchor} />
           <div className={styles.pauseSticky}>
             <div className={styles.pauseFit} data-fit>
-              <div className={styles.sectionHeader} data-reveal>
+              <div className={styles.sectionHeader} data-reveal="left">
                 <p className={styles.eyebrow}><span />{c.casesEyebrow}</p>
                 <h2>{c.casesTitle}</h2>
                 <p>{c.casesText}</p>
@@ -648,7 +648,7 @@ export default function MarcelExperience() {
                 {selectedProjects.map((project, index) => {
                   const projectCopy = project[lang];
                   return (
-                    <article key={project.slug} className={styles.caseCard} data-reveal style={{ '--case-accent': project.color, '--case-index': index } as CSSProperties}>
+                    <article key={project.slug} className={styles.caseCard} data-reveal="up" style={{ '--case-accent': project.color, '--case-index': index } as CSSProperties}>
                       <div className={styles.caseImage}>
                         <Image src={project.image} alt={`${projectCopy.title}. ${projectCopy.tag}`} fill sizes="(min-width: 1000px) 33vw, 92vw" />
                         <span>{String(index + 1).padStart(2, '0')}</span><i>{projectCopy.cardStatus ?? projectCopy.status}</i>
@@ -671,18 +671,18 @@ export default function MarcelExperience() {
           <div className={styles.pauseSticky}>
             <div className={styles.pauseFit} data-fit>
               <div className={styles.aboutLayout}>
-                <div className={styles.aboutImage} data-reveal>
+                <div className={styles.aboutImage} data-reveal="left">
                   <Image src="/assets/MarcelSpahrHeader.jpg" alt="Marcel Spahr im Arbeits- und Projektraum" fill sizes="(min-width: 1000px) 42vw, 94vw" />
                   <div className={styles.imagePlate}><span>MS / BERN</span><strong>BUSINESS × DESIGN × TECH</strong></div>
                 </div>
-                <div className={styles.sectionCopy} data-reveal>
+                <div className={styles.sectionCopy} data-reveal="right">
                   <p className={styles.eyebrow}><span />{c.aboutEyebrow}</p>
                   <h2>{c.aboutTitle}</h2>
                   <p className={styles.sectionLead}>{c.aboutText}</p>
                   <blockquote>"{c.aboutQuote}"</blockquote>
                 </div>
               </div>
-              <div className={styles.factGrid} data-reveal>{c.facts.map(([value, label]) => <div key={value}><strong>{value}</strong><span>{label}</span></div>)}</div>
+              <div className={styles.factGrid} data-reveal="up">{c.facts.map(([value, label]) => <div key={value}><strong>{value}</strong><span>{label}</span></div>)}</div>
             </div>
           </div>
         </section>
@@ -693,8 +693,8 @@ export default function MarcelExperience() {
           <div className={styles.pauseSticky}>
             <div className={styles.pauseFit} data-fit>
               <div className={styles.finalGlow} aria-hidden="true" />
-              <div className={styles.finalHeader} data-reveal><p>{c.finalA}</p><h2>{c.finalB}</h2><span>{c.finalText}</span></div>
-              <div className={styles.funnelFrame} data-reveal><LeadFunnel lang={lang} /></div>
+              <div className={styles.finalHeader} data-reveal="up"><p>{c.finalA}</p><h2>{c.finalB}</h2><span>{c.finalText}</span></div>
+              <div className={styles.funnelFrame} data-reveal="up"><LeadFunnel lang={lang} /></div>
               <footer className={styles.footer}>
                 <div><span className={styles.footerMark}>MS</span><p><strong>Marcel Spahr</strong><small>{c.footerLine}</small></p></div>
                 <div><a href="mailto:kontakt@marcelspahr.ch">kontakt@marcelspahr.ch</a><a href="tel:+41795110911">+41 79 511 09 11</a></div>

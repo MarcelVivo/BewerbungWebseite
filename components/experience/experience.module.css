@@ -16,7 +16,11 @@
   --layer-object-trail: 115;
   --layer-object: 120;
   --layer-title: 150;
-  --layer-editor: 170;
+  /* Above .chapterRail's z-index: 180 - otherwise the always-on-screen chapter
+     nav (fixed, right side) sits on top of any anchor/handle button that
+     happens to render underneath it and swallows its pointer events, making
+     that anchor undraggable even though it's visibly there. */
+  --layer-editor: 182;
   --rail-safe: 10rem;
   --container: min(1240px, calc(100vw - var(--rail-safe) - 3rem));
   --container-left: max(1.5rem, calc((100vw - var(--rail-safe) - var(--container)) / 2));
@@ -201,6 +205,7 @@
 /* Local flight-path editor. It only mounts with ?flight-editor=1. */
 .flightPathEditor {
   position: absolute;
+  z-index: var(--layer-editor);
   top: 0;
   left: 0;
   width: 100%;
@@ -396,6 +401,22 @@
   font: 650 .56rem/1.55 ui-monospace, SFMono-Regular, Menlo, monospace;
   letter-spacing: .08em;
 }
+
+/* Invisible, ring-sized drag target layered under the small anchor node
+   button (see FlightPathEditor.tsx) - grabbing anywhere on the visible
+   docking-station ring drags the same anchor, moving the ring (via the
+   existing updateDockRingPosition call in the drag handler) and the flight-
+   path point together, not just the small node itself. */
+.flightPathRingHitZone {
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  pointer-events: auto;
+  cursor: grab;
+  touch-action: none;
+}
+.flightPathRingHitZone:active { cursor: grabbing; }
 
 .flightPathNode {
   --node-depth: .7;
@@ -627,23 +648,6 @@
   50% { transform: scale(1.08); opacity: 1; }
 }
 
-.flightPathDebugPanel {
-  position: fixed;
-  z-index: 190;
-  right: 1rem;
-  bottom: 1rem;
-  min-width: 15rem;
-  padding: .7rem .85rem;
-  border: 1px solid rgba(231, 197, 106, .28);
-  background: rgba(4, 5, 4, .88);
-  color: rgba(240, 235, 215, .92);
-  font: 650 .62rem/1.55 ui-monospace, SFMono-Regular, Menlo, monospace;
-  letter-spacing: .04em;
-  backdrop-filter: blur(10px);
-  white-space: pre;
-}
-.flightPathDebugPanel strong { color: #f6c453; }
-
 .flightPathSettingsPanel {
   position: fixed;
   z-index: 191;
@@ -664,6 +668,30 @@
   flex-direction: column;
   gap: .55rem;
 }
+.flightPathSettingsPanel[data-collapsed] { padding-bottom: 0; gap: 0; }
+.flightPathSettingsPanel .flightPathSettingsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  margin: -.8rem -.9rem 0;
+  padding: .55rem .7rem .55rem .9rem;
+  border-bottom: 1px solid rgba(231, 197, 106, .16);
+  cursor: grab;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.flightPathSettingsPanel[data-dragging='true'] .flightPathSettingsHeader { cursor: grabbing; }
+.flightPathSettingsPanel .flightPathSettingsToggle {
+  padding: .05rem .45rem;
+  border: 1px solid rgba(231, 197, 106, .32);
+  background: rgba(231, 197, 106, .08);
+  color: rgba(240, 235, 215, .92);
+  font: 650 .65rem/1.3 ui-monospace, SFMono-Regular, Menlo, monospace;
+  cursor: pointer;
+}
+.flightPathSettingsPanel .flightPathSettingsToggle:hover { background: rgba(231, 197, 106, .18); }
 .flightPathSettingsPanel h3 { margin: 0; color: #f6c453; font-size: .68rem; letter-spacing: .08em; }
 .flightPathSettingsPanel h4 {
   margin: .3rem 0 0;
@@ -1567,15 +1595,45 @@
 .pauseFit .sectionHeader > p:last-child { margin-top: 1.6rem; }
 .pauseFit .sectionCopy blockquote { margin-top: 1.6rem; }
 
-.experience [data-reveal] { opacity: 1; clip-path: inset(0 0 0 0); filter: blur(0); }
-
-@supports (animation-timeline: view()) {
-  .experience [data-reveal] {
-    animation: sectionReveal both linear;
-    animation-timeline: view();
-    animation-range: entry 0% cover 28%;
-  }
+/* Directional 3D reveal: each section's content flies in from its own side
+   (or up/down) with a touch of perspective rotation and depth, instead of a
+   flat fade - giving every section a "walk into a room" feel. Custom
+   properties per direction, so adding a new direction is one line. `perspective()`
+   lives inside the element's own `transform` (not on a parent) so each block
+   gets its own vanishing point and no shared-parent setup is needed anywhere
+   else. Driven purely by the IntersectionObserver's `data-visible` flag (set
+   in MarcelExperience.tsx) plus a real, wall-clock CSS transition -
+   deliberately not `animation-timeline: view()`: most sections here are
+   `position: sticky`, which gives content almost no runway to cross the
+   viewport before it snaps into its stuck position, so a scroll-position-
+   linked animation resolves within a few px of scroll and is easy to miss
+   entirely on a normal scroll. A time-based transition always plays out over
+   a full second once triggered, regardless of scroll speed. */
+.experience [data-reveal] {
+  --reveal-x: 0px;
+  --reveal-y: 3.6rem;
+  --reveal-z: -90px;
+  --reveal-rx: 7deg;
+  --reveal-ry: 0deg;
+  opacity: 0;
+  transform: perspective(1600px) translate3d(var(--reveal-x), var(--reveal-y), var(--reveal-z)) rotateX(var(--reveal-rx)) rotateY(var(--reveal-ry));
+  transition: opacity 1.05s cubic-bezier(.16, .8, .2, 1), transform 1.05s cubic-bezier(.16, .8, .2, 1);
+  will-change: transform, opacity;
 }
+.experience [data-reveal][data-visible] {
+  opacity: 1;
+  transform: perspective(1600px) translate3d(0, 0, 0) rotateX(0) rotateY(0);
+}
+
+.experience [data-reveal="left"] { --reveal-x: -7vw; --reveal-y: 0px; --reveal-z: -70px; --reveal-rx: 0deg; --reveal-ry: -14deg; }
+.experience [data-reveal="right"] { --reveal-x: 7vw; --reveal-y: 0px; --reveal-z: -70px; --reveal-rx: 0deg; --reveal-ry: 14deg; }
+.experience [data-reveal="up"] { --reveal-x: 0px; --reveal-y: 4rem; --reveal-z: -90px; --reveal-rx: 8deg; --reveal-ry: 0deg; }
+.experience [data-reveal="down"] { --reveal-x: 0px; --reveal-y: -3rem; --reveal-z: -60px; --reveal-rx: -7deg; --reveal-ry: 0deg; }
+
+/* Staggered groups: cascading cards feel more spatial than everything
+   arriving in lockstep. Case cards already carry --case-index inline. */
+.experience .trustCards [data-reveal]:nth-child(2) { transition-delay: .12s; }
+.experience .caseCard[data-reveal] { transition-delay: calc(var(--case-index, 0) * .12s); }
 
 .problemSection { --problem-progress: 0; --problem-dock-engaged: 0; --problem-dock-charge: 0; --problem-dock-release: 0; min-height: 210svh; padding: 0; background: #070907; }
 .problemSticky { position: sticky; top: 0; height: 100svh; min-height: 720px; display: grid; align-items: center; overflow: hidden; }
@@ -1592,13 +1650,61 @@
 .problemDockPlane > i { position: absolute; left: 50%; top: 50%; display: block; border: 1px solid rgba(231,197,106,.72); border-radius: 50%; transform: translate(-50%, -50%); box-shadow: inset 0 0 18px rgba(246,227,161,.05), inset 0 0 2px rgba(246,227,161,.28), inset 0 0 12px rgba(111,17,36,.13), 0 0 4px rgba(246,227,161,.42), 0 0 11px rgba(231,197,106,.27), 0 0 18px rgba(126,20,42,.24), 0 0 34px rgba(91,12,31,.12); opacity: var(--problem-dock-engaged); }
 .problemDockPlane > i::before { content: ''; position: absolute; inset: -2px; padding: 2px; border-radius: inherit; background: conic-gradient(from 20deg, rgba(103,14,33,.12) 0 9%, rgba(117,18,38,.26) 13%, rgba(168,35,58,.94) 16%, rgba(231,197,106,.52) 18%, rgba(103,14,33,.12) 22% 46%, rgba(112,15,35,.24) 51%, rgba(154,29,52,.84) 54%, rgba(231,197,106,.42) 56%, rgba(103,14,33,.11) 60% 79%, rgba(145,25,48,.76) 84%, rgba(231,197,106,.38) 86%, rgba(103,14,33,.12) 90% 100%); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; filter: drop-shadow(0 0 3px rgba(150,27,50,.82)) drop-shadow(0 0 8px rgba(99,12,31,.42)); animation: problemWineEnergy 9s linear infinite; }
 .problemDockPlane > i::after { content: ''; position: absolute; left: 50%; top: 50%; width: 4px; height: 4px; border-radius: 50%; background: #f6e3a1; box-shadow: 0 0 5px #f6e3a1, 0 0 10px rgba(231,197,106,.62), 14px 4px 0 -1px rgba(139,25,46,.7), -18px -3px 0 -1px rgba(139,25,46,.58); transform: translate(-50%, -50%) translateX(50%); opacity: calc(.25 + var(--problem-dock-charge) * .75); animation: problemEnergySpark 5.4s ease-in-out infinite; }
-.problemDockRingOuter { width: 100%; height: 100%; animation: problemDockBreathe 4.8s ease-in-out infinite; }
-.problemDockRingMiddle { width: 71%; height: 70%; animation: problemDockBreathe 4.8s .32s ease-in-out infinite reverse; }
+/* The energy rings now form a loose field wrapped AROUND the solid puck
+   below, rather than nesting inside it - each one wider than the puck's own
+   58% so none of them get hidden behind its opaque top surface. */
+.problemDockRingOuter { width: 128%; height: 128%; animation: problemDockBreathe 4.8s ease-in-out infinite; }
+.problemDockRingMiddle { width: 100%; height: 100%; animation: problemDockBreathe 4.8s .32s ease-in-out infinite reverse; }
 .problemDockRingMiddle::before { animation-direction: reverse !important; animation-duration: 7.4s !important; }
-.problemDockRingInner { width: 39%; height: 42%; border-color: rgba(246,227,161,.88) !important; animation: problemDockBreathe 3.6s .58s ease-in-out infinite; }
+.problemDockRingInner { width: 76%; height: 76%; border-color: rgba(246,227,161,.88) !important; animation: problemDockBreathe 3.6s .58s ease-in-out infinite; }
 .problemDockRingInner::before { animation-duration: 5.8s !important; }
-.problemDockCore { position: absolute; left: 50%; top: 50%; width: 7.5%; aspect-ratio: 1; border: 1px solid rgba(246,227,161,.86); border-radius: 50%; background: radial-gradient(circle, rgba(255,239,180,.86) 0 8%, rgba(231,197,106,.48) 20%, rgba(123,21,42,.2) 42%, rgba(200,154,61,.06) 58%, transparent 74%); box-shadow: 0 0 10px rgba(246,227,161,.74), 0 0 34px rgba(231,197,106,.38), 0 0 48px rgba(119,20,40,.14); transform: translate(-50%, -50%); opacity: var(--problem-dock-charge); }
-.problemDockSignal { position: absolute; left: 50%; top: 50%; width: 20%; aspect-ratio: 1; border: 1px solid rgba(143,27,49,.66); border-radius: 50%; transform: translate(-50%, -50%) scale(calc(.55 + var(--problem-dock-charge))); opacity: calc(var(--problem-dock-engaged) * .72); box-shadow: inset 0 0 9px rgba(123,20,42,.12), 0 0 7px rgba(139,25,46,.22); }
+
+/* A dark metal puck viewed at an angle (the plane it lives on is already
+   perspective-tilted via --dock-tilt) - radial gradient for the brushed-metal
+   top, a bright gold rim where the top meets the (implied) wall, an inset
+   groove for the machined ring detail, and a soft center hotspot. Charge/
+   engaged variables keep it wired into the same scroll-driven pulse as
+   everything else here. */
+.problemDockCore {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 58%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle at 36% 28%, rgba(146, 122, 82, .55) 0%, rgba(54, 44, 30, .92) 20%, rgba(16, 13, 9, .98) 52%, rgba(3, 3, 2, 1) 100%);
+  box-shadow:
+    0 0 0 3px rgba(246, 227, 161, .96),
+    0 0 0 5px rgba(103, 14, 33, .58),
+    0 0 0 6.5px rgba(2, 2, 1, .7),
+    inset 0 3px 7px rgba(0, 0, 0, .75),
+    inset 0 -4px 10px rgba(231, 197, 106, .14),
+    0 16px 30px rgba(0, 0, 0, .6),
+    0 0 18px rgba(231, 197, 106, .22);
+  opacity: calc(.55 + var(--problem-dock-charge) * .45);
+}
+.problemDockCore::before {
+  content: '';
+  position: absolute;
+  inset: 11%;
+  border-radius: 50%;
+  border: 1px solid rgba(231, 197, 106, .32);
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, .65), inset 0 0 14px rgba(231, 197, 106, .07);
+}
+.problemDockCore::after {
+  content: '';
+  position: absolute;
+  left: 38%;
+  top: 30%;
+  width: 16%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(255, 239, 180, .85), rgba(231, 197, 106, .22) 60%, transparent 78%);
+  filter: blur(.5px);
+}
+.problemDockSignal { position: absolute; left: 50%; top: 50%; width: 88%; aspect-ratio: 1; border: 1px solid rgba(143,27,49,.66); border-radius: 50%; transform: translate(-50%, -50%) scale(calc(.55 + var(--problem-dock-charge))); opacity: calc(var(--problem-dock-engaged) * .72); box-shadow: inset 0 0 9px rgba(123,20,42,.12), 0 0 7px rgba(139,25,46,.22); }
 .problemDockCrosshair { position: absolute; left: 50%; top: 50%; width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid #77b88b; border-radius: 50%; background: rgba(6,8,6,.82); color: #a9d4b4; font: 600 .8rem/1 monospace; transform: translate(-50%, -50%); box-shadow: 0 0 18px rgba(119,184,139,.25); }
 .problemObjectTarget { position: absolute; z-index: 13; display: grid; justify-items: center; gap: .3rem; transform: translate(-50%, -50%); pointer-events: none; color: var(--gold-pale); font: 600 .42rem/1 var(--font-chakra-petch), monospace; letter-spacing: .12em; }
 .problemObjectTarget i { width: 34px; height: 34px; border: 1px dashed rgba(246,227,161,.82); border-radius: 50%; background: radial-gradient(circle, rgba(231,197,106,.22), transparent 68%); box-shadow: 0 0 22px rgba(231,197,106,.2); }
@@ -1631,8 +1737,6 @@
 @keyframes nodePulse { 50% { opacity: .46; box-shadow: 0 0 5px rgba(231,197,106,.25), 0 0 0 8px rgba(200,154,61,.025); } }
 @keyframes statusPulse { 50% { opacity: .35; } }
 @keyframes scrollSignal { 0% { transform: translateY(-100%); } 45%, 60% { transform: translateY(0); } 100% { transform: translateY(105%); } }
-@keyframes sectionReveal { from { opacity: .12; clip-path: inset(0 0 12% 0); filter: blur(7px); } to { opacity: 1; clip-path: inset(0 0 0 0); filter: blur(0); } }
-
 .systemSection { --system-dock-engaged: 0; --system-dock-charge: 0; min-height: 200svh; padding: 0; background: radial-gradient(circle at 50% 50%, rgba(200,154,61,.045), transparent 35%), #090b09; }
 .systemPauseSticky { position: sticky; top: 0; height: 100svh; min-height: 760px; padding: 1rem 0; display: grid; align-content: center; overflow: hidden; }
 .systemPauseSticky .systemComposer { height: min(720px, calc(100svh - 7rem)); min-height: 0; }
@@ -1666,12 +1770,50 @@
 .systemDockPlane::after { transform: translate(-50%, -50%) rotate(90deg); }
 .systemDockPlane > i { position: absolute; left: 50%; top: 50%; display: block; border: 1px solid rgba(231,197,106,.76); border-radius: 50%; transform: translate(-50%, -50%); box-shadow: inset 0 0 18px rgba(246,227,161,.06), inset 0 0 12px rgba(111,17,36,.14), 0 0 5px rgba(246,227,161,.38), 0 0 15px rgba(231,197,106,.22), 0 0 25px rgba(126,20,42,.18); }
 .systemDockPlane > i::before { content: ''; position: absolute; inset: -2px; padding: 2px; border-radius: inherit; background: conic-gradient(from 25deg, rgba(103,14,33,.12) 0 12%, rgba(165,34,57,.94) 16%, rgba(231,197,106,.52) 18%, rgba(103,14,33,.1) 22% 45%, rgba(153,28,51,.84) 51%, rgba(231,197,106,.42) 54%, rgba(103,14,33,.1) 58% 79%, rgba(145,25,48,.78) 84%, rgba(231,197,106,.4) 87%, rgba(103,14,33,.11) 91% 100%); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; filter: drop-shadow(0 0 4px rgba(148,26,50,.7)); animation: problemWineEnergy 10s linear infinite; }
-.systemDockRingOuter { width: 100%; height: 100%; animation: systemDockBreath 5.6s ease-in-out infinite; }
-.systemDockRingMiddle { width: 70%; height: 70%; animation: systemDockBreath 4.8s .35s ease-in-out infinite reverse; }
+.systemDockRingOuter { width: 128%; height: 128%; animation: systemDockBreath 5.6s ease-in-out infinite; }
+.systemDockRingMiddle { width: 100%; height: 100%; animation: systemDockBreath 4.8s .35s ease-in-out infinite reverse; }
 .systemDockRingMiddle::before { animation-direction: reverse !important; animation-duration: 7.2s !important; }
-.systemDockRingInner { width: 39%; height: 39%; border-color: rgba(246,227,161,.9) !important; animation: systemDockBreath 4s .7s ease-in-out infinite; }
+.systemDockRingInner { width: 76%; height: 76%; border-color: rgba(246,227,161,.9) !important; animation: systemDockBreath 4s .7s ease-in-out infinite; }
 .systemDockRingInner::before { animation-duration: 5.8s !important; }
-.systemDockCore { position: absolute; left: 50%; top: 50%; width: 15%; aspect-ratio: 1; border: 1px solid rgba(246,227,161,.88); border-radius: 50%; background: radial-gradient(circle, rgba(255,239,180,.78) 0 7%, rgba(231,197,106,.36) 19%, rgba(132,23,44,.2) 40%, rgba(8,10,8,.76) 64%); box-shadow: 0 0 12px rgba(246,227,161,.7), 0 0 38px rgba(231,197,106,.32), 0 0 52px rgba(119,20,40,.15); transform: translate(-50%, -50%) scale(calc(.78 + var(--system-dock-charge) * .22)); opacity: calc(.34 + var(--system-dock-charge) * .66); }
+.systemDockCore {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 58%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(calc(.94 + var(--system-dock-charge) * .06));
+  background: radial-gradient(circle at 36% 28%, rgba(146, 122, 82, .55) 0%, rgba(54, 44, 30, .92) 20%, rgba(16, 13, 9, .98) 52%, rgba(3, 3, 2, 1) 100%);
+  box-shadow:
+    0 0 0 3px rgba(246, 227, 161, .96),
+    0 0 0 5px rgba(103, 14, 33, .58),
+    0 0 0 6.5px rgba(2, 2, 1, .7),
+    inset 0 3px 7px rgba(0, 0, 0, .75),
+    inset 0 -4px 10px rgba(231, 197, 106, .14),
+    0 16px 30px rgba(0, 0, 0, .6),
+    0 0 18px rgba(231, 197, 106, .22);
+  opacity: calc(.55 + var(--system-dock-charge) * .45);
+}
+.systemDockCore::before {
+  content: '';
+  position: absolute;
+  inset: 11%;
+  border-radius: 50%;
+  border: 1px solid rgba(231, 197, 106, .32);
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, .65), inset 0 0 14px rgba(231, 197, 106, .07);
+}
+.systemDockCore::after {
+  content: '';
+  position: absolute;
+  left: 38%;
+  top: 30%;
+  width: 16%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(255, 239, 180, .85), rgba(231, 197, 106, .22) 60%, transparent 78%);
+  filter: blur(.5px);
+}
 .systemDockPort { position: absolute; width: 7px; height: 7px; border: 1px solid rgba(246,227,161,.88); border-radius: 50%; background: var(--gold-light); box-shadow: 0 0 10px var(--gold-light), 0 0 17px rgba(137,25,46,.45); animation: systemDockPort 2.8s ease-in-out infinite; }
 .systemDockPortNorth { left: 50%; top: -2px; transform: translateX(-50%); }
 .systemDockPortEast { right: -2px; top: 50%; transform: translateY(-50%); animation-delay: -.7s; }
@@ -2670,7 +2812,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .experience *, .experience *::before, .experience *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
-  .experience [data-reveal] { opacity: 1; clip-path: none; filter: none; }
+  .experience [data-reveal] { opacity: 1; clip-path: none; filter: none; transform: none; }
   .heroVisual { transform: none !important; }
   .hero { min-height: 100svh; }
   .problemSection { min-height: 100svh; }
