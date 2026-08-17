@@ -1642,7 +1642,7 @@
 .problemVideoLayer::after { content: ''; position: absolute; z-index: 3; inset: 0; background: radial-gradient(circle at 67% 50%, transparent 15%, rgba(5,6,5,.08) 50%, rgba(5,6,5,.34) 100%); pointer-events: none; }
 .problemVideo { width: 100%; height: 100%; display: block; object-fit: cover; object-position: center; filter: saturate(.92) contrast(1.04); }
 .problemDockingStation { position: absolute; z-index: 2; height: auto !important; aspect-ratio: 1; transform: translate(-50%, -50%) rotate(var(--dock-rotation, 0deg)); transform-origin: center; pointer-events: none; opacity: var(--problem-dock-engaged); filter: drop-shadow(0 0 22px rgba(231,197,106,.24)); }
-.problemDockingStation[data-editor='true'] { z-index: 12; pointer-events: auto; cursor: crosshair; }
+.problemDockingStation[data-editor='true'] { z-index: 12; pointer-events: auto; cursor: crosshair; opacity: 1 !important; }
 .problemDockPlane { position: absolute; inset: 0; transform: perspective(900px) rotateX(var(--dock-tilt, 0deg)); transform-origin: center; transform-style: preserve-3d; will-change: transform; }
 .problemDockPlane::before,
 .problemDockPlane::after { content: ''; position: absolute; left: 50%; top: 50%; height: 1px; width: 112%; background: linear-gradient(90deg, transparent 0%, rgba(200,154,61,.08) 13%, rgba(231,197,106,.62) 42%, rgba(246,227,161,.92) 50%, rgba(231,197,106,.62) 58%, rgba(200,154,61,.08) 87%, transparent 100%); transform: translate(-50%, -50%) scaleX(var(--problem-dock-engaged)); box-shadow: 0 0 5px rgba(231,197,106,.58), 0 0 14px rgba(200,154,61,.25); opacity: var(--problem-dock-engaged); }
@@ -1763,7 +1763,7 @@
 .composerVisual .constellation { height: 100%; }
 .systemDockVisual .systemCore { opacity: calc(.48 - var(--system-dock-engaged) * .28); transition: opacity .35s linear; }
 .systemDockingStation { position: absolute; z-index: 6; height: auto !important; aspect-ratio: 1; transform: translate(-50%, -50%) rotate(var(--dock-rotation, 0deg)); transform-origin: center; pointer-events: none; opacity: calc(.24 + var(--system-dock-engaged) * .76); filter: drop-shadow(0 0 22px rgba(231,197,106,.2)) drop-shadow(0 0 26px rgba(105,15,34,.1)); }
-.systemDockingStation[data-editor='true'] { z-index: 12; pointer-events: auto; cursor: crosshair; }
+.systemDockingStation[data-editor='true'] { z-index: 12; pointer-events: auto; cursor: crosshair; opacity: 1 !important; }
 .systemDockPlane { position: absolute; inset: 0; transform: perspective(900px) rotateX(var(--dock-tilt, 0deg)); transform-origin: center; transform-style: preserve-3d; will-change: transform; }
 .systemDockPlane::before,
 .systemDockPlane::after { content: ''; position: absolute; left: 50%; top: 50%; width: 142%; height: 1px; background: linear-gradient(90deg, transparent, rgba(126,20,42,.22) 13%, rgba(231,197,106,.78) 42%, rgba(246,227,161,.96) 50%, rgba(231,197,106,.78) 58%, rgba(126,20,42,.22) 87%, transparent); box-shadow: 0 0 7px rgba(231,197,106,.44), 0 0 13px rgba(113,17,37,.16); transform: translate(-50%, -50%); opacity: .78; }
@@ -1849,7 +1849,7 @@
 .salesVideoLayer::after { content: ''; position: absolute; z-index: 3; inset: 0; background: linear-gradient(90deg, rgba(5,6,5,.3), transparent 42%, rgba(5,6,5,.08)), radial-gradient(circle at 48% 56%, transparent 20%, rgba(5,6,5,.14) 72%); pointer-events: none; }
 .salesVideo { width: 100%; height: 100%; display: block; object-fit: cover; object-position: center; filter: saturate(.94) contrast(1.04); }
 .websiteDockingStation { --problem-dock-engaged: calc(.18 + var(--website-dock-engaged) * .82); --problem-dock-charge: var(--website-dock-charge); position: absolute; z-index: 2; height: auto !important; aspect-ratio: 1; transform: translate(-50%, -50%) rotate(var(--dock-rotation, 0deg)); transform-origin: center; pointer-events: none; filter: drop-shadow(0 14px 22px rgba(0,0,0,.72)) drop-shadow(0 0 18px rgba(231,197,106,.2)) drop-shadow(0 0 28px rgba(118,17,38,.14)); }
-.websiteDockingStation[data-editor='true'] { z-index: 12; pointer-events: auto; cursor: crosshair; }
+.websiteDockingStation[data-editor='true'] { z-index: 12; pointer-events: auto; cursor: crosshair; --problem-dock-engaged: 1 !important; --problem-dock-charge: 1 !important; opacity: 1 !important; }
 .salesHeader { position: absolute; z-index: 10; left: var(--container-left); top: clamp(5.5rem, 9vh, 7.5rem); margin: 0; transform: none; pointer-events: none; }
 .salesHeader::before { content: ''; position: absolute; z-index: -1; inset: -1.6rem -3rem -2rem -2rem; width: min(820px, 72vw); border-left: 1px solid rgba(231,197,106,.18); clip-path: polygon(0 0, 96% 4%, 100% 88%, 5% 100%); background: linear-gradient(100deg, rgba(7,8,7,.78), rgba(7,8,7,.22) 72%, transparent); backdrop-filter: blur(2px); }
 .salesHeader h2 { max-width: 58rem; font-size: clamp(2.8rem, 4.5vw, 5.15rem); }
@@ -2313,7 +2313,7 @@
 .marketingVideoLayer::after { content: ''; position: absolute; z-index: 3; inset: 0; background: linear-gradient(90deg, rgba(5,6,5,.28), transparent 35%, transparent 72%, rgba(5,6,5,.1)), radial-gradient(circle at 50% 50%, transparent 20%, rgba(5,6,5,.12) 76%); pointer-events: none; }
 .marketingVideo { width: 100%; height: 100%; display: block; object-fit: cover; object-position: center; filter: saturate(.94) contrast(1.04); transform: scaleX(-1); }
 .marketingDockingStation { --problem-dock-engaged: calc(.18 + var(--marketing-dock-engaged) * .82); --problem-dock-charge: var(--marketing-dock-charge); position: absolute; z-index: 2; height: auto !important; aspect-ratio: 1; transform: translate(-50%, -50%) rotate(var(--dock-rotation, 0deg)); transform-origin: center; pointer-events: none; filter: drop-shadow(0 14px 22px rgba(0,0,0,.72)) drop-shadow(0 0 18px rgba(231,197,106,.2)) drop-shadow(0 0 28px rgba(118,17,38,.14)); }
-.marketingDockingStation[data-editor='true'] { z-index: 12; pointer-events: auto; cursor: crosshair; }
+.marketingDockingStation[data-editor='true'] { z-index: 12; pointer-events: auto; cursor: crosshair; --problem-dock-engaged: 1 !important; --problem-dock-charge: 1 !important; opacity: 1 !important; }
 .marketingHeader { position: absolute; z-index: 10; top: clamp(5.2rem, 8vh, 7rem); right: calc(var(--rail-safe) + var(--container-left)); left: auto; width: min(660px, 46vw); isolation: isolate; }
 .marketingHeader::before { content: ''; position: absolute; z-index: -1; inset: -1.5rem -2rem -2rem -3.5rem; border-right: 1px solid rgba(231,197,106,.18); background: linear-gradient(260deg, rgba(7,8,7,.8), rgba(7,8,7,.2) 78%, transparent); clip-path: polygon(3% 4%, 100% 0, 95% 100%, 0 88%); backdrop-filter: blur(2px); }
 .marketingHeader h2 { font-size: clamp(2.8rem, 4.7vw, 5.3rem); }
