@@ -24,6 +24,19 @@ const stationConfig: Record<StationId, DockConfig> = {
   contact: contactDock,
 };
 const stationEditorNumber: Record<StationId, string> = { hero: '1', process: '6', data: '7', projects: '8', about: '9', contact: '10' };
+/** Every one of these stations sits deep inside its own section, which only
+ *  reaches its docked/visible position once scrolled into view - the
+ *  calibration panel itself is fixed-position and appears immediately, so
+ *  without this a slider drag looks like it does nothing: the ring is
+ *  updating correctly, just thousands of pixels below the fold. */
+const stationSectionId: Record<StationId, string> = {
+  hero: 'hero',
+  process: 'business-os',
+  data: 'daten-intelligenz',
+  projects: 'journey-references',
+  about: 'journey-about',
+  contact: 'journey-contact',
+};
 const stationDisplay: Record<StationId, { number: string; label: string }> = {
   hero: { number: '01', label: 'START' },
   process: { number: '06', label: 'PROZESSE' },
@@ -54,6 +67,7 @@ export default function SectionDockingStation({ station }: { station: StationId 
     const enabled = editor === station || editor === stationEditorNumber[station];
     setEditorEnabled(enabled);
     if (!enabled) return;
+    document.getElementById(stationSectionId[station])?.scrollIntoView({ block: 'center' });
     try {
       const stored = window.localStorage.getItem(storageKey);
       if (stored) {
