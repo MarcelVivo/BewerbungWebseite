@@ -14,11 +14,12 @@ import {
   type FlightPathRuntimeState,
   type ResolvedFlightPathPoint,
 } from './flightPathStore';
-import { pathSampleToDocument, resolveDockViewportTarget } from './flightPathTransforms';
+import { measureVisibleDockViewportTarget, pathSampleToDocument, resolveDockViewportTarget } from './flightPathTransforms';
 import { DOCKING_STOPS, dockingStopForAnchor } from './dockingRoute';
 import { createMasterFlightPath, sampleMasterFlightPath, type MasterFlightPath } from './masterFlightPath';
 import {
   DOCK_EPSILON,
+  MIN_TRANSIT_VIEWPORTS,
   PATH_DAMPING,
   dampPathProgress,
   mapScrollToPathProgress,
@@ -418,6 +419,34 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
             : maximumScroll,
         };
       });
+      // The final station is the physical end of the page. On compact tablet
+      // layouts its authored arrival can land a few pixels beyond the
+      // browser's maximum scroll, while the preceding minimum-transit rule
+      // still expects another .48 viewport of travel. That leaves CONTACT in
+      // a permanent "approach" state. Clamp the terminal arrival to the real
+      // scroll limit and end the preceding hold early enough to preserve one
+      // complete transit into it.
+      const terminalDockIndex = dockIndexes[dockIndexes.length - 1];
+      const penultimateDockIndex = dockIndexes[dockIndexes.length - 2];
+      if (terminalDockIndex !== undefined) {
+        const terminalArrival = Math.min(route[terminalDockIndex].scroll, maximumScroll);
+        route[terminalDockIndex] = {
+          ...route[terminalDockIndex],
+          scroll: terminalArrival,
+          documentY: terminalArrival + viewportHeight * route[terminalDockIndex].y / 100,
+        };
+        if (penultimateDockIndex !== undefined) {
+          const currentDeparture = route[penultimateDockIndex].departureScroll ?? route[penultimateDockIndex].scroll;
+          const latestDeparture = Math.max(
+            route[penultimateDockIndex].scroll,
+            terminalArrival - viewportHeight * MIN_TRANSIT_VIEWPORTS,
+          );
+          route[penultimateDockIndex] = {
+            ...route[penultimateDockIndex],
+            departureScroll: Math.min(currentDeparture, latestDeparture),
+          };
+        }
+      }
       // Control points between docks get their scroll from where they actually
       // sit on the master curve (arc-length progress), not from their raw
       // array index. mapScrollToPathProgress() ramps path progress *linearly
@@ -768,6 +797,21 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       }
 
       const activeStop = DOCKING_STOPS[pathTarget.activeStationIndex];
+      // The route needs a projected dock position before that station is on
+      // screen. Once the follower is genuinely docked, however, use the
+      // browser's live ring rectangle as the final authority. This keeps the
+      // object and the visible graphic pixel-coupled even when a responsive
+      // clamp, a sticky transition, loaded fonts/images or mobile browser UI
+      // changed the section geometry after resolveRoute() ran.
+      if (docked && activeStop) {
+        const liveDockTarget = measureVisibleDockViewportTarget(activeStop.anchor, {
+          width: window.innerWidth,
+          height: window.innerHeight,
+        });
+        if (liveDockTarget) {
+          current = { ...current, x: liveDockTarget.x, y: liveDockTarget.y };
+        }
+      }
       if (docked && activeStop) {
         entity.dataset.docking = 'true';
         entity.dataset.dockStation = activeStop.anchor;

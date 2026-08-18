@@ -15,6 +15,46 @@ export type DockViewportTarget = {
   screenY: number;
 };
 
+/**
+ * Reads the docking ring exactly where the browser is painting it right now.
+ * This is deliberately different from resolveDockViewportTarget(), which
+ * projects a station to a future route scroll position while building the
+ * master path. During a real docking hold the visible ring is the authority:
+ * late layout shifts, sticky-state changes and mobile browser chrome must not
+ * be able to leave the fixed ScrollEntity hovering beside it.
+ */
+export function measureVisibleDockViewportTarget(
+  dockAnchor: string,
+  viewport: Viewport,
+): DockViewportTarget | null {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return null;
+
+  const station = document.querySelector<HTMLElement>(`[data-docking-anchor="${dockAnchor}"]`);
+  const stage = station?.parentElement;
+  if (!station || !stage) return null;
+
+  const stationRect = station.getBoundingClientRect();
+  const stageRect = stage.getBoundingClientRect();
+  if (stationRect.width <= 0 || stationRect.height <= 0 || stageRect.width <= 0 || stageRect.height <= 0) return null;
+
+  const objectX = Number(station.dataset.dockObjectX ?? 0);
+  const objectY = Number(station.dataset.dockObjectY ?? 0);
+  const scale = Number(station.dataset.dockScale ?? 1);
+  const screenX = stationRect.left + stationRect.width / 2
+    + (Number.isFinite(objectX) ? objectX : 0) / 100 * stageRect.width;
+  const screenY = stationRect.top + stationRect.height / 2
+    + (Number.isFinite(objectY) ? objectY : 0) / 100 * stageRect.height;
+  const pathPoint = viewportToPathPoint({ left: screenX, top: screenY }, viewport);
+
+  return {
+    x: pathPoint.x,
+    y: pathPoint.y,
+    scale: Number.isFinite(scale) ? scale : 1,
+    screenX,
+    screenY,
+  };
+}
+
 export function pathPointToViewport(point: { x: number; y: number }, viewport: Viewport) {
   return {
     left: viewport.width * point.x / 100,
