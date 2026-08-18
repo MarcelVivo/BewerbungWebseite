@@ -2060,13 +2060,14 @@
   position: absolute;
   left: var(--flow-x);
   top: var(--flow-y);
-  width: clamp(124px, 10vw, 190px);
-  height: clamp(102px, 8.2vw, 156px);
+  width: clamp(126px, 9.4vw, 178px);
+  height: clamp(126px, 9.4vw, 178px);
   padding: 0;
   border: 0;
   background: transparent;
   cursor: pointer;
   pointer-events: auto;
+  touch-action: manipulation;
   transform: translate(-50%, -50%) scale(var(--flow-scale));
   transform-origin: 50% 50%;
   transform-style: preserve-3d;
@@ -2103,67 +2104,48 @@
 
 .perspectiveFlowCube::before,
 .perspectiveFlowCube::after {
-  content: '';
-  position: absolute;
-  z-index: 1;
-  left: -8%;
-  top: 69%;
-  width: 116%;
-  height: 23%;
-  clip-path: polygon(50% 0, 100% 33%, 50% 100%, 0 33%);
-  background: linear-gradient(145deg, rgba(255,226,118,.3), rgba(91,18,38,.88) 48%, rgba(10,5,7,.98));
-  box-shadow: 0 10px 20px rgba(0,0,0,.58), inset 0 0 0 1px rgba(246,210,102,.42), 0 0 18px rgba(126,20,42,.16);
-  pointer-events: none;
-}
-
-.perspectiveFlowCube::after {
-  z-index: 2;
-  left: -3%;
-  top: 63%;
-  width: 106%;
-  height: 22%;
-  background: linear-gradient(145deg, rgba(255,239,168,.24), rgba(111,21,44,.8) 50%, rgba(7,5,6,.98));
-  opacity: .9;
+  display: none;
 }
 
 .perspectiveFlowCube > i { position: absolute; display: block; pointer-events: none; }
 
 .perspectiveFlowCubeTop {
   z-index: 5;
-  inset: 3% 4% 43%;
-  clip-path: polygon(50% 0, 100% 35%, 50% 100%, 0 35%);
-  border: 1px solid rgba(255,222,116,.84);
-  background: linear-gradient(135deg, rgba(255,245,203,.42), rgba(204,153,48,.12) 44%), linear-gradient(155deg, rgba(116,79,31,.8), rgba(69,14,31,.82) 57%, rgba(8,7,7,.96));
-  box-shadow: inset 0 0 18px rgba(255,223,119,.2), 0 -4px 18px rgba(231,197,106,.18), 0 0 12px rgba(126,20,42,.22);
+  inset: 0;
+  clip-path: polygon(50% 4%, 96% 28%, 50% 52%, 4% 28%);
+  border: 0;
+  background: linear-gradient(135deg, rgba(255,247,211,.55), rgba(224,174,60,.24) 36%, rgba(102,21,42,.92) 76%, rgba(24,8,14,.98));
+  box-shadow: none;
+  filter: drop-shadow(0 -1px 0 rgba(255,225,127,.92)) drop-shadow(1px 0 0 rgba(231,197,106,.52)) drop-shadow(0 0 12px rgba(137,25,46,.22));
 }
 
 .perspectiveFlowCubeFront {
   z-index: 4;
-  left: 4%;
-  top: 22%;
-  width: 48%;
-  height: 56%;
-  display: grid !important;
-  place-items: center;
-  clip-path: polygon(0 0, 100% 36%, 100% 100%, 0 64%);
-  border: 1px solid rgba(246,205,92,.72);
-  background: linear-gradient(120deg, rgba(255,231,148,.22), transparent 48%), linear-gradient(180deg, rgba(105,21,43,.9), rgba(34,8,17,.97));
-  box-shadow: inset 0 0 20px rgba(231,197,106,.14), -7px 12px 22px rgba(0,0,0,.5), 0 0 14px rgba(123,20,43,.18);
+  inset: 0;
+  display: block !important;
+  clip-path: polygon(4% 28%, 50% 52%, 50% 96%, 4% 72%);
+  border: 0;
+  background: linear-gradient(120deg, rgba(255,230,139,.24), transparent 42%), linear-gradient(180deg, rgba(132,24,50,.98), rgba(39,7,19,.99));
+  box-shadow: none;
+  filter: drop-shadow(-1px 0 0 rgba(246,205,92,.82)) drop-shadow(0 1px 0 rgba(137,25,46,.72));
 }
 
 .perspectiveFlowCubeFront > b {
-  margin: 0 16% 10% 0;
+  position: absolute;
+  left: 15%;
+  top: 53%;
+  margin: 0;
   color: rgba(255,231,145,.92);
   font: 700 clamp(.53rem, .64vw, .74rem)/1 var(--font-chakra-petch), monospace;
   letter-spacing: .08em;
-  transform: skewY(18deg);
+  transform: skewY(27deg);
 }
 
 .perspectiveFlowCubeFront > small {
   position: absolute;
-  left: 10%;
-  top: 55%;
-  width: 78%;
+  left: 7%;
+  top: 67%;
+  width: 39%;
   overflow: hidden;
   color: rgba(255,239,187,.5);
   font: 680 clamp(.36rem, .43vw, .5rem)/1 var(--font-chakra-petch), monospace;
@@ -2171,27 +2153,25 @@
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
-  transform: skewY(18deg);
+  transform: skewY(27deg);
   opacity: .55;
   transition: opacity .35s ease, color .35s ease, font-size .35s ease, transform .35s ease;
 }
 
 .perspectiveFlowCubeSide {
   z-index: 3;
-  right: 4%;
-  top: 22%;
-  width: 48%;
-  height: 56%;
-  clip-path: polygon(0 36%, 100% 0, 100% 64%, 0 100%);
-  border: 1px solid rgba(176,45,69,.62);
-  background: linear-gradient(240deg, rgba(255,220,116,.18), transparent 44%), linear-gradient(180deg, rgba(76,17,34,.94), rgba(12,5,8,.98));
-  box-shadow: inset -8px -10px 18px rgba(0,0,0,.45), 5px 9px 18px rgba(0,0,0,.26);
+  inset: 0;
+  clip-path: polygon(50% 52%, 96% 28%, 96% 72%, 50% 96%);
+  border: 0;
+  background: linear-gradient(240deg, rgba(255,221,116,.18), transparent 38%), linear-gradient(180deg, rgba(76,14,34,.98), rgba(14,5,9,.99));
+  box-shadow: none;
+  filter: drop-shadow(1px 0 0 rgba(177,45,69,.72)) drop-shadow(0 1px 0 rgba(76,14,34,.82));
 }
 
 .perspectiveFlowCubeCore {
   z-index: 6;
   left: 50%;
-  top: 40%;
+  top: 52%;
   width: 9px;
   height: 9px;
   border-radius: 50%;
@@ -2210,9 +2190,9 @@
 .perspectiveFlowCubeShadow {
   z-index: 0;
   left: 50%;
-  top: 79%;
-  width: 108%;
-  height: 19%;
+  top: 95%;
+  width: 88%;
+  height: 10%;
   border-radius: 50%;
   background: radial-gradient(ellipse, rgba(231,197,106,.4), rgba(123,20,43,.18) 40%, rgba(0,0,0,.2) 62%, transparent 78%);
   filter: blur(2px);
@@ -2220,9 +2200,9 @@
 }
 
 @keyframes perspectiveCubeSequence {
-  0%, 9%, 100% { transform: translateY(-22%) scale(1); filter: saturate(1.04) brightness(.92) drop-shadow(0 10px 14px rgba(0,0,0,.5)); }
-  3.2% { transform: translateY(-29%) scale(1.16); filter: saturate(1.4) brightness(1.58) drop-shadow(0 0 18px rgba(242,195,74,.72)) drop-shadow(0 0 30px rgba(139,23,51,.66)); }
-  6.2% { transform: translateY(-24%) scale(1.06); filter: saturate(1.22) brightness(1.15) drop-shadow(0 0 12px rgba(242,195,74,.4)); }
+  0%, 9%, 100% { transform: translateY(-45%) scale(1); filter: saturate(1.04) brightness(.92) drop-shadow(0 12px 16px rgba(0,0,0,.56)); }
+  3.2% { transform: translateY(-52%) scale(1.14); filter: saturate(1.4) brightness(1.55) drop-shadow(0 0 18px rgba(242,195,74,.72)) drop-shadow(0 0 30px rgba(139,23,51,.66)); }
+  6.2% { transform: translateY(-47%) scale(1.05); filter: saturate(1.22) brightness(1.15) drop-shadow(0 0 12px rgba(242,195,74,.4)); }
 }
 
 @keyframes perspectiveCubeInvite {
@@ -2256,8 +2236,8 @@
   transition: opacity .3s ease, transform .4s ease;
 }
 
-.perspectiveFlowBehind { z-index: 8 !important; filter: brightness(.82) saturate(.92) blur(.08px); opacity: calc(.58 + (1 - var(--flow-depth)) * .3); }
-.perspectiveFlowFront { z-index: 32 !important; }
+.perspectiveFlowBehind { z-index: calc(var(--flow-z) - 20) !important; filter: brightness(.82) saturate(.92) blur(.08px); opacity: calc(.58 + (1 - var(--flow-depth)) * .3); }
+.perspectiveFlowFront { z-index: var(--flow-z) !important; }
 
 .perspectiveFlowReached .perspectiveFlowCubeCore { background: #fff4bd; box-shadow: 0 0 8px #fff0a8, 0 0 24px rgba(231,197,106,.9); }
 .perspectiveFlowReached .perspectiveFlowCubeTop { border-color: rgba(246,227,161,.72); }
@@ -2276,6 +2256,7 @@
   z-index: 64 !important;
   opacity: 1;
   filter: brightness(1.16) saturate(1.2) drop-shadow(0 0 20px rgba(231,197,106,.44));
+  transform: translate(-68%, -92%) scale(calc(var(--flow-scale) * 1.26));
 }
 
 .perspectiveFlowSelected::before {
@@ -2291,12 +2272,12 @@
 .perspectiveFlowSelected .perspectiveFlowCubeCore { animation: perspectiveSelectedCore 1.35s ease-in-out infinite; }
 .perspectiveFlowSelected .perspectiveFlowCubeFront { background: linear-gradient(120deg, rgba(255,239,179,.32), transparent 48%), linear-gradient(180deg, rgba(148,27,55,.98), rgba(48,8,21,.98)); border-color: rgba(255,226,127,.96); }
 .perspectiveFlowSelected .perspectiveFlowCubeFront > b { color: #fff0b0; }
-.perspectiveFlowSelected .perspectiveFlowCubeFront > small { top: 57%; width: 88%; left: 5%; color: #fff4cf; opacity: 1; font-size: clamp(.46rem, .56vw, .66rem); letter-spacing: .025em; transform: skewY(18deg) translateZ(1px); text-shadow: 0 0 9px rgba(255,225,125,.44); }
+.perspectiveFlowSelected .perspectiveFlowCubeFront > small { top: 67%; width: 40%; left: 6%; color: #fff4cf; opacity: 1; font-size: clamp(.46rem, .56vw, .66rem); letter-spacing: .025em; transform: skewY(27deg) translateZ(1px); text-shadow: 0 0 9px rgba(255,225,125,.44); }
 .perspectiveFlowSelected > strong { opacity: 0; transform: translateX(-50%) translateY(-8px); }
 
 @keyframes perspectiveCubeDance {
-  0%,100% { transform: translate(-10%, -52%) scale(1.28) rotate(-1.5deg); filter: brightness(1.22) saturate(1.22) drop-shadow(0 0 18px rgba(231,197,106,.58)) drop-shadow(0 0 34px rgba(137,25,46,.58)); }
-  48% { transform: translate(3%, -66%) scale(1.42) rotate(1.8deg); filter: brightness(1.52) saturate(1.38) drop-shadow(0 0 26px rgba(255,216,97,.8)) drop-shadow(0 0 46px rgba(151,22,52,.74)); }
+  0%,100% { transform: translateY(-45%) rotate(-1.5deg); filter: brightness(1.22) saturate(1.22) drop-shadow(0 0 18px rgba(231,197,106,.58)) drop-shadow(0 0 34px rgba(137,25,46,.58)); }
+  48% { transform: translateY(-51%) rotate(2deg); filter: brightness(1.52) saturate(1.38) drop-shadow(0 0 26px rgba(255,216,97,.8)) drop-shadow(0 0 46px rgba(151,22,52,.74)); }
 }
 
 @keyframes perspectiveSelectedRing {
@@ -2870,12 +2851,13 @@
   .perspectiveFlowHeader > small { display: none; }
   .perspectiveFlowStage { left: 8%; top: 56%; width: 88%; height: 22%; }
   .perspectiveFlowGlass { display: none; }
-  .perspectiveFlowNode { width: 68px; height: 64px; }
+  .perspectiveFlowNode { width: 72px; height: 72px; }
   .perspectiveFlowNode > strong { font-size: .4rem; }
+  .perspectiveFlowNode.perspectiveFlowSelected { transform: translate(-60%, -82%) scale(calc(var(--flow-scale) * 1.16)); }
   .perspectiveFlowSelected .perspectiveFlowCube { animation-name: perspectiveCubeDanceMobile; }
   .perspectiveFlowFlyout,
   .perspectiveFlowFlyout[data-side='right'],
-  .perspectiveFlowFlyout[data-side='left'] { left: 0; top: calc(100% - 2.8rem); width: 100%; max-width: none; transform: none; transform-origin: top center; }
+  .perspectiveFlowFlyout[data-side='left'] { left: 0; top: calc(100% - 4rem); width: 100%; max-width: none; transform: none; transform-origin: top center; }
   .perspectiveFlowFlyoutLink { display: none; }
   .flowFrame.salesFlowHud { bottom: .7rem; }
   .salesFlowHud .flowViewport { padding-block: 1.25rem 1rem; }
@@ -2987,8 +2969,8 @@
 }
 
 @keyframes perspectiveCubeDanceMobile {
-  0%,100% { transform: translate(-6%, -42%) scale(1.16) rotate(-1deg); filter: brightness(1.2) saturate(1.2) drop-shadow(0 0 12px rgba(231,197,106,.54)) drop-shadow(0 0 24px rgba(137,25,46,.5)); }
-  48% { transform: translate(2%, -52%) scale(1.26) rotate(1.2deg); filter: brightness(1.45) saturate(1.35) drop-shadow(0 0 18px rgba(255,216,97,.72)) drop-shadow(0 0 30px rgba(151,22,52,.66)); }
+  0%,100% { transform: translateY(-45%) rotate(-1deg); filter: brightness(1.2) saturate(1.2) drop-shadow(0 0 12px rgba(231,197,106,.54)) drop-shadow(0 0 24px rgba(137,25,46,.5)); }
+  48% { transform: translateY(-51%) rotate(1.2deg); filter: brightness(1.45) saturate(1.35) drop-shadow(0 0 18px rgba(255,216,97,.72)) drop-shadow(0 0 30px rgba(151,22,52,.66)); }
 }
 
 /* Short desktop and landscape-tablet viewports need the cinematic stages to

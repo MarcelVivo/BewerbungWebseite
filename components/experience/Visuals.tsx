@@ -79,7 +79,31 @@ export function PerspectiveBusinessFlow({
         <small>{hint}</small>
       </header>
 
-      <div className={styles.perspectiveFlowStage}>
+      <div
+        className={styles.perspectiveFlowStage}
+        onPointerDownCapture={(event) => {
+          const target = event.target as Element;
+          if (!target.closest('[data-flow-index]') || target.closest(`.${styles.perspectiveFlowFlyout}`)) return;
+
+          // Perspective makes the rear cubes overlap visually. Resolve the
+          // intended cube by the pointer's nearest on-screen centre instead of
+          // trusting whichever overlapping DOM box happened to win hit-testing.
+          const nodes = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('[data-flow-index]'));
+          const nearest = nodes.reduce<{ node: HTMLButtonElement; distance: number } | null>((best, node) => {
+            const rect = node.getBoundingClientRect();
+            const distance = Math.hypot(event.clientX - (rect.left + rect.width / 2), event.clientY - (rect.top + rect.height / 2));
+            return !best || distance < best.distance ? { node, distance } : best;
+          }, null);
+          if (!nearest) return;
+
+          const index = Number(nearest.node.dataset.flowIndex);
+          if (!Number.isInteger(index)) return;
+          event.preventDefault();
+          event.stopPropagation();
+          nearest.node.focus({ preventScroll: true });
+          selectFlow(index);
+        }}
+      >
         <svg className={`${styles.perspectiveFlowRail} ${styles.perspectiveFlowRailBehind}`} viewBox="0 0 1000 520" preserveAspectRatio="none" aria-hidden="true">
           <path d={routePath} />
           <path className={styles.perspectiveFlowDataStream} d={routePath} pathLength="1" />
@@ -130,13 +154,19 @@ export function PerspectiveBusinessFlow({
                 '--flow-duration': `${3.2 + depth * 1.8}s`,
                 '--flow-delay': `${index * -.23}s`,
                 '--flow-sequence-delay': `${index * 1.05}s`,
-                zIndex: 40 - index,
+                '--flow-z': 40 - index,
               } as CSSProperties}
               aria-current={active === index ? 'step' : undefined}
               aria-expanded={selectedFlow === index}
               aria-controls={`flow-detail-${index}`}
               aria-label={`${String(index + 1).padStart(2, '0')} · ${step}`}
-              onClick={() => selectFlow(index)}
+              data-flow-index={index}
+              onClick={(event) => {
+                // Keyboard activation has detail 0. Pointer activation is
+                // handled on pointerdown so the cube can move immediately
+                // without losing the subsequent click when it leaves the row.
+                if (event.detail === 0) selectFlow(index);
+              }}
             >
               <span className={styles.perspectiveFlowCube} aria-hidden="true">
                 <i className={styles.perspectiveFlowCubeTop} />
