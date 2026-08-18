@@ -1,14 +1,26 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import type { ExperienceLang } from './content';
 import { chapters } from './content';
 import { trackWebsiteEvent } from '../../app/lib/analytics';
 import styles from './experience.module.css';
 
+// Fisheye/dock-style magnification: the list item nearest the pointer (or,
+// at rest, nearest the active chapter) grows in size/weight/opacity; the
+// falloff below fades that out over ~2.3 rows in either direction.
+const MAGNIFY_RADIUS_ROWS = 2.3;
+const magnifyFalloff = (distanceInRows: number) => {
+  const linear = Math.max(0, 1 - distanceInRows / MAGNIFY_RADIUS_ROWS);
+  return linear * linear * (3 - 2 * linear);
+};
+
 export default function ExperienceNav({ lang }: { lang: ExperienceLang }) {
   const [active, setActive] = useState(0);
   const [progress, setProgress] = useState(0);
+  const listRef = useRef<HTMLOListElement | null>(null);
+  const hoverYRef = useRef<number | null>(null);
+  const magnifyFrameRef = useRef(0);
 
   useEffect(() => {
     let frame = 0;
@@ -31,6 +43,38 @@ export default function ExperienceNav({ lang }: { lang: ExperienceLang }) {
     return () => { window.cancelAnimationFrame(frame); window.removeEventListener('scroll', schedule); window.removeEventListener('resize', schedule); };
   }, []);
 
+  const applyMagnify = (activeIndex: number) => {
+    const list = listRef.current;
+    if (!list) return;
+    const items = Array.from(list.children) as HTMLElement[];
+    const pointerY = hoverYRef.current;
+    const listRect = list.getBoundingClientRect();
+    const pitch = items.length > 1 ? listRect.height / items.length : 1;
+    const pointerRowY = pointerY === null ? null : pointerY - listRect.top;
+    items.forEach((item, index) => {
+      const distanceInRows = pointerRowY === null
+        ? Math.abs(index - activeIndex)
+        : Math.abs((item.offsetTop + item.offsetHeight / 2) - pointerRowY) / pitch;
+      item.style.setProperty('--mag', magnifyFalloff(distanceInRows).toFixed(3));
+    });
+  };
+
+  useEffect(() => { applyMagnify(active); }, [active]);
+
+  const handlePointerMove = (event: ReactPointerEvent<HTMLOListElement>) => {
+    hoverYRef.current = event.clientY;
+    if (magnifyFrameRef.current) return;
+    magnifyFrameRef.current = window.requestAnimationFrame(() => {
+      magnifyFrameRef.current = 0;
+      applyMagnify(active);
+    });
+  };
+
+  const handlePointerLeave = () => {
+    hoverYRef.current = null;
+    applyMagnify(active);
+  };
+
   function navigate(id: string, index: number) {
     setActive(index);
     document.getElementById(id)?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
@@ -43,11 +87,11 @@ export default function ExperienceNav({ lang }: { lang: ExperienceLang }) {
       <div className={styles.topProgress} aria-hidden="true"><span style={{ transform: `scaleX(${progress})` }} /></div>
       <nav className={styles.chapterRail} aria-label="Seitenposition">
         <span className={styles.railLine}><i style={{ height: `${progress * 100}%` }} /></span>
-        <ol>
+        <ol ref={listRef} onPointerMove={handlePointerMove} onPointerLeave={handlePointerLeave}>
           {chapters.map((chapter, index) => (
             <li key={chapter.id} className={active === index ? styles.chapterActive : ''}>
               <button type="button" onClick={() => navigate(chapter.id, index)} aria-current={active === index ? 'location' : undefined}>
-                <span>{String(index + 1).padStart(2, '0')}</span><i /><b>{chapter.label[lang]}</b>
+                <b><span className={styles.chapterLabelFull}>{chapter.label[lang]}</span><span className={styles.chapterLabelShort}>{chapter.short}</span></b>
               </button>
             </li>
           ))}

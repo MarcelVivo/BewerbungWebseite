@@ -1403,17 +1403,24 @@
 .menuButton { display: none; align-items: center; gap: .5rem; padding: .6rem .7rem; border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,.03); cursor: pointer; }
 .menuButton span { font-size: .7rem; }
 
-.chapterRail { position: fixed; z-index: 180; right: clamp(.9rem, 1.7vw, 1.8rem); top: 50%; width: 8.6rem; transform: translateY(-50%); }
-.chapterRail .railLine { position: absolute; right: 26px; top: 8px; bottom: 8px; width: 1px; background: rgba(255,255,255,.08); }
+.chapterRail { position: fixed; z-index: 180; right: clamp(.9rem, 1.7vw, 1.8rem); top: 50%; width: 9.6rem; transform: translateY(-50%); }
+.chapterRail .railLine { position: absolute; right: 0; top: 8px; bottom: 8px; width: 1px; background: rgba(255,255,255,.08); }
 .chapterRail .railLine i { display: block; width: 1px; background: linear-gradient(180deg, var(--gold-pale), var(--gold-deep)); box-shadow: 0 0 10px rgba(231,197,106,.45); transition: height .15s linear; }
-.chapterRail ol { position: relative; margin: 0; padding: 0; display: grid; gap: .52rem; list-style: none; }
-.chapterRail button { width: 100%; min-height: 24px; display: grid; grid-template-columns: 1fr 14px 20px; align-items: center; gap: .45rem; padding: 0; border: 0; background: none; cursor: pointer; text-align: right; }
-.chapterRail button > span { order: 3; font: 500 .5rem/1 var(--font-chakra-petch), monospace; color: #525751; transition: color .25s ease; }
-.chapterRail button > i { order: 2; position: relative; width: 6px; height: 6px; justify-self: center; border: 1px solid #565a55; border-radius: 50%; background: var(--ink); transition: all .25s ease; }
-.chapterRail button > b { order: 1; font-size: .58rem; font-weight: 550; letter-spacing: .03em; color: #5d625d; opacity: 0; transform: translateX(6px); transition: opacity .25s ease, transform .25s ease, color .25s ease; white-space: nowrap; }
-.chapterRail button:hover > b, .chapterRail .chapterActive button > b { opacity: 1; transform: translateX(0); color: #d7d9d3; }
-.chapterRail .chapterActive button > span { color: var(--gold-light); }
-.chapterRail .chapterActive button > i { width: 10px; height: 10px; border-color: var(--gold-pale); background: var(--gold-light); box-shadow: 0 0 14px rgba(231,197,106,.66); }
+.chapterRail ol { position: relative; margin: 0; padding: 0 14px 0 0; display: grid; list-style: none; cursor: default; }
+.chapterRail li { min-height: 1.8rem; display: flex; align-items: center; justify-content: flex-end; }
+.chapterRail button { width: 100%; padding: 0; border: 0; background: none; cursor: pointer; text-align: right; }
+.chapterRail button > b {
+  display: inline-block;
+  font-weight: calc(480 + var(--mag, 0) * 240);
+  font-size: calc(.6rem + var(--mag, 0) * .42rem);
+  letter-spacing: .01em;
+  color: color-mix(in srgb, var(--gold-pale) calc(var(--mag, 0) * 100%), #565a55);
+  opacity: calc(.4 + var(--mag, 0) * .6);
+  white-space: nowrap;
+  transition: font-size .16s ease, font-weight .16s ease, opacity .16s ease, color .16s ease;
+}
+.chapterRail button:focus-visible > b { color: var(--gold-pale); opacity: 1; }
+.chapterLabelShort { display: none; }
 
 .mobileMenu { position: fixed; z-index: 190; inset: 0; visibility: hidden; pointer-events: none; }
 .mobileMenuOpen { visibility: visible; pointer-events: auto; }
@@ -2585,9 +2592,7 @@
 @media (max-width: 960px) {
   .experience { --rail-safe: 6.25rem; --container: calc(100vw - var(--rail-safe) - 1.5rem); --container-left: 1rem; }
   .chapterRail { right: .45rem; width: 5.4rem; }
-  .chapterRail .railLine { right: 23px; }
-  .chapterRail button { grid-template-columns: 1fr 12px 18px; gap: .3rem; }
-  .chapterRail button > b { max-width: 3.4rem; overflow: hidden; text-overflow: ellipsis; font-size: .5rem; }
+  .chapterRail button > b { max-width: 5rem; overflow: hidden; text-overflow: ellipsis; }
   .hero { min-height: max(1160px, 175svh); }
   .heroSticky { min-height: 100svh; }
   .heroLayout { padding-top: 9rem; }
@@ -2647,12 +2652,11 @@
 
 @media (max-width: 699px) {
   .experience { --rail-safe: 3.25rem; --container: calc(100vw - var(--rail-safe) - 1rem); --container-left: .75rem; }
-  .chapterRail { right: .2rem; width: 2.8rem; }
-  .chapterRail .railLine { right: 22px; }
-  .chapterRail button { grid-template-columns: 12px 18px; justify-content: end; gap: .2rem; }
-  .chapterRail button > b { display: none; }
-  .chapterRail button > i { order: 1; }
-  .chapterRail button > span { order: 2; font-size: .45rem; }
+  .chapterRail { right: .3rem; width: 3.4rem; }
+  .chapterRail .railLine { right: 4px; }
+  .chapterRail ol { padding-right: 8px; }
+  .chapterLabelFull { display: none; }
+  .chapterLabelShort { display: inline; }
   .scrollEntity { z-index: var(--layer-object); width: min(26rem, 112vw); filter: drop-shadow(0 1rem 1.8rem rgba(0,0,0,.62)) drop-shadow(0 0 1rem rgba(139,42,42,.1)); }
   .scrollEntityTrail { z-index: var(--layer-object-trail); opacity: .72; }
   .topbar { height: 64px; padding: 0 1rem; }
