@@ -12,10 +12,10 @@ const PERSPECTIVE_SOURCE_WIDTH = 1000;
 const PERSPECTIVE_SOURCE_HEIGHT = 360;
 const PERSPECTIVE_CORNER_LABELS = ['Oben links', 'Oben rechts', 'Unten rechts', 'Unten links'] as const;
 const DEFAULT_SALES_PERSPECTIVE: SalesPerspectiveQuad = [
-  { x: 18.5, y: 42 },
-  { x: 61.5, y: 46.8 },
-  { x: 62.5, y: 70.3 },
-  { x: 19.5, y: 65.5 },
+  { x: 20.1, y: 38.4 },
+  { x: 62.3, y: 49.9 },
+  { x: 61.9, y: 81 },
+  { x: 21, y: 63.9 },
 ];
 
 function parseStoredPerspective(value: string | null): SalesPerspectiveQuad | null {
