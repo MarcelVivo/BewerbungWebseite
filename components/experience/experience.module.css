@@ -2480,10 +2480,10 @@
 .trustCards article > div { color: var(--muted); font-size: .78rem; line-height: 1.65; }
 .trustCards footer { margin-top: auto; padding-top: 1.2rem; display: flex; flex-wrap: wrap; gap: .4rem; }
 .trustCards footer i { padding: .32rem .42rem; border: 1px solid var(--line); color: var(--faint); font: 600 .42rem/1 var(--font-chakra-petch), monospace; font-style: normal; letter-spacing: .08em; }
-.machineReadable { width: var(--container); margin: 1.5rem 0 0 var(--container-left); border-top: 1px solid rgba(231,197,106,.25); }
-.machineReadable > div { display: grid; grid-template-columns: .55fr 1.45fr; gap: 2rem; padding: 1.4rem 0; border-bottom: 1px solid var(--line); }
-.machineReadable dt { font-size: .78rem; font-weight: 650; }
-.machineReadable dd { margin: 0; color: var(--muted); font-size: .78rem; line-height: 1.6; }
+.machineReadable { width: var(--container); margin: clamp(1.8rem, 3vw, 2.6rem) 0 0 var(--container-left); border-top: 1px solid rgba(231,197,106,.25); }
+.machineReadable > div { display: grid; grid-template-columns: .55fr 1.45fr; gap: 2rem; padding: 1.6rem 0; border-bottom: 1px solid var(--line); }
+.machineReadable dt { font-size: .92rem; font-weight: 650; color: #e9eae4; }
+.machineReadable dd { margin: 0; color: var(--muted); font-size: .88rem; line-height: 1.65; }
 
 @keyframes architectureTravel { 0%,100% { transform: translate(-90px, 210px); opacity: .25; } 45%, 60% { transform: translate(30px, 0); opacity: 1; } }
 
