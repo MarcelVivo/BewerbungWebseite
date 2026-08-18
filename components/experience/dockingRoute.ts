@@ -52,6 +52,22 @@ export function normalizeDockingPoints(source: FlightPathPoint[]): FlightPathPoi
 }
 
 export const dockingStopForAnchor = (anchor?: string) => DOCKING_STOPS.find((stop) => stop.anchor === anchor);
+export const dockingStopForSectionId = (sectionId?: string) => DOCKING_STOPS.find((stop) => stop.sectionId === sectionId);
+
+/** The scrollY at which a station's docking ring is actually in its held
+ *  "resting" position - mirrors the same arrival formula ScrollEntity.tsx
+ *  uses to resolve each dock's own "arrived" scrollY, so this always
+ *  matches where the flying object visually settles, not just "the
+ *  section is on screen". */
+function dockingRestScrollY(stop: DockingStop): number | null {
+  const section = document.getElementById(stop.sectionId);
+  if (!section) return null;
+  const rect = section.getBoundingClientRect();
+  const absoluteTop = window.scrollY + rect.top;
+  const viewportHeight = window.innerHeight;
+  const scroll = absoluteTop + Math.max(section.offsetHeight - viewportHeight, viewportHeight * .65, 1) * stop.rest;
+  return Math.max(0, scroll);
+}
 
 /** Prev/next neighbours in page order for the `?dock-editor=<station>` calibrator's
  *  station-to-station navigation - null past either end (problem has no prev, contact no next). */
@@ -73,13 +89,8 @@ export function scrollToDockingStation(anchor: string) {
   const stop = dockingStopForAnchor(anchor);
   if (!stop) return;
   const jump = () => {
-    const section = document.getElementById(stop.sectionId);
-    if (!section) return;
-    const rect = section.getBoundingClientRect();
-    const absoluteTop = window.scrollY + rect.top;
-    const viewportHeight = window.innerHeight;
-    const scroll = absoluteTop + Math.max(section.offsetHeight - viewportHeight, viewportHeight * .65, 1) * stop.rest;
-    window.scrollTo({ top: Math.max(0, scroll), behavior: 'auto' });
+    const scroll = dockingRestScrollY(stop);
+    if (scroll !== null) window.scrollTo({ top: scroll, behavior: 'auto' });
   };
   // Late-loading media/fonts still shift section heights well after mount,
   // which silently invalidates a scroll computed too early - one immediate
@@ -88,3 +99,4 @@ export function scrollToDockingStation(anchor: string) {
   window.setTimeout(jump, 300);
   window.setTimeout(jump, 900);
 }
+

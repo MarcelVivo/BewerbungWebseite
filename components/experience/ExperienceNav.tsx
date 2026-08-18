@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import type { ExperienceLang } from './content';
 import { chapters } from './content';
+import { getResolvedFlightPath } from './flightPathStore';
+import { MIN_TRANSIT_VIEWPORTS } from './scrollPathController';
 import { trackWebsiteEvent } from '../../app/lib/analytics';
 import styles from './experience.module.css';
 
@@ -14,6 +16,35 @@ const magnifyFalloff = (distanceInRows: number) => {
   const linear = Math.max(0, 1 - distanceInRows / MAGNIFY_RADIUS_ROWS);
   return linear * linear * (3 - 2 * linear);
 };
+
+/** Scrolls to a point safely inside a chapter's true docking "hold" window -
+ *  a plain scrollIntoView({block:'start'}) only lands at the top of the
+ *  (often multi-viewport-tall) section, not where the flying object is
+ *  actually resting on its ring. Reads the same dockingProgress
+ *  ScrollEntity.tsx itself resolved and stored, rather than recomputing the
+ *  arrival scrollY independently - a parallel formula silently drifts out
+ *  of sync as the page accumulates layout (each dock further down inherits
+ *  more error than the last). Mirrors mapScrollToPathProgress()'s own
+ *  hold-window start: the previous dock's minimum transit distance can push
+ *  the true "arrived" scrollY later than this dock's raw arrivalScroll.
+ *  Returns false for chapters with no docking ring (the hero) or before the
+ *  route has resolved, so the caller can fall back to scrollIntoView. */
+function scrollToChapterDockingRest(sectionId: string, behavior: ScrollBehavior): boolean {
+  const resolved = getResolvedFlightPath();
+  const docks = resolved?.dockingProgress;
+  if (!resolved || !docks?.length) return false;
+  const index = docks.findIndex((dock) => dock.sectionId === sectionId);
+  if (index < 0) return false;
+  const to = docks[index];
+  const viewportHeight = resolved.viewportHeight || window.innerHeight;
+  const holdStart = index === 0
+    ? to.arrivalScroll
+    : Math.max(docks[index - 1].departureScroll + Math.max(1, viewportHeight * MIN_TRANSIT_VIEWPORTS), to.arrivalScroll);
+  const holdEnd = Number.isFinite(to.departureScroll) ? to.departureScroll : holdStart + viewportHeight;
+  const margin = Math.min(viewportHeight * .12, Math.max(0, holdEnd - holdStart) / 2);
+  window.scrollTo({ top: Math.max(0, holdStart + margin), behavior });
+  return true;
+}
 
 export default function ExperienceNav({ lang }: { lang: ExperienceLang }) {
   const [active, setActive] = useState(0);
@@ -77,7 +108,9 @@ export default function ExperienceNav({ lang }: { lang: ExperienceLang }) {
 
   function navigate(id: string, index: number) {
     setActive(index);
-    document.getElementById(id)?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+    const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+    const landedOnDock = scrollToChapterDockingRest(id, behavior);
+    if (!landedOnDock) document.getElementById(id)?.scrollIntoView({ behavior, block: 'start' });
     window.history.replaceState(null, '', `#${id}`);
     trackWebsiteEvent('journey_navigation', { station: id, metadata: { station_index: index + 1 } });
   }
