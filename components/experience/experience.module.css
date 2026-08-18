@@ -2101,7 +2101,9 @@
 .perspectiveFlowCubeTop {
   z-index: 5;
   inset: 0;
-  clip-path: polygon(43% 8%, 96% 27%, 57% 50%, 4% 31%);
+  /* Scene-calibrated plane: the long edges follow the monitor's 10deg
+     horizontal axis; the short edges follow the glass blocks' 60deg depth. */
+  clip-path: polygon(25% 12%, 78% 22%, 93% 48%, 34% 38%);
   border: 0;
   background: linear-gradient(135deg, rgba(255,247,211,.55), rgba(224,174,60,.24) 36%, rgba(102,21,42,.92) 76%, rgba(24,8,14,.98));
   box-shadow: none;
@@ -2112,7 +2114,7 @@
   z-index: 4;
   inset: 0;
   display: block !important;
-  clip-path: polygon(4% 31%, 57% 50%, 57% 96%, 4% 77%);
+  clip-path: polygon(34% 38%, 93% 48%, 93% 88%, 34% 78%);
   border: 0;
   background: linear-gradient(120deg, rgba(255,230,139,.24), transparent 42%), linear-gradient(180deg, rgba(132,24,50,.98), rgba(39,7,19,.99));
   box-shadow: none;
@@ -2121,20 +2123,20 @@
 
 .perspectiveFlowCubeFront > b {
   position: absolute;
-  left: 15%;
-  top: 53%;
+  left: 43%;
+  top: 52%;
   margin: 0;
   color: rgba(255,231,145,.92);
   font: 700 clamp(.53rem, .64vw, .74rem)/1 var(--font-chakra-petch), monospace;
   letter-spacing: .08em;
-  transform: skewY(20deg);
+  transform: rotate(10deg);
 }
 
 .perspectiveFlowCubeFront > small {
   position: absolute;
-  left: 7%;
+  left: 38%;
   top: 67%;
-  width: 43%;
+  width: 50%;
   overflow: hidden;
   color: rgba(255,239,187,.5);
   font: 680 clamp(.36rem, .43vw, .5rem)/1 var(--font-chakra-petch), monospace;
@@ -2142,7 +2144,7 @@
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
-  transform: skewY(20deg);
+  transform: rotate(10deg);
   opacity: .55;
   transition: opacity .35s ease, color .35s ease, font-size .35s ease, transform .35s ease;
 }
@@ -2150,7 +2152,7 @@
 .perspectiveFlowCubeSide {
   z-index: 3;
   inset: 0;
-  clip-path: polygon(57% 50%, 96% 27%, 96% 73%, 57% 96%);
+  clip-path: polygon(78% 22%, 93% 48%, 93% 88%, 78% 62%);
   border: 0;
   background: linear-gradient(240deg, rgba(255,221,116,.18), transparent 38%), linear-gradient(180deg, rgba(76,14,34,.98), rgba(14,5,9,.99));
   box-shadow: none;
@@ -2159,8 +2161,8 @@
 
 .perspectiveFlowCubeCore {
   z-index: 6;
-  left: 57%;
-  top: 50%;
+  left: 93%;
+  top: 48%;
   width: 9px;
   height: 9px;
   border-radius: 50%;
@@ -2179,8 +2181,8 @@
 .perspectiveFlowCubeShadow {
   z-index: 0;
   left: 50%;
-  top: 95%;
-  width: 88%;
+  top: 88%;
+  width: 66%;
   height: 10%;
   border-radius: 50%;
   background: radial-gradient(ellipse, rgba(231,197,106,.4), rgba(123,20,43,.18) 40%, rgba(0,0,0,.2) 62%, transparent 78%);
@@ -2206,23 +2208,7 @@
 }
 
 .perspectiveFlowNode > strong {
-  position: absolute;
-  z-index: 4;
-  left: 50%;
-  bottom: calc(100% + 4px);
-  min-width: 76%;
-  padding: .32rem .46rem;
-  border: 1px solid rgba(231,197,106,.3);
-  background: linear-gradient(180deg, rgba(25,23,17,.92), rgba(6,8,7,.94));
-  color: rgba(246,235,199,.9);
-  font: 650 clamp(.43rem, .48vw, .56rem)/1 var(--font-chakra-petch), monospace;
-  letter-spacing: .015em;
-  text-align: center;
-  white-space: nowrap;
-  opacity: .52;
-  transform: translateX(-50%);
-  transform-origin: bottom center;
-  transition: opacity .3s ease, transform .4s ease;
+  display: none;
 }
 
 .perspectiveFlowBehind { z-index: calc(var(--flow-z) - 20) !important; filter: brightness(.82) saturate(.92) blur(.08px); opacity: calc(.58 + (1 - var(--flow-depth)) * .3); }
@@ -2261,12 +2247,12 @@
 .perspectiveFlowSelected .perspectiveFlowCubeCore { animation: perspectiveSelectedCore 1.35s ease-in-out infinite; }
 .perspectiveFlowSelected .perspectiveFlowCubeFront { background: linear-gradient(120deg, rgba(255,239,179,.32), transparent 48%), linear-gradient(180deg, rgba(148,27,55,.98), rgba(48,8,21,.98)); border-color: rgba(255,226,127,.96); }
 .perspectiveFlowSelected .perspectiveFlowCubeFront > b { color: #fff0b0; }
-.perspectiveFlowSelected .perspectiveFlowCubeFront > small { top: 67%; width: 43%; left: 6%; color: #fff4cf; opacity: 1; font-size: clamp(.46rem, .56vw, .66rem); letter-spacing: .025em; transform: skewY(20deg) translateZ(1px); text-shadow: 0 0 9px rgba(255,225,125,.44); }
+.perspectiveFlowSelected .perspectiveFlowCubeFront > small { top: 67%; width: 50%; left: 38%; color: #fff4cf; opacity: 1; font-size: clamp(.46rem, .56vw, .66rem); letter-spacing: .025em; transform: rotate(10deg) translateZ(1px); text-shadow: 0 0 9px rgba(255,225,125,.44); }
 .perspectiveFlowSelected > strong { opacity: 0; transform: translateX(-50%) translateY(-8px); }
 
 @keyframes perspectiveCubeDance {
-  0%,100% { transform: translateY(-45%) rotate(-1.5deg); filter: brightness(1.22) saturate(1.22) drop-shadow(0 0 18px rgba(231,197,106,.58)) drop-shadow(0 0 34px rgba(137,25,46,.58)); }
-  48% { transform: translateY(-51%) rotate(2deg); filter: brightness(1.52) saturate(1.38) drop-shadow(0 0 26px rgba(255,216,97,.8)) drop-shadow(0 0 46px rgba(151,22,52,.74)); }
+  0%,100% { transform: translate(-4%, -45%); filter: brightness(1.22) saturate(1.22) drop-shadow(0 0 18px rgba(231,197,106,.58)) drop-shadow(0 0 34px rgba(137,25,46,.58)); }
+  48% { transform: translate(4%, -51%) scale(1.04); filter: brightness(1.52) saturate(1.38) drop-shadow(0 0 26px rgba(255,216,97,.8)) drop-shadow(0 0 46px rgba(151,22,52,.74)); }
 }
 
 @keyframes perspectiveSelectedRing {
@@ -2958,8 +2944,8 @@
 }
 
 @keyframes perspectiveCubeDanceMobile {
-  0%,100% { transform: translateY(-45%) rotate(-1deg); filter: brightness(1.2) saturate(1.2) drop-shadow(0 0 12px rgba(231,197,106,.54)) drop-shadow(0 0 24px rgba(137,25,46,.5)); }
-  48% { transform: translateY(-51%) rotate(1.2deg); filter: brightness(1.45) saturate(1.35) drop-shadow(0 0 18px rgba(255,216,97,.72)) drop-shadow(0 0 30px rgba(151,22,52,.66)); }
+  0%,100% { transform: translate(-3%, -45%); filter: brightness(1.2) saturate(1.2) drop-shadow(0 0 12px rgba(231,197,106,.54)) drop-shadow(0 0 24px rgba(137,25,46,.5)); }
+  48% { transform: translate(3%, -51%) scale(1.03); filter: brightness(1.45) saturate(1.35) drop-shadow(0 0 18px rgba(255,216,97,.72)) drop-shadow(0 0 30px rgba(151,22,52,.66)); }
 }
 
 /* Short desktop and landscape-tablet viewports need the cinematic stages to
