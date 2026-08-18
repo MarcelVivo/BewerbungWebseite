@@ -122,8 +122,8 @@ export default function SystemDockingStation() {
         ref={stationRef}
         className={styles.systemDockingStation}
         style={{
-          left: `${ringPosition.x}%`,
-          top: `${ringPosition.y}%`,
+          '--dock-x': `${ringPosition.x}%`,
+          '--dock-y': `${ringPosition.y}%`,
           width: `${config.width}%`,
           '--dock-rotation': `${config.rotation}deg`,
           '--dock-tilt': `${config.tilt}deg`,

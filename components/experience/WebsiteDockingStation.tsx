@@ -121,8 +121,8 @@ export default function WebsiteDockingStation() {
         ref={stationRef}
         className={styles.websiteDockingStation}
         style={{
-          left: `${ringPosition.x}%`,
-          top: `${ringPosition.y}%`,
+          '--dock-x': `${ringPosition.x}%`,
+          '--dock-y': `${ringPosition.y}%`,
           width: `${config.width}%`,
           '--dock-rotation': `${config.rotation}deg`,
           '--dock-tilt': `${config.tilt}deg`,

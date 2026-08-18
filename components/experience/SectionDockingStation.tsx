@@ -119,7 +119,7 @@ export default function SectionDockingStation({ station }: { station: StationId 
         ref={stationRef}
         className={styles.sectionRoundDockingStation}
         style={{
-          left: `${ringPosition.x}%`, top: `${ringPosition.y}%`, width: `${config.width}%`, '--dock-rotation': `${config.rotation}deg`, '--dock-tilt': `${config.tilt}deg`,
+          '--dock-x': `${ringPosition.x}%`, '--dock-y': `${ringPosition.y}%`, width: `${config.width}%`, '--dock-rotation': `${config.rotation}deg`, '--dock-tilt': `${config.tilt}deg`,
           '--problem-dock-engaged': `var(--${station}-dock-engaged)`, '--problem-dock-charge': `var(--${station}-dock-charge)`,
         } as CSSProperties}
         data-docking-anchor={station}

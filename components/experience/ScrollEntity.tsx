@@ -14,7 +14,7 @@ import {
   type FlightPathRuntimeState,
   type ResolvedFlightPathPoint,
 } from './flightPathStore';
-import { pathSampleToDocument } from './flightPathTransforms';
+import { pathSampleToDocument, resolveDockViewportTarget } from './flightPathTransforms';
 import { DOCKING_STOPS, dockingStopForAnchor } from './dockingRoute';
 import { createMasterFlightPath, sampleMasterFlightPath, type MasterFlightPath } from './masterFlightPath';
 import {
@@ -370,11 +370,17 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
         // scroll. Otherwise all contact points collapse onto one value and the
         // final docking node becomes ambiguous.
         const resolvedScroll = Math.max(0, scroll);
+        const dockTarget = point.dockAnchor
+          ? resolveDockViewportTarget(point.dockAnchor, resolvedScroll, { width: viewportWidth, height: viewportHeight })
+          : null;
+        const resolvedPoint = dockTarget
+          ? { ...point, x: dockTarget.x, y: dockTarget.y }
+          : point;
         return {
-          ...point,
+          ...resolvedPoint,
           scroll: resolvedScroll,
-          documentX: viewportWidth * point.x / 100,
-          documentY: resolvedScroll + viewportHeight * point.y / 100,
+          documentX: viewportWidth * resolvedPoint.x / 100,
+          documentY: resolvedScroll + viewportHeight * resolvedPoint.y / 100,
         };
       });
       const dockIndexes = route.flatMap((point, index) => point.dockAnchor ? [index] : []);
@@ -396,8 +402,17 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
         const nextStop = DOCKING_STOPS[dockOrder + 1];
         const nextSection = nextStop ? document.getElementById(nextStop.sectionId) : null;
         const nextSectionTop = nextSection ? window.scrollY + nextSection.getBoundingClientRect().top : maximumScroll;
+        const finalDockTarget = route[routeIndex].dockAnchor
+          ? resolveDockViewportTarget(route[routeIndex].dockAnchor as string, route[routeIndex].scroll, { width: viewportWidth, height: viewportHeight })
+          : null;
         route[routeIndex] = {
           ...route[routeIndex],
+          ...(finalDockTarget ? {
+            x: finalDockTarget.x,
+            y: finalDockTarget.y,
+            documentX: viewportWidth * finalDockTarget.x / 100,
+            documentY: route[routeIndex].scroll + viewportHeight * finalDockTarget.y / 100,
+          } : {}),
           departureScroll: nextStop
             ? Math.max(route[routeIndex].scroll + viewportHeight * MIN_HOLD_VIEWPORTS, nextSectionTop - viewportHeight)
             : maximumScroll,
@@ -877,6 +892,17 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       requestRender();
     };
 
+    const resizeObserver = typeof ResizeObserver === 'undefined'
+      ? null
+      : new ResizeObserver(handleResize);
+    resizeObserver?.observe(root);
+    DOCKING_STOPS.forEach((stop) => {
+      const station = document.querySelector<HTMLElement>(`[data-docking-anchor="${stop.anchor}"]`);
+      if (station) resizeObserver?.observe(station);
+      if (station?.parentElement) resizeObserver?.observe(station.parentElement);
+    });
+    void document.fonts?.ready.then(handleResize);
+
     const handleDockCalibration = () => {
       resolveRoute();
       requestRender();
@@ -905,6 +931,8 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
     handleMotionPreference();
     window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+    window.visualViewport?.addEventListener('resize', handleResize);
     window.addEventListener('load', handleResize);
     window.addEventListener('dock-calibration-change', handleDockCalibration);
     reducedMotion.addEventListener('change', handleMotionPreference);
@@ -920,11 +948,14 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       if (gl && fragmentShader) gl.deleteShader(fragmentShader);
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+      window.visualViewport?.removeEventListener('resize', handleResize);
       window.removeEventListener('load', handleResize);
       window.removeEventListener('dock-calibration-change', handleDockCalibration);
       unsubscribeDraft();
       reducedMotion.removeEventListener('change', handleMotionPreference);
       heroPhaseObserver.disconnect();
+      resizeObserver?.disconnect();
     };
   }, [rootRef]);
 

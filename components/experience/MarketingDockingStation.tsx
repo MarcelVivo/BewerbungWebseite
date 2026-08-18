@@ -96,7 +96,7 @@ export default function MarketingDockingStation() {
       <div
         ref={stationRef}
         className={styles.marketingDockingStation}
-        style={{ left: `${ringPosition.x}%`, top: `${ringPosition.y}%`, width: `${config.width}%`, '--dock-rotation': `${config.rotation}deg`, '--dock-tilt': `${config.tilt}deg` } as CSSProperties}
+        style={{ '--dock-x': `${ringPosition.x}%`, '--dock-y': `${ringPosition.y}%`, width: `${config.width}%`, '--dock-rotation': `${config.rotation}deg`, '--dock-tilt': `${config.tilt}deg` } as CSSProperties}
         data-docking-anchor="marketing"
         data-dock-number="05"
         data-dock-label="MARKETING"

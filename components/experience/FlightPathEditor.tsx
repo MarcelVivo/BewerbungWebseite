@@ -166,6 +166,35 @@ const applyDockOffsetRatio = (target: AnchorTarget, point: FlightPathPoint, axis
   const targetScreenPos = ringCenter + ratio * ringRadius;
   const targetPercent = clamp((targetScreenPos / viewportSize) * 100, 2, 98);
   updateAnchor(target, axis === 'x' ? { x: targetPercent } : { y: targetPercent });
+  const station = document.querySelector<HTMLElement>(`[data-docking-anchor="${point.dockAnchor}"]`);
+  const stage = station?.parentElement;
+  if (!station || !stage) return;
+  const stageRect = stage.getBoundingClientRect();
+  const objectOffset = Number(station.dataset[axis === 'x' ? 'dockObjectX' : 'dockObjectY'] ?? 0);
+  const stageStart = axis === 'x' ? stageRect.left : stageRect.top;
+  const stageSize = axis === 'x' ? stageRect.width : stageRect.height;
+  const ringPercent = clamp(((targetScreenPos - stageStart) / Math.max(stageSize, 1) * 100) - objectOffset, 2, 98);
+  updateDockRingPosition(point.dockAnchor, axis === 'x' ? { x: ringPercent } : { y: ringPercent });
+};
+
+/** Numeric X/Y edits use viewport percentages, while a dock ring is stored in
+ *  its own stage percentages. Keep both representations coupled just like a
+ *  pointer drag does, so the responsive DOM-derived dock target never makes
+ *  a panel edit appear to snap back. */
+const updateAnchorPositionField = (target: AnchorTarget, point: FlightPathPoint, axis: 'x' | 'y', value: number) => {
+  updateAnchor(target, axis === 'x' ? { x: value } : { y: value });
+  if (!point.dockAnchor) return;
+  const station = document.querySelector<HTMLElement>(`[data-docking-anchor="${point.dockAnchor}"]`);
+  const stage = station?.parentElement;
+  if (!station || !stage) return;
+  const stageRect = stage.getBoundingClientRect();
+  const viewportSize = axis === 'x' ? window.innerWidth : window.innerHeight;
+  const stageStart = axis === 'x' ? stageRect.left : stageRect.top;
+  const stageSize = axis === 'x' ? stageRect.width : stageRect.height;
+  const objectOffset = Number(station.dataset[axis === 'x' ? 'dockObjectX' : 'dockObjectY'] ?? 0);
+  const targetScreenPos = value / 100 * viewportSize;
+  const ringPercent = clamp(((targetScreenPos - stageStart) / Math.max(stageSize, 1) * 100) - objectOffset, 2, 98);
+  updateDockRingPosition(point.dockAnchor, axis === 'x' ? { x: ringPercent } : { y: ringPercent });
 };
 
 /** Shift: snap a delta's angle to the nearest 45°, keeping its magnitude. */
@@ -871,8 +900,8 @@ export default function FlightPathEditor() {
           <>
             <div>{selectedAnchor.kind === 'start' ? 'START' : selectedAnchor.kind === 'dock' ? (selectedAnchor.point.dockLabel ?? 'DOCK') : 'ZWISCHENANKER'} · {selectedAnchor.point.id}</div>
 
-            <label>X <input type="number" min={2} max={98} step={.1} value={Number(selectedAnchor.point.x.toFixed(3))} onFocus={handleFieldFocus} onBlur={handleFieldBlur} onChange={(event) => updateAnchor(selectedAnchor.target, { x: clamp(Number(event.target.value), 2, 98) })} data-field="x" /></label>
-            <label>Y <input type="number" min={2} max={98} step={.1} value={Number(selectedAnchor.point.y.toFixed(3))} onFocus={handleFieldFocus} onBlur={handleFieldBlur} onChange={(event) => updateAnchor(selectedAnchor.target, { y: clamp(Number(event.target.value), 2, 98) })} data-field="y" /></label>
+            <label>X <input type="number" min={2} max={98} step={.1} value={Number(selectedAnchor.point.x.toFixed(3))} onFocus={handleFieldFocus} onBlur={handleFieldBlur} onChange={(event) => updateAnchorPositionField(selectedAnchor.target, selectedAnchor.point, 'x', clamp(Number(event.target.value), 2, 98))} data-field="x" /></label>
+            <label>Y <input type="number" min={2} max={98} step={.1} value={Number(selectedAnchor.point.y.toFixed(3))} onFocus={handleFieldFocus} onBlur={handleFieldBlur} onChange={(event) => updateAnchorPositionField(selectedAnchor.target, selectedAnchor.point, 'y', clamp(Number(event.target.value), 2, 98))} data-field="y" /></label>
             <label>ROTATION <input type="number" min={-180} max={180} step={.5} value={Number(selectedAnchor.point.rotation.toFixed(2))} onFocus={handleFieldFocus} onBlur={handleFieldBlur} onChange={(event) => updateAnchor(selectedAnchor.target, { rotation: clamp(Number(event.target.value), -360, 360) })} data-field="rotation" /></label>
             <label>OPAZITÄT <input type="number" min={0} max={1} step={.01} value={Number(selectedAnchor.point.opacity.toFixed(3))} onFocus={handleFieldFocus} onBlur={handleFieldBlur} onChange={(event) => updateAnchor(selectedAnchor.target, { opacity: clamp(Number(event.target.value), 0, 1) })} data-field="opacity" /></label>
             <label>SKALIERUNG <input type="number" min={.1} max={2} step={.01} value={Number(selectedAnchor.point.scale.toFixed(3))} onFocus={handleFieldFocus} onBlur={handleFieldBlur} onChange={(event) => updateAnchor(selectedAnchor.target, { scale: clamp(Number(event.target.value), .1, 2) })} data-field="scale" /></label>

@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import { ArrowDown, ArrowRight, ArrowUpRight, Bot, Check, ChevronRight, Database, ExternalLink, Search, ShieldCheck, Users, Workflow } from 'lucide-react';
+import { ArrowDown, ArrowRight, ArrowUpRight, Bot, Check, Database, ExternalLink, Search, ShieldCheck, Users, Workflow } from 'lucide-react';
 import { useLanguage } from '../../app/LanguageContext';
 import { trackWebsiteEvent } from '../../app/lib/analytics';
 import { PROJECTS } from '../../app/portfolio/data';
@@ -14,7 +14,7 @@ import ScrollEntity from './ScrollEntity';
 import SectionDockingStation from './SectionDockingStation';
 import SystemDockingStation from './SystemDockingStation';
 import WebsiteDockingStation from './WebsiteDockingStation';
-import { ArchitectureStack, Constellation, DashboardMockup, PerspectiveBusinessFlow } from './Visuals';
+import { ArchitectureStack, DashboardMockup, PerspectiveBusinessFlow } from './Visuals';
 import { azItems, copy, flowSteps, systemNodes } from './content';
 import styles from './experience.module.css';
 
@@ -71,6 +71,7 @@ export default function MarcelExperience() {
   const [heroPhase, setHeroPhase] = useState<HeroPhase>('loading');
   const [heroLoadProgress, setHeroLoadProgress] = useState(0);
   const selectedProjects = useMemo(() => [PROJECTS[0], PROJECTS[3], PROJECTS[1]].filter(Boolean), []);
+  const [activeModuleNumber, activeModuleTitle, activeModuleDescription, ActiveModuleIcon] = MODULES[lang][activeModule];
 
   useEffect(() => {
     document.title = lang === 'de'
@@ -500,22 +501,21 @@ export default function MarcelExperience() {
                   <h2>{c.systemTitle}</h2>
                   <p>{c.systemText}</p>
                 </div>
-                <div className={styles.moduleSelector} role="tablist" aria-label={lang === 'de' ? 'Systembereich wählen' : 'Choose system area'}>
-                  {MODULES[lang].map(([num, title, description, Icon], index) => (
-                    <button key={num} type="button" role="tab" aria-selected={activeModule === index} className={activeModule === index ? styles.moduleActive : ''} onClick={() => setActiveModule(index)}>
-                      <span>{num}</span><i><Icon size={18} /></i><strong>{title}</strong><small>{description}</small><ChevronRight size={16} />
-                    </button>
-                  ))}
+                <div className={styles.moduleDetail}>
+                  <span>{activeModuleNumber}</span>
+                  <div><i><ActiveModuleIcon size={20} /></i><strong>{activeModuleTitle}</strong></div>
+                  <p>{activeModuleDescription}</p>
                 </div>
               </div>
               <div className={`${styles.composerVisual} ${styles.systemDockVisual}`} style={{ '--active-module': activeModule } as CSSProperties}>
-                <Constellation labels={MODULES[lang].map((item) => item[1])} connected coreLabel={c.systemCore} activeIndex={activeModule} onSelect={setActiveModule} />
-                <SystemDockingStation />
-                <div className={styles.moduleReadout}>
-                  <small>ACTIVE MODULE</small>
-                  <div><span>0{activeModule + 1}</span><strong>{MODULES[lang][activeModule][1]}</strong></div>
-                  <p>{MODULES[lang][activeModule][2]}</p>
+                <div className={styles.moduleTabs} role="tablist" aria-label={lang === 'de' ? 'Systembereich wählen' : 'Choose system area'}>
+                  {MODULES[lang].map(([num, title, , Icon], index) => (
+                    <button key={num} type="button" role="tab" aria-selected={activeModule === index} className={activeModule === index ? styles.moduleActive : ''} onClick={() => setActiveModule(index)}>
+                      <i><Icon size={16} /></i><strong>{title}</strong><span>{num}</span>
+                    </button>
+                  ))}
                 </div>
+                <SystemDockingStation />
               </div>
             </div>
             <div className={styles.systemPrinciple}><p>{c.systemPrinciple}</p><a href="#journey-contact">{c.systemCta}<ArrowUpRight size={16} /></a></div>
