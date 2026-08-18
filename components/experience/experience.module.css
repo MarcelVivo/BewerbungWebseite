@@ -1851,10 +1851,10 @@
 .salesVideo { width: 100%; height: 100%; display: block; object-fit: cover; object-position: center; filter: saturate(.94) contrast(1.04); }
 .websiteDockingStation { --problem-dock-engaged: calc(.18 + var(--website-dock-engaged) * .82); --problem-dock-charge: var(--website-dock-charge); position: absolute; z-index: 2; left: var(--dock-x); top: var(--dock-y); height: auto !important; aspect-ratio: 1; transform: translate(-50%, -50%) rotate(var(--dock-rotation, 0deg)); transform-origin: center; pointer-events: none; filter: drop-shadow(0 14px 22px rgba(0,0,0,.72)) drop-shadow(0 0 18px rgba(231,197,106,.2)) drop-shadow(0 0 28px rgba(118,17,38,.14)); }
 .websiteDockingStation[data-editor='true'] { z-index: 12; pointer-events: auto; cursor: crosshair; --problem-dock-engaged: 1 !important; --problem-dock-charge: 1 !important; opacity: 1 !important; }
-.salesHeader { position: absolute; z-index: 10; left: var(--container-left); top: clamp(5.5rem, 9vh, 7.5rem); margin: 0; transform: none; pointer-events: none; }
+.salesHeader { position: absolute; z-index: 10; left: var(--container-left); top: clamp(3.8rem, 6vh, 5.5rem); width: min(52vw, 880px); margin: 0; transform: none; pointer-events: none; }
 .salesHeader::before { content: ''; position: absolute; z-index: -1; inset: -1.6rem -3rem -2rem -2rem; width: min(820px, 72vw); border-left: 1px solid rgba(231,197,106,.18); clip-path: polygon(0 0, 96% 4%, 100% 88%, 5% 100%); background: linear-gradient(100deg, rgba(7,8,7,.78), rgba(7,8,7,.22) 72%, transparent); backdrop-filter: blur(2px); }
-.salesHeader h2 { max-width: 58rem; font-size: clamp(2.8rem, 4.5vw, 5.15rem); }
-.salesHeader > p:last-child { max-width: 38rem; margin-top: 1rem; font-size: clamp(.88rem, 1vw, 1.02rem); line-height: 1.55; }
+.salesHeader h2 { max-width: 52rem; font-size: clamp(2.65rem, 3.45vw, 4.6rem); line-height: .93; }
+.salesHeader > p:last-child { max-width: 34rem; margin-top: .75rem; font-size: clamp(.78rem, .88vw, .94rem); line-height: 1.48; }
 .flowFrame.salesFlowHud { position: absolute; z-index: 4; left: var(--container-left); bottom: clamp(1rem, 3vh, 2.2rem); width: var(--container); margin: 0; transform: none; background: rgba(7,9,7,.72); backdrop-filter: blur(14px); box-shadow: 0 32px 90px rgba(0,0,0,.46), inset 0 1px 0 rgba(255,255,255,.035); }
 .flowFrame { width: var(--container); margin: 0 0 0 var(--container-left); padding: 1rem; border: 1px solid rgba(231,197,106,.17); background: rgba(12,14,12,.72); box-shadow: 0 38px 100px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.025); }
 .flowFrame > header { display: grid; grid-template-columns: auto 1fr minmax(160px, 27%); align-items: center; gap: 1.5rem; padding: .35rem .4rem 1rem; border-bottom: 1px solid var(--line); }
@@ -2431,27 +2431,27 @@
 
 /* Two rows of five glass cards mounted on the large display plane. */
 .perspectiveFlowHeader {
-  left: 18%;
-  top: 44.5%;
-  width: 42%;
-  transform: skewY(7deg);
-  transform-origin: center;
+  left: 19%;
+  top: 35.5%;
+  width: 43%;
+  transform: matrix(1, .1228, -.0524, 1, 0, 0) rotateY(-2.2deg);
+  transform-origin: left center;
 }
 
 .perspectiveFlowCardGrid {
   position: absolute;
   z-index: 34;
-  left: 18%;
-  top: 51%;
-  width: 42%;
-  height: 22%;
+  left: 19%;
+  top: 40%;
+  width: 43%;
+  height: 34%;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   grid-template-rows: repeat(2, minmax(0, 1fr));
   gap: clamp(.35rem, .62vw, .7rem);
-  perspective: 1100px;
-  transform: skewY(7deg) translateZ(0);
-  transform-origin: center;
+  perspective: 1700px;
+  transform: perspective(1800px) matrix(1, .1228, -.0524, 1, 0, 0) rotateY(-2.2deg);
+  transform-origin: left center;
   transform-style: preserve-3d;
   pointer-events: auto;
 }
@@ -2637,7 +2637,7 @@
   box-shadow: 0 34px 85px rgba(0,0,0,.72), 0 0 35px rgba(231,197,106,.2), inset 0 1px rgba(255,246,213,.13);
   opacity: 1;
   filter: none;
-  transform: translate(-50%, -50%) skewY(-7deg) translateZ(240px) scale(1.05);
+  transform: translate(-50%, -50%) matrix(.9936, -.122, .0521, .9936, 0, 0) rotateY(2.2deg) translateZ(240px) scale(1.05);
   animation: perspectiveCardLift .58s cubic-bezier(.16,.8,.2,1) both;
   pointer-events: auto;
 }
@@ -2676,8 +2676,8 @@
 }
 
 @keyframes perspectiveCardLift {
-  from { opacity: .35; filter: blur(2px); transform: translate(-50%, -50%) skewY(-7deg) translateZ(0) scale(.58); }
-  to { opacity: 1; filter: blur(0); transform: translate(-50%, -50%) skewY(-7deg) translateZ(240px) scale(1.05); }
+  from { opacity: .35; filter: blur(2px); transform: translate(-50%, -50%) matrix(.9936, -.122, .0521, .9936, 0, 0) rotateY(2.2deg) translateZ(0) scale(.58); }
+  to { opacity: 1; filter: blur(0); transform: translate(-50%, -50%) matrix(.9936, -.122, .0521, .9936, 0, 0) rotateY(2.2deg) translateZ(240px) scale(1.05); }
 }
 
 
@@ -2995,11 +2995,12 @@
   .layoutRight .dataLayout > .sectionCopy,
   .layoutRight .dataLayout > .trustCards { grid-column: 1; grid-row: auto; }
   .problemContent { grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); gap: 2rem; }
-  .salesHeader h2 { max-width: 47rem; }
+  .salesHeader { width: min(66vw, 760px); }
+  .salesHeader h2 { max-width: 47rem; font-size: clamp(2.5rem, 5.8vw, 4rem); }
   .marketingHeader { width: min(650px, 67vw); }
-  .perspectiveFlowHeader { left: 10%; top: 48%; width: 68%; }
+  .perspectiveFlowHeader { left: 10%; top: 39%; width: 68%; }
   .perspectiveFlowStage { left: 0; top: 0; width: 100%; height: 100%; }
-  .perspectiveFlowCardGrid { left: 10%; top: 55%; width: 68%; height: 20%; gap: .35rem; }
+  .perspectiveFlowCardGrid { left: 10%; top: 44%; width: 68%; height: 31%; gap: .35rem; }
   .perspectiveFlowCardGrid .perspectiveFlowNode.perspectiveFlowSelected { width: min(30rem, 70vw); }
   .perspectiveFlowReadout { right: 3%; bottom: 10%; }
   .searchCard.marketingSearchHud { grid-template-columns: minmax(220px, .7fr) minmax(0, 1.3fr); gap: .8rem 1.2rem; }
@@ -3104,14 +3105,14 @@
   .flowSection { min-height: 195svh; }
   .salesSticky { min-height: 100svh; }
   .salesVideo { object-position: 48% center; }
-  .salesHeader { top: 5.2rem; }
+  .salesHeader { top: 4.5rem; width: min(90vw, 620px); }
   .salesHeader::before { inset: -1rem -.8rem -1.5rem -.7rem; width: min(92vw, 720px); }
-  .salesHeader h2 { max-width: 92%; font-size: clamp(2.55rem, 11vw, 4.25rem); }
-  .salesHeader > p:last-child { max-width: min(90%, 32rem); font-size: .86rem; line-height: 1.48; }
-  .perspectiveFlowHeader { left: 7%; top: 52%; width: 81%; grid-template-columns: auto; gap: .35rem; }
+  .salesHeader h2 { max-width: 92%; font-size: clamp(2.25rem, 9vw, 3.6rem); }
+  .salesHeader > p:last-child { max-width: min(90%, 32rem); font-size: .76rem; line-height: 1.42; }
+  .perspectiveFlowHeader { left: 7%; top: 48%; width: 81%; grid-template-columns: auto; gap: .35rem; }
   .perspectiveFlowHeader > small { display: none; }
   .perspectiveFlowStage { left: 0; top: 0; width: 100%; height: 100%; }
-  .perspectiveFlowCardGrid { left: 7%; top: 58%; width: 81%; height: 18%; gap: .22rem; }
+  .perspectiveFlowCardGrid { left: 7%; top: 53%; width: 81%; height: 25%; gap: .22rem; }
   .perspectiveFlowCardHead { padding: .32rem; gap: .2rem; }
   .perspectiveFlowCardHead > b { font-size: .39rem; }
   .perspectiveFlowCardHead > strong { font-size: .37rem; }
