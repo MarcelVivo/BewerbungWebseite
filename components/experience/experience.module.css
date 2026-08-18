@@ -2429,6 +2429,257 @@
   letter-spacing: .12em;
 }
 
+/* Two rows of five glass cards mounted on the large display plane. */
+.perspectiveFlowHeader {
+  left: 18%;
+  top: 44.5%;
+  width: 42%;
+  transform: skewY(7deg);
+  transform-origin: center;
+}
+
+.perspectiveFlowCardGrid {
+  position: absolute;
+  z-index: 34;
+  left: 18%;
+  top: 51%;
+  width: 42%;
+  height: 22%;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: clamp(.35rem, .62vw, .7rem);
+  perspective: 1100px;
+  transform: skewY(7deg) translateZ(0);
+  transform-origin: center;
+  transform-style: preserve-3d;
+  pointer-events: auto;
+}
+
+.perspectiveFlowCardGrid::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: -7% -2%;
+  border: 1px solid rgba(231,197,106,.1);
+  background: linear-gradient(145deg, rgba(255,255,255,.018), rgba(5,7,6,.08));
+  box-shadow: inset 0 1px rgba(255,239,184,.035), 0 18px 48px rgba(0,0,0,.16);
+  pointer-events: none;
+}
+
+.perspectiveFlowCardGrid .perspectiveFlowNode {
+  position: relative;
+  left: auto;
+  top: auto;
+  width: auto;
+  height: auto;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  align-items: stretch;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid rgba(208,179,101,.22);
+  border-radius: 2px;
+  background: linear-gradient(135deg, rgba(255,245,206,.075), transparent 34%), linear-gradient(155deg, rgba(20,22,19,.78), rgba(5,7,6,.91));
+  box-shadow: inset 0 1px rgba(255,244,203,.07), inset 1px 0 rgba(255,255,255,.025), 0 7px 18px rgba(0,0,0,.32);
+  opacity: .78;
+  filter: none;
+  transform: translateZ(0);
+  transform-origin: center;
+  transition: opacity .3s ease, border-color .3s ease, background .3s ease, filter .3s ease, transform .42s cubic-bezier(.16,.8,.2,1);
+  animation: perspectiveCardPulse 8s ease-in-out infinite;
+  animation-delay: var(--flow-sequence-delay);
+  isolation: isolate;
+}
+
+.perspectiveFlowCardGrid .perspectiveFlowNode::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(105deg, transparent 12%, rgba(255,236,164,.09) 48%, transparent 76%);
+  box-shadow: none;
+  opacity: .34;
+  transform: translateX(-80%);
+  animation: perspectiveCardSweep 8s ease-in-out infinite;
+  animation-delay: var(--flow-sequence-delay);
+}
+
+.perspectiveFlowCardGrid .perspectiveFlowNode::after {
+  content: '';
+  position: absolute;
+  z-index: 3;
+  right: 0;
+  bottom: 0;
+  width: 34%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(246,205,92,.75));
+  box-shadow: 0 0 8px rgba(231,197,106,.42);
+  opacity: .45;
+}
+
+.perspectiveFlowCardHead {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(.28rem, .42vw, .5rem);
+  padding: clamp(.42rem, .7vw, .75rem);
+  text-align: left;
+}
+
+.perspectiveFlowCardHead > b {
+  color: rgba(231,197,106,.48);
+  font: 560 clamp(.46rem, .62vw, .7rem)/1 var(--font-chakra-petch), monospace;
+  letter-spacing: .06em;
+}
+
+.perspectiveFlowCardHead > strong {
+  min-width: 0;
+  overflow: hidden;
+  color: rgba(239,238,231,.84);
+  font: 620 clamp(.42rem, .58vw, .68rem)/1.2 var(--font-chakra-petch), monospace;
+  letter-spacing: .01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.perspectiveFlowCardHead > i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(231,197,106,.34);
+  box-shadow: 0 0 8px rgba(231,197,106,.25);
+}
+
+.perspectiveFlowCardDetail {
+  position: absolute;
+  z-index: 4;
+  inset: 3.4rem 1rem 1rem;
+  display: grid;
+  align-content: start;
+  gap: .7rem;
+  text-align: left;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity .24s ease .18s, transform .35s ease .14s;
+  pointer-events: none;
+}
+
+.perspectiveFlowCardDetail > small {
+  color: rgba(231,197,106,.62);
+  font: 700 .48rem/1 var(--font-chakra-petch), monospace;
+  letter-spacing: .16em;
+}
+
+.perspectiveFlowCardDetail > span {
+  color: rgba(235,233,224,.82);
+  font-size: clamp(.72rem, .86vw, .9rem);
+  line-height: 1.55;
+}
+
+.perspectiveFlowCardDetail > em {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  color: rgba(231,197,106,.58);
+  font: 650 .44rem/1 var(--font-chakra-petch), monospace;
+  font-style: normal;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.perspectiveFlowCardGrid .perspectiveFlowReached {
+  border-color: rgba(231,197,106,.38);
+  opacity: .92;
+}
+
+.perspectiveFlowCardGrid .perspectiveFlowReached .perspectiveFlowCardHead > i {
+  background: #f1d47a;
+  box-shadow: 0 0 8px rgba(231,197,106,.78), 0 0 16px rgba(231,197,106,.32);
+}
+
+.perspectiveFlowCardGrid .perspectiveFlowNode:hover,
+.perspectiveFlowCardGrid .perspectiveFlowNode:focus-visible,
+.perspectiveFlowCardGrid .perspectiveFlowNode[aria-current='step'] {
+  z-index: 8 !important;
+  opacity: 1;
+  border-color: rgba(246,205,92,.65);
+  filter: brightness(1.16);
+  transform: translateZ(24px) scale(1.025);
+  outline: none;
+}
+
+.perspectiveFlowCardGridOpen .perspectiveFlowNode:not(.perspectiveFlowSelected) {
+  opacity: .22;
+  filter: brightness(.62) blur(.25px);
+  transform: translateZ(-45px) scale(.96);
+  pointer-events: none;
+}
+
+.perspectiveFlowCardGrid .perspectiveFlowNode.perspectiveFlowSelected {
+  position: absolute;
+  z-index: 90 !important;
+  left: 50%;
+  top: 50%;
+  width: min(28rem, 52vw);
+  height: auto;
+  min-height: clamp(165px, 22vh, 210px);
+  overflow: visible;
+  border-color: rgba(246,205,92,.72);
+  background: radial-gradient(circle at 78% 18%, rgba(231,197,106,.12), transparent 26%), linear-gradient(145deg, rgba(35,34,28,.97), rgba(7,9,8,.985) 64%);
+  box-shadow: 0 34px 85px rgba(0,0,0,.72), 0 0 35px rgba(231,197,106,.2), inset 0 1px rgba(255,246,213,.13);
+  opacity: 1;
+  filter: none;
+  transform: translate(-50%, -50%) skewY(-7deg) translateZ(240px) scale(1.05);
+  animation: perspectiveCardLift .58s cubic-bezier(.16,.8,.2,1) both;
+  pointer-events: auto;
+}
+
+.perspectiveFlowCardGrid .perspectiveFlowSelected .perspectiveFlowCardHead {
+  align-self: start;
+  padding: 1rem;
+  border-bottom: 1px solid rgba(231,197,106,.16);
+}
+
+.perspectiveFlowCardGrid .perspectiveFlowSelected .perspectiveFlowCardHead > b {
+  color: rgba(231,197,106,.72);
+  font-size: 1.05rem;
+}
+
+.perspectiveFlowCardGrid .perspectiveFlowSelected .perspectiveFlowCardHead > strong {
+  color: #f4f1e6;
+  font-size: clamp(.88rem, 1.2vw, 1.12rem);
+  white-space: normal;
+}
+
+.perspectiveFlowCardGrid .perspectiveFlowSelected .perspectiveFlowCardDetail {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes perspectiveCardPulse {
+  0%, 12%, 100% { filter: brightness(.94); }
+  5% { filter: brightness(1.2) drop-shadow(0 0 10px rgba(231,197,106,.18)); }
+}
+
+@keyframes perspectiveCardSweep {
+  0%, 12%, 100% { opacity: 0; transform: translateX(-80%); }
+  3% { opacity: .55; }
+  8% { opacity: 0; transform: translateX(100%); }
+}
+
+@keyframes perspectiveCardLift {
+  from { opacity: .35; filter: blur(2px); transform: translate(-50%, -50%) skewY(-7deg) translateZ(0) scale(.58); }
+  to { opacity: 1; filter: blur(0); transform: translate(-50%, -50%) skewY(-7deg) translateZ(240px) scale(1.05); }
+}
+
 
 .marketingSection { --marketing-progress: 0; --marketing-dock-engaged: 0; --marketing-dock-charge: 0; min-height: 220svh; padding: 0; overflow: visible; background: #070807; }
 .marketingSticky { position: sticky; top: 0; height: 100svh; min-height: 720px; overflow: hidden; background: #070807; }
@@ -2746,8 +2997,10 @@
   .problemContent { grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); gap: 2rem; }
   .salesHeader h2 { max-width: 47rem; }
   .marketingHeader { width: min(650px, 67vw); }
-  .perspectiveFlowHeader { left: 54%; width: 42vw; }
-  .perspectiveFlowStage { left: 39%; top: 34%; width: 58%; height: 40%; }
+  .perspectiveFlowHeader { left: 10%; top: 48%; width: 68%; }
+  .perspectiveFlowStage { left: 0; top: 0; width: 100%; height: 100%; }
+  .perspectiveFlowCardGrid { left: 10%; top: 55%; width: 68%; height: 20%; gap: .35rem; }
+  .perspectiveFlowCardGrid .perspectiveFlowNode.perspectiveFlowSelected { width: min(30rem, 70vw); }
   .perspectiveFlowReadout { right: 3%; bottom: 10%; }
   .searchCard.marketingSearchHud { grid-template-columns: minmax(220px, .7fr) minmax(0, 1.3fr); gap: .8rem 1.2rem; }
   .marketingSearchCopy { grid-template-columns: 1fr; gap: .4rem; }
@@ -2855,9 +3108,19 @@
   .salesHeader::before { inset: -1rem -.8rem -1.5rem -.7rem; width: min(92vw, 720px); }
   .salesHeader h2 { max-width: 92%; font-size: clamp(2.55rem, 11vw, 4.25rem); }
   .salesHeader > p:last-child { max-width: min(90%, 32rem); font-size: .86rem; line-height: 1.48; }
-  .perspectiveFlowHeader { left: 1rem; top: 53%; width: calc(100vw - 2rem); grid-template-columns: auto; gap: .35rem; }
+  .perspectiveFlowHeader { left: 7%; top: 52%; width: 81%; grid-template-columns: auto; gap: .35rem; }
   .perspectiveFlowHeader > small { display: none; }
-  .perspectiveFlowStage { left: 8%; top: 56%; width: 88%; height: 22%; }
+  .perspectiveFlowStage { left: 0; top: 0; width: 100%; height: 100%; }
+  .perspectiveFlowCardGrid { left: 7%; top: 58%; width: 81%; height: 18%; gap: .22rem; }
+  .perspectiveFlowCardHead { padding: .32rem; gap: .2rem; }
+  .perspectiveFlowCardHead > b { font-size: .39rem; }
+  .perspectiveFlowCardHead > strong { font-size: .37rem; }
+  .perspectiveFlowCardHead > i { width: 4px; height: 4px; }
+  .perspectiveFlowCardGrid .perspectiveFlowNode.perspectiveFlowSelected { width: min(21rem, 82vw); min-height: 160px; }
+  .perspectiveFlowCardGrid .perspectiveFlowSelected .perspectiveFlowCardHead { padding: .8rem; }
+  .perspectiveFlowCardGrid .perspectiveFlowSelected .perspectiveFlowCardHead > strong { font-size: .86rem; }
+  .perspectiveFlowCardDetail { inset: 3rem .8rem .8rem; gap: .5rem; }
+  .perspectiveFlowCardDetail > span { font-size: .68rem; line-height: 1.45; }
   .perspectiveFlowGlass { display: none; }
   .perspectiveFlowNode { width: 96px; height: 60px; }
   .perspectiveFlowNode > strong { font-size: .4rem; }
