@@ -514,7 +514,7 @@ export default function MarcelExperience() {
                 <div className={styles.moduleReadout}><span>0{activeModule + 1}</span><strong>{MODULES[lang][activeModule][1]}</strong><small>ACTIVE MODULE</small></div>
               </div>
             </div>
-            <div className={styles.systemPrinciple} data-reveal="up"><p>{c.systemPrinciple}</p><a href="#journey-contact">{c.systemCta}<ArrowUpRight size={16} /></a></div>
+            <div className={styles.systemPrinciple}><p>{c.systemPrinciple}</p><a href="#journey-contact">{c.systemCta}<ArrowUpRight size={16} /></a></div>
           </div>
         </section>
 
