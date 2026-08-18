@@ -1,6 +1,6 @@
 'use client';
 
-import type { CSSProperties } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { Activity, ArrowRight, Bot, Check, Database, FileText, Globe2, LockKeyhole, Mail, Search, ShieldCheck, Sparkles, Users, Workflow } from 'lucide-react';
 import styles from './experience.module.css';
 
@@ -26,17 +26,24 @@ export function BusinessFlow({ steps, active, onSelect }: { steps: readonly stri
 
 export function PerspectiveBusinessFlow({
   steps,
+  details,
   active,
   onSelect,
   label,
   hint,
+  detailLabel,
+  closeLabel,
 }: {
   steps: readonly string[];
+  details: readonly string[];
   active: number;
   onSelect: (index: number) => void;
   label: string;
   hint: string;
+  detailLabel: string;
+  closeLabel: string;
 }) {
+  const [selectedFlow, setSelectedFlow] = useState<number | null>(null);
   const denominator = Math.max(steps.length - 1, 1);
   const progress = active / denominator;
   const portalDepth = .425;
@@ -52,9 +59,21 @@ export function PerspectiveBusinessFlow({
   const portalY = routeY(portalDepth);
   const routePath = 'M 50 390 L 960 26';
   const foregroundPath = `M 50 390 L ${portalX * 10} ${portalY * 5.2}`;
+  const selectedDepth = selectedFlow === null ? 0 : selectedFlow / denominator;
+  const selectedX = routeX(selectedDepth);
+  const selectedY = routeY(selectedDepth);
+  const selectedStep = selectedFlow === null ? null : steps[selectedFlow];
+  const selectedDescription = selectedFlow === null ? null : details[selectedFlow];
+
+  const selectFlow = (index: number) => {
+    onSelect(index);
+    setSelectedFlow((current) => current === index ? null : index);
+  };
 
   return (
-    <section className={styles.perspectiveFlow} aria-label={label}>
+    <section className={styles.perspectiveFlow} aria-label={label} onKeyDown={(event) => {
+      if (event.key === 'Escape') setSelectedFlow(null);
+    }}>
       <header className={styles.perspectiveFlowHeader}>
         <span><i />{label}</span>
         <small>{hint}</small>
@@ -92,7 +111,7 @@ export function PerspectiveBusinessFlow({
           const x = routeX(depth);
           const y = routeY(depth);
           const projectedDepth = projectDepth(depth);
-          const scale = 1.34 - projectedDepth * .78;
+          const scale = 1.34 - projectedDepth * .62;
           const reached = index <= active;
           const layerClass = depth < portalDepth ? styles.perspectiveFlowFront : styles.perspectiveFlowBehind;
 
@@ -100,7 +119,7 @@ export function PerspectiveBusinessFlow({
             <button
               key={step}
               type="button"
-              className={`${styles.perspectiveFlowNode} ${layerClass} ${reached ? styles.perspectiveFlowReached : ''}`}
+              className={`${styles.perspectiveFlowNode} ${layerClass} ${reached ? styles.perspectiveFlowReached : ''} ${selectedFlow === index ? styles.perspectiveFlowSelected : ''}`}
               style={{
                 '--flow-x': `${x}%`,
                 '--flow-y': `${y}%`,
@@ -110,11 +129,14 @@ export function PerspectiveBusinessFlow({
                 '--flow-index': index,
                 '--flow-duration': `${3.2 + depth * 1.8}s`,
                 '--flow-delay': `${index * -.23}s`,
+                '--flow-sequence-delay': `${index * 1.05}s`,
                 zIndex: 40 - index,
               } as CSSProperties}
               aria-current={active === index ? 'step' : undefined}
+              aria-expanded={selectedFlow === index}
+              aria-controls={`flow-detail-${index}`}
               aria-label={`${String(index + 1).padStart(2, '0')} · ${step}`}
-              onClick={() => onSelect(index)}
+              onClick={() => selectFlow(index)}
             >
               <span className={styles.perspectiveFlowCube} aria-hidden="true">
                 <i className={styles.perspectiveFlowCubeTop} />
@@ -139,6 +161,30 @@ export function PerspectiveBusinessFlow({
         >
           <span />
         </div>
+
+        {selectedFlow !== null && selectedStep && selectedDescription && (
+          <aside
+            id={`flow-detail-${selectedFlow}`}
+            className={styles.perspectiveFlowFlyout}
+            data-side={selectedX < 55 ? 'right' : 'left'}
+            style={{
+              '--flow-flyout-x': `${selectedX}%`,
+              '--flow-flyout-y': `${selectedY}%`,
+            } as CSSProperties}
+            aria-live="polite"
+          >
+            <span className={styles.perspectiveFlowFlyoutLink} aria-hidden="true" />
+            <header>
+              <small>{detailLabel}</small>
+              <button type="button" onClick={() => setSelectedFlow(null)} aria-label={closeLabel}>×</button>
+            </header>
+            <div>
+              <b>{String(selectedFlow + 1).padStart(2, '0')}</b>
+              <strong>{selectedStep}</strong>
+            </div>
+            <p>{selectedDescription}</p>
+          </aside>
+        )}
       </div>
     </section>
   );

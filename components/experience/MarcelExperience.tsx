@@ -15,7 +15,7 @@ import SectionDockingStation from './SectionDockingStation';
 import SystemDockingStation from './SystemDockingStation';
 import WebsiteDockingStation from './WebsiteDockingStation';
 import { ArchitectureStack, DashboardMockup, PerspectiveBusinessFlow } from './Visuals';
-import { azItems, copy, flowSteps, systemNodes } from './content';
+import { azItems, copy, flowStepDetails, flowSteps, systemNodes } from './content';
 import styles from './experience.module.css';
 
 type HeroPhase = 'loading' | 'ignition' | 'revealed';
@@ -672,10 +672,13 @@ export default function MarcelExperience() {
             </div>
             <PerspectiveBusinessFlow
               steps={flowSteps[lang]}
+              details={flowStepDetails[lang]}
               active={activeFlow}
               onSelect={setActiveFlow}
               label={c.flowLabel}
               hint={c.flowHint}
+              detailLabel={lang === 'de' ? 'PROZESSSCHRITT' : 'PROCESS STEP'}
+              closeLabel={c.close}
             />
           </div>
         </section>

@@ -2060,8 +2060,8 @@
   position: absolute;
   left: var(--flow-x);
   top: var(--flow-y);
-  width: clamp(104px, 7.5vw, 144px);
-  height: clamp(82px, 5.85vw, 112px);
+  width: clamp(124px, 10vw, 190px);
+  height: clamp(102px, 8.2vw, 156px);
   padding: 0;
   border: 0;
   background: transparent;
@@ -2070,8 +2070,24 @@
   transform: translate(-50%, -50%) scale(var(--flow-scale));
   transform-origin: 50% 50%;
   transform-style: preserve-3d;
-  transition: filter .35s ease, opacity .4s ease, visibility .4s ease;
-  opacity: calc(.48 + (1 - var(--flow-depth)) * .34);
+  transition: filter .35s ease, opacity .4s ease, visibility .4s ease, transform .55s cubic-bezier(.16,.8,.2,1);
+  opacity: calc(.74 + (1 - var(--flow-depth)) * .22);
+}
+
+.perspectiveFlowNode::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 4% -4% 6%;
+  border: 1px solid rgba(123,20,44,.12);
+  border-radius: 50%;
+  box-shadow: 0 0 0 rgba(137,25,46,0), 0 0 0 rgba(231,197,106,0);
+  opacity: 0;
+  transform: scale(.68);
+  animation: perspectiveCubeInvite 10.5s ease-in-out infinite;
+  animation-delay: var(--flow-sequence-delay);
+  animation-fill-mode: backwards;
+  pointer-events: none;
 }
 
 .perspectiveFlowCube {
@@ -2079,8 +2095,10 @@
   inset: 0;
   display: block;
   transform-style: preserve-3d;
-  animation: perspectiveCubeHover var(--flow-duration) ease-in-out infinite;
-  animation-delay: var(--flow-delay);
+  filter: saturate(1.08) drop-shadow(0 10px 14px rgba(0,0,0,.5));
+  animation: perspectiveCubeSequence 10.5s ease-in-out infinite;
+  animation-delay: var(--flow-sequence-delay);
+  animation-fill-mode: backwards;
 }
 
 .perspectiveFlowCube::before,
@@ -2088,55 +2106,55 @@
   content: '';
   position: absolute;
   z-index: 1;
-  left: -7%;
-  top: 57%;
-  width: 114%;
-  height: 28%;
+  left: -8%;
+  top: 69%;
+  width: 116%;
+  height: 23%;
   clip-path: polygon(50% 0, 100% 33%, 50% 100%, 0 33%);
-  background: linear-gradient(145deg, rgba(246,227,161,.16), rgba(15,15,12,.88) 46%, rgba(3,5,4,.96));
-  box-shadow: 0 8px 16px rgba(0,0,0,.48), inset 0 0 0 1px rgba(231,197,106,.24);
+  background: linear-gradient(145deg, rgba(255,226,118,.3), rgba(91,18,38,.88) 48%, rgba(10,5,7,.98));
+  box-shadow: 0 10px 20px rgba(0,0,0,.58), inset 0 0 0 1px rgba(246,210,102,.42), 0 0 18px rgba(126,20,42,.16);
   pointer-events: none;
 }
 
 .perspectiveFlowCube::after {
   z-index: 2;
-  left: -2%;
-  top: 51%;
-  width: 104%;
-  height: 25%;
-  background: linear-gradient(145deg, rgba(255,241,192,.13), rgba(18,17,13,.9) 48%, rgba(4,6,5,.97));
-  opacity: .82;
+  left: -3%;
+  top: 63%;
+  width: 106%;
+  height: 22%;
+  background: linear-gradient(145deg, rgba(255,239,168,.24), rgba(111,21,44,.8) 50%, rgba(7,5,6,.98));
+  opacity: .9;
 }
 
 .perspectiveFlowCube > i { position: absolute; display: block; pointer-events: none; }
 
 .perspectiveFlowCubeTop {
   z-index: 5;
-  inset: 7% 4% 48%;
+  inset: 3% 4% 43%;
   clip-path: polygon(50% 0, 100% 35%, 50% 100%, 0 35%);
-  border: 1px solid rgba(246,227,161,.56);
-  background: linear-gradient(135deg, rgba(255,244,202,.2), transparent 45%), linear-gradient(155deg, rgba(64,56,38,.62), rgba(7,9,8,.9));
-  box-shadow: inset 0 0 14px rgba(231,197,106,.12), 0 -3px 12px rgba(231,197,106,.08);
+  border: 1px solid rgba(255,222,116,.84);
+  background: linear-gradient(135deg, rgba(255,245,203,.42), rgba(204,153,48,.12) 44%), linear-gradient(155deg, rgba(116,79,31,.8), rgba(69,14,31,.82) 57%, rgba(8,7,7,.96));
+  box-shadow: inset 0 0 18px rgba(255,223,119,.2), 0 -4px 18px rgba(231,197,106,.18), 0 0 12px rgba(126,20,42,.22);
 }
 
 .perspectiveFlowCubeFront {
   z-index: 4;
   left: 4%;
-  top: 23%;
+  top: 22%;
   width: 48%;
-  height: 44%;
+  height: 56%;
   display: grid !important;
   place-items: center;
   clip-path: polygon(0 0, 100% 36%, 100% 100%, 0 64%);
-  border: 1px solid rgba(231,197,106,.38);
-  background: linear-gradient(120deg, rgba(246,227,161,.13), transparent 48%), linear-gradient(180deg, rgba(36,31,22,.88), rgba(7,9,7,.94));
-  box-shadow: inset 0 0 16px rgba(200,154,61,.08), -5px 10px 18px rgba(0,0,0,.42);
+  border: 1px solid rgba(246,205,92,.72);
+  background: linear-gradient(120deg, rgba(255,231,148,.22), transparent 48%), linear-gradient(180deg, rgba(105,21,43,.9), rgba(34,8,17,.97));
+  box-shadow: inset 0 0 20px rgba(231,197,106,.14), -7px 12px 22px rgba(0,0,0,.5), 0 0 14px rgba(123,20,43,.18);
 }
 
 .perspectiveFlowCubeFront > b {
-  margin: 0 16% 8% 0;
-  color: rgba(244,231,183,.72);
-  font: 600 clamp(.43rem, .5vw, .57rem)/1 var(--font-chakra-petch), monospace;
+  margin: 0 16% 10% 0;
+  color: rgba(255,231,145,.92);
+  font: 700 clamp(.53rem, .64vw, .74rem)/1 var(--font-chakra-petch), monospace;
   letter-spacing: .08em;
   transform: skewY(18deg);
 }
@@ -2147,37 +2165,42 @@
   top: 55%;
   width: 78%;
   overflow: hidden;
-  color: rgba(246,232,184,.72);
-  font: 620 clamp(.3rem, .34vw, .39rem)/1 var(--font-chakra-petch), monospace;
+  color: rgba(255,239,187,.5);
+  font: 680 clamp(.36rem, .43vw, .5rem)/1 var(--font-chakra-petch), monospace;
   letter-spacing: .01em;
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
   transform: skewY(18deg);
+  opacity: .55;
+  transition: opacity .35s ease, color .35s ease, font-size .35s ease, transform .35s ease;
 }
 
 .perspectiveFlowCubeSide {
   z-index: 3;
   right: 4%;
-  top: 23%;
+  top: 22%;
   width: 48%;
-  height: 44%;
+  height: 56%;
   clip-path: polygon(0 36%, 100% 0, 100% 64%, 0 100%);
-  border: 1px solid rgba(231,197,106,.22);
-  background: linear-gradient(240deg, rgba(255,238,178,.08), transparent 44%), linear-gradient(180deg, rgba(22,21,17,.86), rgba(4,6,5,.96));
-  box-shadow: inset -6px -8px 15px rgba(0,0,0,.36);
+  border: 1px solid rgba(176,45,69,.62);
+  background: linear-gradient(240deg, rgba(255,220,116,.18), transparent 44%), linear-gradient(180deg, rgba(76,17,34,.94), rgba(12,5,8,.98));
+  box-shadow: inset -8px -10px 18px rgba(0,0,0,.45), 5px 9px 18px rgba(0,0,0,.26);
 }
 
 .perspectiveFlowCubeCore {
   z-index: 6;
   left: 50%;
   top: 40%;
-  width: 7px;
-  height: 7px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   background: #ffeaa0;
   box-shadow: 0 0 7px #f6e3a1, 0 0 18px rgba(231,197,106,.72);
   transform: translate(-50%,-50%);
+  animation: perspectiveCoreSequence 10.5s ease-in-out infinite;
+  animation-delay: var(--flow-sequence-delay);
+  animation-fill-mode: backwards;
 }
 
 .perspectiveFlowCubeTether {
@@ -2187,18 +2210,30 @@
 .perspectiveFlowCubeShadow {
   z-index: 0;
   left: 50%;
-  top: 70%;
-  width: 96%;
-  height: 17%;
+  top: 79%;
+  width: 108%;
+  height: 19%;
   border-radius: 50%;
-  background: radial-gradient(ellipse, rgba(231,197,106,.3), rgba(0,0,0,.2) 52%, transparent 75%);
+  background: radial-gradient(ellipse, rgba(231,197,106,.4), rgba(123,20,43,.18) 40%, rgba(0,0,0,.2) 62%, transparent 78%);
   filter: blur(2px);
   transform: translateX(-50%) rotate(-18deg);
 }
 
-@keyframes perspectiveCubeHover {
-  0%,100% { transform: translateY(calc(-19% - 1px)); }
-  50% { transform: translateY(calc(-19% + 2px)); }
+@keyframes perspectiveCubeSequence {
+  0%, 9%, 100% { transform: translateY(-22%) scale(1); filter: saturate(1.04) brightness(.92) drop-shadow(0 10px 14px rgba(0,0,0,.5)); }
+  3.2% { transform: translateY(-29%) scale(1.16); filter: saturate(1.4) brightness(1.58) drop-shadow(0 0 18px rgba(242,195,74,.72)) drop-shadow(0 0 30px rgba(139,23,51,.66)); }
+  6.2% { transform: translateY(-24%) scale(1.06); filter: saturate(1.22) brightness(1.15) drop-shadow(0 0 12px rgba(242,195,74,.4)); }
+}
+
+@keyframes perspectiveCubeInvite {
+  0%, 9%, 100% { opacity: 0; transform: scale(.7); }
+  3.2% { opacity: .9; transform: scale(1.18); border-color: rgba(246,205,92,.62); box-shadow: 0 0 24px rgba(139,23,51,.62), 0 0 34px rgba(231,197,106,.34); }
+  7% { opacity: 0; transform: scale(1.42); }
+}
+
+@keyframes perspectiveCoreSequence {
+  0%, 9%, 100% { transform: translate(-50%,-50%) scale(.78); background: #b88b39; }
+  3.2% { transform: translate(-50%,-50%) scale(1.55); background: #fff4bd; box-shadow: 0 0 10px #fff0a8, 0 0 28px rgba(231,197,106,1), 0 0 40px rgba(137,25,46,.8); }
 }
 
 .perspectiveFlowNode > strong {
@@ -2215,13 +2250,13 @@
   letter-spacing: .015em;
   text-align: center;
   white-space: nowrap;
-  opacity: .86;
+  opacity: .52;
   transform: translateX(-50%);
   transform-origin: bottom center;
-  transition: opacity .3s ease;
+  transition: opacity .3s ease, transform .4s ease;
 }
 
-.perspectiveFlowBehind { z-index: 8 !important; filter: brightness(.64) saturate(.72) blur(.16px); opacity: calc(.26 + (1 - var(--flow-depth)) * .32); }
+.perspectiveFlowBehind { z-index: 8 !important; filter: brightness(.82) saturate(.92) blur(.08px); opacity: calc(.58 + (1 - var(--flow-depth)) * .3); }
 .perspectiveFlowFront { z-index: 32 !important; }
 
 .perspectiveFlowReached .perspectiveFlowCubeCore { background: #fff4bd; box-shadow: 0 0 8px #fff0a8, 0 0 24px rgba(231,197,106,.9); }
@@ -2234,6 +2269,44 @@
   opacity: 1;
   filter: brightness(1.2) drop-shadow(0 0 13px rgba(231,197,106,.24));
   outline: none;
+}
+
+.perspectiveFlowSelected,
+.perspectiveFlowBehind.perspectiveFlowSelected {
+  z-index: 64 !important;
+  opacity: 1;
+  filter: brightness(1.16) saturate(1.2) drop-shadow(0 0 20px rgba(231,197,106,.44));
+}
+
+.perspectiveFlowSelected::before {
+  animation: perspectiveSelectedRing 2.2s ease-out infinite;
+  border-color: rgba(246,205,92,.65);
+}
+
+.perspectiveFlowSelected .perspectiveFlowCube {
+  animation: perspectiveCubeDance 2.2s cubic-bezier(.16,.8,.2,1) infinite;
+  animation-delay: 0s;
+}
+
+.perspectiveFlowSelected .perspectiveFlowCubeCore { animation: perspectiveSelectedCore 1.35s ease-in-out infinite; }
+.perspectiveFlowSelected .perspectiveFlowCubeFront { background: linear-gradient(120deg, rgba(255,239,179,.32), transparent 48%), linear-gradient(180deg, rgba(148,27,55,.98), rgba(48,8,21,.98)); border-color: rgba(255,226,127,.96); }
+.perspectiveFlowSelected .perspectiveFlowCubeFront > b { color: #fff0b0; }
+.perspectiveFlowSelected .perspectiveFlowCubeFront > small { top: 57%; width: 88%; left: 5%; color: #fff4cf; opacity: 1; font-size: clamp(.46rem, .56vw, .66rem); letter-spacing: .025em; transform: skewY(18deg) translateZ(1px); text-shadow: 0 0 9px rgba(255,225,125,.44); }
+.perspectiveFlowSelected > strong { opacity: 0; transform: translateX(-50%) translateY(-8px); }
+
+@keyframes perspectiveCubeDance {
+  0%,100% { transform: translate(-10%, -52%) scale(1.28) rotate(-1.5deg); filter: brightness(1.22) saturate(1.22) drop-shadow(0 0 18px rgba(231,197,106,.58)) drop-shadow(0 0 34px rgba(137,25,46,.58)); }
+  48% { transform: translate(3%, -66%) scale(1.42) rotate(1.8deg); filter: brightness(1.52) saturate(1.38) drop-shadow(0 0 26px rgba(255,216,97,.8)) drop-shadow(0 0 46px rgba(151,22,52,.74)); }
+}
+
+@keyframes perspectiveSelectedRing {
+  0% { opacity: .8; transform: scale(.72); box-shadow: 0 0 18px rgba(137,25,46,.5), 0 0 24px rgba(231,197,106,.28); }
+  100% { opacity: 0; transform: scale(1.7); box-shadow: 0 0 34px rgba(137,25,46,.18), 0 0 48px rgba(231,197,106,.08); }
+}
+
+@keyframes perspectiveSelectedCore {
+  0%,100% { transform: translate(-50%,-50%) scale(1); }
+  50% { transform: translate(-50%,-50%) scale(1.65); background: #fff8d0; box-shadow: 0 0 12px #fff0a8, 0 0 32px rgba(231,197,106,1), 0 0 46px rgba(137,25,46,.82); }
 }
 
 .perspectiveFlowBehind:hover,
@@ -2252,6 +2325,11 @@
 
 .perspectiveFlowNode[aria-current='step'] .perspectiveFlowCube { filter: brightness(1.28) drop-shadow(0 0 10px rgba(231,197,106,.34)); }
 .perspectiveFlowNode[aria-current='step'] b { color: #fff0b8; }
+.perspectiveFlowNode.perspectiveFlowSelected,
+.perspectiveFlowBehind.perspectiveFlowSelected:hover,
+.perspectiveFlowBehind.perspectiveFlowSelected:focus-visible,
+.perspectiveFlowBehind.perspectiveFlowSelected[aria-current='step'] { z-index: 64 !important; opacity: 1; filter: brightness(1.16) saturate(1.2) drop-shadow(0 0 20px rgba(231,197,106,.44)); }
+.perspectiveFlowNode.perspectiveFlowSelected > strong { opacity: 0; transform: translateX(-50%) translateY(-8px); }
 
 @keyframes perspectiveNodePulse {
   0%, 100% { filter: brightness(.92); }
@@ -2286,6 +2364,44 @@
 @keyframes perspectiveSignal {
   from { opacity: .75; transform: scale(.2); }
   to { opacity: 0; transform: scale(1.4); }
+}
+
+.perspectiveFlowFlyout {
+  position: absolute;
+  z-index: 72;
+  left: var(--flow-flyout-x);
+  top: var(--flow-flyout-y);
+  width: clamp(250px, 20vw, 330px);
+  padding: .8rem .9rem .9rem;
+  border: 1px solid rgba(246,205,92,.58);
+  background: linear-gradient(145deg, rgba(35,9,17,.96), rgba(8,9,8,.97) 62%);
+  box-shadow: 0 22px 60px rgba(0,0,0,.62), 0 0 30px rgba(137,25,46,.2), inset 0 1px rgba(255,239,180,.08);
+  color: #ece8dc;
+  backdrop-filter: blur(14px);
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  pointer-events: auto;
+  animation: perspectiveFlyoutIn .45s cubic-bezier(.16,.8,.2,1) both;
+}
+
+.perspectiveFlowFlyout[data-side='right'] { transform: translate(36px, -50%); transform-origin: left center; }
+.perspectiveFlowFlyout[data-side='left'] { transform: translate(calc(-100% - 36px), -50%); transform-origin: right center; }
+.perspectiveFlowFlyoutLink { position: absolute; top: 50%; width: 36px; height: 1px; background: linear-gradient(90deg, rgba(246,205,92,.08), rgba(246,205,92,.8)); box-shadow: 0 0 8px rgba(231,197,106,.5); }
+.perspectiveFlowFlyout[data-side='right'] .perspectiveFlowFlyoutLink { right: 100%; }
+.perspectiveFlowFlyout[data-side='left'] .perspectiveFlowFlyoutLink { left: 100%; transform: scaleX(-1); }
+
+.perspectiveFlowFlyout > header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-bottom: .5rem; border-bottom: 1px solid rgba(231,197,106,.14); }
+.perspectiveFlowFlyout > header small { color: rgba(231,197,106,.68); font: 700 .43rem/1 var(--font-chakra-petch), monospace; letter-spacing: .16em; }
+.perspectiveFlowFlyout > header button { width: 1.55rem; height: 1.55rem; display: grid; place-items: center; padding: 0; border: 1px solid rgba(231,197,106,.25); background: rgba(255,255,255,.025); color: rgba(246,235,199,.72); font-size: 1rem; line-height: 1; cursor: pointer; }
+.perspectiveFlowFlyout > header button:hover,
+.perspectiveFlowFlyout > header button:focus-visible { border-color: rgba(246,205,92,.72); color: #fff0b0; outline: none; }
+.perspectiveFlowFlyout > div { display: flex; align-items: baseline; gap: .65rem; margin-top: .68rem; }
+.perspectiveFlowFlyout > div b { color: rgba(231,197,106,.5); font: 650 1.25rem/1 var(--font-chakra-petch), monospace; }
+.perspectiveFlowFlyout > div strong { color: #fff0b0; font-size: clamp(.82rem, 1vw, 1rem); font-weight: 680; }
+.perspectiveFlowFlyout > p { margin: .55rem 0 0; color: rgba(224,222,212,.78); font-size: clamp(.66rem, .75vw, .76rem); line-height: 1.55; }
+
+@keyframes perspectiveFlyoutIn {
+  from { opacity: 0; filter: blur(7px); }
+  to { opacity: 1; filter: blur(0); }
 }
 
 .perspectiveFlowReadout {
@@ -2754,8 +2870,13 @@
   .perspectiveFlowHeader > small { display: none; }
   .perspectiveFlowStage { left: 8%; top: 56%; width: 88%; height: 22%; }
   .perspectiveFlowGlass { display: none; }
-  .perspectiveFlowNode { width: 56px; height: 58px; }
+  .perspectiveFlowNode { width: 68px; height: 64px; }
   .perspectiveFlowNode > strong { font-size: .4rem; }
+  .perspectiveFlowSelected .perspectiveFlowCube { animation-name: perspectiveCubeDanceMobile; }
+  .perspectiveFlowFlyout,
+  .perspectiveFlowFlyout[data-side='right'],
+  .perspectiveFlowFlyout[data-side='left'] { left: 0; top: calc(100% - 2.8rem); width: 100%; max-width: none; transform: none; transform-origin: top center; }
+  .perspectiveFlowFlyoutLink { display: none; }
   .flowFrame.salesFlowHud { bottom: .7rem; }
   .salesFlowHud .flowViewport { padding-block: 1.25rem 1rem; }
   .salesFlowHud .flowRail { top: calc(1.25rem + 16px); }
@@ -2863,6 +2984,11 @@
   .funnelActions .primaryButton { flex: 0 1 auto; }
   .footer { grid-template-columns: 1fr; gap: 1.4rem; align-items: start; padding: 1.8rem calc(var(--rail-safe) + .35rem) 1.8rem var(--container-left); }
   .footer > div:last-child { justify-content: flex-start; }
+}
+
+@keyframes perspectiveCubeDanceMobile {
+  0%,100% { transform: translate(-6%, -42%) scale(1.16) rotate(-1deg); filter: brightness(1.2) saturate(1.2) drop-shadow(0 0 12px rgba(231,197,106,.54)) drop-shadow(0 0 24px rgba(137,25,46,.5)); }
+  48% { transform: translate(2%, -52%) scale(1.26) rotate(1.2deg); filter: brightness(1.45) saturate(1.35) drop-shadow(0 0 18px rgba(255,216,97,.72)) drop-shadow(0 0 30px rgba(151,22,52,.66)); }
 }
 
 /* Short desktop and landscape-tablet viewports need the cinematic stages to

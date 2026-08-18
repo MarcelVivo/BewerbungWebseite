@@ -82,6 +82,33 @@ export const flowSteps = {
   en: ['Google search', 'Website', 'Enquiry', 'CRM', 'Meeting', 'Consultation', 'Quote', 'Approval', 'Order', 'Project'],
 };
 
+export const flowStepDetails = {
+  de: [
+    'Menschen mit einem konkreten Bedarf finden dein Angebot über relevante Suchbegriffe und klar strukturierte Inhalte.',
+    'Die Website übersetzt Aufmerksamkeit in Vertrauen und führt Interessierte gezielt zum nächsten sinnvollen Schritt.',
+    'Formulare und klare Kontaktwege erfassen die Anfrage vollständig, nachvollziehbar und ohne Medienbruch.',
+    'Quelle, Interesse, Kontaktdaten und Verlauf landen in einem zentralen, aktuellen Kundendatensatz.',
+    'Qualifizierte Kontakte buchen einen passenden Termin; Bestätigung und Vorbereitung laufen automatisch mit.',
+    'Bedarf, Ziele und Rahmenbedingungen werden strukturiert geklärt und direkt im Prozess dokumentiert.',
+    'Aus den vorhandenen Informationen entsteht eine verständliche, konsistente und digital versendbare Offerte.',
+    'Rückfragen, Anpassungen und Freigabe bleiben transparent; Entscheidungen werden sauber festgehalten.',
+    'Die bestätigte Offerte wird ohne doppelte Dateneingabe zum Auftrag mit Verantwortlichkeiten und nächsten Schritten.',
+    'Aufgaben, Termine, Kommunikation und Fortschritt bleiben vom Start bis zum Abschluss in einem verbundenen System.',
+  ],
+  en: [
+    'People with a concrete need discover your offer through relevant search terms and clearly structured content.',
+    'The website turns attention into trust and guides interested people towards the next useful step.',
+    'Forms and clear contact paths capture the enquiry completely, transparently and without manual transfers.',
+    'Source, interest, contact details and history are stored in one current customer record.',
+    'Qualified contacts book a suitable meeting while confirmation and preparation run automatically.',
+    'Needs, goals and constraints are clarified systematically and documented directly in the process.',
+    'The available information becomes a clear, consistent quote that can be sent digitally.',
+    'Questions, changes and approval remain transparent, with every decision recorded cleanly.',
+    'The approved quote becomes an order with responsibilities and next steps, without entering data twice.',
+    'Tasks, schedules, communication and progress remain connected from project start to completion.',
+  ],
+} as const;
+
 export const copy = {
   de: {
     skip: 'Zum Inhalt springen', menu: 'Kapitel', close: 'Schliessen', project: 'Projekt besprechen', discover: 'System entdecken',
