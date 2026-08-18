@@ -2387,6 +2387,25 @@
 .sectionDockLayer[data-editor='true'] .systemDockCalibration { pointer-events: auto; }
 .sectionRoundDockingStation { position: absolute; z-index: 2; left: var(--dock-x); top: var(--dock-y); height: auto !important; aspect-ratio: 1; opacity: calc(var(--problem-dock-engaged) * 5); transform: translate(-50%, -50%) rotate(var(--dock-rotation, 0deg)); transform-origin: center; pointer-events: none; filter: drop-shadow(0 14px 22px rgba(0,0,0,.72)) drop-shadow(0 0 18px rgba(231,197,106,.2)) drop-shadow(0 0 28px rgba(118,17,38,.14)); transition: opacity .15s linear; }
 .sectionRoundDockingStation[data-editor='true'] { --problem-dock-engaged: 1 !important; --problem-dock-charge: .4 !important; z-index: 12; opacity: 1; pointer-events: auto; cursor: crosshair; }
+/* Production keeps the station elements as geometry-only anchors for the
+   flight path, but no longer paints their rings or background graphics. The
+   calibration/editor mode remains visible so the route can still be serviced
+   later without reintroducing production UI. `visibility` preserves layout
+   boxes and getBoundingClientRect(), unlike display:none. */
+.problemDockingStation[data-editor='false'],
+.systemDockingStation[data-editor='false'],
+.websiteDockingStation[data-editor='false'],
+.marketingDockingStation[data-editor='false'],
+.sectionRoundDockingStation[data-editor='false'] {
+  visibility: hidden;
+  opacity: 0 !important;
+  filter: none !important;
+}
+.problemDockingStation[data-editor='false'] *,
+.systemDockingStation[data-editor='false'] *,
+.websiteDockingStation[data-editor='false'] *,
+.marketingDockingStation[data-editor='false'] *,
+.sectionRoundDockingStation[data-editor='false'] * { animation-play-state: paused !important; }
 .osLayout { width: var(--container); margin: 0 0 0 var(--container-left); display: grid; grid-template-columns: minmax(260px, .54fr) minmax(650px, 1.46fr); gap: 1.3rem; align-items: stretch; }
 .operatingModules { display: grid; border: 1px solid var(--line); }
 .operatingModules > div { position: relative; display: grid; grid-template-columns: 1.7rem 1fr auto; gap: .7rem; align-items: center; padding: 1rem; border-bottom: 1px solid var(--line); background: rgba(255,255,255,.012); overflow: hidden; }
