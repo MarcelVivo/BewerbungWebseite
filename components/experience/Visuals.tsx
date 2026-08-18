@@ -40,13 +40,17 @@ export function PerspectiveBusinessFlow({
   const denominator = Math.max(steps.length - 1, 1);
   const progress = active / denominator;
   const portalDepth = .425;
-  const routeX = (depth: number) => 5 + depth * 91;
-  const routeY = (depth: number) => 75 - depth * 92;
+  // Equal distances in the process must compress toward the scene's vanishing
+  // point. Keeping them linear made the added cubes read like a flat diagram
+  // laid over the cinematic road instead of objects standing inside it.
+  const projectDepth = (depth: number) => 1 - Math.pow(1 - depth, 1.5);
+  const routeX = (depth: number) => 5 + projectDepth(depth) * 91;
+  const routeY = (depth: number) => 75 - projectDepth(depth) * 70;
   const signalX = routeX(progress);
   const signalY = routeY(progress);
   const portalX = routeX(portalDepth);
   const portalY = routeY(portalDepth);
-  const routePath = 'M 50 390 L 960 -88';
+  const routePath = 'M 50 390 L 960 26';
   const foregroundPath = `M 50 390 L ${portalX * 10} ${portalY * 5.2}`;
 
   return (
@@ -87,7 +91,8 @@ export function PerspectiveBusinessFlow({
           const depth = index / denominator;
           const x = routeX(depth);
           const y = routeY(depth);
-          const scale = 1.12 - depth * .3;
+          const projectedDepth = projectDepth(depth);
+          const scale = 1.34 - projectedDepth * .78;
           const reached = index <= active;
           const layerClass = depth < portalDepth ? styles.perspectiveFlowFront : styles.perspectiveFlowBehind;
 
@@ -101,6 +106,7 @@ export function PerspectiveBusinessFlow({
                 '--flow-y': `${y}%`,
                 '--flow-scale': scale,
                 '--flow-depth': depth,
+                '--flow-projected-depth': projectedDepth,
                 '--flow-index': index,
                 '--flow-duration': `${3.2 + depth * 1.8}s`,
                 '--flow-delay': `${index * -.23}s`,
