@@ -51,14 +51,17 @@ export function PerspectiveBusinessFlow({
   // point. Keeping them linear made the added cubes read like a flat diagram
   // laid over the cinematic road instead of objects standing inside it.
   const projectDepth = (depth: number) => 1 - Math.pow(1 - depth, 1.5);
-  const routeX = (depth: number) => 5 + projectDepth(depth) * 91;
-  const routeY = (depth: number) => 75 - projectDepth(depth) * 70;
+  // Calibrated against the luminous floor lane in the foreground and the
+  // physical glass blocks in the back of the sales-system artwork. Both the
+  // nodes and their rail now share that single scene-space vanishing line.
+  const routeX = (depth: number) => 22 + projectDepth(depth) * 66;
+  const routeY = (depth: number) => 86 - projectDepth(depth) * 64;
   const signalX = routeX(progress);
   const signalY = routeY(progress);
   const portalX = routeX(portalDepth);
   const portalY = routeY(portalDepth);
-  const routePath = 'M 50 390 L 960 26';
-  const foregroundPath = `M 50 390 L ${portalX * 10} ${portalY * 5.2}`;
+  const routePath = 'M 220 447 L 880 114';
+  const foregroundPath = `M 220 447 L ${portalX * 10} ${portalY * 5.2}`;
   const selectedDepth = selectedFlow === null ? 0 : selectedFlow / denominator;
   const selectedX = routeX(selectedDepth);
   const selectedY = routeY(selectedDepth);

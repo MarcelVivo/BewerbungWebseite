@@ -1927,10 +1927,10 @@
 
 .perspectiveFlowStage {
   position: absolute;
-  left: 25%;
-  top: 24%;
-  width: 72%;
-  height: 66%;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: auto;
   transform: perspective(1500px) translateZ(0);
   transform-origin: 42% 65%;
@@ -1938,18 +1938,7 @@
 }
 
 .perspectiveFlowGlass {
-  position: absolute;
-  z-index: 20;
-  left: 41.2%;
-  top: 31%;
-  width: 4.8%;
-  height: 48%;
-  border-left: 1px solid rgba(246,227,161,.12);
-  background: linear-gradient(90deg, rgba(255,255,255,.015), rgba(231,197,106,.055) 48%, rgba(5,7,6,.28));
-  clip-path: polygon(16% 0, 100% 9%, 86% 100%, 0 91%);
-  backdrop-filter: blur(.7px);
-  box-shadow: inset 1px 0 rgba(255,255,255,.04), 8px 0 24px rgba(0,0,0,.16);
-  pointer-events: none;
+  display: none;
 }
 
 .perspectiveFlowGlass > i {
@@ -2112,7 +2101,7 @@
 .perspectiveFlowCubeTop {
   z-index: 5;
   inset: 0;
-  clip-path: polygon(50% 4%, 96% 28%, 50% 52%, 4% 28%);
+  clip-path: polygon(43% 8%, 96% 27%, 57% 50%, 4% 31%);
   border: 0;
   background: linear-gradient(135deg, rgba(255,247,211,.55), rgba(224,174,60,.24) 36%, rgba(102,21,42,.92) 76%, rgba(24,8,14,.98));
   box-shadow: none;
@@ -2123,7 +2112,7 @@
   z-index: 4;
   inset: 0;
   display: block !important;
-  clip-path: polygon(4% 28%, 50% 52%, 50% 96%, 4% 72%);
+  clip-path: polygon(4% 31%, 57% 50%, 57% 96%, 4% 77%);
   border: 0;
   background: linear-gradient(120deg, rgba(255,230,139,.24), transparent 42%), linear-gradient(180deg, rgba(132,24,50,.98), rgba(39,7,19,.99));
   box-shadow: none;
@@ -2138,14 +2127,14 @@
   color: rgba(255,231,145,.92);
   font: 700 clamp(.53rem, .64vw, .74rem)/1 var(--font-chakra-petch), monospace;
   letter-spacing: .08em;
-  transform: skewY(27deg);
+  transform: skewY(20deg);
 }
 
 .perspectiveFlowCubeFront > small {
   position: absolute;
   left: 7%;
   top: 67%;
-  width: 39%;
+  width: 43%;
   overflow: hidden;
   color: rgba(255,239,187,.5);
   font: 680 clamp(.36rem, .43vw, .5rem)/1 var(--font-chakra-petch), monospace;
@@ -2153,7 +2142,7 @@
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
-  transform: skewY(27deg);
+  transform: skewY(20deg);
   opacity: .55;
   transition: opacity .35s ease, color .35s ease, font-size .35s ease, transform .35s ease;
 }
@@ -2161,7 +2150,7 @@
 .perspectiveFlowCubeSide {
   z-index: 3;
   inset: 0;
-  clip-path: polygon(50% 52%, 96% 28%, 96% 72%, 50% 96%);
+  clip-path: polygon(57% 50%, 96% 27%, 96% 73%, 57% 96%);
   border: 0;
   background: linear-gradient(240deg, rgba(255,221,116,.18), transparent 38%), linear-gradient(180deg, rgba(76,14,34,.98), rgba(14,5,9,.99));
   box-shadow: none;
@@ -2170,8 +2159,8 @@
 
 .perspectiveFlowCubeCore {
   z-index: 6;
-  left: 50%;
-  top: 52%;
+  left: 57%;
+  top: 50%;
   width: 9px;
   height: 9px;
   border-radius: 50%;
@@ -2272,7 +2261,7 @@
 .perspectiveFlowSelected .perspectiveFlowCubeCore { animation: perspectiveSelectedCore 1.35s ease-in-out infinite; }
 .perspectiveFlowSelected .perspectiveFlowCubeFront { background: linear-gradient(120deg, rgba(255,239,179,.32), transparent 48%), linear-gradient(180deg, rgba(148,27,55,.98), rgba(48,8,21,.98)); border-color: rgba(255,226,127,.96); }
 .perspectiveFlowSelected .perspectiveFlowCubeFront > b { color: #fff0b0; }
-.perspectiveFlowSelected .perspectiveFlowCubeFront > small { top: 67%; width: 40%; left: 6%; color: #fff4cf; opacity: 1; font-size: clamp(.46rem, .56vw, .66rem); letter-spacing: .025em; transform: skewY(27deg) translateZ(1px); text-shadow: 0 0 9px rgba(255,225,125,.44); }
+.perspectiveFlowSelected .perspectiveFlowCubeFront > small { top: 67%; width: 43%; left: 6%; color: #fff4cf; opacity: 1; font-size: clamp(.46rem, .56vw, .66rem); letter-spacing: .025em; transform: skewY(20deg) translateZ(1px); text-shadow: 0 0 9px rgba(255,225,125,.44); }
 .perspectiveFlowSelected > strong { opacity: 0; transform: translateX(-50%) translateY(-8px); }
 
 @keyframes perspectiveCubeDance {
