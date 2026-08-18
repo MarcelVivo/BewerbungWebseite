@@ -22,16 +22,64 @@ type HeroPhase = 'loading' | 'ignition' | 'revealed';
 
 const MODULES = {
   de: [
-    ['01', 'Kundengewinnung', 'Website, Inhalte, SEO, GEO, Kampagnen und Lead Capture greifen ineinander.', Search],
-    ['02', 'Kunden & Verkauf', 'Anfragen, Kontakte, Kommunikation, Offerten und Aufträge bleiben verbunden.', Users],
-    ['03', 'Projekte & Betrieb', 'Aufgaben, Termine, Dokumente, Ressourcen und Zeiten laufen in einem Prozess.', Workflow],
-    ['04', 'Daten & Steuerung', 'Ein konsistentes Datenmodell speist Dashboards, Automationen und Entscheidungen.', Database],
+    {
+      number: '01', title: 'Kundengewinnung', Icon: Search,
+      description: 'Website, Inhalte, SEO, GEO, Kampagnen und Lead Capture greifen ineinander.',
+      detail: 'Sichtbarkeit wird direkt mit einem strukturierten Anfrageprozess verbunden. Jeder relevante Kontakt landet mit Quelle, Interesse und nächstem Schritt im selben System.',
+      components: ['Website & Landingpages', 'SEO, GEO & Content', 'Kampagnen & Lead Capture'],
+      outcome: 'Aus Reichweite entstehen qualifizierte, nachvollziehbare Anfragen statt verstreuter Kontakte.',
+    },
+    {
+      number: '02', title: 'Kunden & Verkauf', Icon: Users,
+      description: 'Anfragen, Kontakte, Kommunikation, Offerten und Aufträge bleiben verbunden.',
+      detail: 'Vom ersten Gespräch bis zum Auftrag begleitet ein durchgängiger Datensatz die Kundenbeziehung. Zuständigkeiten, Dokumente und nächste Schritte bleiben für alle Beteiligten sichtbar.',
+      components: ['CRM & Kontakthistorie', 'Pipeline & Aktivitäten', 'Offerten & Aufträge'],
+      outcome: 'Weniger Übergaben, verlässlichere Nachverfolgung und ein klarer Verkaufsprozess.',
+    },
+    {
+      number: '03', title: 'Projekte & Betrieb', Icon: Workflow,
+      description: 'Aufgaben, Termine, Dokumente, Ressourcen und Zeiten laufen in einem Prozess.',
+      detail: 'Ein gewonnener Auftrag wird ohne erneute Datenerfassung zum ausführbaren Projekt. Planung, Verantwortlichkeiten, Fortschritt und Abrechnung verwenden dieselbe Grundlage.',
+      components: ['Projekte & Aufgaben', 'Ressourcen & Termine', 'Zeiten & Dokumente'],
+      outcome: 'Das Team arbeitet mit klaren Prioritäten und der aktuelle Projektstand bleibt jederzeit sichtbar.',
+    },
+    {
+      number: '04', title: 'Daten & Steuerung', Icon: Database,
+      description: 'Ein konsistentes Datenmodell speist Dashboards, Automationen und Entscheidungen.',
+      detail: 'Informationen werden einmal sauber erfasst und kontrolliert weiterverwendet. Rollen, Schnittstellen und Automationen sorgen dafür, dass relevante Zahlen dort ankommen, wo sie gebraucht werden.',
+      components: ['Zentrales Datenmodell', 'Dashboards & Kennzahlen', 'AI & Automationen'],
+      outcome: 'Entscheidungen basieren auf aktuellen Daten statt auf manuell zusammengetragenen Listen.',
+    },
   ],
   en: [
-    ['01', 'Customer acquisition', 'Website, content, SEO, GEO, campaigns and lead capture work together.', Search],
-    ['02', 'Customers & sales', 'Enquiries, contacts, communication, quotes and orders remain connected.', Users],
-    ['03', 'Projects & operations', 'Tasks, schedules, documents, resources and time run through one process.', Workflow],
-    ['04', 'Data & management', 'A consistent data model powers dashboards, automation and decisions.', Database],
+    {
+      number: '01', title: 'Customer acquisition', Icon: Search,
+      description: 'Website, content, SEO, GEO, campaigns and lead capture work together.',
+      detail: 'Visibility connects directly to a structured enquiry process. Every relevant contact enters the same system with its source, interest and next useful step.',
+      components: ['Website & landing pages', 'SEO, GEO & content', 'Campaigns & lead capture'],
+      outcome: 'Reach becomes qualified, traceable enquiries instead of scattered contacts.',
+    },
+    {
+      number: '02', title: 'Customers & sales', Icon: Users,
+      description: 'Enquiries, contacts, communication, quotes and orders remain connected.',
+      detail: 'One continuous record supports the relationship from the first conversation to the order. Ownership, documents and next steps remain visible to everyone involved.',
+      components: ['CRM & contact history', 'Pipeline & activities', 'Quotes & orders'],
+      outcome: 'Fewer handovers, more reliable follow-up and a clear sales process.',
+    },
+    {
+      number: '03', title: 'Projects & operations', Icon: Workflow,
+      description: 'Tasks, schedules, documents, resources and time run through one process.',
+      detail: 'A won order becomes an executable project without entering the same data again. Planning, responsibilities, progress and billing use one shared foundation.',
+      components: ['Projects & tasks', 'Resources & schedules', 'Time & documents'],
+      outcome: 'The team works with clear priorities while the current project status stays visible.',
+    },
+    {
+      number: '04', title: 'Data & management', Icon: Database,
+      description: 'A consistent data model powers dashboards, automation and decisions.',
+      detail: 'Information is captured once and reused in a controlled way. Roles, interfaces and automation deliver relevant figures wherever they are needed.',
+      components: ['Shared data model', 'Dashboards & metrics', 'AI & automation'],
+      outcome: 'Decisions rely on current data instead of manually assembled spreadsheets.',
+    },
   ],
 } as const;
 
@@ -71,7 +119,8 @@ export default function MarcelExperience() {
   const [heroPhase, setHeroPhase] = useState<HeroPhase>('loading');
   const [heroLoadProgress, setHeroLoadProgress] = useState(0);
   const selectedProjects = useMemo(() => [PROJECTS[0], PROJECTS[3], PROJECTS[1]].filter(Boolean), []);
-  const [activeModuleNumber, activeModuleTitle, activeModuleDescription, ActiveModuleIcon] = MODULES[lang][activeModule];
+  const activeModuleData = MODULES[lang][activeModule];
+  const ActiveModuleIcon = activeModuleData.Icon;
 
   useEffect(() => {
     document.title = lang === 'de'
@@ -501,19 +550,40 @@ export default function MarcelExperience() {
                   <h2>{c.systemTitle}</h2>
                   <p>{c.systemText}</p>
                 </div>
-                <div className={styles.moduleDetail}>
-                  <span>{activeModuleNumber}</span>
-                  <div><i><ActiveModuleIcon size={20} /></i><strong>{activeModuleTitle}</strong></div>
-                  <p>{activeModuleDescription}</p>
+                <div className={styles.moduleTabs} role="tablist" aria-label={lang === 'de' ? 'Systembereich wählen' : 'Choose system area'}>
+                  {MODULES[lang].map(({ number, title, Icon }, index) => (
+                    <button key={number} type="button" role="tab" aria-selected={activeModule === index} className={activeModule === index ? styles.moduleActive : ''} onClick={() => setActiveModule(index)}>
+                      <i><Icon size={16} /></i><strong>{title}</strong><span>{number}</span>
+                    </button>
+                  ))}
+                </div>
+                <div className={styles.moduleDetail} role="tabpanel" aria-live="polite">
+                  <header>
+                    <span>{activeModuleData.number}<small>/ 04</small></span>
+                    <div><i><ActiveModuleIcon size={20} /></i><strong>{activeModuleData.title}</strong></div>
+                  </header>
+                  <p className={styles.moduleDetailLead}>{activeModuleData.detail}</p>
+                  <div className={styles.moduleDetailBody}>
+                    <div>
+                      <small>{lang === 'de' ? 'VERBUNDENE BAUSTEINE' : 'CONNECTED COMPONENTS'}</small>
+                      <ul>{activeModuleData.components.map((item) => <li key={item}><Check size={12} />{item}</li>)}</ul>
+                    </div>
+                    <div className={styles.moduleOutcome}>
+                      <small>{lang === 'de' ? 'WIRKUNG' : 'OUTCOME'}</small>
+                      <p>{activeModuleData.outcome}</p>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div className={`${styles.composerVisual} ${styles.systemDockVisual}`} style={{ '--active-module': activeModule } as CSSProperties}>
-                <div className={styles.moduleTabs} role="tablist" aria-label={lang === 'de' ? 'Systembereich wählen' : 'Choose system area'}>
-                  {MODULES[lang].map(([num, title, , Icon], index) => (
-                    <button key={num} type="button" role="tab" aria-selected={activeModule === index} className={activeModule === index ? styles.moduleActive : ''} onClick={() => setActiveModule(index)}>
-                      <i><Icon size={16} /></i><strong>{title}</strong><span>{num}</span>
-                    </button>
-                  ))}
+                <div className={styles.systemArchitectureArt} aria-hidden="true">
+                  <Image
+                    src="/cinematic/system/connected-system-architecture.png"
+                    alt=""
+                    fill
+                    sizes="(min-width: 961px) 42vw, 90vw"
+                  />
+                  <span className={styles.systemArchitectureHalo} />
                 </div>
                 <SystemDockingStation />
               </div>
