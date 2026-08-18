@@ -2431,26 +2431,26 @@
 
 /* Two rows of five glass cards mounted on the large display plane. */
 .perspectiveFlowHeader {
-  left: 18.5%;
-  top: 37.5%;
-  width: 43%;
-  transform: matrix(1, .112, .0437, 1, 0, 0) rotateY(-1.2deg);
+  left: var(--flow-card-x, 18.5%);
+  top: var(--flow-header-y, 37.5%);
+  width: var(--flow-card-width, 43%);
+  transform: var(--flow-plane-transform, matrix(1, .112, .0437, 1, 0, 0) rotateY(-1.2deg));
   transform-origin: left center;
 }
 
 .perspectiveFlowCardGrid {
   position: absolute;
   z-index: 34;
-  left: 18.5%;
-  top: 42%;
-  width: 43%;
-  height: 23.5%;
+  left: var(--flow-card-x, 18.5%);
+  top: var(--flow-card-y, 42%);
+  width: var(--flow-card-width, 43%);
+  height: var(--flow-card-height, 23.5%);
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   grid-template-rows: repeat(2, minmax(0, 1fr));
   gap: clamp(.35rem, .62vw, .7rem);
-  perspective: 1900px;
-  transform: perspective(2000px) matrix(1, .112, .0437, 1, 0, 0) rotateY(-1.2deg);
+  perspective: var(--flow-perspective-depth, 1900px);
+  transform: var(--flow-plane-transform, perspective(2000px) matrix(1, .112, .0437, 1, 0, 0) rotateY(-1.2deg));
   transform-origin: left center;
   transform-style: preserve-3d;
   pointer-events: auto;
@@ -2637,7 +2637,7 @@
   box-shadow: 0 34px 85px rgba(0,0,0,.72), 0 0 35px rgba(231,197,106,.2), inset 0 1px rgba(255,246,213,.13);
   opacity: 1;
   filter: none;
-  transform: translate(-50%, -50%) matrix(1.0049, -.1126, -.0439, 1.0049, 0, 0) rotateY(1.2deg) translateZ(240px) scale(1.05);
+  transform: translate(-50%, -50%) matrix(var(--flow-inverse-a, 1.0049), var(--flow-inverse-b, -.1126), var(--flow-inverse-c, -.0439), var(--flow-inverse-d, 1.0049), 0, 0) rotateY(var(--flow-counter-y, 1.2deg)) translateZ(240px) scale(1.05);
   animation: perspectiveCardLift .58s cubic-bezier(.16,.8,.2,1) both;
   pointer-events: auto;
 }
@@ -2676,9 +2676,46 @@
 }
 
 @keyframes perspectiveCardLift {
-  from { opacity: .35; filter: blur(2px); transform: translate(-50%, -50%) matrix(1.0049, -.1126, -.0439, 1.0049, 0, 0) rotateY(1.2deg) translateZ(0) scale(.58); }
-  to { opacity: 1; filter: blur(0); transform: translate(-50%, -50%) matrix(1.0049, -.1126, -.0439, 1.0049, 0, 0) rotateY(1.2deg) translateZ(240px) scale(1.05); }
+  from { opacity: .35; filter: blur(2px); transform: translate(-50%, -50%) matrix(var(--flow-inverse-a, 1.0049), var(--flow-inverse-b, -.1126), var(--flow-inverse-c, -.0439), var(--flow-inverse-d, 1.0049), 0, 0) rotateY(var(--flow-counter-y, 1.2deg)) translateZ(0) scale(.58); }
+  to { opacity: 1; filter: blur(0); transform: translate(-50%, -50%) matrix(var(--flow-inverse-a, 1.0049), var(--flow-inverse-b, -.1126), var(--flow-inverse-c, -.0439), var(--flow-inverse-d, 1.0049), 0, 0) rotateY(var(--flow-counter-y, 1.2deg)) translateZ(240px) scale(1.05); }
 }
+
+.perspectiveConfigurator {
+  position: fixed;
+  z-index: 220;
+  top: 1rem;
+  right: calc(var(--rail-safe) + 1rem);
+  width: min(340px, calc(100vw - var(--rail-safe) - 2rem));
+  max-height: calc(100svh - 2rem);
+  padding: 1rem;
+  overflow: auto;
+  border: 1px solid rgba(231,197,106,.42);
+  background: linear-gradient(155deg, rgba(23,22,18,.98), rgba(5,7,6,.985) 72%);
+  box-shadow: 0 26px 80px rgba(0,0,0,.72), 0 0 26px rgba(231,197,106,.1), inset 0 1px rgba(255,244,203,.08);
+  color: #e9e7df;
+  pointer-events: auto;
+  backdrop-filter: blur(18px);
+}
+
+.perspectiveConfigurator > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding-bottom: .8rem; border-bottom: 1px solid rgba(231,197,106,.16); }
+.perspectiveConfigurator > header > div { display: grid; gap: .35rem; }
+.perspectiveConfigurator > header small { color: var(--gold-light); font: 700 .46rem/1 var(--font-chakra-petch), monospace; letter-spacing: .16em; }
+.perspectiveConfigurator > header strong { font-size: .98rem; font-weight: 640; }
+.perspectiveConfigurator > header button { width: 2rem; height: 2rem; border: 1px solid rgba(231,197,106,.22); background: rgba(255,255,255,.025); color: var(--gold-pale); font-size: 1.25rem; line-height: 1; cursor: pointer; }
+.perspectiveConfigurator > p { margin: .8rem 0; color: rgba(224,224,216,.62); font-size: .68rem; line-height: 1.5; }
+.perspectiveConfiguratorControls { display: grid; gap: .65rem; }
+.perspectiveConfiguratorControls label { display: grid; gap: .32rem; }
+.perspectiveConfiguratorControls label > span { display: flex; align-items: center; justify-content: space-between; gap: .6rem; color: rgba(234,232,223,.76); font: 600 .55rem/1 var(--font-chakra-petch), monospace; letter-spacing: .035em; }
+.perspectiveConfiguratorControls output { color: var(--gold-pale); font-variant-numeric: tabular-nums; }
+.perspectiveConfiguratorControls input { width: 100%; accent-color: #d8b75a; cursor: ew-resize; }
+.perspectiveConfiguratorActions { display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; margin-top: 1rem; }
+.perspectiveConfiguratorActions button { min-height: 2.35rem; padding: .5rem .6rem; border: 1px solid rgba(231,197,106,.25); background: rgba(255,255,255,.025); color: rgba(239,237,228,.76); font: 650 .5rem/1.2 var(--font-chakra-petch), monospace; letter-spacing: .035em; cursor: pointer; }
+.perspectiveConfiguratorActions button:first-child { border-color: rgba(231,197,106,.62); background: linear-gradient(135deg, rgba(231,197,106,.2), rgba(118,17,38,.12)); color: #f4dda0; }
+.perspectiveConfiguratorActions button:hover,
+.perspectiveConfiguratorActions button:focus-visible,
+.perspectiveConfigurator > header button:hover,
+.perspectiveConfigurator > header button:focus-visible { border-color: var(--gold-light); color: #fff0b0; outline: none; }
+.perspectiveConfiguratorStatus { display: block; margin-top: .75rem; color: rgba(169,212,180,.74); font: 600 .46rem/1.4 var(--font-chakra-petch), monospace; }
 
 
 .marketingSection { --marketing-progress: 0; --marketing-dock-engaged: 0; --marketing-dock-charge: 0; min-height: 220svh; padding: 0; overflow: visible; background: #070807; }

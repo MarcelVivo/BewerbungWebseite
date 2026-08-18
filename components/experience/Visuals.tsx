@@ -1,8 +1,66 @@
 'use client';
 
-import { useState, type CSSProperties } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { Activity, ArrowRight, Bot, Check, Database, FileText, Globe2, LockKeyhole, Mail, Search, ShieldCheck, Sparkles, Users, Workflow } from 'lucide-react';
 import styles from './experience.module.css';
+
+type SalesPerspectiveConfig = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  horizontal: number;
+  vertical: number;
+  rotateY: number;
+  perspective: number;
+};
+
+const SALES_PERSPECTIVE_STORAGE_KEY = 'ms-sales-perspective-v1';
+const DEFAULT_SALES_PERSPECTIVE: SalesPerspectiveConfig = {
+  x: 18.5,
+  y: 42,
+  width: 43,
+  height: 23.5,
+  horizontal: 6.39,
+  vertical: 2.5,
+  rotateY: -1.2,
+  perspective: 2000,
+};
+
+const PERSPECTIVE_CONTROLS: ReadonlyArray<{
+  key: keyof SalesPerspectiveConfig;
+  label: string;
+  min: number;
+  max: number;
+  step: number;
+  suffix: string;
+}> = [
+  { key: 'x', label: 'Position X', min: 0, max: 65, step: .1, suffix: '%' },
+  { key: 'y', label: 'Position Y', min: 12, max: 78, step: .1, suffix: '%' },
+  { key: 'width', label: 'Breite', min: 20, max: 78, step: .1, suffix: '%' },
+  { key: 'height', label: 'Höhe', min: 10, max: 55, step: .1, suffix: '%' },
+  { key: 'horizontal', label: 'Horizontale Flucht', min: -15, max: 15, step: .05, suffix: '°' },
+  { key: 'vertical', label: 'Vertikale Flucht', min: -15, max: 15, step: .05, suffix: '°' },
+  { key: 'rotateY', label: '3D-Drehung Y', min: -15, max: 15, step: .05, suffix: '°' },
+  { key: 'perspective', label: 'Perspektivtiefe', min: 600, max: 4000, step: 10, suffix: ' px' },
+];
+
+function parseStoredPerspective(value: string | null): SalesPerspectiveConfig | null {
+  if (!value) return null;
+  try {
+    const parsed = JSON.parse(value) as Partial<SalesPerspectiveConfig>;
+    const result = { ...DEFAULT_SALES_PERSPECTIVE };
+    for (const control of PERSPECTIVE_CONTROLS) {
+      const nextValue = parsed[control.key];
+      if (typeof nextValue === 'number' && Number.isFinite(nextValue)) {
+        result[control.key] = Math.min(control.max, Math.max(control.min, nextValue));
+      }
+    }
+    return result;
+  } catch {
+    return null;
+  }
+}
 
 export function BusinessFlow({ steps, active, onSelect }: { steps: readonly string[]; active: number; onSelect: (index: number) => void }) {
   return (
@@ -44,6 +102,71 @@ export function PerspectiveBusinessFlow({
   closeLabel: string;
 }) {
   const [selectedFlow, setSelectedFlow] = useState<number | null>(null);
+  const [perspectiveConfig, setPerspectiveConfig] = useState<SalesPerspectiveConfig>(DEFAULT_SALES_PERSPECTIVE);
+  const [perspectiveEditor, setPerspectiveEditor] = useState(false);
+  const [editorStatus, setEditorStatus] = useState('Änderungen werden live angezeigt.');
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setPerspectiveEditor(params.get('perspective-editor') === '1');
+    const stored = parseStoredPerspective(window.localStorage.getItem(SALES_PERSPECTIVE_STORAGE_KEY));
+    if (stored) setPerspectiveConfig(stored);
+  }, []);
+
+  const horizontalShear = Math.tan(perspectiveConfig.horizontal * Math.PI / 180);
+  const verticalShear = Math.tan(perspectiveConfig.vertical * Math.PI / 180);
+  const determinant = 1 - horizontalShear * verticalShear;
+  const inverseA = 1 / determinant;
+  const inverseB = -horizontalShear / determinant;
+  const inverseC = -verticalShear / determinant;
+  const inverseD = 1 / determinant;
+  const planeTransform = `perspective(${perspectiveConfig.perspective}px) matrix(1, ${horizontalShear}, ${verticalShear}, 1, 0, 0) rotateY(${perspectiveConfig.rotateY}deg)`;
+  const perspectiveStyle = {
+    '--flow-card-x': `${perspectiveConfig.x}%`,
+    '--flow-card-y': `${perspectiveConfig.y}%`,
+    '--flow-card-width': `${perspectiveConfig.width}%`,
+    '--flow-card-height': `${perspectiveConfig.height}%`,
+    '--flow-header-y': `${Math.max(0, perspectiveConfig.y - 4.5)}%`,
+    '--flow-plane-transform': planeTransform,
+    '--flow-perspective-depth': `${perspectiveConfig.perspective}px`,
+    '--flow-inverse-a': inverseA,
+    '--flow-inverse-b': inverseB,
+    '--flow-inverse-c': inverseC,
+    '--flow-inverse-d': inverseD,
+    '--flow-counter-y': `${-perspectiveConfig.rotateY}deg`,
+  } as CSSProperties;
+
+  const updatePerspective = (key: keyof SalesPerspectiveConfig, value: number) => {
+    setPerspectiveConfig((current) => ({ ...current, [key]: value }));
+    setEditorStatus('Noch nicht lokal gespeichert.');
+  };
+
+  const savePerspective = () => {
+    window.localStorage.setItem(SALES_PERSPECTIVE_STORAGE_KEY, JSON.stringify(perspectiveConfig));
+    setEditorStatus('Lokal gespeichert – gilt auch ohne Editor-Panel.');
+  };
+
+  const copyPerspective = async () => {
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(perspectiveConfig, null, 2));
+      setEditorStatus('Konfiguration in die Zwischenablage kopiert.');
+    } catch {
+      setEditorStatus('Kopieren fehlgeschlagen. Bitte lokal speichern.');
+    }
+  };
+
+  const resetPerspective = () => {
+    setPerspectiveConfig(DEFAULT_SALES_PERSPECTIVE);
+    window.localStorage.removeItem(SALES_PERSPECTIVE_STORAGE_KEY);
+    setEditorStatus('Auf Ausgangswerte zurückgesetzt.');
+  };
+
+  const closePerspectiveEditor = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('perspective-editor');
+    window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+    setPerspectiveEditor(false);
+  };
 
   const selectFlow = (index: number) => {
     onSelect(index);
@@ -51,7 +174,7 @@ export function PerspectiveBusinessFlow({
   };
 
   return (
-    <section className={styles.perspectiveFlow} aria-label={label} onKeyDown={(event) => {
+    <section className={styles.perspectiveFlow} style={perspectiveStyle} aria-label={label} onKeyDown={(event) => {
       if (event.key === 'Escape') setSelectedFlow(null);
     }}>
       <header className={styles.perspectiveFlowHeader}>
@@ -98,6 +221,41 @@ export function PerspectiveBusinessFlow({
           })}
         </div>
       </div>
+
+      {perspectiveEditor && (
+        <aside className={styles.perspectiveConfigurator} aria-label="Perspektiv-Konfigurator">
+          <header>
+            <div>
+              <small>DESKTOP · LIVE</small>
+              <strong>Perspektive ausrichten</strong>
+            </div>
+            <button type="button" onClick={closePerspectiveEditor} aria-label="Perspektiv-Konfigurator schließen">×</button>
+          </header>
+          <p>Richte die gesamte Kartenebene an den Kanten der Glasscheibe aus. Position und Größe gelten für große Bildschirme; die Fluchtwerte gelten auf allen Größen.</p>
+          <div className={styles.perspectiveConfiguratorControls}>
+            {PERSPECTIVE_CONTROLS.map((control) => (
+              <label key={control.key}>
+                <span>{control.label}<output>{perspectiveConfig[control.key].toFixed(control.step < .1 ? 2 : control.step < 1 ? 1 : 0)}{control.suffix}</output></span>
+                <input
+                  type="range"
+                  min={control.min}
+                  max={control.max}
+                  step={control.step}
+                  value={perspectiveConfig[control.key]}
+                  onChange={(event) => updatePerspective(control.key, Number(event.currentTarget.value))}
+                />
+              </label>
+            ))}
+          </div>
+          <div className={styles.perspectiveConfiguratorActions}>
+            <button type="button" onClick={savePerspective}>Lokal speichern</button>
+            <button type="button" onClick={copyPerspective}>Konfiguration kopieren</button>
+            <button type="button" onClick={resetPerspective}>Zurücksetzen</button>
+            <button type="button" onClick={closePerspectiveEditor}>Editor schließen</button>
+          </div>
+          <small className={styles.perspectiveConfiguratorStatus} aria-live="polite">{editorStatus}</small>
+        </aside>
+      )}
     </section>
   );
 }
