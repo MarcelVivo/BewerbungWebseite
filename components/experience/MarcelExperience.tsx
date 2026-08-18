@@ -109,6 +109,8 @@ export default function MarcelExperience() {
   const heroVideoRef = useRef<HTMLVideoElement | null>(null);
   const problemSectionRef = useRef<HTMLElement | null>(null);
   const problemVideoRef = useRef<HTMLVideoElement | null>(null);
+  const systemSectionRef = useRef<HTMLElement | null>(null);
+  const systemVideoRef = useRef<HTMLVideoElement | null>(null);
   const salesSectionRef = useRef<HTMLElement | null>(null);
   const salesVideoRef = useRef<HTMLVideoElement | null>(null);
   const marketingSectionRef = useRef<HTMLElement | null>(null);
@@ -343,6 +345,54 @@ export default function MarcelExperience() {
   }, []);
 
   useEffect(() => {
+    const section = systemSectionRef.current;
+    const video = systemVideoRef.current;
+    if (!section || !video) return;
+
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let animationFrame = 0;
+
+    const syncVideoToScroll = () => {
+      animationFrame = 0;
+      const scrollDistance = Math.max(section.offsetHeight - window.innerHeight, 1);
+      const progress = Math.min(1, Math.max(0, -section.getBoundingClientRect().top / scrollDistance));
+      section.style.setProperty('--system-progress', progress.toFixed(4));
+
+      if (reducedMotion.matches || !Number.isFinite(video.duration) || video.duration <= 0) return;
+      const targetTime = progress * Math.max(video.duration - .04, 0);
+      if (Math.abs(video.currentTime - targetTime) > .025) video.currentTime = targetTime;
+    };
+
+    const requestSync = () => {
+      if (!animationFrame) animationFrame = window.requestAnimationFrame(syncVideoToScroll);
+    };
+
+    const handleMotionPreference = () => {
+      if (reducedMotion.matches) video.currentTime = 0;
+      else requestSync();
+    };
+
+    video.pause();
+    video.addEventListener('loadedmetadata', requestSync);
+    window.addEventListener('scroll', requestSync, { passive: true });
+    window.addEventListener('resize', requestSync);
+    reducedMotion.addEventListener('change', handleMotionPreference);
+    const resizeObserver = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(requestSync);
+    resizeObserver?.observe(section);
+    void document.fonts?.ready.then(requestSync);
+    requestSync();
+
+    return () => {
+      if (animationFrame) window.cancelAnimationFrame(animationFrame);
+      video.removeEventListener('loadedmetadata', requestSync);
+      window.removeEventListener('scroll', requestSync);
+      window.removeEventListener('resize', requestSync);
+      reducedMotion.removeEventListener('change', handleMotionPreference);
+      resizeObserver?.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
     const section = salesSectionRef.current;
     const video = salesVideoRef.current;
     if (!section || !video) return;
@@ -541,7 +591,7 @@ export default function MarcelExperience() {
         </section>
 
         <span id="mobile-solutions" className={styles.aliasAnchor} />
-        <section id="journey-solutions" className={`${styles.section} ${styles.systemSection} ${styles.layoutRight}`}>
+        <section ref={systemSectionRef} id="journey-solutions" className={`${styles.section} ${styles.systemSection} ${styles.layoutRight}`}>
           <div className={styles.systemPauseSticky}>
             <div className={styles.systemComposer} data-reveal="right">
               <div className={styles.systemControlColumn}>
@@ -582,6 +632,15 @@ export default function MarcelExperience() {
                     alt=""
                     fill
                     sizes="(min-width: 961px) 42vw, 90vw"
+                  />
+                  <video
+                    ref={systemVideoRef}
+                    className={styles.systemArchitectureVideo}
+                    src="/cinematic/system/connected-system-architecture-scroll.mp4"
+                    poster="/cinematic/system/connected-system-architecture-scroll-poster.jpg"
+                    muted
+                    playsInline
+                    preload="metadata"
                   />
                   <span className={styles.systemArchitectureHalo} />
                 </div>
