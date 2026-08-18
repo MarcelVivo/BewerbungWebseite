@@ -594,6 +594,24 @@ export default function MarcelExperience() {
         <section ref={systemSectionRef} id="journey-solutions" className={`${styles.section} ${styles.systemSection} ${styles.layoutRight}`}>
           <div className={styles.systemPauseSticky}>
             <div className={styles.systemComposer} data-reveal="right">
+              <div className={styles.systemArchitectureArt} aria-hidden="true">
+                <Image
+                  src="/cinematic/system/connected-system-architecture.png"
+                  alt=""
+                  fill
+                  sizes="(min-width: 961px) 86vw, 94vw"
+                />
+                <video
+                  ref={systemVideoRef}
+                  className={styles.systemArchitectureVideo}
+                  src="/cinematic/system/connected-system-architecture-scroll.mp4"
+                  poster="/cinematic/system/connected-system-architecture-scroll-poster.jpg"
+                  muted
+                  playsInline
+                  preload="metadata"
+                />
+                <span className={styles.systemArchitectureHalo} />
+              </div>
               <div className={styles.systemControlColumn}>
                 <div className={styles.sectionHeader}>
                   <p className={styles.eyebrow}><span />{c.systemEyebrow}</p>
@@ -626,24 +644,6 @@ export default function MarcelExperience() {
                 </div>
               </div>
               <div className={`${styles.composerVisual} ${styles.systemDockVisual}`} style={{ '--active-module': activeModule } as CSSProperties}>
-                <div className={styles.systemArchitectureArt} aria-hidden="true">
-                  <Image
-                    src="/cinematic/system/connected-system-architecture.png"
-                    alt=""
-                    fill
-                    sizes="(min-width: 961px) 42vw, 90vw"
-                  />
-                  <video
-                    ref={systemVideoRef}
-                    className={styles.systemArchitectureVideo}
-                    src="/cinematic/system/connected-system-architecture-scroll.mp4"
-                    poster="/cinematic/system/connected-system-architecture-scroll-poster.jpg"
-                    muted
-                    playsInline
-                    preload="metadata"
-                  />
-                  <span className={styles.systemArchitectureHalo} />
-                </div>
                 <SystemDockingStation />
               </div>
             </div>
