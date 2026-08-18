@@ -161,6 +161,13 @@ export function PerspectiveBusinessFlow({
     setEditorStatus('Auf Ausgangswerte zurückgesetzt.');
   };
 
+  const openPerspectiveEditor = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('perspective-editor', '1');
+    window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+    setPerspectiveEditor(true);
+  };
+
   const closePerspectiveEditor = () => {
     const url = new URL(window.location.href);
     url.searchParams.delete('perspective-editor');
@@ -221,6 +228,13 @@ export function PerspectiveBusinessFlow({
           })}
         </div>
       </div>
+
+      {!perspectiveEditor && (
+        <button type="button" className={styles.perspectiveConfiguratorTrigger} onClick={openPerspectiveEditor}>
+          <span aria-hidden="true">⌗</span>
+          Perspektive einstellen
+        </button>
+      )}
 
       {perspectiveEditor && (
         <aside className={styles.perspectiveConfigurator} aria-label="Perspektiv-Konfigurator">

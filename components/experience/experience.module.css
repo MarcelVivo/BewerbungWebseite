@@ -2681,10 +2681,10 @@
 }
 
 .perspectiveConfigurator {
-  position: fixed;
+  position: absolute;
   z-index: 220;
   top: 1rem;
-  right: calc(var(--rail-safe) + 1rem);
+  right: 1rem;
   width: min(340px, calc(100vw - var(--rail-safe) - 2rem));
   max-height: calc(100svh - 2rem);
   padding: 1rem;
@@ -2716,6 +2716,32 @@
 .perspectiveConfigurator > header button:hover,
 .perspectiveConfigurator > header button:focus-visible { border-color: var(--gold-light); color: #fff0b0; outline: none; }
 .perspectiveConfiguratorStatus { display: block; margin-top: .75rem; color: rgba(169,212,180,.74); font: 600 .46rem/1.4 var(--font-chakra-petch), monospace; }
+
+.perspectiveConfiguratorTrigger {
+  position: absolute;
+  z-index: 120;
+  top: 1rem;
+  right: 1rem;
+  min-height: 2.35rem;
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+  padding: .58rem .8rem;
+  border: 1px solid rgba(231,197,106,.38);
+  background: rgba(7,9,8,.82);
+  color: rgba(239,222,168,.86);
+  box-shadow: 0 12px 30px rgba(0,0,0,.42), inset 0 1px rgba(255,244,203,.06);
+  font: 650 .5rem/1 var(--font-chakra-petch), monospace;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  cursor: pointer;
+  pointer-events: auto;
+  backdrop-filter: blur(12px);
+}
+
+.perspectiveConfiguratorTrigger > span { color: var(--gold-light); font-size: .9rem; }
+.perspectiveConfiguratorTrigger:hover,
+.perspectiveConfiguratorTrigger:focus-visible { border-color: var(--gold-light); color: #fff0b0; box-shadow: 0 12px 34px rgba(0,0,0,.48), 0 0 18px rgba(231,197,106,.15); outline: none; }
 
 
 .marketingSection { --marketing-progress: 0; --marketing-dock-engaged: 0; --marketing-dock-charge: 0; min-height: 220svh; padding: 0; overflow: visible; background: #070807; }
