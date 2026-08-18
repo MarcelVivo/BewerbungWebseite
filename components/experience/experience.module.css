@@ -1567,9 +1567,12 @@
 .systemCore small, .systemCore i { position: relative; z-index: 1; font: 600 .48rem/1.2 var(--font-chakra-petch), monospace; letter-spacing: .14em; color: var(--faint); font-style: normal; }
 .systemCore strong { position: relative; z-index: 1; margin: .45rem 0; max-width: 74%; text-align: center; font: 650 clamp(.62rem, 1.2vw, .82rem)/1.2 var(--font-chakra-petch), monospace; letter-spacing: .12em; color: var(--gold-pale); }
 .systemCore i { color: #77b88b; }
-.constellationNode { position: absolute; z-index: 5; left: var(--x); top: var(--y); display: flex; align-items: center; gap: .45rem; transform: translate(-50%, -50%); white-space: nowrap; }
-.constellationNode > i { position: relative; flex: 0 0 auto; width: 7px; height: 7px; border: 1px solid rgba(231,197,106,.48); border-radius: 50%; background: #111410; box-shadow: 0 0 0 4px rgba(200,154,61,.035); }
-.constellationNode > b { padding: .35rem .52rem; border: 1px solid rgba(255,255,255,.09); background: rgba(13,15,13,.78); backdrop-filter: blur(8px); color: #bfc2ba; font: 550 .53rem/1 var(--font-chakra-petch), monospace; letter-spacing: .08em; text-transform: uppercase; }
+.constellationNode { position: absolute; z-index: 5; left: var(--x); top: var(--y); display: flex; align-items: center; gap: .45rem; transform: translate(-50%, -50%); white-space: nowrap; cursor: pointer; transition: opacity .3s ease; }
+.constellationNode > i { position: relative; flex: 0 0 auto; width: 7px; height: 7px; border: 1px solid rgba(231,197,106,.48); border-radius: 50%; background: #111410; box-shadow: 0 0 0 4px rgba(200,154,61,.035); transition: all .3s ease; }
+.constellationNode > b { padding: .35rem .52rem; border: 1px solid rgba(255,255,255,.09); background: rgba(13,15,13,.78); backdrop-filter: blur(8px); color: #bfc2ba; font: 550 .53rem/1 var(--font-chakra-petch), monospace; letter-spacing: .08em; text-transform: uppercase; transition: all .3s ease; }
+.constellationNodeDimmed { opacity: .38; }
+.constellationNodeActive > i { width: 10px; height: 10px; border-color: var(--gold-pale); background: var(--gold-light); box-shadow: 0 0 0 6px rgba(200,154,61,.1), 0 0 14px rgba(231,197,106,.66); }
+.constellationNodeActive > b { border-color: rgba(231,197,106,.45); background: rgba(35,26,10,.88); color: var(--gold-pale); }
 .constellationConnected .constellationNode > i { background: var(--gold-light); box-shadow: 0 0 14px rgba(231,197,106,.65), 0 0 0 4px rgba(200,154,61,.05); animation: nodePulse 3s ease-in-out infinite; animation-delay: calc(var(--i) * -.24s); }
 .constellationConnected .constellationNode > b { border-color: rgba(231,197,106,.14); color: #d8d7cf; }
 .constellationFragmented .constellationNode:nth-of-type(3n) { transform: translate(-50%,-50%) rotate(-2deg); }
@@ -1752,7 +1755,7 @@
 .systemPauseSticky { position: sticky; top: 0; height: 100svh; min-height: 760px; padding: 1rem 0; display: grid; grid-template-rows: minmax(0, 720px) auto; align-content: center; overflow: hidden; }
 .systemPauseSticky .systemComposer { min-height: 0; overflow: hidden; }
 .systemPauseSticky .composerVisual { min-height: 0; }
-.systemComposer { position: relative; z-index: 10; width: var(--container); min-height: 0; margin: 0 0 0 var(--container-left); display: grid; grid-template-columns: minmax(540px, 1.18fr) minmax(390px, .82fr); gap: clamp(2rem, 4vw, 4.5rem); padding: 1.1rem; border: 1px solid var(--line); background: linear-gradient(135deg, rgba(255,255,255,.028), rgba(255,255,255,.008)); box-shadow: 0 40px 100px rgba(0,0,0,.28); }
+.systemComposer { position: relative; z-index: 10; width: var(--container); min-height: 0; margin: 0 0 0 var(--container-left); display: grid; grid-template-columns: minmax(360px, .86fr) minmax(460px, 1.14fr); gap: clamp(2rem, 4vw, 4.5rem); padding: 1.1rem; border: 1px solid var(--line); background: linear-gradient(135deg, rgba(255,255,255,.028), rgba(255,255,255,.008)); box-shadow: 0 40px 100px rgba(0,0,0,.28); }
 .systemControlColumn { grid-column: 2; grid-row: 1; min-width: 0; min-height: 0; display: grid; grid-template-rows: auto 1fr; gap: clamp(.8rem, 2vw, 1.8rem); align-content: stretch; padding: clamp(.6rem, 1.2vw, 1.2rem) clamp(.4rem, 1vw, 1rem) 0 0; }
 .systemControlColumn .sectionHeader { width: auto; margin: 0; }
 .systemControlColumn .sectionHeader h2 { max-width: 100%; font-size: clamp(2.6rem, 4.4vw, 6rem); line-height: .92; }

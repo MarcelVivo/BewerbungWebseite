@@ -14,11 +14,15 @@ export function Constellation({
   connected = false,
   coreLabel,
   hero = false,
+  activeIndex,
+  onSelect,
 }: {
   labels: readonly string[];
   connected?: boolean;
   coreLabel?: string;
   hero?: boolean;
+  activeIndex?: number;
+  onSelect?: (index: number) => void;
 }) {
   return (
     <div className={`${styles.constellation} ${connected ? styles.constellationConnected : styles.constellationFragmented}`} aria-hidden="true">
@@ -66,11 +70,15 @@ export function Constellation({
 
       {labels.map((label, index) => {
         const [x, y] = POSITIONS[index % POSITIONS.length];
+        const isActive = activeIndex === index;
+        const isDimmed = activeIndex !== undefined && !isActive;
         return (
           <span
-            className={styles.constellationNode}
+            className={`${styles.constellationNode} ${isActive ? styles.constellationNodeActive : ''} ${isDimmed ? styles.constellationNodeDimmed : ''}`}
             key={label}
             style={{ '--x': `${x}%`, '--y': `${y}%`, '--i': index } as CSSProperties}
+            onMouseEnter={onSelect ? () => onSelect(index) : undefined}
+            onClick={onSelect ? () => onSelect(index) : undefined}
           >
             <i />
             <b>{label}</b>
