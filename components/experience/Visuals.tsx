@@ -1,65 +1,74 @@
 'use client';
 
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
 import { Activity, ArrowRight, Bot, Check, Database, FileText, Globe2, LockKeyhole, Mail, Search, ShieldCheck, Sparkles, Users, Workflow } from 'lucide-react';
 import styles from './experience.module.css';
 
-type SalesPerspectiveConfig = {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  horizontal: number;
-  vertical: number;
-  rotateY: number;
-  perspective: number;
-};
+type PerspectivePoint = { x: number; y: number };
+type SalesPerspectiveQuad = [PerspectivePoint, PerspectivePoint, PerspectivePoint, PerspectivePoint];
 
-const SALES_PERSPECTIVE_STORAGE_KEY = 'ms-sales-perspective-v1';
-const DEFAULT_SALES_PERSPECTIVE: SalesPerspectiveConfig = {
-  x: 18.5,
-  y: 42,
-  width: 43,
-  height: 23.5,
-  horizontal: 6.39,
-  vertical: 2.5,
-  rotateY: -1.2,
-  perspective: 2000,
-};
-
-const PERSPECTIVE_CONTROLS: ReadonlyArray<{
-  key: keyof SalesPerspectiveConfig;
-  label: string;
-  min: number;
-  max: number;
-  step: number;
-  suffix: string;
-}> = [
-  { key: 'x', label: 'Position X', min: 0, max: 65, step: .1, suffix: '%' },
-  { key: 'y', label: 'Position Y', min: 12, max: 78, step: .1, suffix: '%' },
-  { key: 'width', label: 'Breite', min: 20, max: 78, step: .1, suffix: '%' },
-  { key: 'height', label: 'Höhe', min: 10, max: 55, step: .1, suffix: '%' },
-  { key: 'horizontal', label: 'Horizontale Flucht', min: -15, max: 15, step: .05, suffix: '°' },
-  { key: 'vertical', label: 'Vertikale Flucht', min: -15, max: 15, step: .05, suffix: '°' },
-  { key: 'rotateY', label: '3D-Drehung Y', min: -15, max: 15, step: .05, suffix: '°' },
-  { key: 'perspective', label: 'Perspektivtiefe', min: 600, max: 4000, step: 10, suffix: ' px' },
+const SALES_PERSPECTIVE_STORAGE_KEY = 'ms-sales-perspective-quad-v1';
+const PERSPECTIVE_SOURCE_WIDTH = 1000;
+const PERSPECTIVE_SOURCE_HEIGHT = 360;
+const PERSPECTIVE_CORNER_LABELS = ['Oben links', 'Oben rechts', 'Unten rechts', 'Unten links'] as const;
+const DEFAULT_SALES_PERSPECTIVE: SalesPerspectiveQuad = [
+  { x: 18.5, y: 42 },
+  { x: 61.5, y: 46.8 },
+  { x: 62.5, y: 70.3 },
+  { x: 19.5, y: 65.5 },
 ];
 
-function parseStoredPerspective(value: string | null): SalesPerspectiveConfig | null {
+function parseStoredPerspective(value: string | null): SalesPerspectiveQuad | null {
   if (!value) return null;
   try {
-    const parsed = JSON.parse(value) as Partial<SalesPerspectiveConfig>;
-    const result = { ...DEFAULT_SALES_PERSPECTIVE };
-    for (const control of PERSPECTIVE_CONTROLS) {
-      const nextValue = parsed[control.key];
-      if (typeof nextValue === 'number' && Number.isFinite(nextValue)) {
-        result[control.key] = Math.min(control.max, Math.max(control.min, nextValue));
-      }
-    }
-    return result;
+    const parsed = JSON.parse(value) as { points?: PerspectivePoint[] };
+    if (!Array.isArray(parsed.points) || parsed.points.length !== 4) return null;
+    const points = parsed.points.map((point) => ({
+      x: Math.min(98, Math.max(2, Number(point.x))),
+      y: Math.min(96, Math.max(4, Number(point.y))),
+    }));
+    if (points.some((point) => !Number.isFinite(point.x) || !Number.isFinite(point.y))) return null;
+    return points as SalesPerspectiveQuad;
   } catch {
     return null;
   }
+}
+
+function createPerspectiveMatrix(points: SalesPerspectiveQuad, width: number, height: number) {
+  if (width <= 0 || height <= 0) return 'none';
+  const [topLeft, topRight, bottomRight, bottomLeft] = points.map((point) => ({
+    x: point.x / 100 * width,
+    y: point.y / 100 * height,
+  })) as SalesPerspectiveQuad;
+  const dx1 = topRight.x - bottomRight.x;
+  const dx2 = bottomLeft.x - bottomRight.x;
+  const dx3 = topLeft.x - topRight.x + bottomRight.x - bottomLeft.x;
+  const dy1 = topRight.y - bottomRight.y;
+  const dy2 = bottomLeft.y - bottomRight.y;
+  const dy3 = topLeft.y - topRight.y + bottomRight.y - bottomLeft.y;
+  const denominator = dx1 * dy2 - dx2 * dy1;
+  if (Math.abs(denominator) < .0001) return 'none';
+  const projectiveX = (dx3 * dy2 - dx2 * dy3) / denominator;
+  const projectiveY = (dx1 * dy3 - dx3 * dy1) / denominator;
+  const scaleX = topRight.x - topLeft.x + projectiveX * topRight.x;
+  const shearX = bottomLeft.x - topLeft.x + projectiveY * bottomLeft.x;
+  const scaleY = topRight.y - topLeft.y + projectiveX * topRight.y;
+  const shearY = bottomLeft.y - topLeft.y + projectiveY * bottomLeft.y;
+  return `matrix3d(${[
+    scaleX / PERSPECTIVE_SOURCE_WIDTH,
+    scaleY / PERSPECTIVE_SOURCE_WIDTH,
+    0,
+    projectiveX / PERSPECTIVE_SOURCE_WIDTH,
+    shearX / PERSPECTIVE_SOURCE_HEIGHT,
+    shearY / PERSPECTIVE_SOURCE_HEIGHT,
+    0,
+    projectiveY / PERSPECTIVE_SOURCE_HEIGHT,
+    0, 0, 1, 0,
+    topLeft.x,
+    topLeft.y,
+    0,
+    1,
+  ].join(',')})`;
 }
 
 export function BusinessFlow({ steps, active, onSelect }: { steps: readonly string[]; active: number; onSelect: (index: number) => void }) {
@@ -102,9 +111,12 @@ export function PerspectiveBusinessFlow({
   closeLabel: string;
 }) {
   const [selectedFlow, setSelectedFlow] = useState<number | null>(null);
-  const [perspectiveConfig, setPerspectiveConfig] = useState<SalesPerspectiveConfig>(DEFAULT_SALES_PERSPECTIVE);
+  const [perspectiveConfig, setPerspectiveConfig] = useState<SalesPerspectiveQuad>(DEFAULT_SALES_PERSPECTIVE);
   const [perspectiveEditor, setPerspectiveEditor] = useState(false);
-  const [editorStatus, setEditorStatus] = useState('Änderungen werden live angezeigt.');
+  const [editorStatus, setEditorStatus] = useState('Ziehe die vier goldenen Eckpunkte direkt auf die Scheibenkanten.');
+  const [activeCorner, setActiveCorner] = useState<number | null>(null);
+  const [sectionSize, setSectionSize] = useState({ width: 0, height: 0 });
+  const perspectiveSectionRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -113,42 +125,72 @@ export function PerspectiveBusinessFlow({
     if (stored) setPerspectiveConfig(stored);
   }, []);
 
-  const horizontalShear = Math.tan(perspectiveConfig.horizontal * Math.PI / 180);
-  const verticalShear = Math.tan(perspectiveConfig.vertical * Math.PI / 180);
-  const determinant = 1 - horizontalShear * verticalShear;
-  const inverseA = 1 / determinant;
-  const inverseB = -horizontalShear / determinant;
-  const inverseC = -verticalShear / determinant;
-  const inverseD = 1 / determinant;
-  const planeTransform = `perspective(${perspectiveConfig.perspective}px) matrix(1, ${horizontalShear}, ${verticalShear}, 1, 0, 0) rotateY(${perspectiveConfig.rotateY}deg)`;
-  const perspectiveStyle = {
-    '--flow-card-x': `${perspectiveConfig.x}%`,
-    '--flow-card-y': `${perspectiveConfig.y}%`,
-    '--flow-card-width': `${perspectiveConfig.width}%`,
-    '--flow-card-height': `${perspectiveConfig.height}%`,
-    '--flow-header-y': `${Math.max(0, perspectiveConfig.y - 4.5)}%`,
-    '--flow-plane-transform': planeTransform,
-    '--flow-perspective-depth': `${perspectiveConfig.perspective}px`,
-    '--flow-inverse-a': inverseA,
-    '--flow-inverse-b': inverseB,
-    '--flow-inverse-c': inverseC,
-    '--flow-inverse-d': inverseD,
-    '--flow-counter-y': `${-perspectiveConfig.rotateY}deg`,
+  useEffect(() => {
+    const section = perspectiveSectionRef.current;
+    if (!section) return;
+    const updateSize = () => {
+      const bounds = section.getBoundingClientRect();
+      setSectionSize({ width: bounds.width, height: bounds.height });
+    };
+    updateSize();
+    const observer = new ResizeObserver(updateSize);
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
+
+  const planeTransform = createPerspectiveMatrix(perspectiveConfig, sectionSize.width, sectionSize.height);
+  const topEdgeAngle = sectionSize.width > 0
+    ? Math.atan2(
+      (perspectiveConfig[1].y - perspectiveConfig[0].y) / 100 * sectionSize.height,
+      (perspectiveConfig[1].x - perspectiveConfig[0].x) / 100 * sectionSize.width,
+    ) * 180 / Math.PI
+    : 0;
+  const headerStyle = {
+    left: `${perspectiveConfig[0].x}%`,
+    top: `${Math.max(2, Math.min(perspectiveConfig[0].y, perspectiveConfig[1].y) - 4.5)}%`,
+    width: `${Math.max(18, perspectiveConfig[1].x - perspectiveConfig[0].x)}%`,
+    transform: `rotate(${topEdgeAngle}deg)`,
+  } as CSSProperties;
+  const gridStyle = {
+    left: 0,
+    top: 0,
+    width: `${PERSPECTIVE_SOURCE_WIDTH}px`,
+    height: `${PERSPECTIVE_SOURCE_HEIGHT}px`,
+    transform: planeTransform,
+    transformOrigin: '0 0',
   } as CSSProperties;
 
-  const updatePerspective = (key: keyof SalesPerspectiveConfig, value: number) => {
-    setPerspectiveConfig((current) => ({ ...current, [key]: value }));
-    setEditorStatus('Noch nicht lokal gespeichert.');
+  const moveCorner = (index: number, event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (!event.currentTarget.hasPointerCapture(event.pointerId)) return;
+    const bounds = perspectiveSectionRef.current?.getBoundingClientRect();
+    if (!bounds) return;
+    const nextPoint = {
+      x: Math.min(98, Math.max(2, (event.clientX - bounds.left) / bounds.width * 100)),
+      y: Math.min(96, Math.max(4, (event.clientY - bounds.top) / bounds.height * 100)),
+    };
+    setPerspectiveConfig((current) => current.map((point, pointIndex) => pointIndex === index ? nextPoint : point) as SalesPerspectiveQuad);
+    setEditorStatus(`${PERSPECTIVE_CORNER_LABELS[index]} angepasst – noch nicht gespeichert.`);
+  };
+
+  const startCornerDrag = (index: number, event: ReactPointerEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setActiveCorner(index);
+  };
+
+  const stopCornerDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    setActiveCorner(null);
   };
 
   const savePerspective = () => {
-    window.localStorage.setItem(SALES_PERSPECTIVE_STORAGE_KEY, JSON.stringify(perspectiveConfig));
+    window.localStorage.setItem(SALES_PERSPECTIVE_STORAGE_KEY, JSON.stringify({ version: 1, points: perspectiveConfig }));
     setEditorStatus('Lokal gespeichert – gilt auch ohne Editor-Panel.');
   };
 
   const copyPerspective = async () => {
     try {
-      await navigator.clipboard.writeText(JSON.stringify(perspectiveConfig, null, 2));
+      await navigator.clipboard.writeText(JSON.stringify({ version: 1, points: perspectiveConfig }, null, 2));
       setEditorStatus('Konfiguration in die Zwischenablage kopiert.');
     } catch {
       setEditorStatus('Kopieren fehlgeschlagen. Bitte lokal speichern.');
@@ -156,7 +198,7 @@ export function PerspectiveBusinessFlow({
   };
 
   const resetPerspective = () => {
-    setPerspectiveConfig(DEFAULT_SALES_PERSPECTIVE);
+    setPerspectiveConfig(DEFAULT_SALES_PERSPECTIVE.map((point) => ({ ...point })) as SalesPerspectiveQuad);
     window.localStorage.removeItem(SALES_PERSPECTIVE_STORAGE_KEY);
     setEditorStatus('Auf Ausgangswerte zurückgesetzt.');
   };
@@ -181,16 +223,16 @@ export function PerspectiveBusinessFlow({
   };
 
   return (
-    <section className={styles.perspectiveFlow} style={perspectiveStyle} aria-label={label} onKeyDown={(event) => {
+    <section ref={perspectiveSectionRef} className={styles.perspectiveFlow} aria-label={label} onKeyDown={(event) => {
       if (event.key === 'Escape') setSelectedFlow(null);
     }}>
-      <header className={styles.perspectiveFlowHeader}>
+      <header className={styles.perspectiveFlowHeader} style={headerStyle}>
         <span><i />{label}</span>
         <small>{hint}</small>
       </header>
 
       <div className={styles.perspectiveFlowStage}>
-        <div className={`${styles.perspectiveFlowCardGrid} ${selectedFlow !== null ? styles.perspectiveFlowCardGridOpen : ''}`}>
+        <div className={`${styles.perspectiveFlowCardGrid} ${selectedFlow !== null ? styles.perspectiveFlowCardGridOpen : ''}`} style={gridStyle}>
           {steps.map((step, index) => {
             const selected = selectedFlow === index;
             return (
@@ -229,6 +271,30 @@ export function PerspectiveBusinessFlow({
         </div>
       </div>
 
+      {perspectiveEditor && (
+        <div className={styles.perspectiveQuadEditor} aria-label="Vier Eckpunkte der Kartenfläche">
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+            <polygon points={perspectiveConfig.map((point) => `${point.x},${point.y}`).join(' ')} />
+          </svg>
+          {perspectiveConfig.map((point, index) => (
+            <button
+              key={PERSPECTIVE_CORNER_LABELS[index]}
+              type="button"
+              className={activeCorner === index ? styles.perspectiveCornerActive : ''}
+              style={{ left: `${point.x}%`, top: `${point.y}%` }}
+              aria-label={`${PERSPECTIVE_CORNER_LABELS[index]} ziehen`}
+              onPointerDown={(event) => startCornerDrag(index, event)}
+              onPointerMove={(event) => moveCorner(index, event)}
+              onPointerUp={stopCornerDrag}
+              onPointerCancel={stopCornerDrag}
+            >
+              <span>{index + 1}</span>
+              <small>{PERSPECTIVE_CORNER_LABELS[index]}</small>
+            </button>
+          ))}
+        </div>
+      )}
+
       {!perspectiveEditor && (
         <button type="button" className={styles.perspectiveConfiguratorTrigger} onClick={openPerspectiveEditor}>
           <span aria-hidden="true">⌗</span>
@@ -245,20 +311,14 @@ export function PerspectiveBusinessFlow({
             </div>
             <button type="button" onClick={closePerspectiveEditor} aria-label="Perspektiv-Konfigurator schließen">×</button>
           </header>
-          <p>Richte die gesamte Kartenebene an den Kanten der Glasscheibe aus. Position und Größe gelten für große Bildschirme; die Fluchtwerte gelten auf allen Größen.</p>
-          <div className={styles.perspectiveConfiguratorControls}>
-            {PERSPECTIVE_CONTROLS.map((control) => (
-              <label key={control.key}>
-                <span>{control.label}<output>{perspectiveConfig[control.key].toFixed(control.step < .1 ? 2 : control.step < 1 ? 1 : 0)}{control.suffix}</output></span>
-                <input
-                  type="range"
-                  min={control.min}
-                  max={control.max}
-                  step={control.step}
-                  value={perspectiveConfig[control.key]}
-                  onChange={(event) => updatePerspective(control.key, Number(event.currentTarget.value))}
-                />
-              </label>
+          <p>Ziehe die vier nummerierten Eckpunkte der Kartenfläche auf die vier Ecken der Glasscheibe. Alle zehn Karten folgen der Fläche projektiv.</p>
+          <div className={styles.perspectiveConfiguratorCorners}>
+            {perspectiveConfig.map((point, index) => (
+              <div key={PERSPECTIVE_CORNER_LABELS[index]}>
+                <b>{index + 1}</b>
+                <span>{PERSPECTIVE_CORNER_LABELS[index]}</span>
+                <output>{point.x.toFixed(1)} / {point.y.toFixed(1)}</output>
+              </div>
             ))}
           </div>
           <div className={styles.perspectiveConfiguratorActions}>

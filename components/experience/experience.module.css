@@ -2717,6 +2717,46 @@
 .perspectiveConfigurator > header button:focus-visible { border-color: var(--gold-light); color: #fff0b0; outline: none; }
 .perspectiveConfiguratorStatus { display: block; margin-top: .75rem; color: rgba(169,212,180,.74); font: 600 .46rem/1.4 var(--font-chakra-petch), monospace; }
 
+.perspectiveConfiguratorCorners { display: grid; gap: .42rem; }
+.perspectiveConfiguratorCorners > div { min-height: 2.15rem; display: grid; grid-template-columns: 1.5rem 1fr auto; align-items: center; gap: .5rem; padding: .42rem .5rem; border: 1px solid rgba(231,197,106,.13); background: rgba(255,255,255,.018); }
+.perspectiveConfiguratorCorners b { width: 1.35rem; height: 1.35rem; display: grid; place-items: center; border: 1px solid rgba(231,197,106,.5); border-radius: 50%; color: var(--gold-pale); font: 700 .48rem/1 var(--font-chakra-petch), monospace; }
+.perspectiveConfiguratorCorners span { color: rgba(235,233,224,.72); font: 600 .52rem/1 var(--font-chakra-petch), monospace; }
+.perspectiveConfiguratorCorners output { color: rgba(231,197,106,.62); font: 600 .48rem/1 var(--font-chakra-petch), monospace; font-variant-numeric: tabular-nums; }
+
+.perspectiveQuadEditor {
+  position: absolute;
+  z-index: 105;
+  inset: 0;
+  pointer-events: none;
+}
+
+.perspectiveQuadEditor > svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.perspectiveQuadEditor > svg polygon { fill: rgba(231,197,106,.025); stroke: rgba(246,205,92,.68); stroke-width: .12; stroke-dasharray: .55 .35; vector-effect: non-scaling-stroke; filter: drop-shadow(0 0 5px rgba(231,197,106,.42)); }
+.perspectiveQuadEditor > button {
+  position: absolute;
+  width: 2.7rem;
+  height: 2.7rem;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(255,224,127,.9);
+  border-radius: 50%;
+  background: radial-gradient(circle, #f4d574 0 18%, rgba(77,55,17,.96) 20% 46%, rgba(7,8,7,.94) 48%);
+  color: #fff1b5;
+  box-shadow: 0 0 0 5px rgba(231,197,106,.1), 0 0 22px rgba(231,197,106,.52), 0 8px 22px rgba(0,0,0,.58);
+  transform: translate(-50%, -50%);
+  cursor: grab;
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+}
+
+.perspectiveQuadEditor > button > span { font: 800 .58rem/1 var(--font-chakra-petch), monospace; text-shadow: 0 1px 5px #000; }
+.perspectiveQuadEditor > button > small { position: absolute; left: 50%; top: calc(100% + .4rem); width: max-content; padding: .28rem .4rem; border: 1px solid rgba(231,197,106,.2); background: rgba(4,6,5,.86); color: rgba(244,223,158,.8); font: 650 .42rem/1 var(--font-chakra-petch), monospace; letter-spacing: .04em; transform: translateX(-50%); }
+.perspectiveQuadEditor > button:hover,
+.perspectiveQuadEditor > button:focus-visible,
+.perspectiveQuadEditor > button.perspectiveCornerActive { border-color: #fff0a4; box-shadow: 0 0 0 7px rgba(231,197,106,.15), 0 0 32px rgba(246,205,92,.75), 0 10px 28px rgba(0,0,0,.62); outline: none; cursor: grabbing; }
+
 .perspectiveConfiguratorTrigger {
   position: absolute;
   z-index: 120;
