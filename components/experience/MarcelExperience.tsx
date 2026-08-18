@@ -511,7 +511,11 @@ export default function MarcelExperience() {
               <div className={`${styles.composerVisual} ${styles.systemDockVisual}`} style={{ '--active-module': activeModule } as CSSProperties}>
                 <Constellation labels={MODULES[lang].map((item) => item[1])} connected coreLabel={c.systemCore} activeIndex={activeModule} onSelect={setActiveModule} />
                 <SystemDockingStation />
-                <div className={styles.moduleReadout}><span>0{activeModule + 1}</span><strong>{MODULES[lang][activeModule][1]}</strong><small>ACTIVE MODULE</small></div>
+                <div className={styles.moduleReadout}>
+                  <small>ACTIVE MODULE</small>
+                  <div><span>0{activeModule + 1}</span><strong>{MODULES[lang][activeModule][1]}</strong></div>
+                  <p>{MODULES[lang][activeModule][2]}</p>
+                </div>
               </div>
             </div>
             <div className={styles.systemPrinciple}><p>{c.systemPrinciple}</p><a href="#journey-contact">{c.systemCta}<ArrowUpRight size={16} /></a></div>
