@@ -85,14 +85,80 @@ const MODULES = {
 
 const OPERATING_MODULES = {
   de: [
-    ['Kunden', 'Kontakte · Leads · Historie · Dokumente'], ['Verkauf', 'Pipeline · Offerten · Aufträge · Rechnungen'],
-    ['Projekte', 'Aufgaben · Termine · Ressourcen · Fortschritt'], ['Mitarbeitende', 'Rollen · Rechte · Zeiten · Absenzen'],
-    ['Marketing', 'Kampagnen · Attribution · Content · Conversion'], ['Management', 'KPI · Forecast · Alerts · Entscheidungen'],
+    {
+      title: 'Kunden', summary: 'Kontakte · Leads · Historie · Dokumente',
+      detail: 'Alle Kundeninformationen laufen in einer zentralen, nachvollziehbaren Akte zusammen – vom ersten Kontakt bis zur langfristigen Betreuung.',
+      features: ['360°-Kundenansicht', 'Kontakt- und Aktivitätshistorie', 'Dokumente und Zuständigkeiten'],
+      outcome: 'Jeder im Team kennt Kontext, Status und den nächsten sinnvollen Schritt.',
+    },
+    {
+      title: 'Verkauf', summary: 'Pipeline · Offerten · Aufträge · Rechnungen',
+      detail: 'Die komplette Verkaufsstrecke wird als verbindlicher Prozess abgebildet. Chancen, Aufgaben, Dokumente und Umsatz bleiben miteinander verknüpft.',
+      features: ['Visuelle Deal-Pipeline', 'Offerten und Freigaben', 'Auftrags- und Rechnungsübergabe'],
+      outcome: 'Weniger liegengebliebene Anfragen und ein planbarer Verkaufsprozess.',
+    },
+    {
+      title: 'Projekte', summary: 'Aufgaben · Termine · Ressourcen · Fortschritt',
+      detail: 'Gewonnene Aufträge werden ohne Medienbruch in planbare Projekte überführt und entlang klarer Verantwortlichkeiten umgesetzt.',
+      features: ['Aufgaben und Meilensteine', 'Kapazitäten und Termine', 'Fortschritt und Projektdokumente'],
+      outcome: 'Teams sehen Prioritäten, Abhängigkeiten und Lieferstatus an einem Ort.',
+    },
+    {
+      title: 'Mitarbeitende', summary: 'Rollen · Rechte · Zeiten · Absenzen',
+      detail: 'Rollen, Zugriffe und operative Personaldaten werden so verbunden, dass Mitarbeitende sicher und ohne unnötige Administration arbeiten können.',
+      features: ['Rollenbasierte Zugriffe', 'Zeit- und Leistungserfassung', 'Absenzen und Verfügbarkeit'],
+      outcome: 'Klare Zuständigkeiten und weniger manuelle Abstimmung im Tagesgeschäft.',
+    },
+    {
+      title: 'Marketing', summary: 'Kampagnen · Attribution · Content · Conversion',
+      detail: 'Kanäle, Inhalte und Kampagnen speisen dieselbe Datenbasis und lassen sich bis zur qualifizierten Anfrage oder zum Auftrag auswerten.',
+      features: ['Kampagnen und Inhalte', 'Quellen- und Conversion-Tracking', 'Übergabe qualifizierter Leads'],
+      outcome: 'Marketing wird messbar und arbeitet direkt mit dem Verkaufssystem zusammen.',
+    },
+    {
+      title: 'Management', summary: 'KPI · Forecast · Alerts · Entscheidungen',
+      detail: 'Aktuelle operative Daten werden in verständliche Kennzahlen, Prognosen und konkrete Entscheidungssignale übersetzt.',
+      features: ['Live-Kennzahlen und Trends', 'Forecasts und Zielwerte', 'Automatische Hinweise bei Abweichungen'],
+      outcome: 'Entscheidungen basieren auf einer aktuellen gemeinsamen Datengrundlage.',
+    },
   ],
   en: [
-    ['Customers', 'Contacts · Leads · History · Documents'], ['Sales', 'Pipeline · Quotes · Orders · Invoices'],
-    ['Projects', 'Tasks · Schedules · Resources · Progress'], ['Team', 'Roles · Rights · Time · Absence'],
-    ['Marketing', 'Campaigns · Attribution · Content · Conversion'], ['Management', 'KPI · Forecast · Alerts · Decisions'],
+    {
+      title: 'Customers', summary: 'Contacts · Leads · History · Documents',
+      detail: 'All customer information comes together in one traceable record, from the first contact through long-term service.',
+      features: ['360° customer view', 'Contact and activity history', 'Documents and ownership'],
+      outcome: 'Everyone knows the context, current status and next useful step.',
+    },
+    {
+      title: 'Sales', summary: 'Pipeline · Quotes · Orders · Invoices',
+      detail: 'The complete sales journey becomes a dependable process. Opportunities, tasks, documents and revenue stay connected.',
+      features: ['Visual deal pipeline', 'Quotes and approvals', 'Order and invoice handover'],
+      outcome: 'Fewer missed enquiries and a more predictable sales process.',
+    },
+    {
+      title: 'Projects', summary: 'Tasks · Schedules · Resources · Progress',
+      detail: 'Won orders become plannable projects without manual handovers and are delivered through clear responsibilities.',
+      features: ['Tasks and milestones', 'Capacity and schedules', 'Progress and project documents'],
+      outcome: 'Teams see priorities, dependencies and delivery status in one place.',
+    },
+    {
+      title: 'Team', summary: 'Roles · Rights · Time · Absence',
+      detail: 'Roles, access and operational people data are connected so employees can work securely with less administration.',
+      features: ['Role-based access', 'Time and performance capture', 'Absence and availability'],
+      outcome: 'Clear ownership and less manual coordination in daily operations.',
+    },
+    {
+      title: 'Marketing', summary: 'Campaigns · Attribution · Content · Conversion',
+      detail: 'Channels, content and campaigns feed the same data foundation and remain measurable through to a qualified enquiry or order.',
+      features: ['Campaigns and content', 'Source and conversion tracking', 'Qualified lead handover'],
+      outcome: 'Marketing becomes measurable and works directly with the sales system.',
+    },
+    {
+      title: 'Management', summary: 'KPI · Forecast · Alerts · Decisions',
+      detail: 'Current operational data is translated into understandable metrics, forecasts and concrete decision signals.',
+      features: ['Live metrics and trends', 'Forecasts and targets', 'Automatic deviation alerts'],
+      outcome: 'Decisions use one current and shared source of truth.',
+    },
   ],
 } as const;
 
@@ -117,6 +183,7 @@ export default function MarcelExperience() {
   const marketingVideoRef = useRef<HTMLVideoElement | null>(null);
   const [activeModule, setActiveModule] = useState(0);
   const [activeFlow, setActiveFlow] = useState(0);
+  const [activeOperatingModule, setActiveOperatingModule] = useState<number | null>(null);
   const [activeLetter, setActiveLetter] = useState(0);
   const [heroPhase, setHeroPhase] = useState<HeroPhase>('loading');
   const [heroLoadProgress, setHeroLoadProgress] = useState(0);
@@ -179,7 +246,7 @@ export default function MarcelExperience() {
       window.removeEventListener('resize', applyFitScale);
       window.clearTimeout(settleTimer);
     };
-  }, [lang]);
+  }, [lang, activeOperatingModule]);
 
   useEffect(() => {
     const requested = new URLSearchParams(window.location.search).get('lead');
@@ -724,7 +791,30 @@ export default function MarcelExperience() {
               </div>
               <div className={styles.osLayout}>
                 <div className={styles.operatingModules} data-reveal="left">
-                  {OPERATING_MODULES[lang].map(([title, detail], index) => <div key={title}><span>0{index + 1}</span><div><strong>{title}</strong><small>{detail}</small></div><i /></div>)}
+                  {OPERATING_MODULES[lang].map((module, index) => {
+                    const isOpen = activeOperatingModule === index;
+                    const detailId = `operating-module-${index + 1}`;
+                    return (
+                      <article key={module.title} className={`${styles.operatingModule} ${isOpen ? styles.operatingModuleOpen : ''}`}>
+                        <button
+                          type="button"
+                          className={styles.operatingModuleToggle}
+                          aria-expanded={isOpen}
+                          aria-controls={detailId}
+                          onClick={() => setActiveOperatingModule((current) => current === index ? null : index)}
+                        >
+                          <span>0{index + 1}</span>
+                          <span><strong>{module.title}</strong><small>{module.summary}</small></span>
+                          <i aria-hidden="true"><ArrowDown size={15} /></i>
+                        </button>
+                        <div id={detailId} className={styles.operatingModuleDetail} aria-hidden={!isOpen}>
+                          <p>{module.detail}</p>
+                          <ul>{module.features.map((feature) => <li key={feature}><Check size={12} />{feature}</li>)}</ul>
+                          <footer><small>{lang === 'de' ? 'WIRKUNG' : 'OUTCOME'}</small><strong>{module.outcome}</strong></footer>
+                        </div>
+                      </article>
+                    );
+                  })}
                 </div>
                 <div data-reveal="right"><DashboardMockup lang={lang} /></div>
               </div>
