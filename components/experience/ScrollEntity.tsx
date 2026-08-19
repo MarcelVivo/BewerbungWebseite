@@ -274,9 +274,9 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       gl.clear(gl.COLOR_BUFFER_BIT);
       gl.bindTexture(gl.TEXTURE_2D, texture);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
-      // AILA's six-second attention sequence already contains its complete
-      // entrance and expression. Keep the chroma-key renderer clean so the
-      // character is not fragmented by the former organism's switch effects.
+      // AILA's authored idle motion already contains its complete expression.
+      // Keep the chroma-key renderer clean so the character is not fragmented
+      // by the former organism's switch effects.
       gl.uniform1f(switchOffLocation, 0);
       gl.drawArrays(gl.TRIANGLES, 0, 6);
       coreCanvas.style.opacity = '1';
@@ -1015,16 +1015,17 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
           className={styles.scrollEntitySource}
           autoPlay
           muted
+          loop
           playsInline
           disablePictureInPicture
           preload="auto"
         >
-          <source src="/cinematic/aila/aila-attention-v1-greenscreen.mp4" type="video/mp4" />
+          <source src="/cinematic/aila/aila-idle-v1-pingpong-greenscreen.mp4" type="video/mp4" />
         </video>
         <img
           ref={fallbackRef}
           className={`${styles.scrollEntityCore} ${styles.scrollEntityFallback}`}
-          src="/cinematic/aila/aila-idle-fallback-transparent.png"
+          src="/cinematic/aila/aila-idle-v1-fallback-transparent.png"
           alt=""
           draggable="false"
         />
