@@ -59,9 +59,9 @@ export default function AilaParticleGreeting() {
         sourceX: targetX + Math.cos(angle) * distance,
         sourceY: targetY + Math.sin(angle) * distance * .62,
         phase: angle + randomB * 4,
-        depth: kind === 'text' ? .9 + randomA * .34 : .58 + randomA * .88,
-        drift: kind === 'text' ? .1 + randomB * .28 : .35 + randomB * 1.35,
-        size: kind === 'text' ? 1.05 + randomA * .68 : .82 + randomA * 1.05,
+        depth: kind === 'text' ? .94 + randomA * .18 : .58 + randomA * .88,
+        drift: kind === 'text' ? .04 + randomB * .12 : .35 + randomB * 1.35,
+        size: kind === 'text' ? .58 + randomA * .38 : .82 + randomA * 1.05,
         tone: tone ?? (randomA > .78 ? 'light' : randomA > .24 ? 'gold' : 'deep'),
         kind,
       });
@@ -125,10 +125,10 @@ export default function AilaParticleGreeting() {
       mask.height = Math.round(height);
       const maskContext = mask.getContext('2d', { willReadFrequently: true });
       if (!maskContext) return;
-      const fontSize = Math.max(24, Math.min(30, width * .076));
+      const fontSize = Math.max(24, Math.min(29, width * .074));
       maskContext.clearRect(0, 0, width, height);
       maskContext.fillStyle = '#fff';
-      maskContext.font = `800 ${fontSize}px Inter, ui-sans-serif, system-ui, sans-serif`;
+      maskContext.font = `700 ${fontSize}px Inter, ui-sans-serif, system-ui, sans-serif`;
       maskContext.textAlign = 'center';
       maskContext.textBaseline = 'middle';
       maskContext.fillText(MESSAGE, centerX - width * .012, centerY + 1);
@@ -136,7 +136,7 @@ export default function AilaParticleGreeting() {
       const sampleStep = 2;
       for (let y = 0; y < mask.height; y += sampleStep) {
         for (let x = 0; x < mask.width; x += sampleStep) {
-          if (pixels[(y * mask.width + x) * 4 + 3] < 52) continue;
+          if (pixels[(y * mask.width + x) * 4 + 3] < 42) continue;
           addParticle(x, y, 'text', particleIndex++, x % 9 < 5 ? 'light' : 'gold');
         }
       }
@@ -171,23 +171,48 @@ export default function AilaParticleGreeting() {
       context.clearRect(0, 0, logicalWidth, logicalHeight);
       if (visibility > .002) {
         const time = now * .001;
+        const releaseMotion = (particle: GreetingParticle, index: number) => {
+          const canRelease = particle.kind !== 'text' || index % 43 === 0;
+          if (!canRelease || formation < .94 || reducedMotion.matches) {
+            return { x: 0, y: 0, alpha: 1 };
+          }
+
+          const cycleOffset = (Math.sin(particle.phase * 2.31 + index * .013) + 1) * .5;
+          const cycle = (time / (8.5 + particle.depth * 4.5) + cycleOffset) % 1;
+          if (cycle < .055) {
+            return { x: 0, y: 0, alpha: easeOut(cycle / .055) };
+          }
+          if (cycle < .78) return { x: 0, y: 0, alpha: 1 };
+
+          const release = easeOut((cycle - .78) / .22);
+          const distance = (particle.kind === 'text' ? 18 : 32) + particle.depth * 28;
+          return {
+            x: Math.cos(particle.phase * 1.37) * distance * release,
+            y: (-.62 - Math.abs(Math.sin(particle.phase)) * .58) * distance * release,
+            alpha: Math.pow(1 - release, .58),
+          };
+        };
         context.globalCompositeOperation = 'lighter';
 
         // Soft glow pass. It follows the same points but remains slightly
         // defocused, making the particle cloud feel volumetric rather than flat.
         context.save();
         context.filter = `blur(${mix(5.5, 2.2, formation).toFixed(2)}px)`;
-        particles.forEach((particle) => {
-          const gather = particle.kind === 'text' ? formation : Math.min(1, formation * 1.13);
-          const residualDrift = particle.kind === 'text'
-            ? .05 + (1 - gather) * 1.1
-            : .28 + (1 - gather) * 1.35;
+        particles.forEach((particle, index) => {
+          // Letterforms stay crisp in the main pass below; the volumetric blur
+          // belongs only to the surrounding cloud and its departing motes.
+          if (particle.kind === 'text') return;
+          const gather = Math.min(1, formation * 1.13);
+          const residualDrift = .28 + (1 - gather) * 1.35;
+          const release = releaseMotion(particle, index);
           const x = mix(particle.sourceX, particle.targetX, gather)
+            + release.x
             + Math.sin(time * (.52 + particle.depth * .16) + particle.phase) * particle.drift * residualDrift;
           const y = mix(particle.sourceY, particle.targetY, gather)
+            + release.y
             + Math.cos(time * (.46 + particle.depth * .13) + particle.phase) * particle.drift * residualDrift;
           const radius = particle.size * particle.depth * 2.25;
-          const alpha = visibility * (particle.kind === 'text' ? .24 : .055) * particle.depth;
+          const alpha = visibility * .055 * particle.depth * release.alpha;
           const glowColor = particle.tone === 'light' ? GOLD_LIGHT : GOLD_CORE;
           context.fillStyle = `rgba(${glowColor[0]}, ${glowColor[1]}, ${glowColor[2]}, ${alpha})`;
           context.fillRect(x - radius / 2, y - radius / 2, radius, radius);
@@ -200,16 +225,22 @@ export default function AilaParticleGreeting() {
           const residualDrift = particle.kind === 'text'
             ? .035 + (1 - gather) * 1.12
             : .18 + (1 - gather) * 1.45;
+          const release = releaseMotion(particle, index);
           const x = mix(particle.sourceX, particle.targetX, gather)
+            + release.x
             + Math.sin(time * (.52 + particle.depth * .16) + particle.phase) * particle.drift * residualDrift;
           const y = mix(particle.sourceY, particle.targetY, gather)
+            + release.y
             + Math.cos(time * (.46 + particle.depth * .13) + particle.phase) * particle.drift * residualDrift;
-          const shimmer = .76 + Math.sin(time * 1.25 + particle.phase) * .24;
+          const shimmer = particle.kind === 'text'
+            ? .94 + Math.sin(time * .78 + particle.phase) * .06
+            : .76 + Math.sin(time * 1.25 + particle.phase) * .24;
           const alpha = visibility
             * shimmer
             * (particle.kind === 'text' ? 1 : particle.kind === 'contour' ? .38 : .22)
-            * Math.min(1, gather * 1.6);
-          const size = particle.size * particle.depth * (particle.kind === 'text' ? 1.08 : 1);
+            * Math.min(1, gather * 1.6)
+            * release.alpha;
+          const size = particle.size * particle.depth;
           const color = particle.tone === 'light'
             ? GOLD_LIGHT
             : particle.tone === 'deep'
