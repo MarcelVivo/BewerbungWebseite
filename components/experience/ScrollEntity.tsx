@@ -73,11 +73,14 @@ const MIN_HOLD_VIEWPORTS = 0.4;
 // flying. Kept small ("leicht") so straight vertical motion reads as upright
 // and diagonal motion only leans, never rolls onto its side.
 const HEADING_TILT_MAX_DEGREES = 8;
+const AILA_IDLE_VIDEO = '/cinematic/aila/aila-idle-v1-pingpong-greenscreen.mp4';
+const AILA_ATTENTION_VIDEO = '/cinematic/aila/aila-attention-v2-greenscreen.mp4';
 
 export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
   const entityRef = useRef<HTMLDivElement | null>(null);
   const trailRef = useRef<HTMLCanvasElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const interactionRef = useRef<HTMLButtonElement | null>(null);
   const coreCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const fallbackRef = useRef<HTMLImageElement | null>(null);
   const debugRef = useRef<HTMLOutputElement | null>(null);
@@ -87,10 +90,11 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
     const entity = entityRef.current;
     const canvas = trailRef.current;
     const video = videoRef.current;
+    const interaction = interactionRef.current;
     const coreCanvas = coreCanvasRef.current;
     const fallback = fallbackRef.current;
     const debugOutput = debugRef.current;
-    if (!root || !entity || !canvas || !video || !coreCanvas || !fallback || !debugOutput) return;
+    if (!root || !entity || !canvas || !video || !interaction || !coreCanvas || !fallback || !debugOutput) return;
 
     const mobileViewport = window.matchMedia('(max-width: 699px)').matches;
 
@@ -237,6 +241,7 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
     // report as a continuously interpolated clock rather than a frame-
     // quantized value.
     let newVideoFrameAvailable = true;
+    let videoMode: 'idle' | 'attention' = 'idle';
     const supportsVideoFrameCallback = typeof video.requestVideoFrameCallback === 'function';
     let videoFrameCallbackHandle = 0;
     const scheduleVideoFrameCallback = () => {
@@ -246,6 +251,38 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       });
     };
     if (supportsVideoFrameCallback) scheduleVideoFrameCallback();
+
+    const playVideo = () => {
+      if (!reducedMotion.matches) void video.play().catch(() => undefined);
+    };
+
+    const switchVideo = (source: string, mode: 'idle' | 'attention') => {
+      video.pause();
+      videoMode = mode;
+      entity.dataset.ailaState = mode;
+      interaction.setAttribute('aria-pressed', String(mode === 'attention'));
+      video.loop = mode === 'idle';
+      video.src = source;
+      video.load();
+      newVideoFrameAvailable = true;
+      playVideo();
+    };
+
+    const restoreIdle = () => {
+      if (videoMode !== 'attention') return;
+      switchVideo(AILA_IDLE_VIDEO, 'idle');
+    };
+
+    const triggerAttention = () => {
+      if (videoMode === 'attention' || reducedMotion.matches || (root.dataset.heroPhase ?? 'loading') !== 'revealed') return;
+      switchVideo(AILA_ATTENTION_VIDEO, 'attention');
+      entity.dataset.greeting = 'false';
+    };
+
+    interaction.addEventListener('click', triggerAttention);
+    video.addEventListener('ended', restoreIdle);
+    video.addEventListener('error', restoreIdle);
+    entity.dataset.ailaState = 'idle';
 
     const renderCore = () => {
       if (!coreRendererAvailable || !gl || !texture || !switchOffLocation || reducedMotion.matches || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
@@ -793,7 +830,8 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
 
       const activeStop = DOCKING_STOPS[pathTarget.activeStationIndex];
       const greetingVisible = (root.dataset.heroPhase ?? 'loading') === 'revealed'
-        && window.scrollY <= window.innerHeight * .58;
+        && window.scrollY <= window.innerHeight * .58
+        && videoMode === 'idle';
       entity.dataset.greeting = greetingVisible ? 'true' : 'false';
       // The route needs a projected dock position before that station is on
       // screen. Once the follower is genuinely docked, however, use the
@@ -994,6 +1032,9 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       if (frame) window.cancelAnimationFrame(frame);
       if (supportsVideoFrameCallback) video.cancelVideoFrameCallback(videoFrameCallbackHandle);
       video.pause();
+      interaction.removeEventListener('click', triggerAttention);
+      video.removeEventListener('ended', restoreIdle);
+      video.removeEventListener('error', restoreIdle);
       if (gl && texture) gl.deleteTexture(texture);
       if (gl && buffer) gl.deleteBuffer(buffer);
       if (gl && program) gl.deleteProgram(program);
@@ -1027,6 +1068,13 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
         }}
       >
         <AilaParticleGreeting />
+        <button
+          ref={interactionRef}
+          type="button"
+          className={styles.scrollEntityGrabSurface}
+          aria-label="AILA zuhören lassen"
+          aria-pressed="false"
+        />
         <video
           ref={videoRef}
           className={styles.scrollEntitySource}
@@ -1037,7 +1085,7 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
           disablePictureInPicture
           preload="auto"
         >
-          <source src="/cinematic/aila/aila-idle-v1-pingpong-greenscreen.mp4" type="video/mp4" />
+          <source src={AILA_IDLE_VIDEO} type="video/mp4" />
         </video>
         <img
           ref={fallbackRef}
