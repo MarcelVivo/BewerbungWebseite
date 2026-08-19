@@ -3012,42 +3012,56 @@
 .marketingSection { --marketing-progress: 0; --marketing-dock-engaged: 0; --marketing-dock-charge: 0; min-height: 220svh; padding: 0; overflow: visible; background: #070807; }
 .marketingSticky { position: sticky; top: 0; height: 100svh; min-height: 720px; overflow: hidden; background: #070807; }
 .marketingVideoLayer { position: absolute; z-index: 0; inset: 0; overflow: hidden; background: #070807; }
-.marketingVideoLayer::before { content: ''; position: absolute; z-index: 2; inset: 0; background: linear-gradient(180deg, rgba(5,6,5,.85) 0%, rgba(5,6,5,.18) 25%, transparent 48%, rgba(5,6,5,.14) 68%, rgba(5,6,5,.92) 100%); pointer-events: none; }
-.marketingVideoLayer::after { content: ''; position: absolute; z-index: 3; inset: 0; background: linear-gradient(90deg, rgba(5,6,5,.28), transparent 35%, transparent 72%, rgba(5,6,5,.1)), radial-gradient(circle at 50% 50%, transparent 20%, rgba(5,6,5,.12) 76%); pointer-events: none; }
+.marketingVideoLayer::before { content: ''; position: absolute; z-index: 2; inset: 0; background: linear-gradient(180deg, rgba(5,6,5,.88) 0%, rgba(5,6,5,.2) 25%, transparent 49%, rgba(5,6,5,.2) 70%, rgba(5,6,5,.94) 100%); pointer-events: none; }
+.marketingVideoLayer::after { content: ''; position: absolute; z-index: 3; inset: 0; background: linear-gradient(90deg, rgba(5,6,5,.62), rgba(5,6,5,.08) 38%, rgba(5,6,5,.14) 67%, rgba(5,6,5,.7)), radial-gradient(circle at 52% 46%, transparent 18%, rgba(5,6,5,.18) 78%); pointer-events: none; }
 .marketingVideo { width: 100%; height: 100%; display: block; object-fit: cover; object-position: center; filter: saturate(.94) contrast(1.04); transform: scaleX(-1); }
 .marketingDockingStation { --problem-dock-engaged: calc(.18 + var(--marketing-dock-engaged) * .82); --problem-dock-charge: var(--marketing-dock-charge); position: absolute; z-index: 2; left: var(--dock-x); top: var(--dock-y); height: auto !important; aspect-ratio: 1; transform: translate(-50%, -50%) rotate(var(--dock-rotation, 0deg)); transform-origin: center; pointer-events: none; filter: drop-shadow(0 14px 22px rgba(0,0,0,.72)) drop-shadow(0 0 18px rgba(231,197,106,.2)) drop-shadow(0 0 28px rgba(118,17,38,.14)); }
 .marketingDockingStation[data-editor='true'] { z-index: 12; pointer-events: auto; cursor: crosshair; --problem-dock-engaged: 1 !important; --problem-dock-charge: 1 !important; opacity: 1 !important; }
-.marketingHeader { position: absolute; z-index: 10; top: clamp(5.2rem, 8vh, 7rem); right: calc(var(--rail-safe) + var(--container-left)); left: auto; width: min(660px, 46vw); isolation: isolate; }
-.marketingHeader::before { content: ''; position: absolute; z-index: -1; inset: -1.5rem -2rem -2rem -3.5rem; border-right: 1px solid rgba(231,197,106,.18); background: linear-gradient(260deg, rgba(7,8,7,.8), rgba(7,8,7,.2) 78%, transparent); clip-path: polygon(3% 4%, 100% 0, 95% 100%, 0 88%); backdrop-filter: blur(2px); }
-.marketingHeader h2 { font-size: clamp(2.8rem, 4.7vw, 5.3rem); }
-.marketingHeader .sectionLead { margin-top: 1rem; font-size: clamp(.88rem, 1vw, 1.03rem); line-height: 1.55; }
-.searchCard.marketingSearchHud { position: absolute; z-index: 4; left: var(--container-left); bottom: clamp(1rem, 3vh, 2.2rem); width: var(--container); display: grid; grid-template-columns: minmax(280px, .72fr) minmax(440px, 1.28fr); gap: 1rem 2rem; padding: 1rem 1.2rem; transform: none; background: rgba(7,9,7,.74); backdrop-filter: blur(14px); box-shadow: 0 32px 90px rgba(0,0,0,.48), inset 0 1px 0 rgba(255,255,255,.035); }
-.marketingSearchHud .searchCardTop { grid-column: 1 / -1; padding-bottom: .7rem; border-bottom: 1px solid rgba(255,255,255,.08); }
-.marketingSearchCopy { display: grid; grid-template-columns: minmax(190px, .75fr) minmax(220px, 1.25fr); gap: 1.2rem; align-items: center; }
-.marketingSearchHud .marketingSearchCopy h3 { margin: 0; font-size: clamp(1.55rem, 2.3vw, 2.7rem); }
-.marketingSearchCopy > p { margin: 0; color: var(--muted); font-size: .72rem; line-height: 1.55; }
-.marketingSearchHud .searchFeatures { margin: 0; grid-template-columns: repeat(3, 1fr); align-content: center; gap: .6rem .8rem; }
-.marketingSearchHud .searchFeatures span { font-size: .62rem; }
+.marketingExperience { position: absolute; z-index: 8; top: clamp(5rem, 7vh, 6.5rem); bottom: clamp(1.4rem, 2.5vh, 2.2rem); left: var(--container-left); width: var(--container); display: grid; grid-template-columns: minmax(330px, .84fr) minmax(480px, 1.16fr); grid-template-rows: auto minmax(250px, 1fr); gap: clamp(1rem, 2vw, 1.8rem) clamp(1.5rem, 3vw, 3rem); pointer-events: none; }
+.marketingExperience > * { pointer-events: auto; }
+.marketingHeader { --title-yaw: 1.1deg; --title-origin: left; position: relative; z-index: 10; grid-column: 1; grid-row: 1; align-self: start; width: auto; padding: clamp(1.2rem, 2vw, 2rem) clamp(1rem, 1.8vw, 1.6rem); text-align: left; isolation: isolate; }
+.layoutRight .marketingHeader { text-align: left; }
+.marketingHeader::before { content: ''; position: absolute; z-index: -1; inset: 0; border: 1px solid rgba(231,197,106,.17); border-left-color: rgba(231,197,106,.62); background: linear-gradient(112deg, rgba(7,9,8,.88), rgba(7,9,8,.58) 68%, rgba(7,9,8,.18)); clip-path: polygon(0 0, 96% 0, 100% 12%, 100% 100%, 4% 100%, 0 88%); backdrop-filter: blur(12px); box-shadow: 0 24px 70px rgba(0,0,0,.32), inset 0 1px rgba(255,246,213,.05); }
+.marketingHeader .eyebrow { justify-content: flex-start; }
+.layoutRight .marketingHeader .eyebrow { justify-content: flex-start; }
+.marketingHeader h2 { max-width: 9.5ch; margin-top: .9rem; font-size: clamp(2.7rem, 4vw, 4.8rem); line-height: .9; text-wrap: balance; }
+.marketingHeader .sectionLead { max-width: 42rem; margin: 1rem 0 0; color: rgba(223,223,215,.72); font-size: clamp(.82rem, .92vw, .98rem); line-height: 1.55; }
+.layoutRight .marketingHeader .sectionLead { margin-left: 0; }
+.marketingMetrics { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 1.25rem; border-top: 1px solid rgba(231,197,106,.15); border-bottom: 1px solid rgba(231,197,106,.15); }
+.marketingMetrics > span { min-width: 0; display: grid; gap: .22rem; padding: .75rem .65rem; border-right: 1px solid rgba(231,197,106,.12); }
+.marketingMetrics > span:first-child { padding-left: 0; }
+.marketingMetrics > span:last-child { border-right: 0; }
+.marketingMetrics b { color: var(--gold-pale); font: 650 clamp(1.15rem, 1.55vw, 1.7rem)/1 var(--font-chakra-petch), monospace; }
+.marketingMetrics small { color: rgba(218,218,210,.58); font: 620 .48rem/1.3 var(--font-chakra-petch), monospace; letter-spacing: .055em; text-transform: uppercase; }
+.marketingSystemVisual { position: relative; z-index: 6; grid-column: 2; grid-row: 1 / 3; min-height: 0; padding-top: 2.1rem; }
+.marketingSystemVisual::before { content: 'CHANNELS  →  LEAD SYSTEM  →  PIPELINE'; position: absolute; z-index: 2; top: .3rem; left: 1rem; color: rgba(231,197,106,.64); font: 700 .48rem/1 var(--font-chakra-petch), monospace; letter-spacing: .14em; }
+.searchCard.marketingSearchHud { position: relative; z-index: 7; grid-column: 1; grid-row: 2; align-self: end; width: auto; display: grid; grid-template-columns: 1fr; gap: .8rem; padding: clamp(1rem, 1.6vw, 1.45rem); transform: none; background: linear-gradient(145deg, rgba(10,12,10,.86), rgba(6,8,7,.7)); backdrop-filter: blur(16px); box-shadow: 0 28px 80px rgba(0,0,0,.46), inset 0 1px rgba(255,255,255,.04); }
+.marketingSearchHud .searchCardTop { padding-bottom: .7rem; border-bottom: 1px solid rgba(255,255,255,.08); }
+.marketingSearchCopy { display: grid; grid-template-columns: 1fr; gap: .55rem; align-items: start; }
+.marketingSearchHud .marketingSearchCopy h3 { max-width: 13ch; margin: 0; font-size: clamp(1.7rem, 2.25vw, 2.55rem); line-height: .96; }
+.marketingSearchCopy > p { margin: 0; color: rgba(216,217,209,.64); font-size: .72rem; line-height: 1.55; }
+.marketingSearchHud .searchFeatures { margin: .15rem 0 0; grid-template-columns: repeat(2, 1fr); align-content: center; gap: .5rem .7rem; }
+.marketingSearchHud .searchFeatures span { font-size: .59rem; line-height: 1.35; }
 .marketingSequenceStatus { grid-column: 1 / -1; display: grid; grid-template-columns: auto 1fr auto; gap: .75rem; align-items: center; color: #777c76; font: 600 .47rem/1 var(--font-chakra-petch), monospace; letter-spacing: .11em; }
 .marketingSequenceStatus > span:last-child { color: #e5d294; }
 .marketingSequenceStatus > i { height: 1px; overflow: hidden; background: rgba(255,255,255,.09); }
 .marketingSequenceStatus > i > b { display: block; width: 100%; height: 100%; background: linear-gradient(90deg, #8b601c, #f6e3a1); box-shadow: 0 0 9px rgba(231,197,106,.48); transform: scaleX(var(--marketing-progress)); transform-origin: left; }
 .marketingLayout { align-items: stretch; }
 .marketingLayout .sectionCopy { display: flex; flex-direction: column; }
-.marketingEngine { position: relative; flex: 1; min-height: 420px; margin-top: 3rem; border: 1px solid var(--line); background: radial-gradient(circle at 50% 45%, rgba(200,154,61,.08), transparent 34%), rgba(12,14,12,.52); overflow: hidden; }
+.marketingEngine { position: relative; height: 100%; min-height: 520px; margin: 0; border: 1px solid rgba(231,197,106,.2); background: radial-gradient(circle at 50% 43%, rgba(200,154,61,.14), transparent 34%), linear-gradient(145deg, rgba(12,14,12,.84), rgba(5,7,6,.54)); box-shadow: 0 34px 90px rgba(0,0,0,.46), inset 0 1px rgba(255,246,213,.055); clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px)); backdrop-filter: blur(13px); overflow: hidden; }
 .marketingEngine::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px); background-size: 42px 42px; mask-image: radial-gradient(circle, black, transparent 72%); }
 .channelFan { position: absolute; left: 5%; right: 5%; top: 9%; display: flex; justify-content: space-between; }
-.channelFan > div { position: relative; z-index: 1; width: 18%; padding: .65rem .35rem; display: grid; justify-items: center; gap: .35rem; border: 1px solid rgba(255,255,255,.08); background: rgba(7,8,7,.78); color: #a6aaa4; }
+.channelFan > div { position: relative; z-index: 1; width: 18%; padding: .8rem .35rem; display: grid; justify-items: center; gap: .42rem; border: 1px solid rgba(231,197,106,.14); background: rgba(7,8,7,.82); color: #c2c4be; }
 .channelFan > div::after { content: ''; position: absolute; left: 50%; top: 100%; width: 1px; height: 88px; background: linear-gradient(rgba(231,197,106,.32), transparent); transform: rotate(calc((var(--i) - 2) * -19deg)); transform-origin: top; }
 .channelFan svg { color: var(--gold-light); }
-.channelFan span { font: 550 .51rem/1 var(--font-chakra-petch), monospace; text-transform: uppercase; }
-.leadCore { position: absolute; left: 50%; top: 48%; width: 142px; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(231,197,106,.35); border-radius: 50%; background: radial-gradient(circle, rgba(200,154,61,.12), #0a0c0a 68%); transform: translate(-50%,-50%); box-shadow: 0 0 55px rgba(200,154,61,.09); }
+.channelFan span { font: 650 .54rem/1 var(--font-chakra-petch), monospace; letter-spacing: .04em; text-transform: uppercase; }
+.leadCore { position: absolute; left: 50%; top: 49%; width: 158px; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(231,197,106,.42); border-radius: 50%; background: radial-gradient(circle, rgba(200,154,61,.16), #0a0c0a 68%); transform: translate(-50%,-50%); box-shadow: 0 0 70px rgba(200,154,61,.15); }
 .leadCore::after { content: ''; position: absolute; inset: -13px; border: 1px dashed rgba(231,197,106,.18); border-radius: 50%; animation: orbitSpin 22s linear infinite; }
 .leadCore > span { color: var(--gold-light); }
-.leadCore strong { margin-top: .5rem; font: 650 .6rem/1 var(--font-chakra-petch), monospace; letter-spacing: .11em; }
-.leadCore small { margin-top: .35rem; color: var(--faint); font-size: .5rem; }
+.leadCore strong { margin-top: .55rem; font: 720 .66rem/1 var(--font-chakra-petch), monospace; letter-spacing: .11em; }
+.leadCore small { margin-top: .4rem; color: rgba(221,221,213,.58); font-size: .55rem; }
 .processRail { position: absolute; left: 5%; right: 5%; bottom: 8%; display: grid; grid-template-columns: repeat(6, 1fr); border: 1px solid var(--line); background: rgba(7,8,7,.84); }
-.processRail span { position: relative; min-height: 50px; padding: .65rem .3rem; display: grid; place-items: center; align-content: center; gap: .22rem; border-right: 1px solid var(--line); color: #aeb1ab; font: 550 .49rem/1 var(--font-chakra-petch), monospace; text-transform: uppercase; }
+.processRail span { position: relative; min-height: 58px; padding: .7rem .3rem; display: grid; place-items: center; align-content: center; gap: .3rem; border-right: 1px solid var(--line); color: #c2c4bd; font: 620 .5rem/1 var(--font-chakra-petch), monospace; text-transform: uppercase; }
 .processRail span:last-child { border-right: 0; }
 .processRail i { color: var(--gold-light); font-size: .45rem; font-style: normal; }
 .searchCard { align-self: center; position: relative; padding: clamp(1.6rem, 3vw, 3rem); border: 1px solid rgba(255,255,255,.1); background: linear-gradient(145deg, rgba(255,255,255,.045), rgba(255,255,255,.012)); box-shadow: 0 35px 90px rgba(0,0,0,.26); overflow: hidden; }
@@ -3400,7 +3414,11 @@
   .problemContent { grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); gap: 2rem; }
   .salesHeader { width: min(66vw, 760px); }
   .salesHeader h2 { max-width: 47rem; font-size: clamp(2.5rem, 5.8vw, 4rem); }
-  .marketingHeader { width: min(650px, 67vw); }
+  .marketingExperience { grid-template-columns: minmax(280px, .82fr) minmax(360px, 1.18fr); gap: 1rem; }
+  .marketingHeader { padding: 1.15rem; }
+  .marketingHeader h2 { font-size: clamp(2.5rem, 4.7vw, 3.8rem); }
+  .marketingHeader .sectionLead { font-size: .78rem; }
+  .marketingMetrics small { font-size: .42rem; }
   .perspectiveFlowStage { left: 0; top: 0; width: 100%; height: 100%; }
   .perspectiveFlowCardGrid { left: 10%; top: 47%; width: 68%; height: 24%; gap: .35rem; }
   .perspectiveFlowOpen .perspectiveFlowCardGrid { width: 43%; }
@@ -3412,8 +3430,8 @@
   .perspectiveFlowDetailContext strong { padding: .55rem .4rem; }
   .perspectiveFlowDetailContext strong { border: 0; border-block: 1px solid rgba(231,197,106,.14); }
   .perspectiveFlowReadout { right: 3%; bottom: 10%; }
-  .searchCard.marketingSearchHud { grid-template-columns: minmax(220px, .7fr) minmax(0, 1.3fr); gap: .8rem 1.2rem; }
-  .marketingSearchCopy { grid-template-columns: 1fr; gap: .4rem; }
+  .searchCard.marketingSearchHud { gap: .65rem; padding: 1rem; }
+  .marketingSearchCopy { gap: .4rem; }
   .marketingSearchCopy > p { font-size: .65rem; }
   .marketingSearchHud .searchFeatures { grid-template-columns: repeat(2, 1fr); }
   .problemVisual { height: 650px; }
@@ -3543,13 +3561,19 @@
   .marketingSection { min-height: 195svh; }
   .marketingSticky { min-height: 100svh; }
   .marketingVideo { object-position: 48% center; }
-  .marketingHeader { top: 4.9rem; right: calc(var(--rail-safe) + var(--container-left)); left: auto; width: var(--container); }
-  .marketingHeader::before { inset: -1rem -.7rem -1.4rem -.8rem; }
-  .marketingHeader h2 { max-width: 92%; margin-left: auto; font-size: clamp(2.5rem, 11vw, 4.15rem); }
-  .marketingHeader .sectionLead { max-width: 88%; margin-left: auto; font-size: .82rem; line-height: 1.45; }
-  .searchCard.marketingSearchHud { bottom: .55rem; width: var(--container); grid-template-columns: 1fr; gap: .55rem; padding: .7rem .75rem; }
+  .marketingExperience { top: 4.5rem; bottom: .65rem; grid-template-columns: minmax(250px, .9fr) minmax(300px, 1.1fr); gap: .7rem; }
+  .marketingHeader { padding: .85rem; }
+  .marketingHeader h2 { max-width: 9ch; font-size: clamp(2rem, 6vw, 3rem); }
+  .marketingHeader .sectionLead { font-size: .7rem; line-height: 1.42; }
+  .marketingMetrics { margin-top: .8rem; }
+  .marketingMetrics > span { padding: .55rem .4rem; }
+  .marketingMetrics b { font-size: 1rem; }
+  .marketingMetrics small { font-size: .36rem; }
+  .marketingSystemVisual { padding-top: 1.55rem; }
+  .marketingSystemVisual::before { font-size: .38rem; }
+  .marketingEngine { min-height: 430px; }
+  .searchCard.marketingSearchHud { gap: .55rem; padding: .7rem .75rem; }
   .marketingSearchHud .searchCardTop { padding-bottom: .5rem; }
-  .marketingSearchCopy { grid-template-columns: 1fr; }
   .marketingSearchHud .marketingSearchCopy h3 { font-size: 1.45rem; }
   .marketingSearchCopy > p { display: none; }
   .marketingSearchHud .searchFeatures { grid-template-columns: repeat(2, 1fr); gap: .4rem .6rem; }
@@ -3918,13 +3942,18 @@
 
   .marketingSection { padding: 0; }
   .marketingSticky { display: flex; flex-direction: column; gap: 2rem; padding: 4.75rem 0 3rem; }
-  .marketingHeader { position: relative; top: auto; right: auto; left: auto; width: var(--container); margin-left: var(--container-left); text-align: left; }
-  .marketingHeader::before { inset: -1.25rem -.65rem -1.5rem; border-right: 0; border-left: 1px solid rgba(231,197,106,.18); background: linear-gradient(100deg, rgba(7,8,7,.84), rgba(7,8,7,.2) 78%, transparent); clip-path: polygon(0 0, 100% 3%, 96% 94%, 4% 100%); }
+  .marketingExperience { position: relative; inset: auto; width: var(--container); margin-left: var(--container-left); display: flex; flex-direction: column; gap: 1rem; }
+  .marketingHeader { position: relative; inset: auto; order: 1; width: 100%; padding: 1.1rem; margin: 0; text-align: left; }
+  .marketingHeader::before { inset: 0; border-right: 1px solid rgba(231,197,106,.17); border-left-color: rgba(231,197,106,.62); background: linear-gradient(112deg, rgba(7,9,8,.9), rgba(7,9,8,.48)); clip-path: polygon(0 0, 96% 0, 100% 12%, 100% 100%, 4% 100%, 0 88%); }
   .marketingHeader h2,
   .marketingHeader .sectionLead { max-width: 100%; margin-left: 0; }
   .marketingHeader h2 { font-size: clamp(2.25rem, 10.8vw, 3.6rem); }
   .marketingHeader .sectionLead { font-size: .92rem; line-height: 1.58; }
-  .searchCard.marketingSearchHud { position: relative; left: auto; bottom: auto; width: var(--container); margin: clamp(9rem, 32svh, 17rem) 0 0 var(--container-left); grid-template-columns: 1fr; gap: .8rem; padding: 1rem; }
+  .marketingMetrics small { font-size: .43rem; }
+  .marketingSystemVisual { position: relative; order: 2; min-height: 440px; padding-top: 1.8rem; }
+  .marketingSystemVisual::before { left: .7rem; font-size: .4rem; }
+  .marketingEngine { height: 440px; min-height: 440px; }
+  .searchCard.marketingSearchHud { position: relative; inset: auto; order: 3; width: 100%; margin: 0; grid-template-columns: 1fr; gap: .8rem; padding: 1rem; }
   .marketingSearchCopy > p { display: block; font-size: .76rem; line-height: 1.5; }
   .marketingSearchHud .searchFeatures { grid-template-columns: 1fr 1fr; gap: .55rem; }
   .marketingSearchHud .searchFeatures span { min-height: 34px; font-size: .58rem; }
@@ -4062,6 +4091,20 @@
   .sectionCopy h2,
   .sectionHeader h2,
   .systemControlColumn .sectionHeader h2 { font-size: clamp(2.1rem, 10.5vw, 3rem); }
+  .marketingMetrics { grid-template-columns: 1fr; }
+  .marketingMetrics > span,
+  .marketingMetrics > span:first-child { grid-template-columns: 3.5rem 1fr; align-items: baseline; padding: .55rem 0; border-right: 0; border-bottom: 1px solid rgba(231,197,106,.1); }
+  .marketingMetrics > span:last-child { border-bottom: 0; }
+  .marketingMetrics small { font-size: .46rem; }
+  .marketingSystemVisual { min-height: 400px; }
+  .marketingEngine { height: 400px; min-height: 400px; }
+  .channelFan { left: 3%; right: 3%; }
+  .channelFan > div { width: 19%; padding: .65rem .15rem; }
+  .channelFan span { font-size: .42rem; }
+  .leadCore { width: 126px; }
+  .leadCore small { max-width: 8rem; text-align: center; }
+  .processRail { left: 3%; right: 3%; }
+  .processRail span { min-height: 54px; font-size: .42rem; }
   .marketingSearchHud .searchFeatures { grid-template-columns: 1fr; }
   .metricGrid { grid-template-columns: 1fr; }
   .dashboardBody { min-height: 0; }

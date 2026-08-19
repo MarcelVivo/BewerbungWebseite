@@ -14,7 +14,7 @@ import ScrollEntity from './ScrollEntity';
 import SectionDockingStation from './SectionDockingStation';
 import SystemDockingStation from './SystemDockingStation';
 import WebsiteDockingStation from './WebsiteDockingStation';
-import { ArchitectureStack, DashboardMockup, PerspectiveBusinessFlow } from './Visuals';
+import { ArchitectureStack, DashboardMockup, MarketingEngine, PerspectiveBusinessFlow } from './Visuals';
 import { copy, flowStepDetails, flowStepInsights, flowSteps, systemNodes } from './content';
 import styles from './experience.module.css';
 
@@ -763,17 +763,27 @@ export default function MarcelExperience() {
               />
             </div>
             <MarketingDockingStation />
-            <div className={`${styles.sectionCopy} ${styles.marketingHeader}`} data-reveal="right">
-              <p className={styles.eyebrow}><span />{c.marketingEyebrow}</p>
-              <h2>{c.marketingTitle}</h2>
-              <p className={styles.sectionLead}>{c.marketingText}</p>
+            <div className={styles.marketingExperience}>
+              <div className={`${styles.sectionCopy} ${styles.marketingHeader}`} data-reveal="right">
+                <p className={styles.eyebrow}><span />{c.marketingEyebrow}</p>
+                <h2>{c.marketingTitle}</h2>
+                <p className={styles.sectionLead}>{c.marketingText}</p>
+                <div className={styles.marketingMetrics} aria-label={lang === 'de' ? 'Marketing-System in Zahlen' : 'Marketing system at a glance'}>
+                  <span><b>05</b><small>{lang === 'de' ? 'Kanäle verbunden' : 'Connected channels'}</small></span>
+                  <span><b>01</b><small>{lang === 'de' ? 'Lead-System' : 'Lead system'}</small></span>
+                  <span><b>360°</b><small>{lang === 'de' ? 'Messbarer Verlauf' : 'Measurable journey'}</small></span>
+                </div>
+              </div>
+              <div className={styles.marketingSystemVisual} data-reveal="left">
+                <MarketingEngine lang={lang} />
+              </div>
+              <article className={`${styles.searchCard} ${styles.marketingSearchHud}`} data-reveal="up">
+                <div className={styles.searchCardTop}><Search size={20} /><span>SEARCH / ANSWER SYSTEMS</span><i>INDEXABLE</i></div>
+                <div className={styles.marketingSearchCopy}><h3>{c.geoTitle}</h3><p>{c.geoText}</p></div>
+                <div className={styles.searchFeatures}>{SEARCH_FEATURES[lang].map((feature) => <span key={feature}><Check size={12} />{feature}</span>)}</div>
+                <div className={styles.marketingSequenceStatus} aria-hidden="true"><span>MULTI-CHANNEL</span><i><b /></i><span>QUALIFIED PIPELINE</span></div>
+              </article>
             </div>
-            <article className={`${styles.searchCard} ${styles.marketingSearchHud}`} data-reveal="up">
-              <div className={styles.searchCardTop}><Search size={20} /><span>SEARCH / ANSWER SYSTEMS</span><i>INDEXABLE</i></div>
-              <div className={styles.marketingSearchCopy}><h3>{c.geoTitle}</h3><p>{c.geoText}</p></div>
-              <div className={styles.searchFeatures}>{SEARCH_FEATURES[lang].map((feature) => <span key={feature}><Check size={12} />{feature}</span>)}</div>
-              <div className={styles.marketingSequenceStatus} aria-hidden="true"><span>MULTI-CHANNEL</span><i><b /></i><span>QUALIFIED PIPELINE</span></div>
-            </article>
           </div>
         </section>
 
