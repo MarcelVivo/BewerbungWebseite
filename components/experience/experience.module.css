@@ -52,7 +52,8 @@
   pointer-events: none;
   transform-origin: center;
   will-change: transform, opacity;
-  contain: layout paint style;
+  /* The AILA greeting deliberately sits outside the carrier's image bounds. */
+  contain: layout style;
   /* Titles now have their own foreground depth layer, so the organism can be
      composited normally and retain its solid body, contrast and dark details. */
   mix-blend-mode: normal;
@@ -67,6 +68,58 @@
     drop-shadow(0 1.8rem 3rem rgba(0, 0, 0, .7))
     drop-shadow(0 0 2rem rgba(139, 42, 42, .17))
     drop-shadow(0 0 1.35rem rgba(231, 197, 106, .16));
+}
+
+.ailaGreeting {
+  position: absolute;
+  z-index: 8;
+  top: 10%;
+  right: 76%;
+  min-width: max-content;
+  padding: .78rem 1.05rem .76rem;
+  border: 1px solid rgba(231, 197, 106, .5);
+  background:
+    linear-gradient(135deg, rgba(231, 197, 106, .08), transparent 44%),
+    rgba(5, 7, 6, .88);
+  box-shadow:
+    0 1rem 2.4rem rgba(0, 0, 0, .5),
+    inset 0 0 0 1px rgba(255, 255, 255, .025),
+    0 0 1.2rem rgba(231, 197, 106, .08);
+  color: var(--text);
+  font-size: clamp(.88rem, 1.15vw, 1.06rem);
+  font-weight: 620;
+  letter-spacing: .015em;
+  line-height: 1.2;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate3d(.8rem, .45rem, 0) scale(.94);
+  transform-origin: right center;
+  transition:
+    opacity .42s ease,
+    visibility 0s linear .42s,
+    transform .58s cubic-bezier(.16, .8, .2, 1);
+  pointer-events: none;
+}
+
+.ailaGreeting::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: -.48rem;
+  width: .86rem;
+  height: .86rem;
+  border-top: 1px solid rgba(231, 197, 106, .5);
+  border-right: 1px solid rgba(231, 197, 106, .5);
+  background: rgba(7, 9, 8, .92);
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.scrollEntity[data-greeting='true'] .ailaGreeting {
+  opacity: 1;
+  visibility: visible;
+  transform: translate3d(0, 0, 0) scale(1);
+  transition-delay: 1.25s, 0s, 1.25s;
 }
 
 .scrollEntityGrabSurface {

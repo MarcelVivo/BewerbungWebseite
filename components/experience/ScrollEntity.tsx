@@ -790,6 +790,9 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       }
 
       const activeStop = DOCKING_STOPS[pathTarget.activeStationIndex];
+      const greetingVisible = (root.dataset.heroPhase ?? 'loading') === 'revealed'
+        && window.scrollY <= window.innerHeight * .58;
+      entity.dataset.greeting = greetingVisible ? 'true' : 'false';
       // The route needs a projected dock position before that station is on
       // screen. Once the follower is genuinely docked, however, use the
       // browser's live ring rectangle as the final authority. This keeps the
@@ -1010,6 +1013,9 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
           transform: `translate3d(-50%, -50%, 0) rotate(${getFlightPathDraft().start.rotation}deg) scale(${getFlightPathDraft().start.scale})`,
         }}
       >
+        <span className={styles.ailaGreeting} role="status" aria-live="polite">
+          Hallo, ich bin Lena
+        </span>
         <video
           ref={videoRef}
           className={styles.scrollEntitySource}
