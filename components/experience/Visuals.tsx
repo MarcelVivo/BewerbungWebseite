@@ -119,6 +119,7 @@ export function PerspectiveBusinessFlow({
   const [activeCorner, setActiveCorner] = useState<number | null>(null);
   const [sectionSize, setSectionSize] = useState({ width: 0, height: 0 });
   const perspectiveSectionRef = useRef<HTMLElement | null>(null);
+  const flowCardRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -139,6 +140,31 @@ export function PerspectiveBusinessFlow({
     observer.observe(section);
     return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    if (selectedFlow === null) return;
+
+    const routeClickToCard = (event: MouseEvent) => {
+      if (event.button !== 0) return;
+      const cardIndex = flowCardRefs.current.findIndex((card) => {
+        if (!card) return false;
+        const rect = card.getBoundingClientRect();
+        return event.clientX >= rect.left
+          && event.clientX <= rect.right
+          && event.clientY >= rect.top
+          && event.clientY <= rect.bottom;
+      });
+      if (cardIndex < 0) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      onSelect(cardIndex);
+      setSelectedFlow(cardIndex);
+    };
+
+    window.addEventListener('click', routeClickToCard, true);
+    return () => window.removeEventListener('click', routeClickToCard, true);
+  }, [onSelect, selectedFlow]);
 
   const planeTransform = createPerspectiveMatrix(perspectiveConfig, sectionSize.width, sectionSize.height);
   const topEdgeAngle = sectionSize.width > 0
@@ -252,6 +278,7 @@ export function PerspectiveBusinessFlow({
             return (
               <button
                 key={step}
+                ref={(element) => { flowCardRefs.current[index] = element; }}
                 type="button"
                 className={`${styles.perspectiveFlowNode} ${index <= active ? styles.perspectiveFlowReached : ''} ${selected ? styles.perspectiveFlowSelected : ''}`}
                 style={{
@@ -263,12 +290,7 @@ export function PerspectiveBusinessFlow({
                 aria-controls="perspective-flow-detail-panel"
                 aria-label={`${String(index + 1).padStart(2, '0')} · ${step}`}
                 data-flow-index={index}
-                onPointerDown={(event) => {
-                  if (event.button === 0) selectFlow(index);
-                }}
-                onClick={(event) => {
-                  if (event.detail === 0) selectFlow(index);
-                }}
+                onClick={() => selectFlow(index)}
               >
                 <span className={styles.perspectiveFlowCardHead}>
                   <b>{String(index + 1).padStart(2, '0')}</b>
