@@ -47,7 +47,7 @@
   top: 0;
   left: 0;
   width: clamp(20rem, min(36vw, 56vh), 36rem);
-  aspect-ratio: 1408 / 1080;
+  aspect-ratio: 16 / 9;
   opacity: 0;
   pointer-events: none;
   transform-origin: center;
@@ -117,10 +117,6 @@
 .scrollEntityCore {
   position: absolute;
   inset: 0;
-  /* Couple the geometric center of the keyed object's visible alpha bounds
-     (59.02% / 50.09%) to the carrier center on the physical vector rail. */
-  left: -9.02%;
-  top: -.093%;
   width: 100%;
   height: 100%;
   display: block;
@@ -129,25 +125,20 @@
 
 .scrollEntityCore {
   animation: entityCoreHover 5.8s ease-in-out infinite;
-  transform-origin: 59.02% 50.09%;
+  transform-origin: center;
   will-change: transform, filter;
 }
 
 .scrollEntityVideo {
   animation: entityCoreHover 5.8s ease-in-out infinite;
-  transform-origin: 59.02% 50.09%;
+  transform-origin: center;
   will-change: transform, filter;
   opacity: 0;
   transition: opacity .18s linear;
 }
 
 .scrollEntityFallback {
-  /* The still-image fallback has a wide 1672×941 source frame, unlike the
-     704×540 keyed video canvas. Anchor its measured visible organism centroid
-     (51.766% / 50.956% in the fitted carrier) to the exact rail coordinate. */
-  left: -1.766%;
-  top: -.956%;
-  transform-origin: 51.766% 50.956%;
+  transform-origin: center;
   transition: opacity .18s linear;
 }
 

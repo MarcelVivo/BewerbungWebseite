@@ -92,7 +92,7 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
     if (!root || !entity || !canvas || !video || !coreCanvas || !fallback || !debugOutput) return;
 
     // The mobile layout deliberately omits the travelling WebGL object. Do not
-    // allocate a WebGL context, decode its looping source video, or start its
+    // allocate a WebGL context, decode its source video, or start its
     // animation loop when the object is not part of the mobile experience.
     if (window.matchMedia('(max-width: 699px)').matches) {
       video.pause();
@@ -225,8 +225,6 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     let lastHeroPhase = root.dataset.heroPhase ?? 'loading';
     let introIgnitionStartedAt = 0;
-    let previousVideoTime = 0;
-    let loopReassembly = false;
 
     // The video decodes at its own native frame rate (well under the 60fps
     // render loop); re-uploading the same decoded pixels to the GPU via
@@ -257,7 +255,7 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       if (heroPhase !== lastHeroPhase) {
         if (heroPhase === 'ignition') introIgnitionStartedAt = performance.now();
         if (heroPhase === 'revealed' && lastHeroPhase !== 'revealed') {
-          video.currentTime = .32;
+          video.currentTime = 0;
           void video.play().catch(() => undefined);
         }
         lastHeroPhase = heroPhase;
@@ -276,27 +274,11 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       gl.clear(gl.COLOR_BUFFER_BIT);
       gl.bindTexture(gl.TEXTURE_2D, texture);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
-      const time = video.currentTime;
-      const duration = Number.isFinite(video.duration) && video.duration > 1 ? video.duration : 30.125;
-      const pulse = (center: number, radius: number, strength: number) => {
-        const distance = Math.abs(time - center);
-        return distance < radius ? (1 - distance / radius) * strength : 0;
-      };
-      if (time + 1 < previousVideoTime) loopReassembly = true;
-      if (time >= .3) loopReassembly = false;
-      const switchOn = loopReassembly && time < .26 ? 1 - time / .26 : 0;
-      const endStart = duration - .38;
-      const switchOff = time > endStart ? (time - endStart) / .38 : 0;
-      const introProgress = Math.min(1, Math.max(0, introElapsed / 820));
-      const introDisruption = duringIgnitionEffect ? Math.sin(introProgress * Math.PI) * .98 : 0;
-      const microInterruptions = Math.max(
-        pulse(7.15, .11, .28),
-        pulse(15.06, .13, .36),
-        pulse(23.05, .11, .26),
-      );
-      gl.uniform1f(switchOffLocation, Math.min(1, Math.max(switchOn, switchOff, introDisruption, microInterruptions)));
+      // AILA's six-second attention sequence already contains its complete
+      // entrance and expression. Keep the chroma-key renderer clean so the
+      // character is not fragmented by the former organism's switch effects.
+      gl.uniform1f(switchOffLocation, 0);
       gl.drawArrays(gl.TRIANGLES, 0, 6);
-      previousVideoTime = time;
       coreCanvas.style.opacity = '1';
       fallback.style.opacity = '0';
     };
@@ -1033,21 +1015,20 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
           className={styles.scrollEntitySource}
           autoPlay
           muted
-          loop
           playsInline
           disablePictureInPicture
           preload="auto"
         >
-          <source src="/cinematic/object/synthetic-intelligence-organism-v2-pingpong-chroma.mp4" type="video/mp4" />
+          <source src="/cinematic/aila/aila-attention-v1-greenscreen.mp4" type="video/mp4" />
         </video>
         <img
           ref={fallbackRef}
           className={`${styles.scrollEntityCore} ${styles.scrollEntityFallback}`}
-          src="/cinematic/object/synthetic-intelligence-organism-v2-transparent-v2.png"
+          src="/cinematic/aila/aila-idle-fallback-transparent.png"
           alt=""
           draggable="false"
         />
-        <canvas ref={coreCanvasRef} className={styles.scrollEntityVideo} width="704" height="540" />
+        <canvas ref={coreCanvasRef} className={styles.scrollEntityVideo} width="960" height="540" />
       </div>
       <output ref={debugRef} className={styles.scrollPathDebug} hidden aria-live="off" />
       <TitleDepthLayer />
