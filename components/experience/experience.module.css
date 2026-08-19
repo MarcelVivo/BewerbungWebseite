@@ -2879,7 +2879,7 @@
 .perspectiveFlowDetailInsights > div {
   min-height: 3rem;
   display: grid;
-  grid-template-columns: 7.4rem minmax(0, 1fr);
+  grid-template-columns: 8.6rem minmax(0, 1fr);
   align-items: center;
   gap: .8rem;
   padding: .55rem .75rem;
@@ -2890,9 +2890,10 @@
 }
 
 .perspectiveFlowDetailInsights small {
-  color: rgba(231,197,106,.62);
-  font: 700 .5rem/1.2 var(--font-chakra-petch), monospace;
-  letter-spacing: .14em;
+  color: #f0cd6d;
+  font: 820 .64rem/1.2 var(--font-chakra-petch), monospace;
+  letter-spacing: .11em;
+  text-shadow: 0 0 12px rgba(231,197,106,.3);
 }
 
 .perspectiveFlowDetailInsights strong {
@@ -3905,7 +3906,8 @@
   .perspectiveFlowDetailIdentity { gap: .75rem; margin-top: 1.1rem; }
   .perspectiveFlowDetailIdentity > h3 { font-size: clamp(2rem, 9vw, 2.8rem); }
   .perspectiveFlowDetailPanel > p { font-size: .96rem; line-height: 1.52; }
-  .perspectiveFlowDetailInsights > div { grid-template-columns: 6.5rem minmax(0, 1fr); padding: .65rem; }
+  .perspectiveFlowDetailInsights > div { grid-template-columns: 7.5rem minmax(0, 1fr); padding: .65rem; }
+  .perspectiveFlowDetailInsights small { font-size: .58rem; letter-spacing: .09em; }
   .perspectiveFlowDetailInsights strong { font-size: .82rem; }
   .perspectiveFlowDetailContext { margin-top: 1.6rem; padding-top: 0; }
   .perspectiveFlowDetailContext > div { grid-template-columns: 1fr 1fr 1fr; }
