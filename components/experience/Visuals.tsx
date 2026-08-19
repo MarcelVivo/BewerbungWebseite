@@ -78,8 +78,6 @@ export function PerspectiveBusinessFlow({
   details,
   active,
   onSelect,
-  label,
-  hint,
   detailLabel,
   closeLabel,
   lang,
@@ -88,8 +86,6 @@ export function PerspectiveBusinessFlow({
   details: readonly string[];
   active: number;
   onSelect: (index: number) => void;
-  label: string;
-  hint: string;
   detailLabel: string;
   closeLabel: string;
   lang: 'de' | 'en';
@@ -139,18 +135,6 @@ export function PerspectiveBusinessFlow({
   }, [onSelect, selectedFlow]);
 
   const planeTransform = createPerspectiveMatrix(perspectiveConfig, sectionSize.width, sectionSize.height);
-  const topEdgeAngle = sectionSize.width > 0
-    ? Math.atan2(
-      (perspectiveConfig[1].y - perspectiveConfig[0].y) / 100 * sectionSize.height,
-      (perspectiveConfig[1].x - perspectiveConfig[0].x) / 100 * sectionSize.width,
-    ) * 180 / Math.PI
-    : 0;
-  const headerStyle = {
-    left: `${perspectiveConfig[0].x}%`,
-    top: `${Math.max(2, Math.min(perspectiveConfig[0].y, perspectiveConfig[1].y) - 4.5)}%`,
-    width: `${Math.max(18, perspectiveConfig[1].x - perspectiveConfig[0].x)}%`,
-    transform: `rotate(${topEdgeAngle}deg)`,
-  } as CSSProperties;
   const gridStyle = {
     left: 0,
     top: 0,
@@ -174,14 +158,9 @@ export function PerspectiveBusinessFlow({
   const nextFlow = selectedFlow === null ? null : steps[(selectedFlow + 1) % steps.length];
 
   return (
-    <section ref={perspectiveSectionRef} className={`${styles.perspectiveFlow} ${selectedFlow !== null ? styles.perspectiveFlowOpen : ''}`} aria-label={label} onKeyDown={(event) => {
+    <section ref={perspectiveSectionRef} className={`${styles.perspectiveFlow} ${selectedFlow !== null ? styles.perspectiveFlowOpen : ''}`} aria-label={lang === 'de' ? 'Interaktiver Verkaufsprozess mit zehn Schritten' : 'Interactive ten-step sales process'} onKeyDown={(event) => {
       if (event.key === 'Escape') setSelectedFlow(null);
     }}>
-      <header className={styles.perspectiveFlowHeader} style={headerStyle}>
-        <span><i />{label}</span>
-        <small>{hint}</small>
-      </header>
-
       <div className={styles.perspectiveFlowStage}>
         <div
           className={`${styles.perspectiveFlowCardGrid} ${selectedFlow !== null ? styles.perspectiveFlowCardGridOpen : ''}`}

@@ -741,8 +741,6 @@ export default function MarcelExperience() {
               details={flowStepDetails[lang]}
               active={activeFlow}
               onSelect={setActiveFlow}
-              label={c.flowLabel}
-              hint={c.flowHint}
               detailLabel={lang === 'de' ? 'PROZESSSCHRITT' : 'PROCESS STEP'}
               closeLabel={c.close}
               lang={lang}
