@@ -616,8 +616,8 @@ export default function MarcelExperience() {
                 </h1>
                 <p className={styles.heroLead}>{c.heroText}</p>
                 <div className={styles.heroActions}>
-                  <a href="#journey-contact" className={styles.primaryButton} onClick={() => trackWebsiteEvent('cta_click', { ctaId: 'hero_project' })}>{c.project}<ArrowRight size={17} /></a>
-                  <a href="#fragmentierung" className={styles.textButton}>{c.discover}<ArrowDown size={16} /></a>
+                  <a href="#journey-contact" className={styles.primaryButton} onClick={() => trackWebsiteEvent('cta_click', { ctaId: 'hero_project' })}><span>{c.project}</span><ArrowRight size={17} /></a>
+                  <a href="#fragmentierung" className={styles.textButton}><span>{c.discover}</span><ArrowDown size={16} /></a>
                 </div>
                 <div className={styles.heroTrust}><span><Check size={12} /></span>{c.heroNote}</div>
               </div>
@@ -713,7 +713,7 @@ export default function MarcelExperience() {
                 <SystemDockingStation />
               </div>
             </div>
-            <div className={styles.systemPrinciple}><p>{c.systemPrinciple}</p><a href="#journey-contact">{c.systemCta}<ArrowUpRight size={16} /></a></div>
+            <div className={styles.systemPrinciple}><p>{c.systemPrinciple}</p><a href="#journey-contact" className={styles.primaryButton}><span>{c.systemCta}</span><ArrowUpRight size={16} /></a></div>
           </div>
         </section>
 
@@ -870,7 +870,7 @@ export default function MarcelExperience() {
                         <span>{String(index + 1).padStart(2, '0')}</span><i>{projectCopy.cardStatus ?? projectCopy.status}</i>
                       </div>
                       <div className={styles.caseBody}><p>{projectCopy.tag}</p><h3>{projectCopy.title}</h3><div>{projectCopy.tagline}</div><small>{projectCopy.role}</small>
-                        <footer><a href={`/portfolio/${project.slug}`}>{c.caseCta}<ArrowRight size={15} /></a>{project.externalUrl && <a href={project.externalUrl} target="_blank" rel="noopener noreferrer" aria-label={`${c.live}: ${projectCopy.title}`}><ExternalLink size={15} /></a>}</footer>
+                        <footer><a href={`/portfolio/${project.slug}`} className={styles.primaryButton}><span>{c.caseCta}</span><ArrowRight size={15} /></a>{project.externalUrl && <a href={project.externalUrl} target="_blank" rel="noopener noreferrer" aria-label={`${c.live}: ${projectCopy.title}`}><ExternalLink size={15} /></a>}</footer>
                       </div>
                     </article>
                   );

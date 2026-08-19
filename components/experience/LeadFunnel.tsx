@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState, type FormEvent } from 'react';
-import { ArrowLeft, ArrowRight, Check, LoaderCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, LoaderCircle, RotateCcw } from 'lucide-react';
 import { trackWebsiteEvent } from '../../app/lib/analytics';
 import styles from './experience.module.css';
 
@@ -109,7 +109,7 @@ export default function LeadFunnel({ lang }: { lang: 'de' | 'en' }) {
         <span><Check size={25} /></span>
         <h3>{c.thanks}</h3>
         <p>{c.thanksText}</p>
-        <button type="button" onClick={() => { setSubmitted(false); setStep(0); setFocus(''); setSize(''); setProblem(''); setName(''); setCompany(''); setEmail(''); setConsent(false); }}>{c.again}</button>
+        <button type="button" className={styles.primaryButton} onClick={() => { setSubmitted(false); setStep(0); setFocus(''); setSize(''); setProblem(''); setName(''); setCompany(''); setEmail(''); setConsent(false); }}><span>{c.again}</span><RotateCcw size={16} /></button>
       </div>
     );
   }
@@ -164,10 +164,10 @@ export default function LeadFunnel({ lang }: { lang: 'de' | 'en' }) {
       <label className={styles.honeypot} aria-hidden="true">Website<input value={hpWebsite} onChange={(event) => setHpWebsite(event.target.value)} tabIndex={-1} autoComplete="off" /></label>
       {error && <p className={styles.funnelError} role="alert">{error}</p>}
       <div className={styles.funnelActions}>
-        {step > 0 ? <button type="button" className={styles.backButton} onClick={() => { setStep(step - 1); setError(''); }}><ArrowLeft size={16} />{c.back}</button> : <span />}
+        {step > 0 ? <button type="button" className={styles.backButton} onClick={() => { setStep(step - 1); setError(''); }}><span>{c.back}</span><ArrowLeft size={16} /></button> : <span />}
         {step < 2
-          ? <button type="button" className={styles.primaryButton} onClick={advance}>{c.next}<ArrowRight size={16} /></button>
-          : <button type="submit" className={styles.primaryButton} disabled={submitting}>{submitting ? <LoaderCircle className={styles.spinner} size={17} /> : null}{submitting ? c.sending : c.send}<ArrowRight size={16} /></button>}
+          ? <button type="button" className={styles.primaryButton} onClick={advance}><span>{c.next}</span><ArrowRight size={16} /></button>
+          : <button type="submit" className={styles.primaryButton} disabled={submitting}><span>{submitting ? <LoaderCircle className={styles.spinner} size={15} /> : null}{submitting ? c.sending : c.send}</span><ArrowRight size={16} /></button>}
       </div>
     </form>
   );
