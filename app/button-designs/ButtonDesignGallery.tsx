@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, ArrowRight, ArrowUpRight, Check, ChevronRight, Sparkles } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ArrowUpRight, Check, ChevronRight, Send, Sparkles } from 'lucide-react';
 import styles from './button-designs.module.css';
 
 const DESIGNS = [
@@ -12,6 +12,7 @@ const DESIGNS = [
   { id: 'split', number: '04', name: 'Split Action', note: 'Strukturiert, funktional, klar', label: 'Mehr erfahren', Icon: ArrowRight },
   { id: 'signal', number: '05', name: 'Signal', note: 'Lebendig, systemisch, prägnant', label: 'Verfügbarkeit prüfen', Icon: ChevronRight },
   { id: 'editorial', number: '06', name: 'Editorial Line', note: 'Reduziert, elegant, persönlich', label: 'Zusammenarbeit ansehen', Icon: ArrowUpRight },
+  { id: 'beveled', number: '07', name: 'Twin Cut', note: 'Zweiteilig, dynamisch, eindeutig', label: 'Projekt anfragen', Icon: Send },
 ] as const;
 
 export default function ButtonDesignGallery() {
@@ -46,7 +47,7 @@ export default function ButtonDesignGallery() {
         </div>
       </section>
 
-      <section className={styles.gallery} aria-label="Sechs Button-Designs">
+      <section className={styles.gallery} aria-label="Sieben Button-Designs">
         {DESIGNS.map(({ id, number, name, note, label, Icon }) => {
           const isSelected = selectedId === id;
           return (
@@ -62,9 +63,11 @@ export default function ButtonDesignGallery() {
                 aria-pressed={isSelected}
                 onClick={() => selectDesign(id)}
               >
-                {id === 'signal' && <b aria-hidden="true" />}
-                <span>{label}</span>
-                {id === 'split' ? <i><Icon size={17} /></i> : <Icon size={17} />}
+                {id === 'beveled' ? (
+                  <><span className={styles.beveledMain}>{label}</span><i className={styles.beveledIcon}><Icon size={18} /></i></>
+                ) : (
+                  <>{id === 'signal' && <b aria-hidden="true" />}<span>{label}</span>{id === 'split' ? <i><Icon size={17} /></i> : <Icon size={17} />}</>
+                )}
               </button>
             </article>
           );

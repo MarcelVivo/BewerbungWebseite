@@ -129,6 +129,39 @@
 .sample_editorial::after { content: ''; position: absolute; left: 0; bottom: -1px; width: 28%; height: 1px; background: var(--gold-light); transition: width .28s ease; }
 .sample_editorial:hover::after, .sample_editorial[aria-pressed="true"]::after { width: 100%; }
 
+.sample_beveled {
+  min-height: 58px;
+  padding: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 64px;
+  gap: 6px;
+  border: 0;
+}
+
+.beveledMain,
+.beveledIcon {
+  height: 58px;
+  display: flex;
+  align-items: center;
+  clip-path: polygon(12px 0, 100% 0, calc(100% - 12px) 100%, 0 100%);
+}
+
+.beveledMain {
+  padding: 0 1.5rem;
+  color: #0b0d0b;
+  background: linear-gradient(112deg, #b8862b, #f6e3a1 52%, #c89a3d);
+}
+
+.beveledIcon {
+  justify-content: center;
+  color: var(--gold-light);
+  background: #111411;
+  box-shadow: inset 0 0 0 1px rgba(231,197,106,.38);
+}
+
+.sample_beveled:hover { transform: translateX(3px); }
+.sample_beveled[aria-pressed="true"] .beveledIcon { background: #1a1b15; box-shadow: inset 0 0 0 1px var(--gold-light), 0 0 24px rgba(200,154,61,.12); }
+
 .selectionBar {
   position: sticky;
   z-index: 5;
