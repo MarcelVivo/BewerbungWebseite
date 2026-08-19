@@ -73,8 +73,9 @@
 .ailaGreeting {
   position: absolute;
   z-index: 8;
-  top: -2%;
-  right: 68%;
+  top: 64%;
+  right: auto;
+  left: 46%;
   width: clamp(18rem, 28vw, 24rem);
   aspect-ratio: 2.86 / 1;
   display: block;
@@ -84,8 +85,8 @@
   filter:
     drop-shadow(0 0 .7rem rgba(246, 227, 161, .12))
     drop-shadow(0 .8rem 1.8rem rgba(0, 0, 0, .38));
-  transform: translate3d(.75rem, .5rem, 0) scale(.9);
-  transform-origin: right center;
+  transform: translate3d(-.65rem, -.45rem, 0) scale(.9);
+  transform-origin: left top;
   transition:
     opacity .48s ease,
     visibility 0s linear .48s,
@@ -3798,8 +3799,9 @@
   }
 
   .ailaGreeting {
-    top: -52%;
-    right: 45%;
+    top: 60%;
+    right: auto;
+    left: 38%;
     width: clamp(15rem, 70vw, 17rem);
   }
 

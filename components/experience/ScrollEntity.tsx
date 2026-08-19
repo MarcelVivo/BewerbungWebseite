@@ -901,7 +901,7 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       const visiblePosition = mobileViewport
         ? {
             ...current,
-            x: clamp(current.x, 26, 74),
+            x: greetingVisible ? 27 : clamp(current.x, 26, 74),
             y: clamp(current.y, 17, 78),
             scale: Math.min(current.scale, .76),
             rotation: current.rotation * .42,

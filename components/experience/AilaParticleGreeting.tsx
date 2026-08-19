@@ -78,45 +78,62 @@ export default function AilaParticleGreeting() {
       context.setTransform(deviceScale, 0, 0, deviceScale, 0, 0);
       particles = [];
 
-      const centerX = width * .48;
+      const centerX = width * .5;
       const centerY = height * .51;
-      const radiusX = width * .43;
-      const radiusY = height * .37;
+      const left = width * .055;
+      const right = width * .945;
+      const top = height * .15;
+      const bottom = height * .86;
+      const bevel = (bottom - top) * .205;
+      const buttonShape = [
+        { x: left + bevel, y: top },
+        { x: right, y: top },
+        { x: right - bevel, y: bottom },
+        { x: left, y: bottom },
+      ];
       let particleIndex = 0;
 
-      // An irregular, depth-staggered contour suggests a speech cloud without
-      // ever drawing a filled panel behind the message.
-      const contourCount = Math.round(width * .72);
-      for (let index = 0; index < contourCount; index += 1) {
-        const angle = index / contourCount * Math.PI * 2;
-        const organic = 1 + Math.sin(angle * 3 + .65) * .035 + Math.sin(angle * 5 - .4) * .018;
-        const x = centerX + Math.cos(angle) * radiusX * organic;
-        const y = centerY + Math.sin(angle) * radiusY * organic;
-        const frontLight = Math.sin(angle) > .15 ? 'gold' : undefined;
-        addParticle(x, y, 'contour', particleIndex++, frontLight);
+      const traceButtonShape = (
+        points: typeof buttonShape,
+        kind: 'contour' | 'halo',
+        spacing: number,
+      ) => {
+        points.forEach((point, edgeIndex) => {
+          const next = points[(edgeIndex + 1) % points.length];
+          const edgeLength = Math.hypot(next.x - point.x, next.y - point.y);
+          const count = Math.max(4, Math.round(edgeLength / spacing));
+          for (let index = 0; index < count; index += 1) {
+            const progress = index / count;
+            const organicDrift = Math.sin(index * 1.71 + edgeIndex * 2.4) * (kind === 'contour' ? .34 : .68);
+            const x = mix(point.x, next.x, progress) + (edgeIndex % 2 ? organicDrift : 0);
+            const y = mix(point.y, next.y, progress) + (edgeIndex % 2 ? 0 : organicDrift);
+            addParticle(x, y, kind, particleIndex++, edgeIndex === 1 ? 'light' : 'gold');
+          }
+        });
+      };
+
+      // The exact skewed silhouette used by the site's gold CTA buttons,
+      // translated into a particulate outline instead of a filled surface.
+      traceButtonShape(buttonShape, 'contour', 2.65);
+
+      // The short loose connector leaves the bevel and points back towards
+      // AILA, which now sits above-left of the message.
+      const connectorStart = buttonShape[0];
+      for (let index = 0; index < 42; index += 1) {
+        const progress = index / 41;
+        const spread = progress * 2.8;
+        const x = connectorStart.x * (1 - progress) + Math.sin(index * 1.9) * spread;
+        const y = connectorStart.y * (1 - progress) + Math.cos(index * 1.37) * spread;
+        addParticle(x, y, 'contour', particleIndex++, progress > .58 ? 'light' : 'gold');
       }
 
-      // A loose particle tail points toward AILA on the right, replacing the
-      // geometric speech-bubble triangle with a soft, organic drift.
-      const tailStartX = centerX + radiusX * .9;
-      const tailStartY = centerY + radiusY * .34;
-      for (let index = 0; index < 54; index += 1) {
-        const progress = index / 53;
-        const spread = (1 - progress) * 5.5;
-        const x = tailStartX + progress * width * .115 + Math.sin(progress * Math.PI) * 4;
-        const y = tailStartY + progress * height * .15 + Math.sin(index * 1.9) * spread;
-        addParticle(x, y, 'contour', particleIndex++, progress > .62 ? 'light' : 'gold');
-      }
-
-      // A few points live in front of and behind the contour. Different size,
-      // brightness and drift speeds create the requested spatial depth.
-      for (let index = 0; index < 94; index += 1) {
-        const angle = index / 94 * Math.PI * 2 + Math.sin(index * 2.17) * .13;
-        const layer = index % 3;
-        const x = centerX + Math.cos(angle) * radiusX * (layer === 0 ? .91 : 1.07);
-        const y = centerY + Math.sin(angle) * radiusY * (layer === 2 ? 1.13 : .9);
-        addParticle(x, y, 'halo', particleIndex++, layer === 0 ? 'deep' : 'gold');
-      }
+      // A larger, looser duplicate creates depth without reintroducing an
+      // oval halo that would weaken the shared button language.
+      const haloShape = buttonShape.map((point) => ({
+        x: centerX + (point.x - centerX) * 1.035,
+        y: centerY + (point.y - centerY) * 1.1,
+      }));
+      traceButtonShape(haloShape, 'halo', 7.2);
 
       // Rasterize the type only as a temporary sampling mask. The visible
       // lettering itself is rebuilt below exclusively from individual points.
