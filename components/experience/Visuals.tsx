@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
-import { Activity, ArrowLeft, ArrowRight, Bot, Check, ChevronDown, Database, FileText, Globe2, LockKeyhole, Mail, Search, ShieldCheck, Sparkles, Users, Workflow, X } from 'lucide-react';
+import { Activity, ArrowLeft, ArrowRight, Bot, Check, ChevronDown, Database, FileText, Globe2, LockKeyhole, Mail, MousePointerClick, Search, ShieldCheck, Sparkles, Users, Workflow, X } from 'lucide-react';
 import styles from './experience.module.css';
 
 type PerspectivePoint = { x: number; y: number };
@@ -242,7 +242,11 @@ export function PerspectiveBusinessFlow({
       </header>
 
       <div className={styles.perspectiveFlowStage}>
-        <div className={`${styles.perspectiveFlowCardGrid} ${selectedFlow !== null ? styles.perspectiveFlowCardGridOpen : ''}`} style={gridStyle}>
+        <div
+          className={`${styles.perspectiveFlowCardGrid} ${selectedFlow !== null ? styles.perspectiveFlowCardGridOpen : ''}`}
+          style={gridStyle}
+          data-interaction-hint={lang === 'de' ? 'KARTE WÄHLEN · DETAILS ÖFFNEN' : 'SELECT CARD · OPEN DETAILS'}
+        >
           {steps.map((step, index) => {
             const selected = selectedFlow === index;
             return (
@@ -252,7 +256,7 @@ export function PerspectiveBusinessFlow({
                 className={`${styles.perspectiveFlowNode} ${index <= active ? styles.perspectiveFlowReached : ''} ${selected ? styles.perspectiveFlowSelected : ''}`}
                 style={{
                   '--flow-index': index,
-                  '--flow-sequence-delay': `${index * .12}s`,
+                  '--flow-sequence-delay': `${index * .2}s`,
                 } as CSSProperties}
                 aria-current={active === index ? 'step' : undefined}
                 aria-expanded={selected}
@@ -264,7 +268,7 @@ export function PerspectiveBusinessFlow({
                 <span className={styles.perspectiveFlowCardHead}>
                   <b>{String(index + 1).padStart(2, '0')}</b>
                   <strong>{step}</strong>
-                  <i aria-hidden="true" />
+                  <i aria-hidden="true"><MousePointerClick size={13} /></i>
                 </span>
               </button>
             );
