@@ -745,6 +745,7 @@ export default function MarcelExperience() {
               hint={c.flowHint}
               detailLabel={lang === 'de' ? 'PROZESSSCHRITT' : 'PROCESS STEP'}
               closeLabel={c.close}
+              lang={lang}
             />
           </div>
         </section>

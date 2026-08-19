@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
-import { Activity, ArrowRight, Bot, Check, ChevronDown, Database, FileText, Globe2, LockKeyhole, Mail, Search, ShieldCheck, Sparkles, Users, Workflow } from 'lucide-react';
+import { Activity, ArrowLeft, ArrowRight, Bot, Check, ChevronDown, Database, FileText, Globe2, LockKeyhole, Mail, Search, ShieldCheck, Sparkles, Users, Workflow, X } from 'lucide-react';
 import styles from './experience.module.css';
 
 type PerspectivePoint = { x: number; y: number };
@@ -100,6 +100,7 @@ export function PerspectiveBusinessFlow({
   hint,
   detailLabel,
   closeLabel,
+  lang,
 }: {
   steps: readonly string[];
   details: readonly string[];
@@ -109,6 +110,7 @@ export function PerspectiveBusinessFlow({
   hint: string;
   detailLabel: string;
   closeLabel: string;
+  lang: 'de' | 'en';
 }) {
   const [selectedFlow, setSelectedFlow] = useState<number | null>(null);
   const [perspectiveConfig, setPerspectiveConfig] = useState<SalesPerspectiveQuad>(DEFAULT_SALES_PERSPECTIVE);
@@ -222,8 +224,16 @@ export function PerspectiveBusinessFlow({
     setSelectedFlow((current) => current === index ? null : index);
   };
 
+  const showFlow = (index: number) => {
+    onSelect(index);
+    setSelectedFlow(index);
+  };
+
+  const previousFlow = selectedFlow === null ? null : steps[(selectedFlow - 1 + steps.length) % steps.length];
+  const nextFlow = selectedFlow === null ? null : steps[(selectedFlow + 1) % steps.length];
+
   return (
-    <section ref={perspectiveSectionRef} className={styles.perspectiveFlow} aria-label={label} onKeyDown={(event) => {
+    <section ref={perspectiveSectionRef} className={`${styles.perspectiveFlow} ${selectedFlow !== null ? styles.perspectiveFlowOpen : ''}`} aria-label={label} onKeyDown={(event) => {
       if (event.key === 'Escape') setSelectedFlow(null);
     }}>
       <header className={styles.perspectiveFlowHeader} style={headerStyle}>
@@ -246,7 +256,7 @@ export function PerspectiveBusinessFlow({
                 } as CSSProperties}
                 aria-current={active === index ? 'step' : undefined}
                 aria-expanded={selected}
-                aria-controls={`flow-detail-${index}`}
+                aria-controls="perspective-flow-detail-panel"
                 aria-label={`${String(index + 1).padStart(2, '0')} · ${step}`}
                 data-flow-index={index}
                 onClick={() => selectFlow(index)}
@@ -256,20 +266,47 @@ export function PerspectiveBusinessFlow({
                   <strong>{step}</strong>
                   <i aria-hidden="true" />
                 </span>
-                <span
-                  id={`flow-detail-${index}`}
-                  className={styles.perspectiveFlowCardDetail}
-                  aria-hidden={!selected}
-                >
-                  <small>{detailLabel}</small>
-                  <span>{details[index]}</span>
-                  <em>{closeLabel} ×</em>
-                </span>
               </button>
             );
           })}
         </div>
       </div>
+
+      {selectedFlow !== null && (
+        <aside id="perspective-flow-detail-panel" className={styles.perspectiveFlowDetailPanel} aria-live="polite">
+          <header>
+            <span><i />{detailLabel}</span>
+            <button type="button" onClick={() => setSelectedFlow(null)} aria-label={closeLabel}>
+              <X size={20} aria-hidden="true" />
+            </button>
+          </header>
+          <div className={styles.perspectiveFlowDetailIndex}>
+            <strong>{String(selectedFlow + 1).padStart(2, '0')}</strong>
+            <span>/ {String(steps.length).padStart(2, '0')}</span>
+          </div>
+          <h3>{steps[selectedFlow]}</h3>
+          <p>{details[selectedFlow]}</p>
+          <div className={styles.perspectiveFlowDetailContext}>
+            <small>{lang === 'de' ? 'IM ABLAUF' : 'IN THE FLOW'}</small>
+            <div>
+              <span><small>{lang === 'de' ? 'DAVOR' : 'BEFORE'}</small>{previousFlow}</span>
+              <strong><small>{lang === 'de' ? 'AKTIV' : 'ACTIVE'}</small>{steps[selectedFlow]}</strong>
+              <span><small>{lang === 'de' ? 'DANACH' : 'NEXT'}</small>{nextFlow}</span>
+            </div>
+          </div>
+          <footer>
+            <span><i style={{ width: `${((selectedFlow + 1) / steps.length) * 100}%` }} /></span>
+            <div>
+              <button type="button" onClick={() => showFlow((selectedFlow - 1 + steps.length) % steps.length)} aria-label={lang === 'de' ? 'Vorheriger Schritt' : 'Previous step'}>
+                <ArrowLeft size={19} aria-hidden="true" />
+              </button>
+              <button type="button" onClick={() => showFlow((selectedFlow + 1) % steps.length)} aria-label={lang === 'de' ? 'Nächster Schritt' : 'Next step'}>
+                <ArrowRight size={19} aria-hidden="true" />
+              </button>
+            </div>
+          </footer>
+        </aside>
+      )}
 
       {perspectiveEditor && (
         <div className={styles.perspectiveQuadEditor} aria-label="Vier Eckpunkte der Kartenfläche">

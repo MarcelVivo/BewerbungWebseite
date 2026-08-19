@@ -2678,51 +2678,236 @@
 }
 
 .perspectiveFlowCardGridOpen .perspectiveFlowNode:not(.perspectiveFlowSelected) {
-  opacity: .22;
-  filter: brightness(.62) blur(.25px);
-  transform: translateZ(-45px) scale(.96);
-  pointer-events: none;
+  opacity: .52;
+  filter: brightness(.72);
+  transform: translateZ(-18px) scale(.98);
+  pointer-events: auto;
 }
 
 .perspectiveFlowCardGrid .perspectiveFlowNode.perspectiveFlowSelected {
-  position: absolute;
-  z-index: 90 !important;
-  left: 50%;
-  top: 50%;
-  width: min(28rem, 52vw);
+  position: relative;
+  z-index: 9 !important;
+  left: auto;
+  top: auto;
+  width: auto;
   height: auto;
-  min-height: clamp(165px, 22vh, 210px);
-  overflow: visible;
+  min-height: 0;
+  overflow: hidden;
   border-color: rgba(246,205,92,.72);
-  background: radial-gradient(circle at 78% 18%, rgba(231,197,106,.12), transparent 26%), linear-gradient(145deg, rgba(35,34,28,.97), rgba(7,9,8,.985) 64%);
-  box-shadow: 0 34px 85px rgba(0,0,0,.72), 0 0 35px rgba(231,197,106,.2), inset 0 1px rgba(255,246,213,.13);
+  background: radial-gradient(circle at 78% 18%, rgba(231,197,106,.15), transparent 35%), linear-gradient(145deg, rgba(35,34,28,.96), rgba(7,9,8,.98) 64%);
+  box-shadow: 0 16px 42px rgba(0,0,0,.58), 0 0 24px rgba(231,197,106,.16), inset 0 1px rgba(255,246,213,.13);
   opacity: 1;
   filter: none;
-  transform: translate(-50%, -50%) matrix(var(--flow-inverse-a, 1.0049), var(--flow-inverse-b, -.1126), var(--flow-inverse-c, -.0439), var(--flow-inverse-d, 1.0049), 0, 0) rotateY(var(--flow-counter-y, 1.2deg)) translateZ(240px) scale(1.05);
-  animation: perspectiveCardLift .58s cubic-bezier(.16,.8,.2,1) both;
+  transform: translateZ(34px) scale(1.035);
+  animation: none;
   pointer-events: auto;
 }
 
 .perspectiveFlowCardGrid .perspectiveFlowSelected .perspectiveFlowCardHead {
-  align-self: start;
-  padding: 1rem;
-  border-bottom: 1px solid rgba(231,197,106,.16);
+  align-self: stretch;
+  padding: clamp(.42rem, .7vw, .75rem);
 }
 
 .perspectiveFlowCardGrid .perspectiveFlowSelected .perspectiveFlowCardHead > b {
   color: rgba(231,197,106,.72);
-  font-size: 1.05rem;
 }
 
 .perspectiveFlowCardGrid .perspectiveFlowSelected .perspectiveFlowCardHead > strong {
   color: #f4f1e6;
-  font-size: clamp(.88rem, 1.2vw, 1.12rem);
-  white-space: normal;
 }
 
-.perspectiveFlowCardGrid .perspectiveFlowSelected .perspectiveFlowCardDetail {
-  opacity: 1;
-  transform: translateY(0);
+.perspectiveFlowDetailPanel {
+  position: absolute;
+  z-index: 82;
+  top: clamp(8.8rem, 17vh, 11.5rem);
+  right: clamp(1rem, 2.4vw, 2.75rem);
+  bottom: clamp(2.25rem, 6vh, 5rem);
+  width: clamp(420px, 31.5vw, 880px);
+  min-height: 430px;
+  padding: clamp(1.4rem, 2.2vw, 2.5rem);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(231,197,106,.42);
+  background:
+    radial-gradient(circle at 86% 8%, rgba(231,197,106,.13), transparent 28%),
+    linear-gradient(145deg, rgba(24,24,20,.97), rgba(6,8,7,.985) 60%);
+  box-shadow: 0 38px 100px rgba(0,0,0,.72), 0 0 44px rgba(200,154,61,.1), inset 0 1px rgba(255,246,213,.09);
+  backdrop-filter: blur(20px);
+  clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px));
+  pointer-events: auto;
+  animation: perspectiveDetailReveal .42s cubic-bezier(.16,.8,.2,1) both;
+}
+
+.perspectiveFlowDetailPanel::before {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  border: 1px solid rgba(231,197,106,.09);
+  clip-path: inherit;
+  pointer-events: none;
+}
+
+.perspectiveFlowDetailPanel > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(231,197,106,.18);
+}
+
+.perspectiveFlowDetailPanel > header > span {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  color: rgba(231,197,106,.78);
+  font: 680 .58rem/1 var(--font-chakra-petch), monospace;
+  letter-spacing: .17em;
+}
+
+.perspectiveFlowDetailPanel > header > span i {
+  width: 1.5rem;
+  height: 1px;
+  background: var(--gold-light);
+  box-shadow: 0 0 10px rgba(231,197,106,.45);
+}
+
+.perspectiveFlowDetailPanel > header button,
+.perspectiveFlowDetailPanel > footer button {
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(231,197,106,.25);
+  background: rgba(7,9,8,.72);
+  color: var(--gold-pale);
+  cursor: pointer;
+  transition: border-color .25s ease, background .25s ease, transform .25s ease;
+}
+
+.perspectiveFlowDetailPanel > header button {
+  width: 2.55rem;
+  height: 2.55rem;
+}
+
+.perspectiveFlowDetailPanel > header button:hover,
+.perspectiveFlowDetailPanel > header button:focus-visible,
+.perspectiveFlowDetailPanel > footer button:hover,
+.perspectiveFlowDetailPanel > footer button:focus-visible {
+  border-color: rgba(246,205,92,.72);
+  background: rgba(231,197,106,.1);
+  transform: translateY(-2px);
+  outline: none;
+}
+
+.perspectiveFlowDetailIndex {
+  display: flex;
+  align-items: baseline;
+  gap: .55rem;
+  margin-top: clamp(1.5rem, 3vh, 2.7rem);
+  font-family: var(--font-chakra-petch), monospace;
+}
+
+.perspectiveFlowDetailIndex strong {
+  color: var(--gold-pale);
+  font-size: clamp(2.8rem, 4.2vw, 5rem);
+  font-weight: 540;
+  line-height: .8;
+}
+
+.perspectiveFlowDetailIndex span {
+  color: rgba(231,197,106,.38);
+  font-size: .75rem;
+  letter-spacing: .12em;
+}
+
+.perspectiveFlowDetailPanel > h3 {
+  max-width: 15ch;
+  margin: clamp(1rem, 2vh, 1.6rem) 0 0;
+  color: #f5f2e8;
+  font-size: clamp(2rem, 3vw, 3.6rem);
+  line-height: .95;
+  letter-spacing: -.045em;
+}
+
+.perspectiveFlowDetailPanel > p {
+  max-width: 42rem;
+  margin: 1.1rem 0 0;
+  color: rgba(225,224,215,.76);
+  font-size: clamp(.88rem, 1.05vw, 1.08rem);
+  line-height: 1.62;
+}
+
+.perspectiveFlowDetailContext {
+  margin-top: auto;
+  padding-top: 1.5rem;
+}
+
+.perspectiveFlowDetailContext > small {
+  color: rgba(231,197,106,.55);
+  font: 680 .48rem/1 var(--font-chakra-petch), monospace;
+  letter-spacing: .16em;
+}
+
+.perspectiveFlowDetailContext > div {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr 1fr;
+  margin-top: .65rem;
+  border-top: 1px solid rgba(231,197,106,.14);
+  border-bottom: 1px solid rgba(231,197,106,.14);
+}
+
+.perspectiveFlowDetailContext span,
+.perspectiveFlowDetailContext strong {
+  min-width: 0;
+  padding: .85rem .65rem;
+  overflow: hidden;
+  color: rgba(219,218,209,.56);
+  font: 580 .62rem/1.35 var(--font-chakra-petch), monospace;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.perspectiveFlowDetailContext strong {
+  border-inline: 1px solid rgba(231,197,106,.14);
+  color: var(--gold-pale);
+}
+
+.perspectiveFlowDetailContext small {
+  display: block;
+  margin-bottom: .35rem;
+  color: rgba(231,197,106,.38);
+  font-size: .42rem;
+  letter-spacing: .12em;
+}
+
+.perspectiveFlowDetailPanel > footer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.perspectiveFlowDetailPanel > footer > span {
+  height: 2px;
+  overflow: hidden;
+  background: rgba(255,255,255,.08);
+}
+
+.perspectiveFlowDetailPanel > footer > span i {
+  display: block;
+  height: 100%;
+  background: var(--gold-gradient);
+  box-shadow: 0 0 12px rgba(231,197,106,.55);
+  transition: width .38s ease;
+}
+
+.perspectiveFlowDetailPanel > footer > div {
+  display: flex;
+  gap: .45rem;
+}
+
+.perspectiveFlowDetailPanel > footer button {
+  width: 2.8rem;
+  height: 2.55rem;
 }
 
 @keyframes perspectiveCardPulse {
@@ -2739,6 +2924,11 @@
 @keyframes perspectiveCardLift {
   from { opacity: .35; filter: blur(2px); transform: translate(-50%, -50%) matrix(var(--flow-inverse-a, 1.0049), var(--flow-inverse-b, -.1126), var(--flow-inverse-c, -.0439), var(--flow-inverse-d, 1.0049), 0, 0) rotateY(var(--flow-counter-y, 1.2deg)) translateZ(0) scale(.58); }
   to { opacity: 1; filter: blur(0); transform: translate(-50%, -50%) matrix(var(--flow-inverse-a, 1.0049), var(--flow-inverse-b, -.1126), var(--flow-inverse-c, -.0439), var(--flow-inverse-d, 1.0049), 0, 0) rotateY(var(--flow-counter-y, 1.2deg)) translateZ(240px) scale(1.05); }
+}
+
+@keyframes perspectiveDetailReveal {
+  from { opacity: 0; transform: translateX(34px) scale(.975); filter: blur(2px); }
+  to { opacity: 1; transform: translateX(0) scale(1); filter: blur(0); }
 }
 
 .perspectiveConfigurator {
@@ -3240,7 +3430,15 @@
   .perspectiveFlowHeader { left: 10%; top: 42%; width: 68%; }
   .perspectiveFlowStage { left: 0; top: 0; width: 100%; height: 100%; }
   .perspectiveFlowCardGrid { left: 10%; top: 47%; width: 68%; height: 24%; gap: .35rem; }
-  .perspectiveFlowCardGrid .perspectiveFlowNode.perspectiveFlowSelected { width: min(30rem, 70vw); }
+  .perspectiveFlowOpen .perspectiveFlowHeader { width: 43%; }
+  .perspectiveFlowOpen .perspectiveFlowCardGrid { width: 43%; }
+  .perspectiveFlowCardGrid .perspectiveFlowNode.perspectiveFlowSelected { width: auto; }
+  .perspectiveFlowDetailPanel { top: clamp(9rem, 17vh, 11rem); right: 1rem; bottom: 2rem; width: min(43vw, 410px); min-height: 410px; padding: 1.3rem; }
+  .perspectiveFlowDetailPanel > h3 { font-size: clamp(1.8rem, 4vw, 2.8rem); }
+  .perspectiveFlowDetailContext > div { grid-template-columns: 1fr; }
+  .perspectiveFlowDetailContext span,
+  .perspectiveFlowDetailContext strong { padding: .55rem .4rem; }
+  .perspectiveFlowDetailContext strong { border: 0; border-block: 1px solid rgba(231,197,106,.14); }
   .perspectiveFlowReadout { right: 3%; bottom: 10%; }
   .searchCard.marketingSearchHud { grid-template-columns: minmax(220px, .7fr) minmax(0, 1.3fr); gap: .8rem 1.2rem; }
   .marketingSearchCopy { grid-template-columns: 1fr; gap: .4rem; }
@@ -3724,13 +3922,26 @@
     filter: none;
     pointer-events: auto;
   }
-  .perspectiveFlowCardGrid .perspectiveFlowNode.perspectiveFlowSelected { position: relative; left: auto; top: auto; width: 100%; min-height: 190px; overflow: hidden; transform: none; animation: none; }
+  .perspectiveFlowCardGrid .perspectiveFlowNode.perspectiveFlowSelected { position: relative; left: auto; top: auto; width: 100%; min-height: 50px; overflow: hidden; transform: none; animation: none; }
   .perspectiveFlowCardGrid .perspectiveFlowSelected .perspectiveFlowCardHead { padding: .85rem; }
   .perspectiveFlowCardGrid .perspectiveFlowSelected .perspectiveFlowCardHead > b { font-size: .82rem; }
   .perspectiveFlowCardGrid .perspectiveFlowSelected .perspectiveFlowCardHead > strong { font-size: .88rem; }
   .perspectiveFlowCardDetail { inset: 3.7rem .85rem .85rem; gap: .55rem; }
   .perspectiveFlowCardDetail > span { font-size: .78rem; line-height: 1.5; }
   .perspectiveFlowCardDetail > em { font-size: .48rem; }
+  .perspectiveFlowDetailPanel { position: relative; inset: auto; width: 100%; min-height: 0; margin-top: 1rem; padding: 1.15rem; clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px)); }
+  .perspectiveFlowDetailPanel > header { padding-bottom: .8rem; }
+  .perspectiveFlowDetailPanel > header button { width: 2.65rem; height: 2.65rem; }
+  .perspectiveFlowDetailIndex { margin-top: 1.4rem; }
+  .perspectiveFlowDetailIndex strong { font-size: 3rem; }
+  .perspectiveFlowDetailPanel > h3 { margin-top: .8rem; font-size: clamp(1.8rem, 9vw, 2.6rem); }
+  .perspectiveFlowDetailPanel > p { font-size: .84rem; line-height: 1.58; }
+  .perspectiveFlowDetailContext { margin-top: 1.6rem; padding-top: 0; }
+  .perspectiveFlowDetailContext > div { grid-template-columns: 1fr 1fr 1fr; }
+  .perspectiveFlowDetailContext span,
+  .perspectiveFlowDetailContext strong { padding: .65rem .35rem; font-size: .53rem; }
+  .perspectiveFlowDetailContext strong { border-block: 0; border-inline: 1px solid rgba(231,197,106,.14); }
+  .perspectiveFlowDetailPanel > footer { margin-top: 1rem; }
 
   .marketingSection { padding: 0; }
   .marketingSticky { display: flex; flex-direction: column; gap: 2rem; padding: 4.75rem 0 3rem; }
