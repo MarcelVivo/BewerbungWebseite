@@ -911,6 +911,7 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       entity.style.left = `${visiblePosition.x.toFixed(3)}vw`;
       entity.style.top = `${visiblePosition.y.toFixed(3)}vh`;
       entity.style.transform = `translate3d(-50%, -50%, 0) rotate(${visiblePosition.rotation.toFixed(3)}deg) scale(${visiblePosition.scale.toFixed(4)})`;
+      entity.style.setProperty('--aila-counter-rotation', `${(-visiblePosition.rotation).toFixed(3)}deg`);
       entity.style.opacity = visiblePosition.opacity.toFixed(3);
       renderCore();
       if (!mobileViewport) renderTrail();

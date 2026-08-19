@@ -59,9 +59,9 @@ export default function AilaParticleGreeting() {
         sourceX: targetX + Math.cos(angle) * distance,
         sourceY: targetY + Math.sin(angle) * distance * .62,
         phase: angle + randomB * 4,
-        depth: kind === 'text' ? .94 + randomA * .18 : .58 + randomA * .88,
-        drift: kind === 'text' ? .04 + randomB * .12 : .35 + randomB * 1.35,
-        size: kind === 'text' ? .58 + randomA * .38 : .82 + randomA * 1.05,
+        depth: kind === 'text' ? .96 + randomA * .12 : .58 + randomA * .88,
+        drift: kind === 'text' ? .025 + randomB * .075 : .35 + randomB * 1.35,
+        size: kind === 'text' ? .38 + randomA * .28 : .82 + randomA * 1.05,
         tone: tone ?? (randomA > .78 ? 'light' : randomA > .24 ? 'gold' : 'deep'),
         kind,
       });
@@ -78,10 +78,10 @@ export default function AilaParticleGreeting() {
       context.setTransform(deviceScale, 0, 0, deviceScale, 0, 0);
       particles = [];
 
-      const centerX = width * .5;
+      const centerX = width * .565;
       const centerY = height * .51;
-      const left = width * .055;
-      const right = width * .945;
+      const left = width * .17;
+      const right = width * .955;
       const top = height * .15;
       const bottom = height * .86;
       const bevel = (bottom - top) * .205;
@@ -116,15 +116,18 @@ export default function AilaParticleGreeting() {
       // translated into a particulate outline instead of a filled surface.
       traceButtonShape(buttonShape, 'contour', 2.65);
 
-      // The short loose connector leaves the bevel and points back towards
-      // AILA, which now sits above-left of the message.
-      const connectorStart = buttonShape[0];
-      for (let index = 0; index < 42; index += 1) {
-        const progress = index / 41;
-        const spread = progress * 2.8;
-        const x = connectorStart.x * (1 - progress) + Math.sin(index * 1.9) * spread;
-        const y = connectorStart.y * (1 - progress) + Math.cos(index * 1.37) * spread;
-        addParticle(x, y, 'contour', particleIndex++, progress > .58 ? 'light' : 'gold');
+      // A subtle horizontal particle bridge runs from AILA's mouth into the
+      // midpoint of the bubble's left bevel.
+      const connectorEnd = {
+        x: (buttonShape[0].x + buttonShape[3].x) / 2,
+        y: (buttonShape[0].y + buttonShape[3].y) / 2,
+      };
+      for (let index = 0; index < 36; index += 1) {
+        const progress = index / 35;
+        const envelope = Math.sin(progress * Math.PI);
+        const x = mix(width * .01, connectorEnd.x, progress);
+        const y = connectorEnd.y + Math.sin(index * 1.57) * envelope * 1.15;
+        addParticle(x, y, 'contour', particleIndex++, progress < .34 ? 'light' : 'gold');
       }
 
       // A larger, looser duplicate creates depth without reintroducing an
@@ -150,7 +153,7 @@ export default function AilaParticleGreeting() {
       maskContext.textBaseline = 'middle';
       maskContext.fillText(MESSAGE, centerX - width * .012, centerY + 1);
       const pixels = maskContext.getImageData(0, 0, mask.width, mask.height).data;
-      const sampleStep = 2;
+      const sampleStep = 1;
       for (let y = 0; y < mask.height; y += sampleStep) {
         for (let x = 0; x < mask.width; x += sampleStep) {
           if (pixels[(y * mask.width + x) * 4 + 3] < 42) continue;
@@ -209,6 +212,23 @@ export default function AilaParticleGreeting() {
             alpha: Math.pow(1 - release, .58),
           };
         };
+        const particlePosition = (
+          particle: GreetingParticle,
+          index: number,
+          gather: number,
+          residualDrift: number,
+        ) => {
+          const release = releaseMotion(particle, index);
+          return {
+            x: mix(particle.sourceX, particle.targetX, gather)
+              + release.x
+              + Math.sin(time * (.52 + particle.depth * .16) + particle.phase) * particle.drift * residualDrift,
+            y: mix(particle.sourceY, particle.targetY, gather)
+              + release.y
+              + Math.cos(time * (.46 + particle.depth * .13) + particle.phase) * particle.drift * residualDrift,
+            releaseAlpha: release.alpha,
+          };
+        };
         context.globalCompositeOperation = 'lighter';
 
         // Soft glow pass. It follows the same points but remains slightly
@@ -221,34 +241,37 @@ export default function AilaParticleGreeting() {
           if (particle.kind === 'text') return;
           const gather = Math.min(1, formation * 1.13);
           const residualDrift = .28 + (1 - gather) * 1.35;
-          const release = releaseMotion(particle, index);
-          const x = mix(particle.sourceX, particle.targetX, gather)
-            + release.x
-            + Math.sin(time * (.52 + particle.depth * .16) + particle.phase) * particle.drift * residualDrift;
-          const y = mix(particle.sourceY, particle.targetY, gather)
-            + release.y
-            + Math.cos(time * (.46 + particle.depth * .13) + particle.phase) * particle.drift * residualDrift;
+          const position = particlePosition(particle, index, gather, residualDrift);
           const radius = particle.size * particle.depth * 2.25;
-          const alpha = visibility * .055 * particle.depth * release.alpha;
+          const alpha = visibility * .055 * particle.depth * position.releaseAlpha;
           const glowColor = particle.tone === 'light' ? GOLD_LIGHT : GOLD_CORE;
           context.fillStyle = `rgba(${glowColor[0]}, ${glowColor[1]}, ${glowColor[2]}, ${alpha})`;
-          context.fillRect(x - radius / 2, y - radius / 2, radius, radius);
+          context.fillRect(position.x - radius / 2, position.y - radius / 2, radius, radius);
         });
         context.restore();
 
+        // A second set of very small, deep-gold pixels sits directly beneath
+        // the bright type particles. It is a particulate depth edge, not a
+        // surface or blur, and keeps the sentence readable over pale footage.
+        context.globalCompositeOperation = 'source-over';
+        particles.forEach((particle, index) => {
+          if (particle.kind !== 'text') return;
+          const gather = formation;
+          const position = particlePosition(particle, index, gather, .025 + (1 - gather) * 1.12);
+          const alpha = visibility * .84 * Math.min(1, gather * 1.8) * position.releaseAlpha;
+          const size = particle.size * particle.depth + .42;
+          context.fillStyle = `rgba(73, 39, 6, ${alpha})`;
+          context.fillRect(position.x - size / 2 + .42, position.y - size / 2 + .62, size, size);
+        });
+
         // Crisp particle pass: tiny squares and circles at different depths.
+        context.globalCompositeOperation = 'lighter';
         particles.forEach((particle, index) => {
           const gather = particle.kind === 'text' ? formation : Math.min(1, formation * 1.13);
           const residualDrift = particle.kind === 'text'
             ? .035 + (1 - gather) * 1.12
             : .18 + (1 - gather) * 1.45;
-          const release = releaseMotion(particle, index);
-          const x = mix(particle.sourceX, particle.targetX, gather)
-            + release.x
-            + Math.sin(time * (.52 + particle.depth * .16) + particle.phase) * particle.drift * residualDrift;
-          const y = mix(particle.sourceY, particle.targetY, gather)
-            + release.y
-            + Math.cos(time * (.46 + particle.depth * .13) + particle.phase) * particle.drift * residualDrift;
+          const position = particlePosition(particle, index, gather, residualDrift);
           const shimmer = particle.kind === 'text'
             ? .94 + Math.sin(time * .78 + particle.phase) * .06
             : .76 + Math.sin(time * 1.25 + particle.phase) * .24;
@@ -256,7 +279,7 @@ export default function AilaParticleGreeting() {
             * shimmer
             * (particle.kind === 'text' ? 1 : particle.kind === 'contour' ? .38 : .22)
             * Math.min(1, gather * 1.6)
-            * release.alpha;
+            * position.releaseAlpha;
           const size = particle.size * particle.depth;
           const color = particle.tone === 'light'
             ? GOLD_LIGHT
@@ -267,10 +290,10 @@ export default function AilaParticleGreeting() {
           context.fillStyle = `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${toneAlpha})`;
           if ((index + particle.kind.length) % 4 === 0) {
             context.beginPath();
-            context.arc(x, y, Math.max(.38, size * .52), 0, Math.PI * 2);
+            context.arc(position.x, position.y, Math.max(particle.kind === 'text' ? .22 : .38, size * .52), 0, Math.PI * 2);
             context.fill();
           } else {
-            context.fillRect(x - size / 2, y - size / 2, size, size);
+            context.fillRect(position.x - size / 2, position.y - size / 2, size, size);
           }
         });
         context.globalCompositeOperation = 'source-over';
