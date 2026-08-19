@@ -308,7 +308,9 @@ export function PerspectiveBusinessFlow({
           id="perspective-flow-detail-panel"
           className={styles.perspectiveFlowDetailPanel}
           style={{
-            '--detail-plane-angle': `${Math.max(-6, Math.min(6, topEdgeAngle * .55))}deg`,
+            '--detail-plane-transform': planeTransform === 'none'
+              ? 'translate3d(900px, -300px, 0)'
+              : `${planeTransform} translate3d(900px, -300px, 0)`,
           } as CSSProperties}
           aria-live="polite"
         >
