@@ -3004,11 +3004,14 @@
 .azDetail h4 { margin: .6rem 0 .7rem; font-size: clamp(1.4rem, 2.4vw, 2.6rem); font-weight: 540; letter-spacing: -.04em; line-height: 1; }
 .azDetail p { max-width: 31rem; margin: 0; color: var(--muted); font-size: .83rem; line-height: 1.6; }
 
-.dataSection { --data-dock-engaged: 0; --data-dock-charge: 0; min-height: 210svh; padding: 0; background: radial-gradient(circle at 25% 48%, rgba(200,154,61,.045), transparent 33%); }
-.dataLayout { align-items: stretch; }
-.layoutRight .dataLayout { grid-template-columns: minmax(0, 1.14fr) minmax(0, .86fr); }
-.layoutRight .dataLayout > .sectionCopy { grid-column: 2; grid-row: 1; }
-.layoutRight .dataLayout > .trustCards { grid-column: 1; grid-row: 1; }
+.dataSection { --data-dock-engaged: 0; --data-dock-charge: 0; min-height: 0; padding: 0; background: radial-gradient(circle at 25% 48%, rgba(200,154,61,.045), transparent 33%); }
+.dataSection .pauseSticky { position: relative; top: auto; height: auto; min-height: 0; padding: clamp(5rem, 8vw, 8rem) 0; overflow: visible; }
+.dataSection .pauseFit { width: 100%; margin-top: 0; transform: none; }
+.dataLayout,
+.layoutRight .dataLayout { grid-template-columns: minmax(0, 1fr); align-items: stretch; }
+.layoutRight .dataLayout > .sectionCopy,
+.layoutRight .dataLayout > .trustCards { width: 100%; max-width: none; grid-column: 1; grid-row: auto; }
+.dataLayout > .trustCards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .architectureStack { position: relative; min-width: 0; margin-top: 3rem; border-top: 1px solid rgba(231,197,106,.24); }
 .architectureHeader { padding: 1.1rem 0 1rem; display: grid; gap: .55rem; }
 .architectureHeader small { color: var(--gold-light); font: 650 .46rem/1 var(--font-chakra-petch), monospace; letter-spacing: .14em; }
@@ -3397,7 +3400,8 @@
   .azLetters { grid-template-columns: repeat(7, 1fr); }
   .azDetail { grid-template-columns: 92px 1fr; gap: 1rem; min-height: 185px; }
   .azDetail > span { font-size: 6.2rem; }
-  .trustCards { grid-template-columns: 1fr; }
+  .trustCards,
+  .dataLayout > .trustCards { grid-template-columns: 1fr; }
   .trustCards article { min-height: 360px; }
   .machineReadable { margin-top: 3rem; }
   .machineReadable > div { grid-template-columns: 1fr; gap: .6rem; }
@@ -3775,7 +3779,7 @@
   .architectureLayerToggle strong { font-size: .9rem; }
   .architectureLayerToggle small { font-size: .62rem; white-space: normal; }
   .architectureLayerToggle > b { width: 38px; height: 38px; }
-  .architectureLayerDetail { padding-inline: 5.05rem .75rem; }
+  .architectureLayerDetail { padding-inline: .85rem; }
   .architectureLayerOpen .architectureLayerDetail { padding-bottom: 1rem; }
   .architectureLayerDetail > p { font-size: .79rem; line-height: 1.58; }
   .architectureLayerDetail footer strong { font-size: .73rem; }
@@ -3854,7 +3858,7 @@
   .dashboardPipeline { grid-template-columns: 1fr 1fr; }
   .architectureLayerToggle { grid-template-columns: 1.45rem 2.25rem minmax(0, 1fr) 2.25rem; gap: .4rem; padding: .7rem .55rem; }
   .architectureLayerToggle > i { width: 34px; height: 34px; }
-  .architectureLayerDetail { padding-inline: 4.45rem .65rem; }
+  .architectureLayerDetail { padding-inline: .7rem; }
   .architectureConnector { left: 2rem; }
   .forecastPanel dl { grid-template-columns: 1fr; gap: .55rem; }
   .forecastPanel dl > div { grid-template-columns: 1fr auto; align-items: baseline; }

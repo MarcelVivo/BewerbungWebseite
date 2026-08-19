@@ -836,7 +836,7 @@ export default function MarcelExperience() {
         <section id="daten-intelligenz" className={`${styles.section} ${styles.dataSection} ${styles.layoutRight}`}>
           <SectionDockingStation station="data" />
           <div className={styles.pauseSticky}>
-            <div className={styles.pauseFit} data-fit>
+            <div className={styles.pauseFit}>
               <div className={styles.dataLayout}>
                 <div className={styles.sectionCopy} data-reveal="right">
                   <p className={styles.eyebrow}><span />{c.dataEyebrow}</p>
