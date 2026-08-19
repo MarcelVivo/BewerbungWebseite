@@ -15,7 +15,7 @@ import SectionDockingStation from './SectionDockingStation';
 import SystemDockingStation from './SystemDockingStation';
 import WebsiteDockingStation from './WebsiteDockingStation';
 import { ArchitectureStack, DashboardMockup, PerspectiveBusinessFlow } from './Visuals';
-import { azItems, copy, flowStepDetails, flowSteps, systemNodes } from './content';
+import { copy, flowStepDetails, flowSteps, systemNodes } from './content';
 import styles from './experience.module.css';
 
 type HeroPhase = 'loading' | 'ignition' | 'revealed';
@@ -184,7 +184,6 @@ export default function MarcelExperience() {
   const [activeModule, setActiveModule] = useState(0);
   const [activeFlow, setActiveFlow] = useState(0);
   const [activeOperatingModule, setActiveOperatingModule] = useState<number | null>(null);
-  const [activeLetter, setActiveLetter] = useState(0);
   const [heroPhase, setHeroPhase] = useState<HeroPhase>('loading');
   const [heroLoadProgress, setHeroLoadProgress] = useState(0);
   const selectedProjects = useMemo(() => [PROJECTS[0], PROJECTS[3], PROJECTS[1]].filter(Boolean), []);
@@ -820,15 +819,6 @@ export default function MarcelExperience() {
               </div>
               <div className={styles.dashboardCopy} data-reveal="up"><p>{c.dashboardEyebrow}</p><h3>{c.dashboardTitle}</h3><span>{c.dashboardText}</span></div>
 
-              <div className={styles.azExperience} data-reveal="up">
-                <div className={styles.azCopy}><p className={styles.eyebrow}><span />{c.azEyebrow}</p><h3>{c.azTitle}</h3><p>{c.azText}</p></div>
-                <div className={styles.azPicker}>
-                  <div className={styles.azLetters} role="tablist" aria-label={c.azTitle}>
-                    {azItems[lang].map(([letter, title], index) => <button key={letter} type="button" role="tab" aria-selected={activeLetter === index} title={title} className={activeLetter === index ? styles.azActive : ''} onMouseEnter={() => setActiveLetter(index)} onFocus={() => setActiveLetter(index)} onClick={() => setActiveLetter(index)}>{letter}</button>)}
-                  </div>
-                  <div className={styles.azDetail} role="tabpanel"><span>{azItems[lang][activeLetter][0]}</span><div><small>{String(activeLetter + 1).padStart(2, '0')} / 26</small><h4>{azItems[lang][activeLetter][1]}</h4><p>{azItems[lang][activeLetter][2]}</p></div></div>
-                </div>
-              </div>
             </div>
           </div>
         </section>

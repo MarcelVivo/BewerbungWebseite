@@ -2990,20 +2990,6 @@
 .dashboardCopy h3 { margin: 0; font-size: clamp(1.5rem, 2.6vw, 2.75rem); font-weight: 540; letter-spacing: -.045em; }
 .dashboardCopy > span { color: var(--muted); font-size: .8rem; line-height: 1.6; }
 
-.azExperience { width: var(--container); margin: clamp(2.2rem, 3.5vw, 3.2rem) 0 0 var(--container-left); padding-top: clamp(1.5rem, 2.5vw, 2rem); border-top: 1px solid rgba(231,197,106,.2); display: grid; grid-template-columns: .72fr 1.28fr; gap: 5rem; align-items: start; }
-.azCopy h3 { margin: 0; font-size: clamp(2.8rem, 4vw, 4.8rem); font-weight: 530; letter-spacing: -.055em; line-height: .98; }
-.azCopy > p:last-child { max-width: 31rem; margin: 1.5rem 0 0; color: var(--muted); line-height: 1.7; }
-.azPicker { border-top: 1px solid rgba(231,197,106,.28); }
-.azLetters { padding: 1rem 0; display: grid; grid-template-columns: repeat(13, 1fr); gap: .25rem; border-bottom: 1px solid var(--line); }
-.azLetters button { aspect-ratio: 1; padding: 0; display: grid; place-items: center; border: 1px solid transparent; background: transparent; color: #666b66; font: 600 .64rem/1 var(--font-chakra-petch), monospace; cursor: pointer; transition: color .2s ease, border-color .2s ease, background .2s ease; }
-.azLetters button:hover { color: #dddcd5; border-color: var(--line); }
-.azLetters .azActive { color: #11130f; border-color: var(--gold-light); background: var(--gold-gradient); box-shadow: 0 0 16px rgba(200,154,61,.15); }
-.azDetail { min-height: 220px; display: grid; grid-template-columns: clamp(100px, 18vw, 180px) 1fr; align-items: center; gap: 2rem; padding: 1.5rem 0; }
-.azDetail > span { color: transparent; background: var(--gold-gradient); background-clip: text; -webkit-background-clip: text; font: 500 clamp(6rem, 12vw, 11rem)/.8 var(--font-chakra-petch), monospace; letter-spacing: -.1em; opacity: .8; }
-.azDetail small { color: var(--faint); font: 600 .5rem/1 var(--font-chakra-petch), monospace; letter-spacing: .12em; }
-.azDetail h4 { margin: .6rem 0 .7rem; font-size: clamp(1.4rem, 2.4vw, 2.6rem); font-weight: 540; letter-spacing: -.04em; line-height: 1; }
-.azDetail p { max-width: 31rem; margin: 0; color: var(--muted); font-size: .83rem; line-height: 1.6; }
-
 .dataSection { --data-dock-engaged: 0; --data-dock-charge: 0; min-height: 0; padding: 0; background: radial-gradient(circle at 25% 48%, rgba(200,154,61,.045), transparent 33%); }
 .dataSection .pauseSticky { position: relative; top: auto; height: auto; min-height: 0; padding: clamp(5rem, 8vw, 8rem) 0; overflow: visible; }
 .dataSection .pauseFit { width: 100%; margin-top: 0; transform: none; }
@@ -3220,8 +3206,6 @@
   .dashboard { min-height: 570px; }
   .dashboardCopy { grid-template-columns: 1fr 1.3fr; }
   .dashboardCopy > span { grid-column: 2; }
-  .azExperience { grid-template-columns: 1fr; gap: 3rem; }
-  .azLetters { grid-template-columns: repeat(13, 1fr); }
   .architectureStack { width: 100%; max-width: none; }
   .trustCards { grid-template-columns: 1fr 1fr; }
   .caseGrid { grid-template-columns: 1fr 1fr; }
@@ -3396,10 +3380,6 @@
   .activityPanel { display: none; }
   .dashboardCopy { grid-template-columns: 1fr; gap: .7rem; }
   .dashboardCopy > span { grid-column: auto; }
-  .azExperience { margin-top: 6rem; gap: 2rem; }
-  .azLetters { grid-template-columns: repeat(7, 1fr); }
-  .azDetail { grid-template-columns: 92px 1fr; gap: 1rem; min-height: 185px; }
-  .azDetail > span { font-size: 6.2rem; }
   .trustCards,
   .dataLayout > .trustCards { grid-template-columns: 1fr; }
   .trustCards article { min-height: 360px; }
@@ -3581,7 +3561,6 @@
   .aboutLayout,
   .osLayout,
   .dashboardCopy,
-  .azExperience,
   .machineReadable,
   .caseGrid,
   .factGrid,
@@ -3761,16 +3740,6 @@
   .dashboardCopy { margin-top: 1.5rem; padding: 1.2rem 0; }
   .dashboardCopy h3 { font-size: 1.65rem; line-height: 1.05; }
   .dashboardCopy > span { font-size: .78rem; }
-  .azExperience { margin-top: 4rem; padding-top: 1.5rem; }
-  .azCopy h3 { font-size: clamp(2.25rem, 10vw, 3.4rem); }
-  .azCopy > p:last-child { margin-top: 1rem; font-size: .9rem; line-height: 1.62; }
-  .azLetters { grid-template-columns: repeat(5, 1fr); gap: .35rem; }
-  .azLetters button { min-width: 0; min-height: 40px; aspect-ratio: auto; }
-  .azDetail { grid-template-columns: 68px minmax(0, 1fr); min-height: 170px; gap: .85rem; padding: 1rem 0; }
-  .azDetail > span { font-size: 4.4rem; }
-  .azDetail h4 { font-size: 1.35rem; overflow-wrap: anywhere; }
-  .azDetail p { font-size: .78rem; }
-
   .architectureStack { min-height: 0; margin-top: 2rem; }
   .architectureHeader { padding: .9rem 0; }
   .architectureHeader strong { font-size: 1.15rem; }
@@ -3851,8 +3820,6 @@
   .sectionHeader h2,
   .systemControlColumn .sectionHeader h2 { font-size: clamp(2.1rem, 10.5vw, 3rem); }
   .marketingSearchHud .searchFeatures { grid-template-columns: 1fr; }
-  .azDetail { grid-template-columns: 54px minmax(0, 1fr); }
-  .azDetail > span { font-size: 3.6rem; }
   .metricGrid { grid-template-columns: 1fr; }
   .dashboardBody { min-height: 0; }
   .dashboardPipeline { grid-template-columns: 1fr 1fr; }
