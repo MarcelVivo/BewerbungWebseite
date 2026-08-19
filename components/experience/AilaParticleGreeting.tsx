@@ -17,9 +17,9 @@ type GreetingParticle = {
 };
 
 const MESSAGE = 'Hallo, ich bin Lena';
-const GOLD_LIGHT = [255, 218, 103] as const;
-const GOLD_CORE = [235, 171, 46] as const;
-const GOLD_DEEP = [137, 82, 15] as const;
+const GOLD_LIGHT = [255, 190, 73] as const;
+const GOLD_CORE = [211, 119, 25] as const;
+const GOLD_DEEP = [101, 51, 11] as const;
 const clamp01 = (value: number) => Math.min(1, Math.max(0, value));
 const mix = (from: number, to: number, amount: number) => from + (to - from) * amount;
 const easeOut = (value: number) => 1 - Math.pow(1 - clamp01(value), 3);
@@ -61,7 +61,11 @@ export default function AilaParticleGreeting() {
         phase: angle + randomB * 4,
         depth: kind === 'text' ? .96 + randomA * .12 : .58 + randomA * .88,
         drift: kind === 'text' ? .025 + randomB * .075 : .35 + randomB * 1.35,
-        size: kind === 'text' ? .38 + randomA * .28 : .82 + randomA * 1.05,
+        size: kind === 'text'
+          ? .38 + randomA * .28
+          : kind === 'contour'
+            ? 1.02 + randomA * .92
+            : .68 + randomA * .8,
         tone: tone ?? (randomA > .78 ? 'light' : randomA > .24 ? 'gold' : 'deep'),
         kind,
       });
@@ -104,7 +108,7 @@ export default function AilaParticleGreeting() {
           const count = Math.max(4, Math.round(edgeLength / spacing));
           for (let index = 0; index < count; index += 1) {
             const progress = index / count;
-            const organicDrift = Math.sin(index * 1.71 + edgeIndex * 2.4) * (kind === 'contour' ? .34 : .68);
+            const organicDrift = Math.sin(index * 1.71 + edgeIndex * 2.4) * (kind === 'contour' ? .24 : .58);
             const x = mix(point.x, next.x, progress) + (edgeIndex % 2 ? organicDrift : 0);
             const y = mix(point.y, next.y, progress) + (edgeIndex % 2 ? 0 : organicDrift);
             addParticle(x, y, kind, particleIndex++, edgeIndex === 1 ? 'light' : 'gold');
@@ -114,7 +118,7 @@ export default function AilaParticleGreeting() {
 
       // The exact skewed silhouette used by the site's gold CTA buttons,
       // translated into a particulate outline instead of a filled surface.
-      traceButtonShape(buttonShape, 'contour', 2.65);
+      traceButtonShape(buttonShape, 'contour', 1.82);
 
       // A subtle horizontal particle bridge runs from AILA's mouth into the
       // midpoint of the bubble's left bevel.
@@ -243,25 +247,34 @@ export default function AilaParticleGreeting() {
           const residualDrift = .28 + (1 - gather) * 1.35;
           const position = particlePosition(particle, index, gather, residualDrift);
           const radius = particle.size * particle.depth * 2.25;
-          const alpha = visibility * .055 * particle.depth * position.releaseAlpha;
+          const alpha = visibility * .11 * particle.depth * position.releaseAlpha;
           const glowColor = particle.tone === 'light' ? GOLD_LIGHT : GOLD_CORE;
           context.fillStyle = `rgba(${glowColor[0]}, ${glowColor[1]}, ${glowColor[2]}, ${alpha})`;
           context.fillRect(position.x - radius / 2, position.y - radius / 2, radius, radius);
         });
         context.restore();
 
-        // A second set of very small, deep-gold pixels sits directly beneath
-        // the bright type particles. It is a particulate depth edge, not a
-        // surface or blur, and keeps the sentence readable over pale footage.
+        // A second set of very small, deep-copper pixels sits directly beneath
+        // both the type and frame. It remains particulate—not a surface or
+        // blur—while preserving contrast over pale footage.
         context.globalCompositeOperation = 'source-over';
         particles.forEach((particle, index) => {
-          if (particle.kind !== 'text') return;
-          const gather = formation;
-          const position = particlePosition(particle, index, gather, .025 + (1 - gather) * 1.12);
-          const alpha = visibility * .84 * Math.min(1, gather * 1.8) * position.releaseAlpha;
-          const size = particle.size * particle.depth + .42;
-          context.fillStyle = `rgba(73, 39, 6, ${alpha})`;
-          context.fillRect(position.x - size / 2 + .42, position.y - size / 2 + .62, size, size);
+          if (particle.kind === 'halo') return;
+          const gather = particle.kind === 'text' ? formation : Math.min(1, formation * 1.13);
+          const residualDrift = particle.kind === 'text'
+            ? .025 + (1 - gather) * 1.12
+            : .18 + (1 - gather) * 1.45;
+          const position = particlePosition(particle, index, gather, residualDrift);
+          const alpha = visibility
+            * (particle.kind === 'text' ? .88 : .74)
+            * Math.min(1, gather * 1.8)
+            * position.releaseAlpha;
+          const size = particle.size * particle.depth + (particle.kind === 'text' ? .42 : .66);
+          context.fillStyle = particle.kind === 'text'
+            ? `rgba(69, 31, 5, ${alpha})`
+            : `rgba(82, 37, 7, ${alpha})`;
+          const offset = particle.kind === 'text' ? .5 : .62;
+          context.fillRect(position.x - size / 2 + offset, position.y - size / 2 + offset, size, size);
         });
 
         // Crisp particle pass: tiny squares and circles at different depths.
@@ -277,7 +290,7 @@ export default function AilaParticleGreeting() {
             : .76 + Math.sin(time * 1.25 + particle.phase) * .24;
           const alpha = visibility
             * shimmer
-            * (particle.kind === 'text' ? 1 : particle.kind === 'contour' ? .38 : .22)
+            * (particle.kind === 'text' ? 1 : particle.kind === 'contour' ? .72 : .26)
             * Math.min(1, gather * 1.6)
             * position.releaseAlpha;
           const size = particle.size * particle.depth;

@@ -73,15 +73,15 @@
 .ailaGreeting {
   position: absolute;
   z-index: 8;
-  top: 46%;
+  top: 58%;
   right: auto;
-  left: 36%;
+  left: 64%;
   width: clamp(18rem, 28vw, 24rem);
   aspect-ratio: 2.86 / 1;
   display: block;
   opacity: 0;
   visibility: hidden;
-  mix-blend-mode: screen;
+  mix-blend-mode: normal;
   filter:
     drop-shadow(0 0 .7rem rgba(246, 227, 161, .12))
     drop-shadow(0 .8rem 1.8rem rgba(0, 0, 0, .38));
@@ -3799,9 +3799,9 @@
   }
 
   .ailaGreeting {
-    top: 48%;
+    top: 55%;
     right: auto;
-    left: 38%;
+    left: 55%;
     width: clamp(15rem, 70vw, 17rem);
   }
 
