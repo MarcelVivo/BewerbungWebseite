@@ -45,3 +45,12 @@ Diese Version übernimmt die Identität aus `aila-human-ai-fusion-v6.png` und er
 ## Verwendung
 
 In Kling alle vier Einzelbilder als ein gemeinsames AILA-Element verwenden. Die Frontansicht definiert Gesicht und Handzuordnung, die Dreiviertelansicht die Hauptidentität und Handtiefe, das Profil die räumliche Konstruktion und die Aufmerksamkeitshaltung die CTA-Geste.
+
+## Greenscreen-Ausgabe
+
+Der Ordner `greenscreen/` enthält dieselben vier Ansichten vor einem gleichmäßigen Chroma-Grün. Für eine Website-Animation mit der vorhandenen WebGL-Freistellung gilt:
+
+- `greenscreen/aila-reference-front-greenscreen.png` als Startbild verwenden
+- Die schwarzen Referenzen weiterhin für die reine Charakteridentität im AILA-Element verwenden
+- Im Videoprompt einen vollständig gleichmäßigen Chroma-Hintergrund ohne Schatten, Verlauf, Reflexionen oder grünes Streulicht verlangen
+- Ein schwarzes Startbild nicht für die finale freizustellende Animation verwenden, da AILAs dunkle Hülle bei einer Schwarzfreistellung beschädigt würde
