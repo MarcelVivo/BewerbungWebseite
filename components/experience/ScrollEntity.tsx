@@ -1014,7 +1014,7 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
         }}
       >
         <span className={styles.ailaGreeting} role="status" aria-live="polite">
-          Hallo, ich bin Lena
+          <span>Hallo, ich bin Lena</span>
         </span>
         <video
           ref={videoRef}
