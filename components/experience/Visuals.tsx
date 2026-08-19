@@ -309,8 +309,8 @@ export function PerspectiveBusinessFlow({
           className={styles.perspectiveFlowDetailPanel}
           style={{
             '--detail-plane-transform': planeTransform === 'none'
-              ? 'translate3d(900px, -300px, 0)'
-              : `${planeTransform} translate3d(900px, -300px, 0)`,
+              ? 'translate3d(1050px, -300px, 0)'
+              : `${planeTransform} translate3d(1050px, -300px, 0)`,
           } as CSSProperties}
           aria-live="polite"
         >
