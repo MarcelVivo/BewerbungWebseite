@@ -6,6 +6,7 @@ import { useEffect, useRef, type RefObject } from 'react';
 import { Object3D } from 'three';
 import FlightPathEditor from './FlightPathEditor';
 import TitleDepthLayer from './TitleDepthLayer';
+import AilaParticleGreeting from './AilaParticleGreeting';
 import {
   getFlightPathDraft,
   setFlightPathRuntime,
@@ -1013,9 +1014,7 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
           transform: `translate3d(-50%, -50%, 0) rotate(${getFlightPathDraft().start.rotation}deg) scale(${getFlightPathDraft().start.scale})`,
         }}
       >
-        <span className={styles.ailaGreeting} role="status" aria-live="polite">
-          <span>Hallo, ich bin Lena</span>
-        </span>
+        <AilaParticleGreeting />
         <video
           ref={videoRef}
           className={styles.scrollEntitySource}

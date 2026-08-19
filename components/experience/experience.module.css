@@ -73,90 +73,49 @@
 .ailaGreeting {
   position: absolute;
   z-index: 8;
-  top: 8%;
-  right: 74%;
-  min-width: max-content;
-  padding: .98rem 1.4rem 1rem;
-  border: 0;
-  border-radius: 56% 44% 52% 48% / 62% 48% 52% 38%;
-  background:
-    radial-gradient(circle at 24% 30%, rgba(246, 227, 161, .13), transparent 38%),
-    radial-gradient(circle at 76% 72%, rgba(200, 154, 61, .11), transparent 44%),
-    rgba(7, 9, 8, .76);
-  box-shadow:
-    0 1.25rem 3rem rgba(0, 0, 0, .46),
-    inset 0 0 1.5rem rgba(246, 227, 161, .045),
-    0 0 2.5rem rgba(231, 197, 106, .1);
-  color: rgba(244, 242, 235, .95);
-  font-size: clamp(.9rem, 1.15vw, 1.08rem);
-  font-weight: 540;
-  letter-spacing: .012em;
-  line-height: 1.2;
-  white-space: nowrap;
-  isolation: isolate;
-  -webkit-backdrop-filter: blur(12px) saturate(.88);
-  backdrop-filter: blur(12px) saturate(.88);
+  top: -2%;
+  right: 68%;
+  width: clamp(18rem, 28vw, 24rem);
+  aspect-ratio: 2.86 / 1;
+  display: block;
   opacity: 0;
   visibility: hidden;
-  filter: blur(15px) brightness(1.25);
-  transform: translate3d(.75rem, .55rem, 0) scale(.82);
+  mix-blend-mode: screen;
+  filter:
+    drop-shadow(0 0 .7rem rgba(246, 227, 161, .12))
+    drop-shadow(0 .8rem 1.8rem rgba(0, 0, 0, .38));
+  transform: translate3d(.75rem, .5rem, 0) scale(.9);
   transform-origin: right center;
   transition:
-    opacity .62s ease,
-    visibility 0s linear .62s,
-    filter .75s ease,
-    transform .82s cubic-bezier(.16, .8, .2, 1);
+    opacity .48s ease,
+    visibility 0s linear .48s,
+    transform .7s cubic-bezier(.16, .8, .2, 1);
   pointer-events: none;
 }
 
-.ailaGreeting > span {
-  position: relative;
-  z-index: 2;
-  text-shadow: 0 0 1rem rgba(246, 227, 161, .12);
-}
-
-.ailaGreeting::before {
-  content: '';
-  position: absolute;
-  z-index: 1;
-  inset: -.35rem;
-  border-radius: inherit;
-  background: repeating-conic-gradient(
-    from 45deg,
-    rgba(246, 227, 161, .52) 0 25%,
-    rgba(200, 154, 61, .12) 0 50%
-  ) 0 0 / 9px 9px;
-  -webkit-mask-image: radial-gradient(ellipse, #000 25%, rgba(0, 0, 0, .72) 52%, transparent 76%);
-  mask-image: radial-gradient(ellipse, #000 25%, rgba(0, 0, 0, .72) 52%, transparent 76%);
-  mix-blend-mode: screen;
-  filter: blur(2.5px);
-  opacity: 0;
-  pointer-events: none;
-}
-
-.ailaGreeting::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  right: -.72rem;
-  width: 1.25rem;
-  height: .82rem;
-  border-radius: 72% 28% 68% 32% / 55% 42% 58% 45%;
-  background: radial-gradient(ellipse at 25% 50%, rgba(8, 10, 9, .86), rgba(200, 154, 61, .12) 62%, transparent 75%);
-  filter: blur(2px);
-  transform: translateY(-50%) rotate(-7deg);
+.ailaGreetingCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .scrollEntity[data-greeting='true'] .ailaGreeting {
   opacity: 1;
   visibility: visible;
-  filter: blur(0) brightness(1);
   transform: translate3d(0, 0, 0) scale(1);
-  transition-delay: 1.2s, 0s, 1.2s, 1.2s;
+  transition-delay: .62s, 0s, .62s;
 }
 
-.scrollEntity[data-greeting='true'] .ailaGreeting::before {
-  animation: ailaGreetingPixels 1.05s 1.08s steps(7, end) both;
+.ailaGreetingAccessible {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .scrollEntityGrabSurface {
@@ -1386,14 +1345,6 @@
 @keyframes entityCoreHover {
   0%, 100% { transform: rotate(-.18deg) scale(.997); filter: brightness(.98); }
   50% { transform: rotate(.18deg) scale(1.003); filter: brightness(1.035); }
-}
-
-@keyframes ailaGreetingPixels {
-  0% { opacity: 0; transform: scale(.78); filter: blur(7px); }
-  14% { opacity: .78; }
-  38% { opacity: .58; transform: scale(.94); filter: blur(4px); }
-  68% { opacity: .25; }
-  100% { opacity: 0; transform: scale(1.04); filter: blur(1px); }
 }
 
 @keyframes entityDockedHover {
