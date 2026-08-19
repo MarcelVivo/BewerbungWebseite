@@ -8,12 +8,10 @@ const SYSTEM_CURSOR_PATHS = ['/bewerbungsprofil', '/expertise', '/login', '/dash
 export default function CustomCursor() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const pathname = usePathname();
-  // Auf der öffentlichen Startseite übernimmt die neue, ruhige Agentur-
-  // Journey wieder den vertrauten Systemcursor. Das erhöht Präzision und
-  // wahrgenommene Seriosität; die experimentelle Cursor-Variante bleibt auf
-  // den übrigen öffentlichen Showcase-Seiten erhalten.
-  const useCustomCursor = pathname !== '/'
-    && !SYSTEM_CURSOR_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
+  // Der offene Winkel gehört zur öffentlichen Markenwelt. In den internen
+  // Arbeitsbereichen bleibt der Systemcursor aktiv, damit dichte Formulare,
+  // Tabellen und Drag-and-drop-Oberflächen ihre gewohnte Bedienung behalten.
+  const useCustomCursor = !SYSTEM_CURSOR_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
 
   useEffect(() => {
     if (!useCustomCursor) return;
@@ -48,7 +46,7 @@ export default function CustomCursor() {
       // Nur den kleinen vorherigen Cursorbereich löschen. Ein Clear des
       // kompletten hochauflösenden Viewport-Canvas bei jeder Mausbewegung
       // konkurrierte beim wiederholten Kartenöffnen mit WebGL und SVG.
-      ctx!.clearRect(lastDrawn.x - 28, lastDrawn.y - 28, 56, 56);
+      ctx!.clearRect(lastDrawn.x - 48, lastDrawn.y - 48, 96, 96);
       if (!visible) return;
 
       ctx!.save();
@@ -56,11 +54,11 @@ export default function CustomCursor() {
       ctx!.rotate(-Math.PI / 4);
       ctx!.beginPath();
       ctx!.moveTo(0, 0);
-      ctx!.lineTo(-8, 13);
+      ctx!.lineTo(-12, 30);
       ctx!.moveTo(0, 0);
-      ctx!.lineTo(8, 13);
+      ctx!.lineTo(12, 30);
       ctx!.strokeStyle = pressed ? '#f6e3a1' : '#ffffff';
-      ctx!.lineWidth = 2.2;
+      ctx!.lineWidth = 3.4;
       ctx!.lineCap = 'round';
       ctx!.lineJoin = 'round';
       ctx!.shadowColor = pressed ? 'rgba(231,197,106,0.95)' : 'transparent';
