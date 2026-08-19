@@ -3014,110 +3014,6 @@
   to { opacity: 1; transform: var(--detail-plane-transform) translateX(0) scale(1); filter: blur(0); }
 }
 
-.perspectiveConfigurator {
-  position: absolute;
-  z-index: 220;
-  top: 1rem;
-  right: 1rem;
-  width: min(340px, calc(100vw - var(--rail-safe) - 2rem));
-  max-height: calc(100svh - 2rem);
-  padding: 1rem;
-  overflow: auto;
-  border: 1px solid rgba(231,197,106,.42);
-  background: linear-gradient(155deg, rgba(23,22,18,.98), rgba(5,7,6,.985) 72%);
-  box-shadow: 0 26px 80px rgba(0,0,0,.72), 0 0 26px rgba(231,197,106,.1), inset 0 1px rgba(255,244,203,.08);
-  color: #e9e7df;
-  pointer-events: auto;
-  backdrop-filter: blur(18px);
-}
-
-.perspectiveConfigurator > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding-bottom: .8rem; border-bottom: 1px solid rgba(231,197,106,.16); }
-.perspectiveConfigurator > header > div { display: grid; gap: .35rem; }
-.perspectiveConfigurator > header small { color: var(--gold-light); font: 700 .46rem/1 var(--font-chakra-petch), monospace; letter-spacing: .16em; }
-.perspectiveConfigurator > header strong { font-size: .98rem; font-weight: 640; }
-.perspectiveConfigurator > header button { width: 2rem; height: 2rem; border: 1px solid rgba(231,197,106,.22); background: rgba(255,255,255,.025); color: var(--gold-pale); font-size: 1.25rem; line-height: 1; cursor: pointer; }
-.perspectiveConfigurator > p { margin: .8rem 0; color: rgba(224,224,216,.62); font-size: .68rem; line-height: 1.5; }
-.perspectiveConfiguratorControls { display: grid; gap: .65rem; }
-.perspectiveConfiguratorControls label { display: grid; gap: .32rem; }
-.perspectiveConfiguratorControls label > span { display: flex; align-items: center; justify-content: space-between; gap: .6rem; color: rgba(234,232,223,.76); font: 600 .55rem/1 var(--font-chakra-petch), monospace; letter-spacing: .035em; }
-.perspectiveConfiguratorControls output { color: var(--gold-pale); font-variant-numeric: tabular-nums; }
-.perspectiveConfiguratorControls input { width: 100%; accent-color: #d8b75a; cursor: ew-resize; }
-.perspectiveConfiguratorActions { display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; margin-top: 1rem; }
-.perspectiveConfiguratorActions button { min-height: 2.35rem; padding: .5rem .6rem; border: 1px solid rgba(231,197,106,.25); background: rgba(255,255,255,.025); color: rgba(239,237,228,.76); font: 650 .5rem/1.2 var(--font-chakra-petch), monospace; letter-spacing: .035em; cursor: pointer; }
-.perspectiveConfiguratorActions button:first-child { border-color: rgba(231,197,106,.62); background: linear-gradient(135deg, rgba(231,197,106,.2), rgba(118,17,38,.12)); color: #f4dda0; }
-.perspectiveConfiguratorActions button:hover,
-.perspectiveConfiguratorActions button:focus-visible,
-.perspectiveConfigurator > header button:hover,
-.perspectiveConfigurator > header button:focus-visible { border-color: var(--gold-light); color: #fff0b0; outline: none; }
-.perspectiveConfiguratorStatus { display: block; margin-top: .75rem; color: rgba(169,212,180,.74); font: 600 .46rem/1.4 var(--font-chakra-petch), monospace; }
-
-.perspectiveConfiguratorCorners { display: grid; gap: .42rem; }
-.perspectiveConfiguratorCorners > div { min-height: 2.15rem; display: grid; grid-template-columns: 1.5rem 1fr auto; align-items: center; gap: .5rem; padding: .42rem .5rem; border: 1px solid rgba(231,197,106,.13); background: rgba(255,255,255,.018); }
-.perspectiveConfiguratorCorners b { width: 1.35rem; height: 1.35rem; display: grid; place-items: center; border: 1px solid rgba(231,197,106,.5); border-radius: 50%; color: var(--gold-pale); font: 700 .48rem/1 var(--font-chakra-petch), monospace; }
-.perspectiveConfiguratorCorners span { color: rgba(235,233,224,.72); font: 600 .52rem/1 var(--font-chakra-petch), monospace; }
-.perspectiveConfiguratorCorners output { color: rgba(231,197,106,.62); font: 600 .48rem/1 var(--font-chakra-petch), monospace; font-variant-numeric: tabular-nums; }
-
-.perspectiveQuadEditor {
-  position: absolute;
-  z-index: 105;
-  inset: 0;
-  pointer-events: none;
-}
-
-.perspectiveQuadEditor > svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-.perspectiveQuadEditor > svg polygon { fill: rgba(231,197,106,.025); stroke: rgba(246,205,92,.68); stroke-width: .12; stroke-dasharray: .55 .35; vector-effect: non-scaling-stroke; filter: drop-shadow(0 0 5px rgba(231,197,106,.42)); }
-.perspectiveQuadEditor > button {
-  position: absolute;
-  width: 2.7rem;
-  height: 2.7rem;
-  display: grid;
-  place-items: center;
-  padding: 0;
-  border: 1px solid rgba(255,224,127,.9);
-  border-radius: 50%;
-  background: radial-gradient(circle, #f4d574 0 18%, rgba(77,55,17,.96) 20% 46%, rgba(7,8,7,.94) 48%);
-  color: #fff1b5;
-  box-shadow: 0 0 0 5px rgba(231,197,106,.1), 0 0 22px rgba(231,197,106,.52), 0 8px 22px rgba(0,0,0,.58);
-  transform: translate(-50%, -50%);
-  cursor: grab;
-  pointer-events: auto;
-  touch-action: none;
-  user-select: none;
-}
-
-.perspectiveQuadEditor > button > span { font: 800 .58rem/1 var(--font-chakra-petch), monospace; text-shadow: 0 1px 5px #000; }
-.perspectiveQuadEditor > button > small { position: absolute; left: 50%; top: calc(100% + .4rem); width: max-content; padding: .28rem .4rem; border: 1px solid rgba(231,197,106,.2); background: rgba(4,6,5,.86); color: rgba(244,223,158,.8); font: 650 .42rem/1 var(--font-chakra-petch), monospace; letter-spacing: .04em; transform: translateX(-50%); }
-.perspectiveQuadEditor > button:hover,
-.perspectiveQuadEditor > button:focus-visible,
-.perspectiveQuadEditor > button.perspectiveCornerActive { border-color: #fff0a4; box-shadow: 0 0 0 7px rgba(231,197,106,.15), 0 0 32px rgba(246,205,92,.75), 0 10px 28px rgba(0,0,0,.62); outline: none; cursor: grabbing; }
-
-.perspectiveConfiguratorTrigger {
-  position: absolute;
-  z-index: 120;
-  top: 1rem;
-  right: 1rem;
-  min-height: 2.35rem;
-  display: inline-flex;
-  align-items: center;
-  gap: .55rem;
-  padding: .58rem .8rem;
-  border: 1px solid rgba(231,197,106,.38);
-  background: rgba(7,9,8,.82);
-  color: rgba(239,222,168,.86);
-  box-shadow: 0 12px 30px rgba(0,0,0,.42), inset 0 1px rgba(255,244,203,.06);
-  font: 650 .5rem/1 var(--font-chakra-petch), monospace;
-  letter-spacing: .07em;
-  text-transform: uppercase;
-  cursor: pointer;
-  pointer-events: auto;
-  backdrop-filter: blur(12px);
-}
-
-.perspectiveConfiguratorTrigger > span { color: var(--gold-light); font-size: .9rem; }
-.perspectiveConfiguratorTrigger:hover,
-.perspectiveConfiguratorTrigger:focus-visible { border-color: var(--gold-light); color: #fff0b0; box-shadow: 0 12px 34px rgba(0,0,0,.48), 0 0 18px rgba(231,197,106,.15); outline: none; }
-
-
 .marketingSection { --marketing-progress: 0; --marketing-dock-engaged: 0; --marketing-dock-charge: 0; min-height: 220svh; padding: 0; overflow: visible; background: #070807; }
 .marketingSticky { position: sticky; top: 0; height: 100svh; min-height: 720px; overflow: hidden; background: #070807; }
 .marketingVideoLayer { position: absolute; z-index: 0; inset: 0; overflow: hidden; background: #070807; }
@@ -3827,8 +3723,7 @@
   .problemDockingStation,
   .systemDockingStation,
   .websiteDockingStation,
-  .marketingDockingStation,
-  .perspectiveConfiguratorTrigger { display: none !important; }
+  .marketingDockingStation { display: none !important; }
 
   .mobileNavigator {
     position: fixed;
