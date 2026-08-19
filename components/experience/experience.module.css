@@ -1422,6 +1422,8 @@
 .chapterRail button:focus-visible > b { color: var(--gold-pale); opacity: 1; }
 .chapterLabelShort { display: none; }
 
+.mobileNavigator { display: none; }
+
 .mobileMenu { position: fixed; z-index: 190; inset: 0; visibility: hidden; pointer-events: none; }
 .mobileMenuOpen { visibility: visible; pointer-events: auto; }
 .mobileMenuBackdrop { position: absolute; inset: 0; background: rgba(0,0,0,.68); opacity: 0; backdrop-filter: blur(7px); transition: opacity .3s ease; }
@@ -3377,6 +3379,358 @@
   .websiteDockingStation[data-editor='false'],
   .marketingDockingStation[data-editor='false'],
   .sectionRoundDockingStation[data-editor='false'] { left: clamp(16%, var(--dock-x), 84%); }
+}
+
+/* Mobile is a dedicated reading experience rather than a compressed desktop
+   stage. It keeps the visual language, while removing the fixed rail,
+   projective layouts and full-screen overlays that cost usable width. */
+@media (max-width: 699px) {
+  .experience {
+    --rail-safe: 0rem;
+    --container: calc(100vw - 2rem);
+    --container-left: 1rem;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: clip;
+    padding-bottom: calc(4.25rem + env(safe-area-inset-bottom));
+  }
+
+  .experience main,
+  .experience section,
+  .experience article,
+  .experience form,
+  .experience fieldset,
+  .experience img,
+  .experience video { min-width: 0; max-width: 100%; }
+
+  .experience h1,
+  .experience h2,
+  .experience h3,
+  .experience h4,
+  .experience p,
+  .experience blockquote,
+  .experience dd,
+  .experience a,
+  .experience button { overflow-wrap: anywhere; }
+
+  .chapterRail,
+  .scrollEntity,
+  .scrollEntityTrail,
+  .titleDepthLayer,
+  .sectionDockLayer,
+  .problemDockingStation,
+  .systemDockingStation,
+  .websiteDockingStation,
+  .marketingDockingStation,
+  .perspectiveConfiguratorTrigger { display: none !important; }
+
+  .mobileNavigator {
+    position: fixed;
+    z-index: 220;
+    left: max(.65rem, env(safe-area-inset-left));
+    right: max(.65rem, env(safe-area-inset-right));
+    bottom: max(.65rem, env(safe-area-inset-bottom));
+    min-height: 3.5rem;
+    display: grid;
+    grid-template-columns: 3rem minmax(0, 1fr) 3rem;
+    align-items: stretch;
+    border: 1px solid rgba(231,197,106,.24);
+    border-radius: 1rem;
+    background: rgba(8,10,8,.91);
+    box-shadow: 0 18px 42px rgba(0,0,0,.54), inset 0 1px rgba(255,255,255,.035);
+    backdrop-filter: blur(18px) saturate(1.15);
+    -webkit-backdrop-filter: blur(18px) saturate(1.15);
+  }
+
+  .mobileNavigator > button {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    border: 0;
+    background: transparent;
+    color: var(--gold-pale);
+    touch-action: manipulation;
+  }
+
+  .mobileNavigator > button:first-child { border-right: 1px solid var(--line); border-radius: 1rem 0 0 1rem; }
+  .mobileNavigator > button:last-child { border-left: 1px solid var(--line); border-radius: 0 1rem 1rem 0; }
+  .mobileNavigator > button:disabled { color: #4d514d; }
+  .mobileNavigator .mobileNavigatorCurrent { min-width: 0; padding: .62rem .75rem; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: .2rem; text-align: left; }
+  .mobileNavigatorCurrent small { color: var(--gold-light); font: 650 .45rem/1 var(--font-chakra-petch), monospace; letter-spacing: .12em; }
+  .mobileNavigatorCurrent strong { width: 100%; overflow: hidden; color: #ecece5; font-size: .73rem; font-weight: 620; line-height: 1.1; text-overflow: ellipsis; white-space: nowrap; }
+
+  .hero {
+    min-height: max(720px, 138svh);
+    overflow: clip;
+  }
+
+  .heroSticky { min-height: 100svh; height: 100svh; }
+  .heroLayout { width: var(--container); margin-left: var(--container-left); padding: clamp(5.5rem, 14svh, 7rem) 0 2.25rem; }
+  .heroCopy { width: 100%; text-align: left; }
+  .heroCopy::before { inset: -1.4rem -.75rem -1.8rem; background: linear-gradient(180deg, rgba(3,4,3,.08), rgba(3,4,3,.82) 36%, rgba(3,4,3,.92)); filter: blur(5px); }
+  .heroCopy .eyebrow,
+  .heroCopy .heroActions,
+  .heroCopy .heroTrust { justify-content: flex-start; }
+  .heroCopy .heroTitle > span,
+  .heroCopy .heroTitle > em,
+  .heroCopy .heroLead { width: auto; max-width: 100%; margin-inline: 0; }
+  .heroTitle { transform: none; }
+  .hero h1 { font-size: clamp(2.55rem, 12.2vw, 4.15rem); line-height: .92; letter-spacing: -.065em; }
+  .heroLead { max-width: 32rem; margin-top: 1.15rem; font-size: .98rem; line-height: 1.58; }
+  .heroActions { display: grid; grid-template-columns: 1fr; margin-top: 1.35rem; }
+  .heroActions .primaryButton,
+  .heroActions .textButton { width: 100%; min-height: 50px; margin: 0; }
+  .heroTrust { align-items: flex-start; padding-right: .25rem; font-size: .56rem; line-height: 1.45; }
+  .heroTrust > span { flex: 0 0 21px; }
+  .heroVideoLayer::after { background: linear-gradient(180deg, rgba(3,4,3,.2), transparent 24%, rgba(3,4,3,.42) 50%, rgba(3,4,3,.96) 84%); }
+  .heroVisualMeta { display: none; }
+
+  .section { padding: 4.75rem 0; }
+  .sectionGrid,
+  .sectionHeader,
+  .marketingLayout,
+  .dataLayout,
+  .aboutLayout,
+  .osLayout,
+  .dashboardCopy,
+  .azExperience,
+  .machineReadable,
+  .caseGrid,
+  .factGrid,
+  .finalHeader,
+  .funnelFrame,
+  .systemComposer,
+  .systemPrinciple { width: var(--container); margin-left: var(--container-left); margin-right: 0; }
+
+  .sectionCopy,
+  .sectionHeader,
+  .layoutRight .sectionCopy,
+  .layoutRight .sectionHeader { text-align: left; }
+  .layoutRight .sectionHeader { align-items: flex-start; }
+  .layoutRight .sectionHeader h2,
+  .layoutRight .sectionCopy h2,
+  .layoutRight .sectionHeader > p:last-child,
+  .layoutRight .sectionCopy .sectionLead { max-width: 100%; margin-left: 0; }
+  .layoutRight .sectionHeader .eyebrow,
+  .layoutRight .sectionCopy .eyebrow { justify-content: flex-start; }
+  .layoutRight .sectionCopy blockquote { padding: .3rem 0 .3rem 1rem; border-right: 0; border-left: 1px solid var(--gold-light); }
+  .sectionCopy h2,
+  .sectionHeader h2,
+  .systemControlColumn .sectionHeader h2 { font-size: clamp(2.25rem, 10.8vw, 3.65rem); line-height: .96; letter-spacing: -.055em; text-wrap: balance; }
+  .sectionLead,
+  .sectionHeader > p:last-child { font-size: .96rem; line-height: 1.62; }
+  .sectionCopy blockquote { margin-top: 1.4rem; padding-left: 1rem; font-size: 1rem; line-height: 1.55; }
+
+  .problemSection,
+  .flowSection,
+  .marketingSection,
+  .systemSection,
+  .osSection,
+  .dataSection,
+  .casesSection,
+  .aboutSection,
+  .finalSection { min-height: 0; }
+
+  .problemSticky,
+  .salesSticky,
+  .marketingSticky,
+  .systemPauseSticky,
+  .pauseSticky {
+    position: relative;
+    top: auto;
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .problemSticky { padding: 4.75rem 0 3rem; }
+  .problemVideoLayer,
+  .salesVideoLayer,
+  .marketingVideoLayer { opacity: .64; }
+  .problemVideoLayer::before { background: linear-gradient(180deg, rgba(7,9,7,.96), rgba(7,9,7,.6) 35%, rgba(7,9,7,.72) 68%, #070907 100%); }
+  .problemContent { padding: 0; }
+  .problemContent .sectionCopy { max-width: 100%; }
+  .problemContent .sectionCopy::before { inset: -1.25rem -.65rem -1.5rem; }
+  .problemSequenceStatus { position: relative; right: auto; bottom: auto; width: 100%; margin-top: clamp(11rem, 42svh, 22rem); }
+
+  .systemSection { padding: 4.75rem 0 4rem; }
+  .systemPauseSticky { display: block; padding: 0; }
+  .systemComposer { padding: .75rem; gap: .75rem; border-color: rgba(231,197,106,.16); }
+  .systemArchitectureArt { inset: 0; opacity: .16; filter: saturate(.65) contrast(1.05) brightness(.62); }
+  .systemControlColumn { padding: .55rem .35rem .35rem; gap: .85rem; }
+  .systemControlColumn .sectionHeader > p:last-child { font-size: .91rem; line-height: 1.58; }
+  .moduleTabs { grid-template-columns: 1fr; }
+  .moduleTabs button { min-height: 48px; padding: .7rem .75rem; }
+  .moduleDetail { padding: 1rem; }
+  .moduleDetail header > div { max-width: calc(100% - 3.75rem); }
+  .moduleDetailLead,
+  .moduleDetailBody li,
+  .moduleOutcome p { font-size: .76rem; line-height: 1.55; }
+  .composerVisual { display: none; }
+  .systemPrinciple { margin-top: 1rem; padding: 1.2rem 0 0; }
+  .systemPrinciple p { font-size: 1.25rem; line-height: 1.25; }
+  .systemPrinciple a { min-height: 44px; }
+
+  .flowSection { padding: 0; }
+  .salesSticky { display: flex; flex-direction: column; gap: 2rem; padding: 4.75rem 0 3rem; }
+  .salesHeader { position: relative; left: auto; top: auto; width: var(--container); margin: 0 0 0 var(--container-left); pointer-events: auto; }
+  .salesHeader::before { inset: -1.25rem -.65rem -1.5rem; width: auto; }
+  .salesHeader h2 { max-width: 100%; font-size: clamp(2.2rem, 10.5vw, 3.5rem); }
+  .salesHeader > p:last-child { max-width: 100%; font-size: .92rem; line-height: 1.58; }
+  .perspectiveFlow { position: relative; inset: auto; width: var(--container); min-height: 0; margin-left: var(--container-left); pointer-events: auto; perspective: none; }
+  .perspectiveFlowHeader { position: relative !important; left: auto !important; top: auto !important; width: 100% !important; grid-template-columns: 1fr; gap: .45rem; margin-bottom: .9rem; opacity: 1; transform: none !important; }
+  .perspectiveFlowHeader > span { white-space: normal; }
+  .perspectiveFlowHeader > small { display: block; font-size: .58rem; line-height: 1.45; }
+  .perspectiveFlowStage { position: relative; width: 100%; height: auto; filter: none; transform: none; }
+  .perspectiveFlowCardGrid { position: relative !important; left: auto !important; top: auto !important; width: 100% !important; height: auto !important; display: grid; grid-template-columns: 1fr; grid-template-rows: none; gap: .55rem; transform: none !important; perspective: none; }
+  .perspectiveFlowCardGrid::before { inset: -.35rem; }
+  .perspectiveFlowCardGrid .perspectiveFlowNode,
+  .perspectiveFlowCardGrid .perspectiveFlowNode:hover,
+  .perspectiveFlowCardGrid .perspectiveFlowNode:focus-visible,
+  .perspectiveFlowCardGrid .perspectiveFlowNode[aria-current='step'] { position: relative; left: auto; top: auto; width: 100%; height: auto; min-height: 50px; opacity: 1; transform: none; animation: none; filter: none; }
+  .perspectiveFlowCardGrid .perspectiveFlowNode::before { animation: none; }
+  .perspectiveFlowCardHead { min-height: 50px; padding: .8rem; gap: .65rem; }
+  .perspectiveFlowCardHead > b { font-size: .68rem; }
+  .perspectiveFlowCardHead > strong { font-size: .76rem; white-space: normal; }
+  .perspectiveFlowCardGridOpen .perspectiveFlowNode:not(.perspectiveFlowSelected) { opacity: .36; transform: none; filter: none; }
+  .perspectiveFlowCardGrid .perspectiveFlowNode.perspectiveFlowSelected { position: relative; left: auto; top: auto; width: 100%; min-height: 190px; overflow: hidden; transform: none; animation: none; }
+  .perspectiveFlowCardGrid .perspectiveFlowSelected .perspectiveFlowCardHead { padding: .85rem; }
+  .perspectiveFlowCardGrid .perspectiveFlowSelected .perspectiveFlowCardHead > b { font-size: .82rem; }
+  .perspectiveFlowCardGrid .perspectiveFlowSelected .perspectiveFlowCardHead > strong { font-size: .88rem; }
+  .perspectiveFlowCardDetail { inset: 3.7rem .85rem .85rem; gap: .55rem; }
+  .perspectiveFlowCardDetail > span { font-size: .78rem; line-height: 1.5; }
+  .perspectiveFlowCardDetail > em { font-size: .48rem; }
+
+  .marketingSection { padding: 0; }
+  .marketingSticky { display: flex; flex-direction: column; gap: 2rem; padding: 4.75rem 0 3rem; }
+  .marketingHeader { position: relative; top: auto; right: auto; left: auto; width: var(--container); margin-left: var(--container-left); text-align: left; }
+  .marketingHeader::before { inset: -1.25rem -.65rem -1.5rem; border-right: 0; border-left: 1px solid rgba(231,197,106,.18); background: linear-gradient(100deg, rgba(7,8,7,.84), rgba(7,8,7,.2) 78%, transparent); clip-path: polygon(0 0, 100% 3%, 96% 94%, 4% 100%); }
+  .marketingHeader h2,
+  .marketingHeader .sectionLead { max-width: 100%; margin-left: 0; }
+  .marketingHeader h2 { font-size: clamp(2.25rem, 10.8vw, 3.6rem); }
+  .marketingHeader .sectionLead { font-size: .92rem; line-height: 1.58; }
+  .searchCard.marketingSearchHud { position: relative; left: auto; bottom: auto; width: var(--container); margin: clamp(9rem, 32svh, 17rem) 0 0 var(--container-left); grid-template-columns: 1fr; gap: .8rem; padding: 1rem; }
+  .marketingSearchCopy > p { display: block; font-size: .76rem; line-height: 1.5; }
+  .marketingSearchHud .searchFeatures { grid-template-columns: 1fr 1fr; gap: .55rem; }
+  .marketingSearchHud .searchFeatures span { min-height: 34px; font-size: .58rem; }
+
+  .pauseSticky { padding: 4.75rem 0; }
+  .pauseFit { margin-top: 0; transform: none; }
+  .sectionHeader { margin-bottom: 2rem; }
+  .osLayout { gap: 1rem; }
+  .operatingModules > div { min-height: 74px; padding: .9rem; }
+  .dashboard { min-height: 0; }
+  .dashboard > header { height: 52px; }
+  .dashboardBody { height: auto; min-height: 420px; grid-template-columns: 36px minmax(0, 1fr); }
+  .dashboardMain { padding: .6rem; }
+  .metricGrid { gap: .4rem; }
+  .metricGrid small { font-size: .5rem; }
+  .dashboardLower { min-height: 190px; }
+  .dashboardCopy { margin-top: 1.5rem; padding: 1.2rem 0; }
+  .dashboardCopy h3 { font-size: 1.65rem; line-height: 1.05; }
+  .dashboardCopy > span { font-size: .78rem; }
+  .azExperience { margin-top: 4rem; padding-top: 1.5rem; }
+  .azCopy h3 { font-size: clamp(2.25rem, 10vw, 3.4rem); }
+  .azCopy > p:last-child { margin-top: 1rem; font-size: .9rem; line-height: 1.62; }
+  .azLetters { grid-template-columns: repeat(5, 1fr); gap: .35rem; }
+  .azLetters button { min-width: 0; min-height: 40px; aspect-ratio: auto; }
+  .azDetail { grid-template-columns: 68px minmax(0, 1fr); min-height: 170px; gap: .85rem; padding: 1rem 0; }
+  .azDetail > span { font-size: 4.4rem; }
+  .azDetail h4 { font-size: 1.35rem; overflow-wrap: anywhere; }
+  .azDetail p { font-size: .78rem; }
+
+  .architectureStack { min-height: 350px; margin-top: 2rem; }
+  .architectureStack > div:not(.architectureHalo):not(.architectureSignal) { right: 5%; min-height: 76px; padding: .7rem .8rem; grid-template-columns: 1.5rem 1fr; column-gap: .6rem; }
+  .architectureStack > div > strong { font-size: .72rem; }
+  .architectureStack > div > small { font-size: .54rem; }
+  .architectureHalo { width: 76px; }
+  .architectureSignal { display: none; }
+  .trustCards { gap: .75rem; }
+  .trustCards article { min-height: 0; padding: 1.25rem; }
+  .trustCards article > p { margin-top: 1.2rem; }
+  .trustCards h3 { font-size: 1.85rem; }
+  .machineReadable { margin-top: 2rem; }
+  .machineReadable > div { gap: .5rem; padding: 1.25rem 0; }
+  .machineReadable dt { font-size: .88rem; }
+  .machineReadable dd { font-size: .8rem; }
+
+  .caseGrid { gap: .9rem; }
+  .caseCard,
+  .caseCard:hover { transform: none; }
+  .caseImage { aspect-ratio: 1.32; }
+  .caseBody { min-height: 0; padding: 1.15rem; }
+  .caseBody h3 { font-size: 1.75rem; }
+  .caseBody > div { font-size: .8rem; }
+  .caseBody > small { font-size: .68rem; }
+  .caseBody footer a { min-height: 46px; }
+
+  .aboutLayout { gap: 2rem; }
+  .aboutImage { min-height: min(125vw, 520px); }
+  .imagePlate { left: .65rem; right: .65rem; bottom: .65rem; padding: .7rem; gap: .6rem; flex-direction: column; align-items: flex-start; font-size: .48rem; line-height: 1.3; }
+  .factGrid { margin-top: 1.5rem; }
+  .factGrid > div { min-height: 92px; padding: 1rem; }
+  .factGrid strong { font-size: 2.35rem; }
+
+  .finalHeader { margin-bottom: 2rem; text-align: left; }
+  .finalHeader > p { font-size: 1rem; }
+  .finalHeader h2 { font-size: clamp(3rem, 15vw, 4.8rem); line-height: .9; }
+  .finalHeader > span { margin-top: 1rem; font-size: .92rem; line-height: 1.6; }
+  .funnelFrame { margin-bottom: 2rem; padding: .4rem; }
+  .funnel { min-height: 0; padding: 1rem; }
+  .funnelProgress { gap: .3rem; }
+  .funnelProgress button { min-height: 44px; padding-bottom: .65rem; justify-content: center; }
+  .funnelStage { min-height: 0; padding: 1.5rem 0 1rem; }
+  .funnel legend { font-size: clamp(1.65rem, 8vw, 2.25rem); line-height: 1.05; }
+  .funnel fieldset > p { line-height: 1.55; }
+  .choiceGrid { gap: .5rem; }
+  .choiceGrid button { min-height: 52px; font-size: .76rem; }
+  .sizeGrid { grid-template-columns: 1fr 1fr; }
+  .sizeGrid button { min-height: 54px; }
+  .funnel input,
+  .funnel textarea { font-size: 16px; }
+  .funnel textarea { min-height: 8rem; }
+  .consent { grid-template-columns: 24px 1fr; gap: .7rem !important; }
+  .consent input { width: 22px; height: 22px; }
+  .funnelActions { align-items: stretch; }
+  .funnelActions .primaryButton { min-height: 50px; flex: 1 1 auto; }
+  .backButton { min-height: 48px; padding-inline: .25rem; }
+  .funnelSuccess { min-height: 420px; padding: 2rem 1rem; }
+
+  .footer { width: 100%; margin: 0; padding: 1.75rem 1rem calc(1.75rem + env(safe-area-inset-bottom)); gap: 1.25rem; }
+  .footer > div:nth-child(2) { gap: .6rem; }
+  .footer > div:nth-child(2) a { min-height: 34px; display: inline-flex; align-items: center; }
+  .footer > div:last-child { gap: 1rem; }
+  .footer > div:last-child a { min-height: 34px; display: inline-flex; align-items: center; }
+}
+
+@media (max-width: 430px) {
+  .experience { --container: calc(100vw - 1.5rem); --container-left: .75rem; }
+  .hero h1 { font-size: clamp(2.35rem, 12vw, 3.2rem); }
+  .sectionCopy h2,
+  .sectionHeader h2,
+  .systemControlColumn .sectionHeader h2 { font-size: clamp(2.1rem, 10.5vw, 3rem); }
+  .marketingSearchHud .searchFeatures { grid-template-columns: 1fr; }
+  .azDetail { grid-template-columns: 54px minmax(0, 1fr); }
+  .azDetail > span { font-size: 3.6rem; }
+  .metricGrid { grid-template-columns: 1fr; }
+  .dashboardBody { min-height: 530px; }
+  .sizeGrid { grid-template-columns: 1fr; }
+  .funnelActions { flex-wrap: wrap; }
+}
+
+@media (max-width: 699px) and (orientation: landscape) {
+  .hero { min-height: max(620px, 145svh); }
+  .heroLayout { padding-top: 4.75rem; }
+  .hero h1 { font-size: clamp(2.4rem, 8vw, 3.6rem); }
+  .mobileNavigator { left: max(1rem, env(safe-area-inset-left)); right: max(1rem, env(safe-area-inset-right)); }
+}
+
+@media (max-width: 699px) and (pointer: coarse) {
+  .caseCard:hover,
+  .primaryButton:hover,
+  .headerCta:hover { transform: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -89,8 +89,19 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
     const coreCanvas = coreCanvasRef.current;
     const fallback = fallbackRef.current;
     const debugOutput = debugRef.current;
-    const context = canvas?.getContext('2d');
-    if (!root || !entity || !canvas || !context || !video || !coreCanvas || !fallback || !debugOutput) return;
+    if (!root || !entity || !canvas || !video || !coreCanvas || !fallback || !debugOutput) return;
+
+    // The mobile layout deliberately omits the travelling WebGL object. Do not
+    // allocate a WebGL context, decode its looping source video, or start its
+    // animation loop when the object is not part of the mobile experience.
+    if (window.matchMedia('(max-width: 699px)').matches) {
+      video.pause();
+      video.preload = 'none';
+      return;
+    }
+
+    const context = canvas.getContext('2d');
+    if (!context) return;
 
     const gl = coreCanvas.getContext('webgl', {
       alpha: true,

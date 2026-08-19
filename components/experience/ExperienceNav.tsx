@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { ExperienceLang } from './content';
 import { chapters } from './content';
 import { getResolvedFlightPath } from './flightPathStore';
@@ -109,7 +110,8 @@ export default function ExperienceNav({ lang }: { lang: ExperienceLang }) {
   function navigate(id: string, index: number) {
     setActive(index);
     const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
-    const landedOnDock = scrollToChapterDockingRest(id, behavior);
+    const isMobile = window.matchMedia('(max-width: 699px)').matches;
+    const landedOnDock = !isMobile && scrollToChapterDockingRest(id, behavior);
     if (!landedOnDock) document.getElementById(id)?.scrollIntoView({ behavior, block: 'start' });
     window.history.replaceState(null, '', `#${id}`);
     trackWebsiteEvent('journey_navigation', { station: id, metadata: { station_index: index + 1 } });
@@ -129,6 +131,33 @@ export default function ExperienceNav({ lang }: { lang: ExperienceLang }) {
             </li>
           ))}
         </ol>
+      </nav>
+      <nav className={styles.mobileNavigator} aria-label={lang === 'de' ? 'Mobile Seitennavigation' : 'Mobile page navigation'}>
+        <button
+          type="button"
+          disabled={active === 0}
+          onClick={() => navigate(chapters[Math.max(0, active - 1)].id, Math.max(0, active - 1))}
+          aria-label={lang === 'de' ? 'Vorheriger Abschnitt' : 'Previous section'}
+        >
+          <ChevronLeft size={19} />
+        </button>
+        <button
+          type="button"
+          className={styles.mobileNavigatorCurrent}
+          onClick={() => navigate(chapters[active].id, active)}
+          aria-current="location"
+        >
+          <small>{String(active + 1).padStart(2, '0')} / {String(chapters.length).padStart(2, '0')}</small>
+          <strong>{chapters[active].label[lang]}</strong>
+        </button>
+        <button
+          type="button"
+          disabled={active === chapters.length - 1}
+          onClick={() => navigate(chapters[Math.min(chapters.length - 1, active + 1)].id, Math.min(chapters.length - 1, active + 1))}
+          aria-label={lang === 'de' ? 'Nächster Abschnitt' : 'Next section'}
+        >
+          <ChevronRight size={19} />
+        </button>
       </nav>
     </>
   );

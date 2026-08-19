@@ -47,6 +47,7 @@ export default function TitleDepthLayer() {
     const experience = layer?.closest<HTMLElement>('.experience-root');
     const main = experience?.querySelector('main');
     if (!layer || !experience || !main) return;
+    if (window.matchMedia('(max-width: 699px)').matches) return;
 
     const nativeAnchors = CSS.supports('anchor-name: --title-depth-anchor') && CSS.supports('top: anchor(top)');
     let pairs: Array<{
