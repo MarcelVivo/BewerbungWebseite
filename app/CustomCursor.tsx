@@ -46,7 +46,7 @@ export default function CustomCursor() {
       // Nur den kleinen vorherigen Cursorbereich löschen. Ein Clear des
       // kompletten hochauflösenden Viewport-Canvas bei jeder Mausbewegung
       // konkurrierte beim wiederholten Kartenöffnen mit WebGL und SVG.
-      ctx!.clearRect(lastDrawn.x - 48, lastDrawn.y - 48, 96, 96);
+      ctx!.clearRect(lastDrawn.x - 36, lastDrawn.y - 36, 72, 72);
       if (!visible) return;
 
       ctx!.save();
@@ -54,11 +54,11 @@ export default function CustomCursor() {
       ctx!.rotate(-Math.PI / 4);
       ctx!.beginPath();
       ctx!.moveTo(0, 0);
-      ctx!.lineTo(-12, 30);
+      ctx!.lineTo(-8, 20);
       ctx!.moveTo(0, 0);
-      ctx!.lineTo(12, 30);
+      ctx!.lineTo(8, 20);
       ctx!.strokeStyle = pressed ? '#f6e3a1' : '#ffffff';
-      ctx!.lineWidth = 3.4;
+      ctx!.lineWidth = 2.3;
       ctx!.lineCap = 'round';
       ctx!.lineJoin = 'round';
       ctx!.shadowColor = pressed ? 'rgba(231,197,106,0.95)' : 'transparent';
