@@ -2794,10 +2794,10 @@
   flex-direction: column;
   border: 1px solid rgba(231,197,106,.42);
   background:
-    radial-gradient(circle at 86% 8%, rgba(231,197,106,.13), transparent 28%),
-    linear-gradient(145deg, rgba(24,24,20,.97), rgba(6,8,7,.985) 60%);
+    radial-gradient(circle at 86% 8%, rgba(231,197,106,.11), transparent 30%),
+    linear-gradient(145deg, rgba(24,24,20,.84), rgba(6,8,7,.9) 60%);
   box-shadow: 0 38px 100px rgba(0,0,0,.72), 0 0 44px rgba(200,154,61,.1), inset 0 1px rgba(255,246,213,.09);
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(12px) saturate(.88);
   clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px));
   pointer-events: auto;
   animation: perspectiveDetailReveal .42s cubic-bezier(.16,.8,.2,1) both;
