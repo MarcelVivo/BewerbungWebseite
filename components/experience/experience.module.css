@@ -3771,7 +3771,6 @@
   .experience button { overflow-wrap: anywhere; }
 
   .chapterRail,
-  .scrollEntity,
   .scrollEntityTrail,
   .titleDepthLayer,
   .sectionDockLayer,
@@ -3779,6 +3778,21 @@
   .systemDockingStation,
   .websiteDockingStation,
   .marketingDockingStation { display: none !important; }
+
+  .scrollEntity {
+    display: block !important;
+    z-index: var(--layer-object);
+    width: clamp(10.5rem, 46vw, 12.5rem);
+    filter:
+      drop-shadow(0 .8rem 1.4rem rgba(0, 0, 0, .56))
+      drop-shadow(0 0 .75rem rgba(231, 197, 106, .1));
+  }
+
+  .ailaGreeting {
+    top: -52%;
+    right: 45%;
+    width: clamp(15rem, 70vw, 17rem);
+  }
 
   .mobileNavigator {
     position: fixed;

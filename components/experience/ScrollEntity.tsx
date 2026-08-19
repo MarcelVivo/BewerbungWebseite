@@ -92,13 +92,14 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
     const debugOutput = debugRef.current;
     if (!root || !entity || !canvas || !video || !coreCanvas || !fallback || !debugOutput) return;
 
-    // The mobile layout deliberately omits the travelling WebGL object. Do not
-    // allocate a WebGL context, decode its source video, or start its
-    // animation loop when the object is not part of the mobile experience.
-    if (window.matchMedia('(max-width: 699px)').matches) {
-      video.pause();
-      video.preload = 'none';
-      return;
+    const mobileViewport = window.matchMedia('(max-width: 699px)').matches;
+
+    // Mobile keeps AILA alive as a compact companion. A smaller render target
+    // preserves the keyed animation without making a phone upload the same
+    // number of video pixels as the full desktop composition.
+    if (mobileViewport) {
+      coreCanvas.width = 640;
+      coreCanvas.height = 360;
     }
 
     const context = canvas.getContext('2d');
@@ -897,12 +898,22 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       // loop uses, through the same masterPath instance, so no separate
       // document-space correction is needed here - see the precision test
       // above, which measures that directly instead of assuming it.
-      entity.style.left = `${current.x.toFixed(3)}vw`;
-      entity.style.top = `${current.y.toFixed(3)}vh`;
-      entity.style.transform = `translate3d(-50%, -50%, 0) rotate(${current.rotation.toFixed(3)}deg) scale(${current.scale.toFixed(4)})`;
-      entity.style.opacity = current.opacity.toFixed(3);
+      const visiblePosition = mobileViewport
+        ? {
+            ...current,
+            x: clamp(current.x, 26, 74),
+            y: clamp(current.y, 17, 78),
+            scale: Math.min(current.scale, .76),
+            rotation: current.rotation * .42,
+            opacity: Math.min(current.opacity, .96),
+          }
+        : current;
+      entity.style.left = `${visiblePosition.x.toFixed(3)}vw`;
+      entity.style.top = `${visiblePosition.y.toFixed(3)}vh`;
+      entity.style.transform = `translate3d(-50%, -50%, 0) rotate(${visiblePosition.rotation.toFixed(3)}deg) scale(${visiblePosition.scale.toFixed(4)})`;
+      entity.style.opacity = visiblePosition.opacity.toFixed(3);
       renderCore();
-      renderTrail();
+      if (!mobileViewport) renderTrail();
 
       if (reducedMotion.matches) frame = 0;
       else frame = window.requestAnimationFrame(render);
