@@ -50,6 +50,33 @@ export const flowStepDetails = {
   ],
 } as const;
 
+export const flowStepInsights = {
+  de: [
+    { result: 'Passende Besucher mit konkretem Bedarf', automation: 'Quelle und Suchintention bleiben nachvollziehbar', value: 'Weniger Streuverlust in der Akquise' },
+    { result: 'Interesse führt zu einem klaren nächsten Schritt', automation: 'Inhalte und Handlungswege greifen ineinander', value: 'Mehr qualifizierte statt anonyme Besuche' },
+    { result: 'Eine vollständige, strukturierte Anfrage', automation: 'Formulardaten werden direkt weitergegeben', value: 'Kein Abtippen und keine verlorenen Angaben' },
+    { result: 'Ein zentraler, aktueller Kundendatensatz', automation: 'Quelle, Verlauf und Aufgaben bleiben verknüpft', value: 'Eine verlässliche Sicht für Verkauf und Service' },
+    { result: 'Ein passender Termin mit qualifiziertem Kontakt', automation: 'Bestätigung und Erinnerung laufen automatisch mit', value: 'Weniger Koordination und weniger Ausfälle' },
+    { result: 'Dokumentierter Bedarf und klare Ziele', automation: 'Notizen und nächste Schritte bleiben am Kontakt', value: 'Bessere Entscheidungen ohne Wissensverlust' },
+    { result: 'Eine konsistente und verständliche Offerte', automation: 'Kundendaten und Leistungen werden übernommen', value: 'Schneller versenden und Fehler vermeiden' },
+    { result: 'Eine nachvollziehbare Entscheidung', automation: 'Status, Rückfragen und Versionen bleiben sichtbar', value: 'Kürzere Abstimmung und klare Verbindlichkeit' },
+    { result: 'Ein sauber vorbereiteter Projektstart', automation: 'Die Freigabe wird in Aufgaben und Rollen überführt', value: 'Keine doppelte Datenerfassung' },
+    { result: 'Transparente Umsetzung bis zum Abschluss', automation: 'Termine, Aufgaben und Kommunikation bleiben verbunden', value: 'Mehr Übersicht für Team und Kundschaft' },
+  ],
+  en: [
+    { result: 'Relevant visitors with a concrete need', automation: 'Source and search intent remain traceable', value: 'Less wasted effort in acquisition' },
+    { result: 'Interest leads to one clear next step', automation: 'Content and calls to action work together', value: 'More qualified rather than anonymous visits' },
+    { result: 'A complete and structured enquiry', automation: 'Form data is passed on directly', value: 'No retyping and no missing information' },
+    { result: 'One central and current customer record', automation: 'Source, history and tasks remain connected', value: 'A reliable view for sales and service' },
+    { result: 'A suitable meeting with a qualified contact', automation: 'Confirmation and reminders run automatically', value: 'Less coordination and fewer no-shows' },
+    { result: 'Documented needs and clear objectives', automation: 'Notes and next steps remain with the contact', value: 'Better decisions without knowledge loss' },
+    { result: 'A consistent and understandable quote', automation: 'Customer data and services are carried over', value: 'Send faster and avoid errors' },
+    { result: 'A traceable decision', automation: 'Status, questions and versions remain visible', value: 'Faster alignment and clear commitment' },
+    { result: 'A properly prepared project start', automation: 'Approval becomes tasks and responsibilities', value: 'No duplicate data entry' },
+    { result: 'Transparent delivery through completion', automation: 'Dates, tasks and communication stay connected', value: 'Greater clarity for the team and client' },
+  ],
+} as const;
+
 export const copy = {
   de: {
     skip: 'Zum Inhalt springen', menu: 'Kapitel', close: 'Schliessen', project: 'Projekt besprechen', discover: 'System entdecken',

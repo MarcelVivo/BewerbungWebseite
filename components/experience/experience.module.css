@@ -2825,11 +2825,18 @@
   outline: none;
 }
 
+.perspectiveFlowDetailIdentity {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: end;
+  gap: 1.15rem;
+  margin-top: clamp(1.1rem, 2vh, 1.7rem);
+}
+
 .perspectiveFlowDetailIndex {
   display: flex;
   align-items: baseline;
   gap: .55rem;
-  margin-top: clamp(1.5rem, 3vh, 2.7rem);
   font-family: var(--font-chakra-petch), monospace;
 }
 
@@ -2846,26 +2853,58 @@
   letter-spacing: .12em;
 }
 
-.perspectiveFlowDetailPanel > h3 {
+.perspectiveFlowDetailIdentity > h3 {
   max-width: 15ch;
-  margin: clamp(1rem, 2vh, 1.6rem) 0 0;
+  margin: 0;
   color: #f5f2e8;
-  font-size: clamp(2rem, 3vw, 3.6rem);
+  font-size: clamp(2.5rem, 3.4vw, 4.15rem);
   line-height: .95;
   letter-spacing: -.045em;
 }
 
 .perspectiveFlowDetailPanel > p {
   max-width: 42rem;
-  margin: 1.1rem 0 0;
-  color: rgba(225,224,215,.76);
-  font-size: clamp(.88rem, 1.05vw, 1.08rem);
-  line-height: 1.62;
+  margin: .95rem 0 0;
+  color: rgba(235,233,224,.84);
+  font-size: clamp(1.08rem, 1.24vw, 1.28rem);
+  line-height: 1.48;
+}
+
+.perspectiveFlowDetailInsights {
+  display: grid;
+  gap: .38rem;
+  margin-top: 1rem;
+}
+
+.perspectiveFlowDetailInsights > div {
+  min-height: 3rem;
+  display: grid;
+  grid-template-columns: 7.4rem minmax(0, 1fr);
+  align-items: center;
+  gap: .8rem;
+  padding: .55rem .75rem;
+  border-left: 2px solid rgba(231,197,106,.58);
+  border-top: 1px solid rgba(231,197,106,.1);
+  border-bottom: 1px solid rgba(231,197,106,.1);
+  background: linear-gradient(90deg, rgba(231,197,106,.09), rgba(255,255,255,.018) 58%, transparent);
+}
+
+.perspectiveFlowDetailInsights small {
+  color: rgba(231,197,106,.62);
+  font: 700 .5rem/1.2 var(--font-chakra-petch), monospace;
+  letter-spacing: .14em;
+}
+
+.perspectiveFlowDetailInsights strong {
+  color: rgba(244,242,233,.88);
+  font-size: .88rem;
+  font-weight: 570;
+  line-height: 1.32;
 }
 
 .perspectiveFlowDetailContext {
-  margin-top: auto;
-  padding-top: 1.5rem;
+  margin-top: 1rem;
+  padding-top: 0;
 }
 
 .perspectiveFlowDetailContext > small {
@@ -3366,7 +3405,7 @@
   .perspectiveFlowOpen .perspectiveFlowCardGrid { width: 43%; }
   .perspectiveFlowCardGrid .perspectiveFlowNode.perspectiveFlowSelected { width: auto; }
   .perspectiveFlowDetailPanel { padding: 1.3rem; }
-  .perspectiveFlowDetailPanel > h3 { font-size: clamp(1.8rem, 4vw, 2.8rem); }
+  .perspectiveFlowDetailIdentity > h3 { font-size: clamp(2.1rem, 4vw, 3rem); }
   .perspectiveFlowDetailContext > div { grid-template-columns: 1fr; }
   .perspectiveFlowDetailContext span,
   .perspectiveFlowDetailContext strong { padding: .55rem .4rem; }
@@ -3863,8 +3902,11 @@
   .perspectiveFlowDetailPanel > header button { width: 2.65rem; height: 2.65rem; }
   .perspectiveFlowDetailIndex { margin-top: 1.4rem; }
   .perspectiveFlowDetailIndex strong { font-size: 3rem; }
-  .perspectiveFlowDetailPanel > h3 { margin-top: .8rem; font-size: clamp(1.8rem, 9vw, 2.6rem); }
-  .perspectiveFlowDetailPanel > p { font-size: .84rem; line-height: 1.58; }
+  .perspectiveFlowDetailIdentity { gap: .75rem; margin-top: 1.1rem; }
+  .perspectiveFlowDetailIdentity > h3 { font-size: clamp(2rem, 9vw, 2.8rem); }
+  .perspectiveFlowDetailPanel > p { font-size: .96rem; line-height: 1.52; }
+  .perspectiveFlowDetailInsights > div { grid-template-columns: 6.5rem minmax(0, 1fr); padding: .65rem; }
+  .perspectiveFlowDetailInsights strong { font-size: .82rem; }
   .perspectiveFlowDetailContext { margin-top: 1.6rem; padding-top: 0; }
   .perspectiveFlowDetailContext > div { grid-template-columns: 1fr 1fr 1fr; }
   .perspectiveFlowDetailContext span,

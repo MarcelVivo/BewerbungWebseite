@@ -76,6 +76,7 @@ export function BusinessFlow({ steps, active, onSelect }: { steps: readonly stri
 export function PerspectiveBusinessFlow({
   steps,
   details,
+  insights,
   active,
   onSelect,
   detailLabel,
@@ -84,6 +85,7 @@ export function PerspectiveBusinessFlow({
 }: {
   steps: readonly string[];
   details: readonly string[];
+  insights: ReadonlyArray<Readonly<{ result: string; automation: string; value: string }>>;
   active: number;
   onSelect: (index: number) => void;
   detailLabel: string;
@@ -214,12 +216,19 @@ export function PerspectiveBusinessFlow({
               <X size={20} aria-hidden="true" />
             </button>
           </header>
-          <div className={styles.perspectiveFlowDetailIndex}>
-            <strong>{String(selectedFlow + 1).padStart(2, '0')}</strong>
-            <span>/ {String(steps.length).padStart(2, '0')}</span>
+          <div className={styles.perspectiveFlowDetailIdentity}>
+            <div className={styles.perspectiveFlowDetailIndex}>
+              <strong>{String(selectedFlow + 1).padStart(2, '0')}</strong>
+              <span>/ {String(steps.length).padStart(2, '0')}</span>
+            </div>
+            <h3>{steps[selectedFlow]}</h3>
           </div>
-          <h3>{steps[selectedFlow]}</h3>
           <p>{details[selectedFlow]}</p>
+          <div className={styles.perspectiveFlowDetailInsights}>
+            <div><small>{lang === 'de' ? 'ERGEBNIS' : 'OUTCOME'}</small><strong>{insights[selectedFlow].result}</strong></div>
+            <div><small>{lang === 'de' ? 'AUTOMATISIERUNG' : 'AUTOMATION'}</small><strong>{insights[selectedFlow].automation}</strong></div>
+            <div><small>{lang === 'de' ? 'MEHRWERT' : 'VALUE'}</small><strong>{insights[selectedFlow].value}</strong></div>
+          </div>
           <div className={styles.perspectiveFlowDetailContext}>
             <small>{lang === 'de' ? 'IM ABLAUF' : 'IN THE FLOW'}</small>
             <div>
