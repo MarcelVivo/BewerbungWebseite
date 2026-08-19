@@ -1998,6 +1998,12 @@
   filter: drop-shadow(0 12px 20px rgba(0,0,0,.28));
 }
 
+.perspectiveFlowOpen .perspectiveFlowStage {
+  z-index: 95;
+  clip-path: polygon(0 0, 64% 0, 64% 100%, 0 100%);
+  pointer-events: auto !important;
+}
+
 .perspectiveFlowGlass {
   display: none;
 }
@@ -2615,7 +2621,7 @@
 
 .perspectiveFlowCardHead > b {
   color: rgba(231,197,106,.48);
-  font: 560 clamp(.46rem, .62vw, .7rem)/1 var(--font-chakra-petch), monospace;
+  font: 620 clamp(.72rem, .75vw, 1.15rem)/1 var(--font-chakra-petch), monospace;
   letter-spacing: .06em;
 }
 
@@ -2623,10 +2629,10 @@
   min-width: 0;
   overflow: hidden;
   color: rgba(239,238,231,.84);
-  font: 620 clamp(.42rem, .58vw, .68rem)/1.2 var(--font-chakra-petch), monospace;
+  font: 680 clamp(.9rem, .9vw, 1.4rem)/1.14 var(--font-chakra-petch), monospace;
   letter-spacing: .01em;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  text-overflow: clip;
+  white-space: normal;
 }
 
 .perspectiveFlowCardHead > i {
@@ -2721,8 +2727,8 @@
 
 .perspectiveFlowCardGridOpen .perspectiveFlowNode:not(.perspectiveFlowSelected) {
   z-index: 7 !important;
-  opacity: .8;
-  filter: brightness(.9);
+  opacity: .92;
+  filter: brightness(.96);
   transform: translateZ(-6px) scale(.995);
   animation: none;
   cursor: pointer;
@@ -2793,7 +2799,7 @@
   box-shadow: 0 38px 100px rgba(0,0,0,.72), 0 0 44px rgba(200,154,61,.1), inset 0 1px rgba(255,246,213,.09);
   backdrop-filter: blur(20px);
   clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px));
-  pointer-events: none;
+  pointer-events: auto;
   animation: perspectiveDetailReveal .42s cubic-bezier(.16,.8,.2,1) both;
 }
 
@@ -3972,6 +3978,7 @@
   .salesHeader h2 { max-width: 100%; font-size: clamp(2.2rem, 10.5vw, 3.5rem); }
   .salesHeader > p:last-child { max-width: 100%; font-size: .92rem; line-height: 1.58; }
   .perspectiveFlow { position: relative; inset: auto; width: var(--container); min-height: 0; margin-left: var(--container-left); pointer-events: auto; perspective: none; }
+  .perspectiveFlowOpen .perspectiveFlowStage { z-index: auto; clip-path: none; }
   .perspectiveFlowHeader { position: relative !important; left: auto !important; top: auto !important; width: 100% !important; grid-template-columns: 1fr; gap: .45rem; margin-bottom: .9rem; opacity: 1; transform: none !important; }
   .perspectiveFlowHeader > span { white-space: normal; }
   .perspectiveFlowHeader > small { display: block; font-size: .58rem; line-height: 1.45; }

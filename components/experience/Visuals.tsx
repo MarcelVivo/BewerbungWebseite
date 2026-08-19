@@ -263,7 +263,12 @@ export function PerspectiveBusinessFlow({
                 aria-controls="perspective-flow-detail-panel"
                 aria-label={`${String(index + 1).padStart(2, '0')} · ${step}`}
                 data-flow-index={index}
-                onClick={() => selectFlow(index)}
+                onPointerDown={(event) => {
+                  if (event.button === 0) selectFlow(index);
+                }}
+                onClick={(event) => {
+                  if (event.detail === 0) selectFlow(index);
+                }}
               >
                 <span className={styles.perspectiveFlowCardHead}>
                   <b>{String(index + 1).padStart(2, '0')}</b>
