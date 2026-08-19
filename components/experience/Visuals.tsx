@@ -304,7 +304,14 @@ export function PerspectiveBusinessFlow({
       </div>
 
       {selectedFlow !== null && (
-        <aside id="perspective-flow-detail-panel" className={styles.perspectiveFlowDetailPanel} aria-live="polite">
+        <aside
+          id="perspective-flow-detail-panel"
+          className={styles.perspectiveFlowDetailPanel}
+          style={{
+            '--detail-plane-angle': `${Math.max(-6, Math.min(6, topEdgeAngle * .55))}deg`,
+          } as CSSProperties}
+          aria-live="polite"
+        >
           <header>
             <span><i />{detailLabel}</span>
             <button type="button" onClick={() => setSelectedFlow(null)} aria-label={closeLabel}>

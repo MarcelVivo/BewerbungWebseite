@@ -2782,6 +2782,7 @@
 }
 
 .perspectiveFlowDetailPanel {
+  --detail-plane-transform: perspective(1800px) rotateY(-5.5deg) rotateX(.8deg) rotateZ(var(--detail-plane-angle, 4deg)) translateZ(-90px) scale(.97);
   position: absolute;
   z-index: 82;
   top: clamp(8.8rem, 17vh, 11.5rem);
@@ -2796,9 +2797,13 @@
   background:
     radial-gradient(circle at 86% 8%, rgba(231,197,106,.11), transparent 30%),
     linear-gradient(145deg, rgba(24,24,20,.84), rgba(6,8,7,.9) 60%);
-  box-shadow: 0 38px 100px rgba(0,0,0,.72), 0 0 44px rgba(200,154,61,.1), inset 0 1px rgba(255,246,213,.09);
+  box-shadow: 10px 12px 0 rgba(117,86,34,.2), 22px 26px 0 rgba(31,27,17,.5), 0 38px 100px rgba(0,0,0,.72), 0 0 44px rgba(200,154,61,.1), inset 0 1px rgba(255,246,213,.09);
   backdrop-filter: blur(12px) saturate(.88);
   clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px));
+  transform: var(--detail-plane-transform);
+  transform-origin: center;
+  transform-style: preserve-3d;
+  will-change: transform;
   pointer-events: auto;
   animation: perspectiveDetailReveal .42s cubic-bezier(.16,.8,.2,1) both;
 }
@@ -3003,8 +3008,8 @@
 }
 
 @keyframes perspectiveDetailReveal {
-  from { opacity: 0; transform: translateX(34px) scale(.975); filter: blur(2px); }
-  to { opacity: 1; transform: translateX(0) scale(1); filter: blur(0); }
+  from { opacity: 0; transform: var(--detail-plane-transform) translateX(46px) scale(.96); filter: blur(3px); }
+  to { opacity: 1; transform: var(--detail-plane-transform) translateX(0) scale(1); filter: blur(0); }
 }
 
 .perspectiveConfigurator {
@@ -3509,7 +3514,7 @@
   .perspectiveFlowOpen .perspectiveFlowHeader { width: 43%; }
   .perspectiveFlowOpen .perspectiveFlowCardGrid { width: 43%; }
   .perspectiveFlowCardGrid .perspectiveFlowNode.perspectiveFlowSelected { width: auto; }
-  .perspectiveFlowDetailPanel { top: clamp(9rem, 17vh, 11rem); right: 1rem; bottom: 2rem; width: min(43vw, 410px); min-height: 410px; padding: 1.3rem; }
+  .perspectiveFlowDetailPanel { --detail-plane-transform: perspective(1500px) rotateY(-3.5deg) rotateX(.5deg) rotateZ(2deg) translateZ(-45px) scale(.985); top: clamp(9rem, 17vh, 11rem); right: 1rem; bottom: 2rem; width: min(43vw, 410px); min-height: 410px; padding: 1.3rem; }
   .perspectiveFlowDetailPanel > h3 { font-size: clamp(1.8rem, 4vw, 2.8rem); }
   .perspectiveFlowDetailContext > div { grid-template-columns: 1fr; }
   .perspectiveFlowDetailContext span,
@@ -4008,7 +4013,7 @@
   .perspectiveFlowCardDetail { inset: 3.7rem .85rem .85rem; gap: .55rem; }
   .perspectiveFlowCardDetail > span { font-size: .78rem; line-height: 1.5; }
   .perspectiveFlowCardDetail > em { font-size: .48rem; }
-  .perspectiveFlowDetailPanel { position: relative; inset: auto; width: 100%; min-height: 0; margin-top: 1rem; padding: 1.15rem; clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px)); }
+  .perspectiveFlowDetailPanel { --detail-plane-transform: translateZ(0); position: relative; inset: auto; width: 100%; min-height: 0; margin-top: 1rem; padding: 1.15rem; clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px)); box-shadow: 0 24px 60px rgba(0,0,0,.52), inset 0 1px rgba(255,246,213,.09); }
   .perspectiveFlowDetailPanel > header { padding-bottom: .8rem; }
   .perspectiveFlowDetailPanel > header button { width: 2.65rem; height: 2.65rem; }
   .perspectiveFlowDetailIndex { margin-top: 1.4rem; }
