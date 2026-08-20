@@ -705,6 +705,26 @@ export default function MarcelExperience() {
                 </div>
               </div>
               <div className={`${styles.composerVisual} ${styles.systemDockVisual}`} style={{ '--active-module': activeModule } as CSSProperties}>
+                <div className={styles.systemVisualBrief}>
+                  <span>{lang === 'de' ? 'SYSTEMLOGIK · 01—04' : 'SYSTEM LOGIC · 01—04'}</span>
+                  <h3>
+                    {lang === 'de' ? 'Ein Eingang. Ein Datenfluss.' : 'One entry. One data flow.'}
+                    <em>{lang === 'de' ? ' Ein klarer nächster Schritt.' : ' One clear next step.'}</em>
+                  </h3>
+                  <p>
+                    {lang === 'de'
+                      ? 'AILA hält Kontext, Zuständigkeit und Fortschritt zusammen – damit aus einzelnen Werkzeugen ein steuerbares Unternehmen entsteht.'
+                      : 'AILA keeps context, ownership and progress connected—turning separate tools into one manageable business system.'}
+                  </p>
+                  <div>
+                    {(lang === 'de'
+                      ? ['Erfassen', 'Verbinden', 'Steuern']
+                      : ['Capture', 'Connect', 'Control']
+                    ).map((step, index) => (
+                      <span key={step}><b>{String(index + 1).padStart(2, '0')}</b><small>{step}</small></span>
+                    ))}
+                  </div>
+                </div>
                 <SystemDockingStation />
               </div>
             </div>
