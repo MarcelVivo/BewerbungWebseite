@@ -934,10 +934,16 @@ export default function MarcelExperience() {
           <div id="about" className={styles.aliasAnchor} />
           <div className={styles.aboutViewport}>
             <div className={styles.aboutEditorial}>
-              <figure className={styles.aboutPortrait} data-reveal="left">
-                  <Image src="/assets/MarcelSpahrHeader.jpg" alt="Marcel Spahr im Arbeits- und Projektraum" fill sizes="(min-width: 1000px) 42vw, 94vw" />
-                <figcaption><span>Marcel Spahr</span><small>{lang === 'de' ? 'Konzeption und Entwicklung · Bern' : 'Strategy and development · Bern'}</small></figcaption>
-              </figure>
+              <div className={styles.aboutVisualStage} data-reveal="left">
+                <figure className={styles.aboutPortrait}>
+                  <Image src="/assets/marcel-spahr-aila-editorial-v1.png" alt={lang === 'de' ? 'Marcel Spahr an seinem Arbeitsplatz in Bern' : 'Marcel Spahr at his workspace in Bern'} fill sizes="(min-width: 1000px) 68vw, 94vw" priority={false} />
+                  <figcaption><span>Marcel Spahr</span><small>{lang === 'de' ? 'Konzeption und Entwicklung · Bern' : 'Strategy and development · Bern'}</small></figcaption>
+                </figure>
+
+                <div className={styles.aboutAilaBay} aria-hidden="true">
+                  <SectionDockingStation station="about" />
+                </div>
+              </div>
 
               <article className={styles.aboutStory} data-reveal="right">
                 <p className={styles.eyebrow}><span />{c.aboutEyebrow}</p>
@@ -948,10 +954,6 @@ export default function MarcelExperience() {
                   {ABOUT_METHOD[lang].map(([number, title, text]) => <li key={number}><span>{number}</span><div><strong>{title}</strong><p>{text}</p></div></li>)}
                 </ol>
               </article>
-
-              <div className={styles.aboutAilaBay} aria-hidden="true">
-                <SectionDockingStation station="about" />
-              </div>
             </div>
 
             <dl className={styles.aboutCredentials} data-reveal="up">

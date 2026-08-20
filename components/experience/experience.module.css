@@ -4886,16 +4886,26 @@
   min-height: 0;
   margin-left: var(--container-left);
   display: grid;
-  grid-template-columns: minmax(300px, .82fr) minmax(420px, 1.12fr) minmax(215px, .52fr);
+  grid-template-columns: minmax(0, 1.52fr) minmax(350px, .72fr);
   gap: clamp(.8rem, 1.15vw, 1.15rem);
   align-items: stretch;
 }
 
-.aboutPortrait {
+.aboutVisualStage {
   position: relative;
   min-width: 0;
   min-height: 0;
   height: 100%;
+  overflow: visible;
+  isolation: isolate;
+}
+
+.aboutPortrait {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  min-width: 0;
+  min-height: 0;
   margin: 0;
   overflow: hidden;
   background: #11120f;
@@ -4911,8 +4921,8 @@
 
 .aboutPortrait img {
   object-fit: cover;
-  object-position: 48% center;
-  filter: saturate(.74) contrast(1.025) brightness(.93);
+  object-position: 52% center;
+  filter: saturate(.88) contrast(1.025) brightness(.94);
 }
 
 .aboutPortrait figcaption {
@@ -4997,12 +5007,16 @@
 .aboutMethod p { margin: 0; color: #92968f; font-size: .66rem; line-height: 1.45; }
 
 .aboutAilaBay {
-  position: relative;
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 44%;
   min-width: 0;
   min-height: 0;
   overflow: visible;
-  border-block: 1px solid rgba(231,197,106,.12);
-  background: linear-gradient(180deg, transparent, rgba(200,154,61,.028) 48%, transparent);
+  background: transparent;
 }
 
 .aboutAilaBay .sectionDockLayer {
@@ -5041,19 +5055,18 @@
 
 @media (min-width: 961px) and (max-width: 1100px) {
   .aboutEditorial {
-    grid-template-columns: minmax(260px, .72fr) minmax(0, 1.28fr);
-    grid-template-rows: minmax(0, 1fr) 210px;
+    grid-template-columns: minmax(0, 1.35fr) minmax(330px, .85fr);
   }
-  .aboutPortrait { grid-column: 1; grid-row: 1; }
-  .aboutStory { grid-column: 2; grid-row: 1 / 3; }
-  .aboutAilaBay { grid-column: 1; grid-row: 2; }
+  .aboutStory h2 { font-size: clamp(2.15rem, 3vw, 3rem); }
+  .aboutMethod li > div { grid-template-columns: 5rem minmax(0, 1fr); }
 }
 
 @media (max-width: 960px) {
   .aboutSection { height: auto; min-height: 100svh; overflow: visible; }
   .aboutViewport { height: auto; min-height: 100svh; padding: 4.75rem 0 3rem; overflow: visible; gap: 1.2rem; }
   .aboutEditorial { grid-template-columns: 1fr; gap: 1rem; }
-  .aboutPortrait { min-height: 520px; }
+  .aboutVisualStage { min-height: clamp(430px, 72vw, 620px); }
+  .aboutPortrait { min-height: 100%; }
   .aboutStory { padding: 1.1rem 0; }
   .aboutStory h2 { max-width: 13ch; font-size: clamp(2.6rem, 8.5vw, 4.4rem); }
   .aboutStory > p:not(.eyebrow) { font-size: .94rem; }
@@ -5070,7 +5083,7 @@
 }
 
 @media (max-width: 620px) {
-  .aboutPortrait { min-height: min(128vw, 520px); }
+  .aboutVisualStage { min-height: min(128vw, 520px); }
   .aboutPortrait figcaption { align-items: flex-start; flex-direction: column; gap: .25rem; }
   .aboutPortrait figcaption small { text-align: left; }
   .aboutMethod li > div { grid-template-columns: 1fr; gap: .2rem; }
