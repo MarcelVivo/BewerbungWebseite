@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type CSSProperties, type RefObject } from 'react';
+import type { AilaAnimationState } from '@/app/lib/aila/types';
 // The project currently ships three without its optional declaration package.
 // @ts-expect-error Runtime ESM exports are present and already used elsewhere.
 import { Object3D } from 'three';
@@ -87,7 +88,7 @@ const AILA_THINKING_VIDEO = '/cinematic/aila/aila-thinking-v1-pingpong-greenscre
 const AILA_SPEAKING_VIDEO = '/cinematic/aila/aila-speaking-v1-greenscreen.mp4';
 const AILA_CTA_VIDEO = '/cinematic/aila/aila-cta-v1-greenscreen.mp4';
 type AilaVideoMode = 'idle' | 'attention' | 'thinking' | 'speaking' | 'cta' | 'confirmation';
-type AilaConversationState = 'thinking' | 'speaking' | 'idle';
+type AilaConversationState = AilaAnimationState;
 type AilaSwitchPhase = 'none' | 'out' | 'loading' | 'in';
 const AILA_SWITCH_OUT_MS = 140;
 const AILA_SWITCH_IN_MS = 320;
@@ -459,9 +460,21 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
         recoverIdle();
         return;
       }
-      if (state !== 'thinking' && state !== 'speaking') return;
+      if (state === 'success') {
+        guideControlled = true;
+        enterConfirmation();
+        return;
+      }
+      if (!state || !['listening', 'thinking', 'speaking', 'presenting'].includes(state)) return;
       guideControlled = true;
-      beginVideoSwitch(state === 'thinking' ? AILA_THINKING_VIDEO : AILA_SPEAKING_VIDEO, state);
+      const mode = state === 'listening'
+        ? { source: AILA_ATTENTION_VIDEO, mode: 'attention' as const }
+        : state === 'thinking'
+          ? { source: AILA_THINKING_VIDEO, mode: 'thinking' as const }
+          : state === 'presenting'
+            ? { source: AILA_CTA_VIDEO, mode: 'cta' as const }
+            : { source: AILA_SPEAKING_VIDEO, mode: 'speaking' as const };
+      beginVideoSwitch(mode.source, mode.mode);
     };
     interaction.addEventListener('click', triggerAttention);
     window.addEventListener('aila:guide-state', handleGuideState);

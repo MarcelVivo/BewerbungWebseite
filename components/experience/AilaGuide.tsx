@@ -2,6 +2,15 @@
 
 import { ArrowRight, LoaderCircle, Mic, Send, Volume2, VolumeX, X } from 'lucide-react';
 import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from 'react';
+import { createInitialAilaSalesContext, sanitizeAilaSalesContext } from '@/app/lib/aila/engine';
+import { openJourneyLeadForm } from '@/app/lib/journeyNavigation';
+import type {
+  AilaAnimationState,
+  AilaInputMode,
+  AilaRecommendation,
+  AilaSalesContext,
+  AilaUiAction,
+} from '@/app/lib/aila/types';
 import type { ExperienceLang } from './content';
 import styles from './experience.module.css';
 
@@ -41,8 +50,8 @@ const GUIDE: Record<ExperienceLang, Record<string, GuideEntry>> = {
 
 const COMMON = {
   de: {
-    prompts: ['Was kann Marcel für mein Unternehmen tun?', 'Wie verbindet ihr Erfahrung und KI?', 'Wie starten wir?'],
-    welcome: 'Hallo, ich bin AILA, wie kann ich dir helfen?',
+    prompts: ['Ich habe ein Unternehmen', 'Ich bin selbständig', 'Ich baue ein Start-up', 'Ich habe eine konkrete Idee', 'Ich möchte sehen, was möglich ist'],
+    welcome: 'Hallo, ich bin AILA. Wie kann ich dir helfen? Ich finde mit dir heraus, was dein Unternehmen digital wirklich braucht.',
     placeholder: 'Deine Frage an AILA …', send: 'Frage senden', micStart: 'Frage einsprechen', micStop: 'Aufnahme beenden',
     thinking: 'AILA denkt nach …', listening: 'AILA hört zu …', voiceOn: 'KI-Stimme ausschalten', voiceOff: 'KI-Stimme einschalten',
     error: 'Das hat gerade nicht funktioniert. Versuche es bitte noch einmal oder besprich dein Anliegen direkt mit Marcel.',
@@ -54,8 +63,8 @@ const COMMON = {
     next: 'Nächstes Kapitel', contact: 'Mit Marcel sprechen', close: 'AILA schliessen',
   },
   en: {
-    prompts: ['What could Marcel do for my company?', 'How do you combine experience and AI?', 'How do we begin?'],
-    welcome: 'Hello, I’m AILA. How can I help you?',
+    prompts: ['I run a company', 'I am self-employed', 'I am building a start-up', 'I have a specific idea', 'Show me what is possible'],
+    welcome: 'Hello, I’m AILA. How can I help? Together we can find out what your business really needs digitally.',
     placeholder: 'Your question for AILA …', send: 'Send question', micStart: 'Record a question', micStop: 'Stop recording',
     thinking: 'AILA is thinking …', listening: 'AILA is listening …', voiceOn: 'Turn AI voice off', voiceOff: 'Turn AI voice on',
     error: 'That did not work just now. Please try again or discuss your question directly with Marcel.',
@@ -69,7 +78,7 @@ const COMMON = {
 } as const;
 
 type ChatMessage = { id: string; role: 'user' | 'assistant'; content: string };
-type AilaConversationState = 'thinking' | 'speaking' | 'idle';
+type AilaConversationState = AilaAnimationState;
 type WavRecorder = { stop: () => Promise<Blob>; cancel: () => void };
 
 const messageId = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -133,6 +142,10 @@ export default function AilaGuide({
   const [recording, setRecording] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [lastAnswer, setLastAnswer] = useState('');
+  const [salesContext, setSalesContext] = useState<AilaSalesContext>(() => createInitialAilaSalesContext());
+  const [quickReplies, setQuickReplies] = useState<string[]>([...common.prompts]);
+  const [lastRecommendation, setLastRecommendation] = useState<AilaRecommendation | undefined>();
+  const hasWelcomedRef = useRef(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const primedAudioRef = useRef<HTMLAudioElement | null>(null);
   const audioUrlRef = useRef('');
@@ -186,11 +199,15 @@ export default function AilaGuide({
 
   useEffect(() => {
     if (!open) return;
-    setMessages([{ id: messageId(), role: 'assistant', content: common.welcome }]);
+    if (!hasWelcomedRef.current) {
+      hasWelcomedRef.current = true;
+      setMessages([{ id: messageId(), role: 'assistant', content: common.welcome }]);
+      setLastAnswer(common.welcome);
+      setQuickReplies([...common.prompts]);
+    }
     setInput('');
     setBusy(false);
     setVoiceEnabled(true);
-    setLastAnswer(common.welcome);
   }, [open, sectionId, lang, common.welcome]);
 
   useEffect(() => {
@@ -270,7 +287,25 @@ export default function AilaGuide({
 
   if (!open) return null;
 
-  const ask = async (rawQuestion: string) => {
+  const handleUiActions = (
+    actions: AilaUiAction[],
+    recommendation?: AilaRecommendation,
+    context = salesContext,
+  ) => {
+    actions.forEach((action) => {
+      window.dispatchEvent(new CustomEvent('aila:ui-action', {
+        detail: { action, recommendation, context },
+      }));
+      if (action.type === 'OPEN_CONTACT') {
+        openJourneyLeadForm('consultation', { ctaId: 'aila-contact-handover' });
+      }
+      if (action.type === 'OPEN_PROJECT_FLOW') {
+        openJourneyLeadForm('project', { ctaId: 'aila-project-flow' });
+      }
+    });
+  };
+
+  const ask = async (rawQuestion: string, inputMode: AilaInputMode = 'text') => {
     const question = rawQuestion.trim();
     if (!question || busy) return;
     stopAudio(false);
@@ -290,16 +325,31 @@ export default function AilaGuide({
           message: question,
           lang,
           sectionId,
-          history: prior.slice(-8).map(({ role, content }) => ({ role, content })),
+          inputMode,
+          context: salesContext,
+          history: prior.slice(-10).map(({ role, content }) => ({ role, content })),
         }),
         signal: controller.signal,
       });
       const payload = await response.json();
       if (!response.ok || typeof payload?.answer !== 'string') throw new Error(payload?.error || 'chat failed');
       const answer = payload.answer.trim();
+      const nextContext = sanitizeAilaSalesContext(payload?.context, salesContext);
+      const recommendation = payload?.recommendation as AilaRecommendation | undefined;
+      const actions = Array.isArray(payload?.uiActions) ? payload.uiActions as AilaUiAction[] : [];
+      const nextReplies = Array.isArray(payload?.quickReplies)
+        ? payload.quickReplies.filter((reply: unknown): reply is string => typeof reply === 'string' && Boolean(reply.trim())).slice(0, 4)
+        : [];
       setMessages((current) => [...current, { id: messageId(), role: 'assistant', content: answer }]);
+      setSalesContext(nextContext);
+      setQuickReplies(nextReplies);
+      setLastRecommendation(recommendation);
       setLastAnswer(answer);
       setBusy(false);
+      if (typeof payload?.animationState === 'string') {
+        onStateChange(payload.animationState as AilaAnimationState);
+      }
+      handleUiActions(actions, recommendation, nextContext);
       await speak(answer);
     } catch {
       if (controller.signal.aborted) return;
@@ -333,7 +383,7 @@ export default function AilaGuide({
       const payload = await response.json();
       if (!response.ok || typeof payload?.text !== 'string' || !payload.text.trim()) throw new Error('transcription failed');
       setBusy(false);
-      await ask(payload.text);
+      await ask(payload.text, 'voice');
     } catch {
       setMessages((current) => [...current, { id: messageId(), role: 'assistant', content: common.error }]);
       setBusy(false);
@@ -438,7 +488,7 @@ export default function AilaGuide({
         await startWavRecorder(stream);
       }
       setRecording(true);
-      onStateChange('idle');
+      onStateChange('listening');
     } catch (error) {
       streamRef.current?.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
@@ -482,8 +532,8 @@ export default function AilaGuide({
       <p>{entry.intro}</p>
 
       <div className={styles.ailaGuidePrompts} aria-label={lang === 'de' ? 'Fragen an AILA' : 'Questions for AILA'}>
-        {common.prompts.map((suggestion) => (
-          <button key={suggestion} type="button" onClick={() => void ask(suggestion)} disabled={busy}>{suggestion}</button>
+        {(quickReplies.length > 0 ? quickReplies : common.prompts).map((suggestion) => (
+          <button key={suggestion} type="button" onClick={() => void ask(suggestion, 'quick_reply')} disabled={busy}>{suggestion}</button>
         ))}
       </div>
 
@@ -510,8 +560,14 @@ export default function AilaGuide({
 
       <footer>
         {sectionId !== 'journey-contact' && <button type="button" onClick={() => onNavigate(nextSectionId)}>{common.next}<ArrowRight size={14} /></button>}
-        <button type="button" onClick={() => onNavigate('journey-contact')}>{common.contact}<ArrowRight size={14} /></button>
+        <button type="button" onClick={() => openJourneyLeadForm('consultation', { ctaId: 'aila-footer-contact' })}>{common.contact}<ArrowRight size={14} /></button>
       </footer>
+      {process.env.NODE_ENV !== 'production' && (
+        <details className={styles.ailaGuideDebug}>
+          <summary>AILA DEBUG</summary>
+          <pre>{JSON.stringify({ salesContext, lastRecommendation }, null, 2)}</pre>
+        </details>
+      )}
     </aside>
   );
 }
