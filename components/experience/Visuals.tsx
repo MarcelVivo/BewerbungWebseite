@@ -658,6 +658,7 @@ export function DashboardMockup({ lang }: { lang: 'de' | 'en' }) {
       ['Prepare discovery call', 'Nova GmbH', 'TOMORROW'],
       ['Confirm project handover', 'VeraHome', 'FRI · 10:00'],
     ];
+  const selectedStage = activeStage === null ? null : stages[activeStage];
   return (
     <div className={styles.dashboard} aria-label={lang === 'de' ? 'Demonstrationsdashboard mit Beispieldaten' : 'Demonstration dashboard with sample data'}>
       <header>
@@ -677,9 +678,8 @@ export function DashboardMockup({ lang }: { lang: 'de' | 'en' }) {
           <ol className={styles.dashboardPipeline}>
             {stages.map((stage, index) => {
               const isOpen = activeStage === index;
-              const detailId = `dashboard-stage-${index + 1}`;
               return <li key={stage.label} className={isOpen ? styles.dashboardPipelineOpen : ''}>
-                <button type="button" className={styles.dashboardPipelineToggle} aria-expanded={isOpen} aria-controls={detailId} onClick={() => setActiveStage((current) => current === index ? null : index)}>
+                <button type="button" className={styles.dashboardPipelineToggle} aria-expanded={isOpen} aria-controls="dashboard-stage-detail" onClick={() => setActiveStage((current) => current === index ? null : index)}>
                   <div><small>0{index + 1}</small><span>{stage.conversion}</span></div>
                   <strong>{stage.value}</strong>
                   <h4>{stage.label}</h4>
@@ -687,26 +687,34 @@ export function DashboardMockup({ lang }: { lang: 'de' | 'en' }) {
                   <i style={{ '--stage-width': stage.conversion } as CSSProperties} />
                   <b aria-hidden="true"><ChevronDown size={14} /></b>
                 </button>
-                <div id={detailId} className={styles.dashboardPipelineDetail} aria-hidden={!isOpen}>
-                  <p>{stage.detail}</p>
-                  <ul>{stage.features.map((feature) => <li key={feature}><Check size={11} />{feature}</li>)}</ul>
-                  <footer><small>{lang === 'de' ? 'EINORDNUNG' : 'INSIGHT'}</small><strong>{stage.insight}</strong></footer>
-                </div>
                 {index < stages.length - 1 && <ArrowRight className={styles.dashboardPipelineConnector} size={14} aria-hidden="true" />}
               </li>
             })}
           </ol>
           <div className={styles.dashboardLower}>
-            <section className={styles.forecastPanel}>
-              <header><small>{lang === 'de' ? 'GEWICHTETER FORECAST' : 'WEIGHTED FORECAST'}</small><span>{lang === 'de' ? '79% DES MONATSZIELS' : '79% OF MONTHLY TARGET'}</span></header>
-              <strong>CHF 31’600</strong>
-              <div className={styles.forecastProgress}><i /></div>
-              <dl>
-                <div><dt>{lang === 'de' ? 'Pipeline' : 'Pipeline'}</dt><dd>CHF 48’600</dd></div>
-                <div><dt>{lang === 'de' ? 'Gewonnen' : 'Won'}</dt><dd>CHF 21’400</dd></div>
-                <div><dt>{lang === 'de' ? 'Monatsziel' : 'Monthly target'}</dt><dd>CHF 40’000</dd></div>
-              </dl>
-            </section>
+            {selectedStage ? (
+              <section id="dashboard-stage-detail" className={styles.dashboardStageDetail} aria-live="polite">
+                <header>
+                  <small>{lang === 'de' ? 'STUFENDETAIL' : 'STAGE DETAIL'} · 0{activeStage! + 1}</small>
+                  <button type="button" onClick={() => setActiveStage(null)} aria-label={lang === 'de' ? 'Detail schliessen' : 'Close detail'}><X size={13} /></button>
+                </header>
+                <h4>{selectedStage.label} · {selectedStage.value}</h4>
+                <p>{selectedStage.detail}</p>
+                <ul>{selectedStage.features.map((feature) => <li key={feature}><Check size={11} />{feature}</li>)}</ul>
+                <footer><small>{lang === 'de' ? 'EINORDNUNG' : 'INSIGHT'}</small><strong>{selectedStage.insight}</strong></footer>
+              </section>
+            ) : (
+              <section className={styles.forecastPanel}>
+                <header><small>{lang === 'de' ? 'GEWICHTETER FORECAST' : 'WEIGHTED FORECAST'}</small><span>{lang === 'de' ? '79% DES MONATSZIELS' : '79% OF MONTHLY TARGET'}</span></header>
+                <strong>CHF 31’600</strong>
+                <div className={styles.forecastProgress}><i /></div>
+                <dl>
+                  <div><dt>{lang === 'de' ? 'Pipeline' : 'Pipeline'}</dt><dd>CHF 48’600</dd></div>
+                  <div><dt>{lang === 'de' ? 'Gewonnen' : 'Won'}</dt><dd>CHF 21’400</dd></div>
+                  <div><dt>{lang === 'de' ? 'Monatsziel' : 'Monthly target'}</dt><dd>CHF 40’000</dd></div>
+                </dl>
+              </section>
+            )}
             <div className={styles.activityPanel}>
               <small>{lang === 'de' ? 'NÄCHSTE AKTIONEN' : 'NEXT ACTIONS'}</small>
               {actions.map(([action, account, due], index) => <span key={action}><i className={index === 0 ? styles.liveDot : ''} /><b>{action}<small>{account}</small></b><em>{due}</em></span>)}

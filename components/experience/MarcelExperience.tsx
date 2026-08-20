@@ -178,12 +178,13 @@ export default function MarcelExperience() {
   const marketingVideoRef = useRef<HTMLVideoElement | null>(null);
   const [activeModule, setActiveModule] = useState(0);
   const [activeFlow, setActiveFlow] = useState(0);
-  const [activeOperatingModule, setActiveOperatingModule] = useState<number | null>(null);
+  const [activeOperatingModule, setActiveOperatingModule] = useState(0);
   const [heroPhase, setHeroPhase] = useState<HeroPhase>('loading');
   const [heroLoadProgress, setHeroLoadProgress] = useState(0);
   const selectedProjects = useMemo(() => [PROJECTS[0], PROJECTS[3], PROJECTS[1]].filter(Boolean), []);
   const activeModuleData = MODULES[lang][activeModule];
   const ActiveModuleIcon = activeModuleData.Icon;
+  const selectedOperatingModule = OPERATING_MODULES[lang][activeOperatingModule];
 
   useEffect(() => {
     document.title = lang === 'de'
@@ -817,29 +818,29 @@ export default function MarcelExperience() {
               <div className={styles.osLayout}>
                 <div className={styles.operatingModules} data-reveal="left">
                   {OPERATING_MODULES[lang].map((module, index) => {
-                    const isOpen = activeOperatingModule === index;
-                    const detailId = `operating-module-${index + 1}`;
+                    const isSelected = activeOperatingModule === index;
                     return (
-                      <article key={module.title} className={`${styles.operatingModule} ${isOpen ? styles.operatingModuleOpen : ''}`}>
+                      <article key={module.title} className={`${styles.operatingModule} ${isSelected ? styles.operatingModuleOpen : ''}`}>
                         <button
                           type="button"
                           className={styles.operatingModuleToggle}
-                          aria-expanded={isOpen}
-                          aria-controls={detailId}
-                          onClick={() => setActiveOperatingModule((current) => current === index ? null : index)}
+                          aria-pressed={isSelected}
+                          aria-controls="operating-module-detail"
+                          onClick={() => setActiveOperatingModule(index)}
                         >
                           <span>0{index + 1}</span>
                           <span><strong>{module.title}</strong><small>{module.summary}</small></span>
-                          <i aria-hidden="true"><ArrowDown size={15} /></i>
+                          <i aria-hidden="true"><ArrowRight size={15} /></i>
                         </button>
-                        <div id={detailId} className={styles.operatingModuleDetail} aria-hidden={!isOpen}>
-                          <p>{module.detail}</p>
-                          <ul>{module.features.map((feature) => <li key={feature}><Check size={12} />{feature}</li>)}</ul>
-                          <footer><small>{lang === 'de' ? 'WIRKUNG' : 'OUTCOME'}</small><strong>{module.outcome}</strong></footer>
-                        </div>
                       </article>
                     );
                   })}
+                  <section id="operating-module-detail" className={styles.operatingModuleDetailPanel} aria-live="polite">
+                    <header><small>0{activeOperatingModule + 1} · {lang === 'de' ? 'AUSGEWÄHLTES MODUL' : 'SELECTED MODULE'}</small><strong>{selectedOperatingModule.title}</strong></header>
+                    <p>{selectedOperatingModule.detail}</p>
+                    <ul>{selectedOperatingModule.features.map((feature) => <li key={feature}><Check size={12} />{feature}</li>)}</ul>
+                    <footer><small>{lang === 'de' ? 'WIRKUNG' : 'OUTCOME'}</small><strong>{selectedOperatingModule.outcome}</strong></footer>
+                  </section>
                 </div>
                 <div className={styles.osDashboardStage} data-reveal="right"><DashboardMockup lang={lang} /></div>
               </div>
