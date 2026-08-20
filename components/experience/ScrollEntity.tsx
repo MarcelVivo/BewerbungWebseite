@@ -137,7 +137,7 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
     return { index, id: chapters[index].id };
   };
 
-  const openGuide = () => {
+  const openGuideForSection = (sectionId?: string) => {
     const entity = entityRef.current;
     if (!entity || (rootRef.current?.dataset.heroPhase ?? 'loading') !== 'revealed') return;
     setSolutionPreview(null);
@@ -152,8 +152,16 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
     const maximumY = Math.max(minimumY, window.innerHeight - panelHeight - 18);
     const y = Math.max(minimumY, Math.min(maximumY, rect.top + rect.height * .08));
     const section = currentSection();
-    setGuide({ open: true, sectionId: section.id, x, y });
+    setGuide({ open: true, sectionId: sectionId ?? section.id, x, y });
   };
+
+  const openGuide = () => openGuideForSection();
+
+  useEffect(() => {
+    const handleSalesConversation = () => openGuideForSection('journey-contact');
+    window.addEventListener('aila:open-sales-conversation', handleSalesConversation);
+    return () => window.removeEventListener('aila:open-sales-conversation', handleSalesConversation);
+  }, []);
 
   const closeGuide = () => {
     setGuide((current) => ({ ...current, open: false }));

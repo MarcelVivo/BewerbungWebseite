@@ -7,7 +7,6 @@ import { useLanguage } from '../../app/LanguageContext';
 import { trackWebsiteEvent } from '../../app/lib/analytics';
 import { PROJECTS } from '../../app/portfolio/data';
 import ExperienceNav from './ExperienceNav';
-import LeadFunnel from './LeadFunnel';
 import MarketingDockingStation from './MarketingDockingStation';
 import ProblemDockingStation from './ProblemDockingStation';
 import ScrollEntity from './ScrollEntity';
@@ -973,10 +972,29 @@ export default function MarcelExperience() {
         <section id="journey-contact" className={`${styles.section} ${styles.finalSection}`}>
           <SectionDockingStation station="contact" />
           <div className={styles.pauseSticky}>
-            <div className={styles.pauseFit} data-fit>
+            <div className={styles.pauseFit}>
               <div className={styles.finalGlow} aria-hidden="true" />
-              <div className={styles.finalHeader} data-reveal="up"><p>{c.finalA}</p><h2>{c.finalB}</h2><span>{c.finalText}</span></div>
-              <div className={styles.funnelFrame} data-reveal="up"><LeadFunnel lang={lang} /></div>
+              <div className={styles.finalAilaStage}>
+                <div className={styles.finalAilaHeader} data-reveal="up">
+                  <p>{c.finalA}</p>
+                  <h2>{c.finalB}</h2>
+                  <span>{c.finalText}</span>
+                </div>
+                <div className={styles.finalAilaSpace} aria-hidden="true" />
+                <button
+                  type="button"
+                  className={styles.finalAilaLaunch}
+                  onClick={() => {
+                    trackWebsiteEvent('cta_click', { ctaId: 'aila_sales_conversation' });
+                    window.dispatchEvent(new Event('aila:open-sales-conversation'));
+                  }}
+                >
+                  <span>AILA · LIVE</span>
+                  <strong>{lang === 'de' ? 'Verkaufsgespräch mit AILA starten' : 'Start a sales conversation with AILA'}</strong>
+                  <small>{lang === 'de' ? 'Per Text oder Stimme. Dein Gespräch wird bei Interesse vollständig an Marcel übergeben.' : 'By text or voice. If you are interested, the full conversation is handed over to Marcel.'}</small>
+                  <ArrowRight size={18} />
+                </button>
+              </div>
               <footer className={styles.footer}>
                 <div><span className={styles.footerMark}>MS</span><p><strong>Marcel Spahr</strong><small>{c.footerLine}</small></p></div>
                 <div><a href="mailto:kontakt@marcelspahr.ch">kontakt@marcelspahr.ch</a><a href="tel:+41795110911">+41 79 511 09 11</a></div>

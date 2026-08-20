@@ -3849,8 +3849,29 @@
 .factGrid strong { color: transparent; background: var(--gold-gradient); background-clip: text; -webkit-background-clip: text; font-size: clamp(2rem, 3.5vw, 3.8rem); font-weight: 520; letter-spacing: -.06em; line-height: 1; }
 .factGrid span { color: var(--muted); font-size: .67rem; line-height: 1.45; }
 
-.finalSection { --contact-dock-engaged: 0; --contact-dock-charge: 0; min-height: 210svh; padding: 0; background: #070807; overflow: clip; }
+.finalSection { --contact-dock-engaged: 0; --contact-dock-charge: 0; min-height: 100svh; padding: 0; background: #070807; overflow: clip; }
 .finalGlow { position: absolute; z-index: -1; width: 70vw; aspect-ratio: 1; left: 50%; top: -18vw; border-radius: 50%; background: radial-gradient(circle, rgba(200,154,61,.115), rgba(200,154,61,.025) 32%, transparent 67%); transform: translateX(-50%); filter: blur(22px); }
+.finalAilaStage { width: min(980px, calc(100vw - 3rem)); min-height: calc(100svh - 170px); margin: 0 auto; padding: .4rem 0 1.25rem; display: grid; grid-template-rows: auto minmax(15rem, 1fr) auto; align-items: start; }
+.finalAilaHeader { position: relative; z-index: 10; max-width: 50rem; margin: 0 auto; text-align: center; pointer-events: none; }
+.finalAilaHeader > p { margin: 0 0 .55rem; color: var(--gold-light); font: 650 .58rem/1 var(--font-chakra-petch), monospace; letter-spacing: .14em; }
+.finalAilaHeader h2 { max-width: 17ch; margin: 0 auto; color: #efefe8; font-size: clamp(2rem, 4vw, 4.1rem); font-weight: 550; line-height: .98; letter-spacing: -.055em; text-wrap: balance; }
+.finalAilaHeader > span { display: block; max-width: 43rem; margin: .9rem auto 0; color: var(--muted); font-size: .82rem; line-height: 1.6; }
+.finalAilaSpace { min-height: clamp(15rem, 42svh, 28rem); }
+.finalAilaLaunch { position: relative; z-index: 10; width: min(40rem, 100%); min-height: 5rem; margin: 0 auto; padding: .9rem 3.8rem .9rem 1rem; display: grid; gap: .25rem; border: 1px solid rgba(231,197,106,.4); border-left: 2px solid var(--gold-light); background: linear-gradient(110deg, rgba(200,154,61,.14), rgba(200,154,61,.025)); color: #efede4; text-align: left; cursor: pointer; transition: border-color .2s ease, background .2s ease, transform .2s ease; }
+.finalAilaLaunch > span { color: var(--gold-light); font: 650 .5rem/1 var(--font-chakra-petch), monospace; letter-spacing: .14em; }
+.finalAilaLaunch > strong { font-size: .9rem; font-weight: 650; }
+.finalAilaLaunch > small { color: #9da19a; font-size: .63rem; line-height: 1.45; }
+.finalAilaLaunch > svg { position: absolute; right: 1.1rem; top: 50%; color: var(--gold-pale); transform: translateY(-50%); }
+.finalAilaLaunch:hover, .finalAilaLaunch:focus-visible { border-color: rgba(231,197,106,.75); background: linear-gradient(110deg, rgba(200,154,61,.22), rgba(200,154,61,.04)); transform: translateY(-2px); outline: none; }
+@media (max-width: 699px) {
+  .finalAilaStage { width: var(--container); min-height: calc(100svh - 8rem); margin: 0 0 0 var(--container-left); padding: 0 0 2rem; grid-template-rows: auto minmax(17rem, 48svh) auto; }
+  .finalAilaHeader { text-align: left; }
+  .finalAilaHeader h2 { max-width: 12ch; margin-left: 0; font-size: clamp(2.35rem, 11vw, 3.7rem); }
+  .finalAilaHeader > span { margin-left: 0; font-size: .78rem; }
+  .finalAilaSpace { min-height: 17rem; }
+  .finalAilaLaunch { min-height: 5.5rem; padding-right: 3.25rem; }
+  .finalAilaLaunch > strong { font-size: .82rem; }
+}
 .finalHeader { position: relative; z-index: 10; width: min(920px, calc(100vw - 3rem)); margin: 0 auto 1.5rem; text-align: center; }
 .finalHeader > p { margin: 0 0 .8rem; color: #9b9f98; font-size: clamp(1rem, 1.65vw, 1.5rem); }
 .finalHeader h2 { font-size: clamp(4rem, 8vw, 9rem); color: transparent; background: var(--gold-gradient); background-clip: text; -webkit-background-clip: text; filter: drop-shadow(0 15px 45px rgba(200,154,61,.11)); }
