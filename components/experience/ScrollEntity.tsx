@@ -78,6 +78,10 @@ const AILA_THINKING_VIDEO = '/cinematic/aila/aila-thinking-v1-pingpong-greenscre
 const AILA_SPEAKING_VIDEO = '/cinematic/aila/aila-speaking-v1-greenscreen.mp4';
 const AILA_CTA_VIDEO = '/cinematic/aila/aila-cta-v1-greenscreen.mp4';
 type AilaVideoMode = 'idle' | 'attention' | 'thinking' | 'speaking' | 'cta' | 'confirmation';
+type AilaSwitchPhase = 'none' | 'out' | 'loading' | 'in';
+const AILA_SWITCH_OUT_MS = 140;
+const AILA_SWITCH_IN_MS = 320;
+const AILA_SWITCH_STRENGTH = 0.34;
 
 export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
   const entityRef = useRef<HTMLDivElement | null>(null);
@@ -245,6 +249,9 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
     // quantized value.
     let newVideoFrameAvailable = true;
     let videoMode: AilaVideoMode = 'idle';
+    let switchPhase: AilaSwitchPhase = 'none';
+    let switchPhaseStartedAt = 0;
+    let switchTimer = 0;
     let confirmationTimer = 0;
     const supportsVideoFrameCallback = typeof video.requestVideoFrameCallback === 'function';
     let videoFrameCallbackHandle = 0;
@@ -260,7 +267,13 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       if (!reducedMotion.matches) void video.play().catch(() => undefined);
     };
 
-    const switchVideo = (source: string, mode: AilaVideoMode) => {
+    const clearSwitchTimer = () => {
+      if (!switchTimer) return;
+      window.clearTimeout(switchTimer);
+      switchTimer = 0;
+    };
+
+    const applyVideoSource = (source: string, mode: AilaVideoMode) => {
       if (confirmationTimer) {
         window.clearTimeout(confirmationTimer);
         confirmationTimer = 0;
@@ -276,6 +289,32 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       playVideo();
     };
 
+    const finishSwitchEffect = () => {
+      clearSwitchTimer();
+      switchPhase = 'none';
+      switchPhaseStartedAt = 0;
+      delete entity.dataset.ailaSwitch;
+    };
+
+    const beginVideoSwitch = (source: string, mode: AilaVideoMode) => {
+      clearSwitchTimer();
+      if (reducedMotion.matches) {
+        finishSwitchEffect();
+        applyVideoSource(source, mode);
+        return;
+      }
+      switchPhase = 'out';
+      switchPhaseStartedAt = performance.now();
+      entity.dataset.ailaSwitch = 'out';
+      switchTimer = window.setTimeout(() => {
+        switchTimer = 0;
+        switchPhase = 'loading';
+        switchPhaseStartedAt = performance.now();
+        entity.dataset.ailaSwitch = 'loading';
+        applyVideoSource(source, mode);
+      }, AILA_SWITCH_OUT_MS);
+    };
+
     const finishConfirmation = () => {
       confirmationTimer = 0;
       videoMode = 'idle';
@@ -285,42 +324,65 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
     };
 
     const enterConfirmation = () => {
-      switchVideo(AILA_IDLE_VIDEO, 'confirmation');
-      confirmationTimer = window.setTimeout(finishConfirmation, 1650);
+      beginVideoSwitch(AILA_IDLE_VIDEO, 'confirmation');
     };
 
     const advanceVideoState = () => {
       if (videoMode === 'attention') {
-        switchVideo(AILA_THINKING_VIDEO, 'thinking');
+        beginVideoSwitch(AILA_THINKING_VIDEO, 'thinking');
         return;
       }
       if (videoMode === 'thinking') {
-        switchVideo(AILA_SPEAKING_VIDEO, 'speaking');
+        beginVideoSwitch(AILA_SPEAKING_VIDEO, 'speaking');
         return;
       }
       if (videoMode === 'speaking') {
-        switchVideo(AILA_CTA_VIDEO, 'cta');
+        beginVideoSwitch(AILA_CTA_VIDEO, 'cta');
         return;
       }
       if (videoMode === 'cta') enterConfirmation();
     };
 
     const recoverIdle = () => {
-      if (videoMode !== 'idle') switchVideo(AILA_IDLE_VIDEO, 'idle');
+      if (videoMode === 'idle') return;
+      finishSwitchEffect();
+      applyVideoSource(AILA_IDLE_VIDEO, 'idle');
     };
 
     const triggerAttention = () => {
-      if (videoMode !== 'idle' || reducedMotion.matches || (root.dataset.heroPhase ?? 'loading') !== 'revealed') return;
-      switchVideo(AILA_ATTENTION_VIDEO, 'attention');
+      if (videoMode !== 'idle' || switchPhase !== 'none' || reducedMotion.matches || (root.dataset.heroPhase ?? 'loading') !== 'revealed') return;
+      beginVideoSwitch(AILA_ATTENTION_VIDEO, 'attention');
+    };
+
+    const handleVideoLoaded = () => {
+      if (switchPhase !== 'loading') return;
+      switchPhase = 'in';
+      switchPhaseStartedAt = performance.now();
+      entity.dataset.ailaSwitch = 'in';
+      switchTimer = window.setTimeout(finishSwitchEffect, AILA_SWITCH_IN_MS);
+      if (videoMode === 'confirmation') {
+        confirmationTimer = window.setTimeout(finishConfirmation, 1650);
+      }
     };
 
     interaction.addEventListener('click', triggerAttention);
     video.addEventListener('ended', advanceVideoState);
     video.addEventListener('error', recoverIdle);
+    video.addEventListener('loadeddata', handleVideoLoaded);
     entity.dataset.ailaState = 'idle';
 
     const renderCore = () => {
-      if (!coreRendererAvailable || !gl || !texture || !switchOffLocation || reducedMotion.matches || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+      if (!coreRendererAvailable || !gl || !texture || !switchOffLocation || reducedMotion.matches) {
+        coreCanvas.style.opacity = '0';
+        fallback.style.opacity = '1';
+        return;
+      }
+      if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+        if (switchPhase === 'loading') {
+          coreCanvas.style.opacity = '1';
+          fallback.style.opacity = '0';
+          return;
+        }
         coreCanvas.style.opacity = '0';
         fallback.style.opacity = '1';
         return;
@@ -336,10 +398,11 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       }
       const introElapsed = introIgnitionStartedAt ? performance.now() - introIgnitionStartedAt : 9999;
       const duringIgnitionEffect = introElapsed < 820;
+      const duringSwitchEffect = switchPhase !== 'none';
       // Nothing the shader draws can have changed since the last call: no
       // new decoded pixels, and the one wall-clock-driven effect (the
       // ignition power-up disruption) isn't currently animating.
-      if (supportsVideoFrameCallback && !newVideoFrameAvailable && !duringIgnitionEffect) {
+      if (supportsVideoFrameCallback && !newVideoFrameAvailable && !duringIgnitionEffect && !duringSwitchEffect) {
         coreCanvas.style.opacity = '1';
         fallback.style.opacity = '0';
         return;
@@ -348,10 +411,18 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       gl.clear(gl.COLOR_BUFFER_BIT);
       gl.bindTexture(gl.TEXTURE_2D, texture);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
-      // AILA's authored idle motion already contains its complete expression.
-      // Keep the chroma-key renderer clean so the character is not fragmented
-      // by the former organism's switch effects.
-      gl.uniform1f(switchOffLocation, 0);
+      const switchElapsed = switchPhaseStartedAt ? performance.now() - switchPhaseStartedAt : 0;
+      const switchProgress = switchPhase === 'out'
+        ? clamp(switchElapsed / AILA_SWITCH_OUT_MS)
+        : switchPhase === 'in'
+          ? 1 - clamp(switchElapsed / AILA_SWITCH_IN_MS)
+          : switchPhase === 'loading'
+            ? 1
+            : 0;
+      // AILA remains physically calm; only the source handoff briefly breaks
+      // into fine warm fragments so the cut reads as a holographic state
+      // change rather than a new object appearing in the viewport.
+      gl.uniform1f(switchOffLocation, switchProgress * AILA_SWITCH_STRENGTH);
       gl.drawArrays(gl.TRIANGLES, 0, 6);
       coreCanvas.style.opacity = '1';
       fallback.style.opacity = '0';
@@ -1060,12 +1131,14 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
 
     return () => {
       if (frame) window.cancelAnimationFrame(frame);
+      clearSwitchTimer();
       if (confirmationTimer) window.clearTimeout(confirmationTimer);
       if (supportsVideoFrameCallback) video.cancelVideoFrameCallback(videoFrameCallbackHandle);
       video.pause();
       interaction.removeEventListener('click', triggerAttention);
       video.removeEventListener('ended', advanceVideoState);
       video.removeEventListener('error', recoverIdle);
+      video.removeEventListener('loadeddata', handleVideoLoaded);
       if (gl && texture) gl.deleteTexture(texture);
       if (gl && buffer) gl.deleteBuffer(buffer);
       if (gl && program) gl.deleteProgram(program);
