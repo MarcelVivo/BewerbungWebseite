@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type RefObject } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type RefObject } from 'react';
 // The project currently ships three without its optional declaration package.
 // @ts-expect-error Runtime ESM exports are present and already used elsewhere.
 import { Object3D } from 'three';
@@ -91,6 +91,24 @@ type AilaSwitchPhase = 'none' | 'out' | 'loading' | 'in';
 const AILA_SWITCH_OUT_MS = 140;
 const AILA_SWITCH_IN_MS = 320;
 const AILA_SWITCH_STRENGTH = 0.34;
+
+const AILA_DUST_PARTICLES = Array.from({ length: 32 }, (_, index) => {
+  const angle = index * 2.3999632297;
+  const spread = 24 + (index % 7) * 5;
+  return {
+    style: {
+      '--dust-x': `${6 + ((index * 37) % 89)}%`,
+      '--dust-y': `${20 + ((index * 53) % 61)}%`,
+      '--dust-from-x': `${Math.cos(angle) * spread}px`,
+      '--dust-from-y': `${Math.sin(angle) * spread * .62}px`,
+      '--dust-away-x': `${Math.cos(angle + .8) * (spread + 18)}px`,
+      '--dust-away-y': `${Math.sin(angle + .8) * (spread + 12)}px`,
+      '--dust-delay': `${(index % 11) * .055}s`,
+      '--dust-size': `${index % 9 === 0 ? 2.2 : index % 3 === 0 ? 1.6 : 1.1}px`,
+    } as CSSProperties,
+    wine: index % 7 === 0,
+  };
+});
 
 export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
   const entityRef = useRef<HTMLDivElement | null>(null);
@@ -1283,11 +1301,18 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
           type="button"
           className={styles.scrollEntityGrabSurface}
           aria-label={lang === 'de' ? 'AILA öffnen' : 'Open AILA'}
-          data-interaction-label={lang === 'de' ? 'AILA FRAGEN' : 'ASK AILA'}
           aria-pressed="false"
           aria-haspopup="dialog"
           onClick={openGuide}
-        />
+        >
+          <span className={styles.ailaDustPrompt} aria-hidden="true">
+            <span className={styles.ailaDustQuestion}>?</span>
+            <span className={styles.ailaDustText}>{lang === 'de' ? 'AILA FRAGEN' : 'ASK AILA'}</span>
+            <span className={styles.ailaDustCloud}>
+              {AILA_DUST_PARTICLES.map((particle, index) => <i key={index} data-wine={particle.wine ? 'true' : undefined} style={particle.style} />)}
+            </span>
+          </span>
+        </button>
         <video
           ref={videoRef}
           className={styles.scrollEntitySource}

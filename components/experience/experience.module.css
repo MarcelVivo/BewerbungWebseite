@@ -98,22 +98,69 @@
   transition: border-color .3s ease, box-shadow .3s ease, transform .3s ease;
 }
 
-.scrollEntityGrabSurface::before {
-  content: attr(data-interaction-label);
+.ailaDustPrompt {
   position: absolute;
   left: 50%;
-  top: -1.35rem;
-  padding: .42rem .58rem;
-  border: 1px solid rgba(231,197,106,.28);
-  background: rgba(7,8,7,.88);
-  color: var(--gold-pale);
-  font: 650 .48rem/1 var(--font-chakra-petch), monospace;
-  letter-spacing: .13em;
-  white-space: nowrap;
-  opacity: 0;
-  transform: translate(-50%, .35rem);
-  transition: opacity .22s ease, transform .22s ease;
+  top: -.5rem;
+  width: 190%;
+  height: 3.35rem;
+  transform: translate(-50%, -100%);
   pointer-events: none;
+}
+
+.ailaDustQuestion,
+.ailaDustText {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  display: block;
+  margin: 0;
+  color: transparent;
+  background:
+    radial-gradient(circle, rgba(255,241,186,.98) 0 1px, transparent 1.25px) 0 0 / 3.4px 3.4px,
+    radial-gradient(circle, rgba(181,112,26,.82) 0 .7px, transparent 1px) 1.6px 1.2px / 4.6px 4.6px;
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter: blur(5px) drop-shadow(0 0 7px rgba(231,197,106,.5));
+  opacity: 0;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.ailaDustQuestion {
+  left: 8%;
+  font: 680 1.38rem/1 var(--font-chakra-petch), monospace;
+  transform: translate3d(-.8rem, -50%, 0) scale(.66) rotate(-8deg);
+  animation: ailaDustQuestion 9.2s ease-in-out infinite;
+}
+
+.ailaDustText {
+  left: 50%;
+  font: 650 clamp(.48rem, .72vw, .7rem)/1 var(--font-chakra-petch), monospace;
+  letter-spacing: .17em;
+  transform: translate3d(-44%, calc(-50% + .22rem), 0) scale(.93);
+  animation: ailaDustText 9.2s ease-in-out infinite;
+}
+
+.ailaDustCloud { position: absolute; z-index: 1; inset: 0; pointer-events: none; }
+
+.ailaDustCloud i {
+  position: absolute;
+  left: var(--dust-x);
+  top: var(--dust-y);
+  width: var(--dust-size);
+  height: var(--dust-size);
+  border-radius: 50%;
+  background: #f0cb70;
+  box-shadow: 0 0 5px rgba(240,203,112,.72);
+  opacity: 0;
+  transform: translate3d(var(--dust-from-x), var(--dust-from-y), 0) scale(.2);
+  animation: ailaDustParticle 9.2s cubic-bezier(.2,.72,.2,1) var(--dust-delay) infinite;
+}
+
+.ailaDustCloud i[data-wine='true'] {
+  background: #8b2338;
+  box-shadow: 0 0 5px rgba(139,35,56,.68);
 }
 
 .scrollEntityGrabSurface:hover::after,
@@ -123,10 +170,49 @@
   transform: scale(1.035);
 }
 
-.scrollEntityGrabSurface:hover::before,
-.scrollEntityGrabSurface:focus-visible::before {
+.scrollEntityGrabSurface:hover .ailaDustQuestion,
+.scrollEntityGrabSurface:focus-visible .ailaDustQuestion {
+  animation: none;
+  opacity: .92;
+  filter: blur(0) drop-shadow(0 0 8px rgba(231,197,106,.48));
+  transform: translate3d(0, -50%, 0) scale(1) rotate(0);
+}
+
+.scrollEntityGrabSurface:hover .ailaDustText,
+.scrollEntityGrabSurface:focus-visible .ailaDustText {
+  animation: none;
   opacity: 1;
-  transform: translate(-50%, 0);
+  filter: blur(0) drop-shadow(0 0 8px rgba(231,197,106,.38));
+  transform: translate3d(-44%, -50%, 0) scale(1);
+}
+
+.scrollEntityGrabSurface:hover .ailaDustCloud i,
+.scrollEntityGrabSurface:focus-visible .ailaDustCloud i {
+  animation: none;
+  opacity: .58;
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+@keyframes ailaDustQuestion {
+  0%, 12%, 88%, 100% { opacity: 0; filter: blur(6px) drop-shadow(0 0 3px rgba(231,197,106,.12)); transform: translate3d(-.8rem, -50%, 0) scale(.58) rotate(-8deg); }
+  22%, 31% { opacity: .9; filter: blur(0) drop-shadow(0 0 8px rgba(231,197,106,.52)); transform: translate3d(0, -50%, 0) scale(1) rotate(0); }
+  42%, 62% { opacity: .72; filter: blur(.15px) drop-shadow(0 0 7px rgba(231,197,106,.42)); transform: translate3d(0, -50%, 0) scale(.94) rotate(0); }
+  76% { opacity: 0; filter: blur(5px) drop-shadow(0 0 10px rgba(139,35,56,.2)); transform: translate3d(.9rem, calc(-50% - .4rem), 0) scale(.72) rotate(7deg); }
+}
+
+@keyframes ailaDustText {
+  0%, 26%, 88%, 100% { opacity: 0; filter: blur(7px) drop-shadow(0 0 3px rgba(231,197,106,.1)); transform: translate3d(-44%, calc(-50% + .35rem), 0) scale(.88); letter-spacing: .24em; }
+  38% { opacity: .72; filter: blur(1.8px) drop-shadow(0 0 9px rgba(231,197,106,.46)); }
+  47%, 62% { opacity: 1; filter: blur(0) drop-shadow(0 0 8px rgba(231,197,106,.38)); transform: translate3d(-44%, -50%, 0) scale(1); letter-spacing: .17em; }
+  77% { opacity: 0; filter: blur(6px) drop-shadow(0 0 11px rgba(139,35,56,.18)); transform: translate3d(-40%, calc(-50% - .55rem), 0) scale(1.08); letter-spacing: .27em; }
+}
+
+@keyframes ailaDustParticle {
+  0%, 10%, 92%, 100% { opacity: 0; transform: translate3d(var(--dust-from-x), var(--dust-from-y), 0) scale(.18); }
+  20% { opacity: .42; }
+  34%, 62% { opacity: .74; transform: translate3d(0, 0, 0) scale(1); }
+  78% { opacity: .18; transform: translate3d(var(--dust-away-x), var(--dust-away-y), 0) scale(.48); }
+  86% { opacity: 0; transform: translate3d(var(--dust-away-x), var(--dust-away-y), 0) scale(.12); }
 }
 
 .scrollEntity[data-aila-state='attention'] .scrollEntityGrabSurface,
@@ -5235,4 +5321,9 @@
   .scrollEntityVideo,
   .scrollEntityCore { animation: none !important; }
   .scrollEntityTrail { display: none; }
+  .ailaDustCloud { display: none; }
+  .ailaDustQuestion,
+  .ailaDustText { animation: none !important; filter: none; opacity: .72; }
+  .ailaDustQuestion { transform: translate3d(0, -50%, 0) scale(1); }
+  .ailaDustText { transform: translate3d(-44%, -50%, 0) scale(1); }
 }
