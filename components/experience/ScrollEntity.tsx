@@ -185,7 +185,10 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
     if (!guide.open) return;
     const openedAt = window.scrollY;
     const handleKey = (event: KeyboardEvent) => { if (event.key === 'Escape') closeGuide(); };
-    const handleScroll = () => { if (Math.abs(window.scrollY - openedAt) > 24) closeGuide(); };
+    const handleScroll = () => {
+      const compactDialog = window.matchMedia('(max-width: 700px), (max-width: 960px) and (hover: none) and (pointer: coarse)').matches;
+      if (!compactDialog && Math.abs(window.scrollY - openedAt) > 24) closeGuide();
+    };
     window.addEventListener('keydown', handleKey);
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => {

@@ -1,6 +1,7 @@
 'use client';
 
 import { ArrowRight, Check, X } from 'lucide-react';
+import { useEffect } from 'react';
 import { buildAilaLeadObject } from '@/app/lib/aila/engine';
 import { trackWebsiteEvent } from '@/app/lib/analytics';
 import type { AilaRecommendation, AilaSalesContext } from '@/app/lib/aila/types';
@@ -22,6 +23,60 @@ export default function AilaSolutionPreview({
   onContinue: () => void;
   onContact: () => void;
 }) {
+  useEffect(() => {
+    const compactDialog = window.matchMedia('(max-width: 700px), (max-width: 960px) and (hover: none) and (pointer: coarse)').matches;
+    if (!compactDialog) return;
+
+    const root = document.documentElement;
+    const body = document.body;
+    const scrollY = window.scrollY;
+    const previous = {
+      rootOverflow: root.style.overflow,
+      bodyOverflow: body.style.overflow,
+      bodyPosition: body.style.position,
+      bodyTop: body.style.top,
+      bodyLeft: body.style.left,
+      bodyRight: body.style.right,
+      bodyWidth: body.style.width,
+    };
+    const syncViewport = () => {
+      const viewport = window.visualViewport;
+      root.style.setProperty('--aila-mobile-height', `${Math.round(viewport?.height ?? window.innerHeight)}px`);
+      root.style.setProperty('--aila-mobile-top', `${Math.round(viewport?.offsetTop ?? 0)}px`);
+    };
+    const handleKey = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose(); };
+
+    root.style.overflow = 'hidden';
+    body.style.overflow = 'hidden';
+    body.style.position = 'fixed';
+    body.style.top = `-${scrollY}px`;
+    body.style.left = '0';
+    body.style.right = '0';
+    body.style.width = '100%';
+    syncViewport();
+    window.visualViewport?.addEventListener('resize', syncViewport);
+    window.visualViewport?.addEventListener('scroll', syncViewport);
+    window.addEventListener('orientationchange', syncViewport);
+    window.addEventListener('keydown', handleKey);
+
+    return () => {
+      window.visualViewport?.removeEventListener('resize', syncViewport);
+      window.visualViewport?.removeEventListener('scroll', syncViewport);
+      window.removeEventListener('orientationchange', syncViewport);
+      window.removeEventListener('keydown', handleKey);
+      root.style.removeProperty('--aila-mobile-height');
+      root.style.removeProperty('--aila-mobile-top');
+      root.style.overflow = previous.rootOverflow;
+      body.style.overflow = previous.bodyOverflow;
+      body.style.position = previous.bodyPosition;
+      body.style.top = previous.bodyTop;
+      body.style.left = previous.bodyLeft;
+      body.style.right = previous.bodyRight;
+      body.style.width = previous.bodyWidth;
+      window.scrollTo(0, scrollY);
+    };
+  }, [onClose]);
+
   const copy = lang === 'de'
     ? {
         kicker: 'AILA · LÖSUNGSSKIZZE',
@@ -41,7 +96,7 @@ export default function AilaSolutionPreview({
       };
 
   return (
-    <aside className={styles.ailaSolutionPreview} aria-label={copy.kicker}>
+    <aside className={styles.ailaSolutionPreview} role="dialog" aria-modal="true" aria-label={copy.kicker}>
       <header>
         <span>{copy.kicker}</span>
         <button type="button" onClick={onClose} aria-label={copy.close}><X size={16} /></button>

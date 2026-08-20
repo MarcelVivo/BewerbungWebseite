@@ -134,6 +134,7 @@ export default function AilaGuide({
   const [quickReplies, setQuickReplies] = useState<string[]>([...common.prompts]);
   const [lastRecommendation, setLastRecommendation] = useState<AilaRecommendation | undefined>();
   const [contactMode, setContactMode] = useState<'idle' | 'form' | 'success'>('idle');
+  const [compactDialog, setCompactDialog] = useState(false);
   const hasWelcomedRef = useRef(false);
   const hasSpokenWelcomeRef = useRef(false);
   const wasOpenRef = useRef(false);
@@ -202,6 +203,66 @@ export default function AilaGuide({
     }
     wasOpenRef.current = open;
   }, [open, sectionId]);
+
+  useEffect(() => {
+    if (!open) return;
+    const query = window.matchMedia('(max-width: 700px), (max-width: 960px) and (hover: none) and (pointer: coarse)');
+    const update = () => setCompactDialog(query.matches);
+    update();
+    query.addEventListener('change', update);
+    return () => query.removeEventListener('change', update);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open || !compactDialog) return;
+
+    const root = document.documentElement;
+    const body = document.body;
+    const scrollY = window.scrollY;
+    const previous = {
+      rootOverflow: root.style.overflow,
+      bodyOverflow: body.style.overflow,
+      bodyPosition: body.style.position,
+      bodyTop: body.style.top,
+      bodyLeft: body.style.left,
+      bodyRight: body.style.right,
+      bodyWidth: body.style.width,
+    };
+
+    const syncViewport = () => {
+      const viewport = window.visualViewport;
+      root.style.setProperty('--aila-mobile-height', `${Math.round(viewport?.height ?? window.innerHeight)}px`);
+      root.style.setProperty('--aila-mobile-top', `${Math.round(viewport?.offsetTop ?? 0)}px`);
+    };
+
+    root.style.overflow = 'hidden';
+    body.style.overflow = 'hidden';
+    body.style.position = 'fixed';
+    body.style.top = `-${scrollY}px`;
+    body.style.left = '0';
+    body.style.right = '0';
+    body.style.width = '100%';
+    syncViewport();
+    window.visualViewport?.addEventListener('resize', syncViewport);
+    window.visualViewport?.addEventListener('scroll', syncViewport);
+    window.addEventListener('orientationchange', syncViewport);
+
+    return () => {
+      window.visualViewport?.removeEventListener('resize', syncViewport);
+      window.visualViewport?.removeEventListener('scroll', syncViewport);
+      window.removeEventListener('orientationchange', syncViewport);
+      root.style.removeProperty('--aila-mobile-height');
+      root.style.removeProperty('--aila-mobile-top');
+      root.style.overflow = previous.rootOverflow;
+      body.style.overflow = previous.bodyOverflow;
+      body.style.position = previous.bodyPosition;
+      body.style.top = previous.bodyTop;
+      body.style.left = previous.bodyLeft;
+      body.style.right = previous.bodyRight;
+      body.style.width = previous.bodyWidth;
+      window.scrollTo(0, scrollY);
+    };
+  }, [open, compactDialog]);
 
   useEffect(() => {
     if (!open) return;
@@ -662,7 +723,8 @@ export default function AilaGuide({
       style={{ '--aila-guide-x': `${position.x}px`, '--aila-guide-y': `${position.y}px` } as CSSProperties}
       role="dialog"
       aria-label="AILA"
-      aria-modal="false"
+      aria-modal={compactDialog ? 'true' : 'false'}
+      data-mobile-dialog={compactDialog ? 'true' : 'false'}
     >
       <header>
         <div><span>{entry.kicker}</span><i>LIVE</i></div>

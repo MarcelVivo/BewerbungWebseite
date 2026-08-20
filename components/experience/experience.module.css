@@ -631,29 +631,179 @@
 @keyframes ailaThinkingSpin { to { transform: rotate(360deg); } }
 @keyframes ailaRecordPulse { 50% { box-shadow: 0 0 0 4px rgba(255,179,56,.08); } }
 
-@media (max-width: 700px) {
+@media (max-width: 700px), (max-width: 960px) and (hover: none) and (pointer: coarse) {
   .ailaGuide {
-    left: 1rem !important;
-    right: 1rem;
-    top: auto !important;
-    bottom: max(1rem, env(safe-area-inset-bottom));
-    width: auto;
-    max-height: min(82svh, 680px);
-  }
-  .ailaGuideConversation { max-height: 14rem; }
-  .ailaGuide > footer { flex-direction: column; gap: .1rem; }
-  .ailaContactFields { grid-template-columns: 1fr; }
-  .ailaContactActions { flex-direction: column-reverse; }
-  .ailaSolutionPreview {
-    left: 1rem;
-    right: 1rem;
-    top: max(1rem, env(safe-area-inset-top));
+    z-index: 320;
+    left: 0 !important;
+    right: 0;
+    top: var(--aila-mobile-top, 0px) !important;
     bottom: auto;
-    width: auto;
-    max-height: 42svh;
+    width: 100%;
+    height: var(--aila-mobile-height, 100dvh);
+    max-height: none;
+    padding:
+      max(.8rem, env(safe-area-inset-top))
+      max(1rem, env(safe-area-inset-right))
+      max(.8rem, env(safe-area-inset-bottom))
+      max(1rem, env(safe-area-inset-left));
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    border-width: 0;
+    background: linear-gradient(155deg, rgba(18,19,16,.995), rgba(6,7,6,.998));
+    box-shadow: none;
+    backdrop-filter: none;
+    touch-action: pan-y;
   }
+
+  .ailaGuide::before { border-left-width: 3px; }
+  .ailaGuide > header {
+    position: sticky;
+    z-index: 3;
+    top: 0;
+    min-height: 44px;
+    padding-bottom: .6rem;
+    align-items: center;
+    background: linear-gradient(180deg, #11120f 72%, rgba(17,18,15,0));
+  }
+  .ailaGuide > header > div:first-child { min-width: 0; overflow: hidden; }
+  .ailaGuide > header span { min-width: 0; overflow: hidden; font-size: .68rem; text-overflow: ellipsis; white-space: nowrap; }
+  .ailaGuide > header i { flex: 0 0 auto; font-size: .62rem; }
+  .ailaGuide > header button {
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+    touch-action: manipulation;
+  }
+  .ailaGuide > header button svg { width: 20px; height: 20px; }
+  .ailaGuideControls { gap: .45rem !important; }
+
+  .ailaGuide h2 { margin-top: .65rem; font-size: clamp(1.55rem, 7vw, 2rem); line-height: 1.06; }
+  .ailaGuide > p { margin-top: .55rem; font-size: 1rem; line-height: 1.48; }
+
+  .ailaGuideConversation {
+    height: clamp(11rem, 32dvh, 19rem);
+    min-height: 11rem;
+    max-height: none;
+    margin-top: .8rem;
+    padding: .1rem .15rem .35rem 0;
+    gap: .65rem;
+    -webkit-overflow-scrolling: touch;
+  }
+  .ailaGuideMessage { max-width: 94%; padding: .85rem .9rem; }
+  .ailaGuideMessage > span { font-size: .62rem; }
+  .ailaGuideMessage p { margin-top: .45rem; padding-right: 1.35rem; font-size: 1rem; line-height: 1.52; }
+  .ailaGuideMessage > button { width: 44px; height: 44px; right: .15rem; top: .15rem; touch-action: manipulation; }
+  .ailaGuideThinking { min-height: 44px; font-size: .9rem; }
+
+  .ailaGuidePrompts {
+    margin-top: .7rem;
+    padding-bottom: .25rem;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .ailaGuidePrompts::-webkit-scrollbar { display: none; }
+  .ailaGuidePrompts button {
+    min-height: 44px;
+    flex: 0 0 auto;
+    padding: .68rem .78rem;
+    font-size: .86rem;
+    line-height: 1.25;
+    touch-action: manipulation;
+  }
+
+  .ailaGuideHandoverCta { min-height: 74px; margin-top: .7rem; padding: .75rem 3rem .75rem .85rem; touch-action: manipulation; }
+  .ailaGuideHandoverCta > span { font-size: .58rem; }
+  .ailaGuideHandoverCta > strong { font-size: 1rem; }
+  .ailaGuideHandoverCta > small { font-size: .84rem; }
+
+  .ailaLiveConversation { min-height: 52px; margin-top: .65rem; padding: .55rem .75rem; touch-action: manipulation; }
+  .ailaLiveConversation strong { font-size: .88rem; }
+  .ailaLiveSignal { width: 36px; height: 36px; }
+
+  .ailaGuideComposer { margin-top: .55rem; grid-template-columns: minmax(0, 1fr) 48px; gap: .45rem; }
+  .ailaGuideComposer textarea {
+    min-height: 52px;
+    max-height: 9rem;
+    padding: .72rem .78rem;
+    resize: none;
+    font-size: 16px;
+    line-height: 1.45;
+  }
+  .ailaGuideComposer > button { width: 48px; min-height: 52px; touch-action: manipulation; }
+  .ailaGuideComposer > button svg { width: 20px; height: 20px; }
+
+  .ailaGuide > footer { margin-top: .65rem; padding-top: .55rem; gap: .65rem; }
+  .ailaGuide > footer button { min-height: 44px; padding: .55rem .2rem; font-size: .85rem; touch-action: manipulation; }
+
+  .ailaContactFields { grid-template-columns: 1fr; }
+  .ailaContactCapture { flex: 0 0 auto; margin-top: .65rem; padding-right: 0; overflow: visible; }
+  .ailaContactKicker { font-size: .65rem; }
+  .ailaContactCapture > h3 { font-size: clamp(1.45rem, 6.5vw, 1.9rem); }
+  .ailaContactCapture > p { font-size: 1rem; line-height: 1.5; }
+  .ailaContactAilaCta { min-height: 52px; touch-action: manipulation; }
+  .ailaContactAilaCta strong { font-size: .95rem; }
+  .ailaContactContext > span,
+  .ailaContactFields label > span { font-size: .86rem; }
+  .ailaContactContext textarea,
+  .ailaContactFields input { font-size: 16px; }
+  .ailaContactContext textarea { min-height: 7.5rem; }
+  .ailaContactFields input { height: 48px; }
+  .ailaContactConsent { grid-template-columns: 24px 1fr; gap: .65rem; font-size: .85rem; line-height: 1.5; }
+  .ailaContactConsent input { width: 22px; height: 22px; }
+  .ailaContactError { font-size: .85rem; }
+  .ailaContactActions { flex-direction: column-reverse; }
+  .ailaContactActions button { min-height: 48px; font-size: .9rem; touch-action: manipulation; }
+  .ailaContactSuccess { margin-top: 1rem; padding: 1rem; }
+  .ailaContactSuccess h3 { font-size: 1.45rem; }
+  .ailaContactSuccess p { font-size: 1rem; }
+  .ailaContactSuccess button { min-height: 48px; font-size: .9rem; touch-action: manipulation; }
+
+  .ailaSolutionPreview {
+    z-index: 321;
+    left: 0;
+    right: 0;
+    top: var(--aila-mobile-top, 0px);
+    bottom: auto;
+    width: 100%;
+    height: var(--aila-mobile-height, 100dvh);
+    max-height: none;
+    padding:
+      max(.8rem, env(safe-area-inset-top))
+      max(1rem, env(safe-area-inset-right))
+      max(.8rem, env(safe-area-inset-bottom))
+      max(1rem, env(safe-area-inset-left));
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    border-width: 0;
+  }
+  .ailaSolutionPreview > header button { width: 44px; height: 44px; }
+  .ailaSolutionPreview > h3 { font-size: 1.65rem; }
+  .ailaSolutionPreview > p,
+  .ailaSolutionContext p { font-size: 1rem; }
+  .ailaSolutionServices article h4 { font-size: 1rem; }
+  .ailaSolutionServices article p,
+  .ailaSolutionExcluded p { font-size: .9rem; }
   .ailaSolutionPreview > footer { flex-direction: column; align-items: stretch; }
-  .ailaSolutionPreview > footer button { justify-content: center; }
+  .ailaSolutionPreview > footer button { min-height: 48px; justify-content: center; font-size: .9rem; touch-action: manipulation; }
+}
+
+@media (max-height: 520px) and (hover: none) and (pointer: coarse) {
+  .ailaGuide { padding-top: max(.45rem, env(safe-area-inset-top)); padding-bottom: max(.45rem, env(safe-area-inset-bottom)); }
+  .ailaGuide > header { min-height: 40px; padding-bottom: .25rem; }
+  .ailaGuide > header button { width: 40px; height: 40px; flex-basis: 40px; }
+  .ailaGuide h2 { margin-top: .35rem; font-size: 1.35rem; }
+  .ailaGuide > p { display: none; }
+  .ailaGuideConversation { height: 8rem; min-height: 8rem; margin-top: .35rem; }
+  .ailaGuidePrompts { margin-top: .35rem; }
+  .ailaGuideHandoverCta { min-height: 58px; margin-top: .35rem; }
+  .ailaLiveConversation { margin-top: .35rem; }
+  .ailaGuideComposer { margin-top: .35rem; }
+  .ailaGuide > footer { margin-top: .35rem; padding-top: .25rem; }
 }
 
 .scrollPathDebug {
