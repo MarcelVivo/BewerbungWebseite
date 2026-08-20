@@ -2784,6 +2784,16 @@
   pointer-events: auto;
 }
 
+.perspectiveFlowCardGrid .perspectiveFlowNode[data-aila-touch-active='true'] {
+  animation: ailaCardTouch 1.05s cubic-bezier(.16,.8,.2,1) both !important;
+}
+
+@keyframes ailaCardTouch {
+  0% { box-shadow: 0 0 0 0 rgba(255,224,132,0), 0 12px 32px rgba(0,0,0,.5); }
+  34% { box-shadow: 0 0 0 2px rgba(255,224,132,.72), 0 0 34px rgba(231,197,106,.46), 0 18px 42px rgba(0,0,0,.58); }
+  100% { box-shadow: 0 0 0 0 rgba(255,224,132,0), 0 16px 42px rgba(0,0,0,.58), 0 0 24px rgba(231,197,106,.16); }
+}
+
 .perspectiveFlowCardGrid .perspectiveFlowSelected .perspectiveFlowCardHead {
   align-self: stretch;
   padding: clamp(.7rem, 1vw, 1.05rem);

@@ -69,6 +69,49 @@ export function viewportToPathPoint(pixel: { left: number; top: number }, viewpo
   };
 }
 
+/** Projects a point on an ordinary DOM element into the viewport position it
+ * will occupy while its sticky scene is active. This lets a control point pass
+ * a real interface element without turning that element into another dock. */
+export function resolveElementViewportPoint(
+  element: HTMLElement,
+  targetScrollY: number,
+  viewport: Viewport,
+  point: { x: number; y: number },
+) {
+  const elementRect = element.getBoundingClientRect();
+  if (elementRect.width <= 0 || elementRect.height <= 0) return null;
+
+  let stickyAncestor: HTMLElement | null = null;
+  let ancestor: HTMLElement | null = element.parentElement;
+  while (ancestor && ancestor !== document.body) {
+    const position = window.getComputedStyle(ancestor).position;
+    if (position === 'sticky' || position === 'fixed') {
+      stickyAncestor = ancestor;
+      break;
+    }
+    ancestor = ancestor.parentElement;
+  }
+
+  const screenX = elementRect.left + elementRect.width * point.x;
+  let screenY: number;
+  if (stickyAncestor) {
+    const stickyRect = stickyAncestor.getBoundingClientRect();
+    const stickyStyle = window.getComputedStyle(stickyAncestor);
+    const authoredTop = Number.parseFloat(stickyStyle.top);
+    const stickyTop = stickyStyle.position === 'fixed'
+      ? stickyRect.top
+      : (Number.isFinite(authoredTop) ? authoredTop : stickyRect.top);
+    const pointWithinSticky = elementRect.top + elementRect.height * point.y - stickyRect.top;
+    screenY = stickyTop + pointWithinSticky;
+  } else {
+    const documentY = elementRect.top + window.scrollY + elementRect.height * point.y;
+    screenY = documentY - targetScrollY;
+  }
+
+  const pathPoint = viewportToPathPoint({ left: screenX, top: screenY }, viewport);
+  return { ...pathPoint, screenX, screenY };
+}
+
 /**
  * A path sample's y is viewport-relative (vh) by design - the object floats
  * at a fixed screen position while the page scrolls under it. To draw that

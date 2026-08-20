@@ -107,6 +107,7 @@ export function PerspectiveBusinessFlow({
   lang: 'de' | 'en';
 }) {
   const [selectedFlow, setSelectedFlow] = useState<number | null>(null);
+  const [ailaTouchedFlow, setAilaTouchedFlow] = useState<number | null>(null);
   const [detailCardConfig, setDetailCardConfig] = useState<DetailCardConfig>(DEFAULT_DETAIL_CARD_CONFIG);
   const [detailCardEditorEnabled, setDetailCardEditorEnabled] = useState(false);
   const [detailCardSaveState, setDetailCardSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
@@ -136,6 +137,22 @@ export function PerspectiveBusinessFlow({
     setSelectedFlow(4);
     onSelect(4);
     window.setTimeout(() => document.getElementById('verkaufssystem')?.scrollIntoView({ behavior: 'auto', block: 'start' }), 120);
+  }, [onSelect]);
+
+  useEffect(() => {
+    let releaseTimer = 0;
+    const openFirstCard = () => {
+      onSelect(0);
+      setSelectedFlow(0);
+      setAilaTouchedFlow(0);
+      window.clearTimeout(releaseTimer);
+      releaseTimer = window.setTimeout(() => setAilaTouchedFlow(null), 1050);
+    };
+    window.addEventListener('aila:website-card-touch', openFirstCard);
+    return () => {
+      window.clearTimeout(releaseTimer);
+      window.removeEventListener('aila:website-card-touch', openFirstCard);
+    };
   }, [onSelect]);
 
   useEffect(() => {
@@ -206,6 +223,10 @@ export function PerspectiveBusinessFlow({
     observer.observe(section);
     return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('aila-touch-layout-change'));
+  }, [sectionSize]);
 
   useEffect(() => {
     if (selectedFlow === null) return;
@@ -340,6 +361,8 @@ export function PerspectiveBusinessFlow({
                 aria-controls="perspective-flow-detail-panel"
                 aria-label={`${String(index + 1).padStart(2, '0')} · ${step}`}
                 data-flow-index={index}
+                data-aila-touch-target={index === 0 ? 'website-card-01' : undefined}
+                data-aila-touch-active={ailaTouchedFlow === index ? 'true' : undefined}
                 onClick={() => selectFlow(index)}
               >
                 <span className={styles.perspectiveFlowCardHead}>

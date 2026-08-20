@@ -10,6 +10,10 @@ export type FlightPathPoint = {
   dockNumber?: string;
   dockLabel?: string;
   dockLocked?: boolean;
+  /** Optional DOM-anchored interaction waypoint. Unlike a dock this point is
+   *  passed without stopping; reaching it can trigger a matching UI action. */
+  touchAnchor?: string;
+  touchEvent?: string;
   /** True only on the final docking station, which doubles as the flight path's terminal anchor -
    *  there is no separate, unreachable "end" point after it. Keeps its full docking function. */
   isTerminal?: boolean;

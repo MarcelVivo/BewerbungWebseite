@@ -14,7 +14,7 @@ import {
   type FlightPathRuntimeState,
   type ResolvedFlightPathPoint,
 } from './flightPathStore';
-import { measureVisibleDockViewportTarget, pathSampleToDocument, resolveDockViewportTarget } from './flightPathTransforms';
+import { measureVisibleDockViewportTarget, pathSampleToDocument, resolveDockViewportTarget, resolveElementViewportPoint } from './flightPathTransforms';
 import { DOCKING_STOPS, dockingStopForAnchor } from './dockingRoute';
 import { createMasterFlightPath, sampleMasterFlightPath, type MasterFlightPath } from './masterFlightPath';
 import {
@@ -51,6 +51,12 @@ type TrailParticle = {
   size: number;
   color: 'gold' | 'wine';
   phase: number;
+};
+
+type TouchInteraction = {
+  anchor: string;
+  event: string;
+  pathProgress: number;
 };
 
 // Always read live from the shared draft - the pre-scroll intro visual must
@@ -442,6 +448,8 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
     let pathRoute: ResolvedPoint[] = [];
     let masterPath: MasterFlightPath | null = null;
     let dockingProgress: DockProgressPoint[] = [];
+    let touchInteractions: TouchInteraction[] = [];
+    const firedTouchInteractions = new Set<string>();
     const pathFollower = new Object3D();
     const firstDraftPoint = getFlightPathDraft().points[0];
     let current = root.dataset.heroPhase === 'loading'
@@ -512,9 +520,24 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
         const dockTarget = point.dockAnchor
           ? resolveDockViewportTarget(point.dockAnchor, resolvedScroll, { width: viewportWidth, height: viewportHeight })
           : null;
+        const touchElement = point.touchAnchor
+          ? document.querySelector<HTMLElement>(`[data-aila-touch-target="${point.touchAnchor}"]`)
+          : null;
+        const touchTarget = touchElement
+          ? resolveElementViewportPoint(touchElement, resolvedScroll, { width: viewportWidth, height: viewportHeight }, { x: .04, y: .5 })
+          : null;
+        // The idle artwork's viewer-right arm sits around 82% / 58% inside
+        // AILA's 16:9 frame. Offset the carrier centre so that arm—not her
+        // body—meets the left surface of card 01 at this pass-through point.
+        const touchPoint = touchTarget ? {
+          x: (touchTarget.screenX - entity.offsetWidth * point.scale * (.82 - .5)) / Math.max(viewportWidth, 1) * 100,
+          y: (touchTarget.screenY - entity.offsetHeight * point.scale * (.58 - .5)) / Math.max(viewportHeight, 1) * 100,
+        } : null;
         const resolvedPoint = dockTarget
           ? { ...point, x: dockTarget.x, y: dockTarget.y }
-          : point;
+          : touchPoint
+            ? { ...point, ...touchPoint }
+            : point;
         return {
           ...resolvedPoint,
           scroll: resolvedScroll,
@@ -661,6 +684,13 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       const resolvedMasterPath = masterPath ?? createMasterFlightPath(pathRoute);
       if (masterPath) resolvedMasterPath.updateFromNodes(pathRoute);
       masterPath = resolvedMasterPath;
+      touchInteractions = route.flatMap((point, index) => {
+        if (!point.touchAnchor || !point.touchEvent) return [];
+        const pathProgress = resolvedMasterPath.getNodeProgress(index + 1);
+        return Number.isFinite(pathProgress)
+          ? [{ anchor: point.touchAnchor, event: point.touchEvent, pathProgress }]
+          : [];
+      });
       dockingProgress = DOCKING_STOPS.flatMap((stop) => {
         const pointIndex = route.findIndex((point) => point.dockAnchor === stop.anchor);
         const pathProgress = resolvedMasterPath.getNodeProgress(pointIndex + 1);
@@ -961,6 +991,19 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       }
       root.dataset.dockPhase = pathTarget.phase;
 
+      touchInteractions.forEach((interaction) => {
+        const resetBefore = interaction.pathProgress - .035;
+        if (currentPathProgress < resetBefore) {
+          firedTouchInteractions.delete(interaction.anchor);
+          return;
+        }
+        if (currentPathProgress < interaction.pathProgress - .0015 || firedTouchInteractions.has(interaction.anchor)) return;
+        firedTouchInteractions.add(interaction.anchor);
+        window.dispatchEvent(new CustomEvent(interaction.event, {
+          detail: { anchor: interaction.anchor, pathProgress: interaction.pathProgress },
+        }));
+      });
+
       if (flightEditorActive && masterPath) {
         // Real, independent DOM/SVG measurement - not a second read of the
         // same store value. The object's position comes from the rendered
@@ -1100,6 +1143,11 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       requestRender();
     };
 
+    const handleTouchLayoutChange = () => {
+      resolveRoute();
+      requestRender();
+    };
+
     // The one and only place ScrollEntity learns about a point edit: the
     // shared draft store changed (whether that came from the editor drag or
     // anywhere else). No CustomEvent, no local copy - resolveRoute() reads
@@ -1127,6 +1175,7 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
     window.visualViewport?.addEventListener('resize', handleResize);
     window.addEventListener('load', handleResize);
     window.addEventListener('dock-calibration-change', handleDockCalibration);
+    window.addEventListener('aila-touch-layout-change', handleTouchLayoutChange);
     reducedMotion.addEventListener('change', handleMotionPreference);
 
     return () => {
@@ -1150,6 +1199,7 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       window.visualViewport?.removeEventListener('resize', handleResize);
       window.removeEventListener('load', handleResize);
       window.removeEventListener('dock-calibration-change', handleDockCalibration);
+      window.removeEventListener('aila-touch-layout-change', handleTouchLayoutChange);
       unsubscribeDraft();
       reducedMotion.removeEventListener('change', handleMotionPreference);
       heroPhaseObserver.disconnect();
