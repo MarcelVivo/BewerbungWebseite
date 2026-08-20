@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight, Check, LoaderCircle, Mic, Send, Volume2, VolumeX, X } from 'lucide-react';
+import { ArrowRight, AudioLines, Check, LoaderCircle, PhoneOff, Send, Volume2, VolumeX, X } from 'lucide-react';
 import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from 'react';
 import { buildAilaLeadObject, createInitialAilaSalesContext, sanitizeAilaSalesContext } from '@/app/lib/aila/engine';
 import { trackWebsiteEvent } from '@/app/lib/analytics';
@@ -53,14 +53,16 @@ const COMMON = {
   de: {
     prompts: ['Ich habe ein Unternehmen', 'Ich bin selbständig', 'Ich baue ein Start-up', 'Ich habe eine konkrete Idee', 'Ich möchte sehen, was möglich ist'],
     welcome: 'Hallo, ich bin AILA. Wie kann ich dir helfen? Ich finde mit dir heraus, was dein Unternehmen digital wirklich braucht.',
-    placeholder: 'Deine Frage an AILA …', send: 'Frage senden', micStart: 'Frage einsprechen', micStop: 'Aufnahme beenden',
+    placeholder: 'Deine Frage an AILA …', send: 'Frage senden', liveStart: 'Live-Gespräch starten', liveStop: 'Gespräch beenden',
+    liveConnecting: 'Live-Verbindung wird aufgebaut …', liveReady: 'AILA hört zu – sprich einfach.', liveThinking: 'AILA denkt kurz nach …', liveSpeaking: 'AILA antwortet – du kannst jederzeit dazwischen sprechen.',
+    liveHint: 'Ohne Aufnehmen und Absenden. AILA erkennt automatisch, wann du fertig gesprochen hast.',
     thinking: 'AILA denkt nach …', listening: 'AILA hört zu …', voiceOn: 'KI-Stimme ausschalten', voiceOff: 'KI-Stimme einschalten',
     error: 'Das hat gerade nicht funktioniert. Versuche es bitte noch einmal oder besprich dein Anliegen direkt mit Marcel.',
     micPermission: 'Bitte erlaube den Mikrofonzugriff für diese Website und versuche es erneut.',
     micUnavailable: 'Es wurde kein verfügbares Mikrofon gefunden. Du kannst deine Frage weiterhin eintippen.',
     micSecure: 'Die Spracheingabe funktioniert nur über eine sichere HTTPS-Verbindung.',
     micUnsupported: 'Dieser Browser unterstützt die Spracheingabe leider nicht. Du kannst deine Frage weiterhin eintippen.',
-    micError: 'Die Aufnahme konnte nicht gestartet werden. Prüfe den Mikrofonzugriff und versuche es erneut.',
+    micError: 'Das Live-Gespräch konnte nicht gestartet werden. Prüfe den Mikrofonzugriff und versuche es erneut.',
     next: 'Nächstes Kapitel', contact: 'Mit Marcel sprechen', close: 'AILA schliessen',
     handoverKicker: 'PERSÖNLICH WEITER', handoverTitle: 'Kontakt mit Marcel aufnehmen',
     handoverText: 'Dein Gesprächskontext wird sicher übernommen. Du musst nichts nochmals erklären.',
@@ -69,14 +71,16 @@ const COMMON = {
   en: {
     prompts: ['I run a company', 'I am self-employed', 'I am building a start-up', 'I have a specific idea', 'Show me what is possible'],
     welcome: 'Hello, I’m AILA. How can I help? Together we can find out what your business really needs digitally.',
-    placeholder: 'Your question for AILA …', send: 'Send question', micStart: 'Record a question', micStop: 'Stop recording',
+    placeholder: 'Your question for AILA …', send: 'Send question', liveStart: 'Start live conversation', liveStop: 'End conversation',
+    liveConnecting: 'Connecting live conversation …', liveReady: 'AILA is listening — just speak.', liveThinking: 'AILA is thinking …', liveSpeaking: 'AILA is responding — you can interrupt at any time.',
+    liveHint: 'No recording or sending. AILA automatically detects when you have finished speaking.',
     thinking: 'AILA is thinking …', listening: 'AILA is listening …', voiceOn: 'Turn AI voice off', voiceOff: 'Turn AI voice on',
     error: 'That did not work just now. Please try again or discuss your question directly with Marcel.',
     micPermission: 'Please allow microphone access for this website and try again.',
     micUnavailable: 'No available microphone was found. You can still type your question.',
     micSecure: 'Voice input requires a secure HTTPS connection.',
     micUnsupported: 'This browser does not support voice input. You can still type your question.',
-    micError: 'The recording could not be started. Check microphone access and try again.',
+    micError: 'The live conversation could not be started. Check microphone access and try again.',
     next: 'Next chapter', contact: 'Talk to Marcel', close: 'Close AILA',
     handoverKicker: 'CONTINUE PERSONALLY', handoverTitle: 'Contact Marcel',
     handoverText: 'Your conversation context is transferred securely. You will not need to explain everything again.',
@@ -86,41 +90,20 @@ const COMMON = {
 
 type ChatMessage = { id: string; role: 'user' | 'assistant'; content: string };
 type AilaConversationState = AilaAnimationState;
-type WavRecorder = { stop: () => Promise<Blob>; cancel: () => void };
+type LiveStatus = 'off' | 'connecting' | 'listening' | 'thinking' | 'speaking' | 'error';
+type RealtimeEvent = {
+  type?: string;
+  item_id?: string;
+  transcript?: string;
+  delta?: string;
+  error?: { message?: string };
+  response?: {
+    output?: Array<{ id?: string; content?: Array<{ transcript?: string; text?: string }> }>;
+  };
+};
 
 const messageId = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 const SILENT_WAV = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
-
-const encodeWav = (chunks: Float32Array[], sampleRate: number) => {
-  const sampleCount = chunks.reduce((total, chunk) => total + chunk.length, 0);
-  const buffer = new ArrayBuffer(44 + sampleCount * 2);
-  const view = new DataView(buffer);
-  const writeText = (offset: number, value: string) => {
-    for (let index = 0; index < value.length; index += 1) view.setUint8(offset + index, value.charCodeAt(index));
-  };
-  writeText(0, 'RIFF');
-  view.setUint32(4, 36 + sampleCount * 2, true);
-  writeText(8, 'WAVE');
-  writeText(12, 'fmt ');
-  view.setUint32(16, 16, true);
-  view.setUint16(20, 1, true);
-  view.setUint16(22, 1, true);
-  view.setUint32(24, sampleRate, true);
-  view.setUint32(28, sampleRate * 2, true);
-  view.setUint16(32, 2, true);
-  view.setUint16(34, 16, true);
-  writeText(36, 'data');
-  view.setUint32(40, sampleCount * 2, true);
-  let offset = 44;
-  chunks.forEach((chunk) => {
-    for (let index = 0; index < chunk.length; index += 1) {
-      const sample = Math.max(-1, Math.min(1, chunk[index]));
-      view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
-      offset += 2;
-    }
-  });
-  return new Blob([buffer], { type: 'audio/wav' });
-};
 
 export default function AilaGuide({
   open,
@@ -146,7 +129,7 @@ export default function AilaGuide({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
-  const [recording, setRecording] = useState(false);
+  const [liveStatus, setLiveStatus] = useState<LiveStatus>('off');
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [lastAnswer, setLastAnswer] = useState('');
   const [salesContext, setSalesContext] = useState<AilaSalesContext>(() => createInitialAilaSalesContext());
@@ -160,10 +143,12 @@ export default function AilaGuide({
   const primedAudioRef = useRef<HTMLAudioElement | null>(null);
   const audioUrlRef = useRef('');
   const speechRequestRef = useRef<AbortController | null>(null);
-  const recorderRef = useRef<MediaRecorder | null>(null);
-  const wavRecorderRef = useRef<WavRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
+  const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
+  const dataChannelRef = useRef<RTCDataChannel | null>(null);
+  const remoteAudioRef = useRef<HTMLAudioElement | null>(null);
+  const assistantDraftsRef = useRef<Map<string, string>>(new Map());
+  const completedAssistantItemsRef = useRef<Set<string>>(new Set());
   const historyRef = useRef<HTMLDivElement | null>(null);
   const requestRef = useRef<AbortController | null>(null);
 
@@ -192,19 +177,23 @@ export default function AilaGuide({
     primedAudioRef.current = null;
   };
 
-  const stopRecorder = () => {
-    const recorder = recorderRef.current;
-    if (recorder?.state === 'recording') {
-      recorder.ondataavailable = null;
-      recorder.onstop = null;
-      recorder.stop();
-    }
-    wavRecorderRef.current?.cancel();
-    wavRecorderRef.current = null;
+  const stopLiveConversation = (announceIdle = true) => {
+    dataChannelRef.current?.close();
+    dataChannelRef.current = null;
+    peerConnectionRef.current?.close();
+    peerConnectionRef.current = null;
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
-    recorderRef.current = null;
-    setRecording(false);
+    if (remoteAudioRef.current) {
+      remoteAudioRef.current.pause();
+      remoteAudioRef.current.srcObject = null;
+      remoteAudioRef.current = null;
+    }
+    assistantDraftsRef.current.clear();
+    completedAssistantItemsRef.current.clear();
+    setLiveStatus('off');
+    setBusy(false);
+    if (announceIdle) onStateChange('idle');
   };
 
   useEffect(() => {
@@ -228,7 +217,10 @@ export default function AilaGuide({
   }, [open, sectionId, lang, common.welcome]);
 
   useEffect(() => {
-    const openContact = () => setContactMode('form');
+    const openContact = () => {
+      stopLiveConversation(false);
+      setContactMode('form');
+    };
     window.addEventListener('aila:open-contact-capture', openContact);
     return () => window.removeEventListener('aila:open-contact-capture', openContact);
   }, []);
@@ -239,7 +231,7 @@ export default function AilaGuide({
     requestRef.current = null;
     stopAudio(false);
     discardPrimedAudio();
-    stopRecorder();
+    stopLiveConversation(false);
   }, [open]);
 
   useEffect(() => {
@@ -265,7 +257,7 @@ export default function AilaGuide({
     requestRef.current?.abort();
     stopAudio(false);
     discardPrimedAudio();
-    streamRef.current?.getTracks().forEach((track) => track.stop());
+    stopLiveConversation(false);
   }, []);
 
   const speak = async (text: string, force = false) => {
@@ -351,9 +343,236 @@ export default function AilaGuide({
     });
   };
 
+  const upsertRealtimeMessage = (
+    id: string,
+    role: ChatMessage['role'],
+    content: string,
+    append = false,
+  ) => {
+    if (!content) return;
+    setMessages((current) => {
+      const index = current.findIndex((message) => message.id === id);
+      if (index < 0) return [...current, { id, role, content }];
+      const next = [...current];
+      next[index] = {
+        ...next[index],
+        content: append ? `${next[index].content}${content}` : content,
+      };
+      return next;
+    });
+  };
+
+  const rememberLiveTurn = (role: ChatMessage['role'], content: string) => {
+    setSalesContext((current) => ({
+      ...current,
+      currentStage: current.currentStage === 'welcome' ? 'identify_business' : current.currentStage,
+      leadTemperature: current.leadTemperature === 'unknown' ? 'warm' : current.leadTemperature,
+      conversationSummary: [
+        current.conversationSummary,
+        `${role === 'user' ? (lang === 'de' ? 'Besucher' : 'Visitor') : 'AILA'}: ${content}`,
+      ].filter(Boolean).join('\n').slice(-6000),
+    }));
+  };
+
+  const handleRealtimeEvent = (event: MessageEvent<string>) => {
+    let payload: RealtimeEvent;
+    try {
+      payload = JSON.parse(event.data) as RealtimeEvent;
+    } catch {
+      return;
+    }
+    const type = payload.type || '';
+
+    if (type === 'input_audio_buffer.speech_started') {
+      setLiveStatus('listening');
+      setBusy(false);
+      onStateChange('listening');
+      return;
+    }
+    if (type === 'input_audio_buffer.speech_stopped') {
+      setLiveStatus('thinking');
+      setBusy(true);
+      onStateChange('thinking');
+      return;
+    }
+    if (type === 'conversation.item.input_audio_transcription.completed') {
+      const transcript = payload.transcript?.trim();
+      if (!transcript) return;
+      const id = payload.item_id || messageId();
+      upsertRealtimeMessage(id, 'user', transcript);
+      rememberLiveTurn('user', transcript);
+      setQuickReplies([]);
+      trackWebsiteEvent('aila_message_sent', {
+        station: sectionId,
+        metadata: { input_mode: 'voice_live', stage: salesContext.currentStage },
+      });
+      return;
+    }
+    if (type === 'response.output_audio_transcript.delta' || type === 'response.audio_transcript.delta') {
+      const delta = payload.delta || '';
+      if (!delta) return;
+      const id = payload.item_id || 'aila-live-response';
+      assistantDraftsRef.current.set(id, `${assistantDraftsRef.current.get(id) || ''}${delta}`);
+      upsertRealtimeMessage(id, 'assistant', delta, true);
+      setLiveStatus('speaking');
+      setBusy(false);
+      onStateChange('speaking');
+      return;
+    }
+    if (type === 'response.output_audio_transcript.done' || type === 'response.audio_transcript.done') {
+      const id = payload.item_id || 'aila-live-response';
+      const transcript = payload.transcript?.trim() || assistantDraftsRef.current.get(id)?.trim();
+      if (!transcript) return;
+      upsertRealtimeMessage(id, 'assistant', transcript);
+      assistantDraftsRef.current.delete(id);
+      completedAssistantItemsRef.current.add(id);
+      setLastAnswer(transcript);
+      rememberLiveTurn('assistant', transcript);
+      return;
+    }
+    if (type === 'response.done') {
+      payload.response?.output?.forEach((item) => {
+        const transcript = item.content
+          ?.map((part) => part.transcript || part.text || '')
+          .join(' ')
+          .trim();
+        if (!transcript) return;
+        const id = item.id || messageId();
+        upsertRealtimeMessage(id, 'assistant', transcript);
+        if (!completedAssistantItemsRef.current.has(id)) rememberLiveTurn('assistant', transcript);
+        completedAssistantItemsRef.current.add(id);
+        assistantDraftsRef.current.delete(id);
+        setLastAnswer(transcript);
+      });
+      setLiveStatus('listening');
+      setBusy(false);
+      onStateChange('listening');
+      return;
+    }
+    if (type === 'error') {
+      console.error('AILA realtime event error', payload.error?.message || 'unknown error');
+      setLiveStatus('error');
+      setBusy(false);
+      onStateChange('idle');
+    }
+  };
+
+  const startLiveConversation = async () => {
+    if (liveStatus !== 'off' && liveStatus !== 'error') return;
+    if (!window.isSecureContext) {
+      setMessages((current) => [...current, { id: messageId(), role: 'assistant', content: common.micSecure }]);
+      return;
+    }
+    if (!navigator.mediaDevices?.getUserMedia || typeof RTCPeerConnection === 'undefined') {
+      setMessages((current) => [...current, { id: messageId(), role: 'assistant', content: common.micUnsupported }]);
+      return;
+    }
+
+    stopAudio(false);
+    setLiveStatus('connecting');
+    setBusy(true);
+    onStateChange('thinking');
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+        video: false,
+      });
+      streamRef.current = stream;
+      const peerConnection = new RTCPeerConnection();
+      peerConnectionRef.current = peerConnection;
+
+      const remoteAudio = new Audio();
+      remoteAudio.autoplay = true;
+      remoteAudio.muted = !voiceEnabled;
+      remoteAudio.setAttribute('playsinline', '');
+      remoteAudioRef.current = remoteAudio;
+      peerConnection.ontrack = (trackEvent) => {
+        remoteAudio.srcObject = trackEvent.streams[0];
+        void remoteAudio.play().catch(() => undefined);
+      };
+      stream.getAudioTracks().forEach((track) => peerConnection.addTrack(track, stream));
+
+      const dataChannel = peerConnection.createDataChannel('oai-events');
+      dataChannelRef.current = dataChannel;
+      dataChannel.onmessage = handleRealtimeEvent;
+      dataChannel.onopen = () => {
+        messages.slice(-8).forEach((message) => {
+          dataChannel.send(JSON.stringify({
+            type: 'conversation.item.create',
+            item: {
+              type: 'message',
+              role: message.role,
+              content: [{
+                type: message.role === 'user' ? 'input_text' : 'output_text',
+                text: message.content,
+              }],
+            },
+          }));
+        });
+        setLiveStatus('listening');
+        setBusy(false);
+        setQuickReplies([]);
+        onStateChange('listening');
+        trackWebsiteEvent('aila_voice_used', {
+          station: sectionId,
+          metadata: { mode: 'realtime', stage: salesContext.currentStage },
+        });
+      };
+      dataChannel.onerror = () => {
+        setLiveStatus('error');
+        setBusy(false);
+      };
+      peerConnection.onconnectionstatechange = () => {
+        if (peerConnection.connectionState === 'failed' || peerConnection.connectionState === 'disconnected') {
+          stopLiveConversation();
+        }
+      };
+
+      const offer = await peerConnection.createOffer();
+      await peerConnection.setLocalDescription(offer);
+      const response = await fetch(`/api/aila/realtime?lang=${lang}&sectionId=${encodeURIComponent(sectionId)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/sdp' },
+        body: offer.sdp,
+      });
+      if (!response.ok) throw new Error('realtime session failed');
+      await peerConnection.setRemoteDescription({ type: 'answer', sdp: await response.text() });
+    } catch (error) {
+      const name = error instanceof DOMException ? error.name : '';
+      const content = name === 'NotAllowedError' || name === 'SecurityError'
+        ? common.micPermission
+        : name === 'NotFoundError' || name === 'NotReadableError' || name === 'OverconstrainedError'
+          ? common.micUnavailable
+          : common.micError;
+      stopLiveConversation(false);
+      setLiveStatus('error');
+      setMessages((current) => [...current, { id: messageId(), role: 'assistant', content }]);
+      onStateChange('idle');
+    }
+  };
+
   const ask = async (rawQuestion: string, inputMode: AilaInputMode = 'text') => {
     const question = rawQuestion.trim();
-    if (!question || busy) return;
+    if (!question || (busy && liveStatus === 'off')) return;
+    if (liveStatus !== 'off' && dataChannelRef.current?.readyState === 'open') {
+      const userMessage: ChatMessage = { id: messageId(), role: 'user', content: question };
+      setMessages((current) => [...current, userMessage]);
+      rememberLiveTurn('user', question);
+      setInput('');
+      setQuickReplies([]);
+      setLiveStatus('thinking');
+      setBusy(true);
+      onStateChange('thinking');
+      if (liveStatus === 'speaking') {
+        dataChannelRef.current.send(JSON.stringify({ type: 'response.cancel' }));
+      }
+      dataChannelRef.current.send(JSON.stringify({
+        type: 'conversation.item.create',
+        item: { type: 'message', role: 'user', content: [{ type: 'input_text', text: question }] },
+      }));
+      dataChannelRef.current.send(JSON.stringify({ type: 'response.create' }));
+      return;
+    }
     stopAudio(false);
     const prior = messages.filter((message) => message.content !== common.welcome);
     const userMessage: ChatMessage = { id: messageId(), role: 'user', content: question };
@@ -429,154 +648,21 @@ export default function AilaGuide({
     void ask(input);
   };
 
-  const transcribeRecording = async (blob: Blob) => {
-    setRecording(false);
-    if (!blob.size) {
-      onStateChange('idle');
-      return;
-    }
-    setBusy(true);
-    onStateChange('thinking');
-    try {
-      const form = new FormData();
-      const extension = blob.type.includes('mp4') ? 'm4a' : blob.type.includes('ogg') ? 'ogg' : blob.type.includes('wav') ? 'wav' : 'webm';
-      form.append('audio', new File([blob], `aila-question.${extension}`, { type: blob.type }));
-      form.append('lang', lang);
-      const response = await fetch('/api/aila/transcribe', { method: 'POST', body: form });
-      const payload = await response.json();
-      if (!response.ok || typeof payload?.text !== 'string' || !payload.text.trim()) throw new Error('transcription failed');
-      setBusy(false);
-      await ask(payload.text, 'voice');
-    } catch {
-      setMessages((current) => [...current, { id: messageId(), role: 'assistant', content: common.error }]);
-      setBusy(false);
-      onStateChange('idle');
-    }
-  };
-
-  const startWavRecorder = async (stream: MediaStream) => {
-    const AudioContextConstructor = window.AudioContext
-      || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-    if (!AudioContextConstructor) throw new Error('audio context unavailable');
-    const context = new AudioContextConstructor();
-    if (context.state === 'suspended') await context.resume();
-    const source = context.createMediaStreamSource(stream);
-    const processor = context.createScriptProcessor(4096, 1, 1);
-    const mutedOutput = context.createGain();
-    const samples: Float32Array[] = [];
-    const sampleRate = context.sampleRate;
-    mutedOutput.gain.value = 0;
-    processor.onaudioprocess = (event) => samples.push(new Float32Array(event.inputBuffer.getChannelData(0)));
-    source.connect(processor);
-    processor.connect(mutedOutput);
-    mutedOutput.connect(context.destination);
-    let stopped = false;
-    const disconnect = () => {
-      processor.onaudioprocess = null;
-      source.disconnect();
-      processor.disconnect();
-      mutedOutput.disconnect();
-      stream.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-    };
-    wavRecorderRef.current = {
-      stop: async () => {
-        if (stopped) return new Blob([], { type: 'audio/wav' });
-        stopped = true;
-        disconnect();
-        await context.close();
-        return encodeWav(samples, sampleRate);
-      },
-      cancel: () => {
-        if (stopped) return;
-        stopped = true;
-        disconnect();
-        void context.close();
-      },
-    };
-  };
-
-  const toggleRecording = async () => {
-    if (recording) {
-      if (recorderRef.current?.state === 'recording') {
-        recorderRef.current.stop();
-        return;
-      }
-      if (wavRecorderRef.current) {
-        const wavRecorder = wavRecorderRef.current;
-        wavRecorderRef.current = null;
-        await transcribeRecording(await wavRecorder.stop());
-      }
-      return;
-    }
-    if (!window.isSecureContext) {
-      setMessages((current) => [...current, { id: messageId(), role: 'assistant', content: common.micSecure }]);
-      return;
-    }
-    if (!navigator.mediaDevices?.getUserMedia) {
-      setMessages((current) => [...current, { id: messageId(), role: 'assistant', content: common.micUnsupported }]);
-      return;
-    }
-    try {
-      trackWebsiteEvent('aila_voice_used', {
-        station: sectionId,
-        metadata: { stage: salesContext.currentStage },
-      });
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-        video: false,
-      });
-      streamRef.current = stream;
-      let recorder: MediaRecorder | null = null;
-      if (typeof MediaRecorder !== 'undefined') {
-        try {
-          const mimeTypes = ['audio/webm;codecs=opus', 'audio/ogg;codecs=opus', 'audio/mp4;codecs=mp4a.40.2', 'audio/mp4', 'audio/webm'];
-          const mimeType = typeof MediaRecorder.isTypeSupported === 'function'
-            ? mimeTypes.find((type) => MediaRecorder.isTypeSupported(type)) || ''
-            : '';
-          recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
-        } catch {
-          recorder = null;
-        }
-      }
-      if (recorder) {
-        recorderRef.current = recorder;
-        chunksRef.current = [];
-        recorder.ondataavailable = (event) => { if (event.data.size) chunksRef.current.push(event.data); };
-        recorder.onstop = async () => {
-          const blob = new Blob(chunksRef.current, { type: recorder.mimeType || 'audio/webm' });
-          stream.getTracks().forEach((track) => track.stop());
-          streamRef.current = null;
-          recorderRef.current = null;
-          await transcribeRecording(blob);
-        };
-        recorder.start(250);
-      } else {
-        await startWavRecorder(stream);
-      }
-      setRecording(true);
-      onStateChange('listening');
-    } catch (error) {
-      streamRef.current?.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-      const name = error instanceof DOMException ? error.name : '';
-      const content = name === 'NotAllowedError' || name === 'SecurityError'
-        ? common.micPermission
-        : name === 'NotFoundError' || name === 'NotReadableError' || name === 'OverconstrainedError'
-          ? common.micUnavailable
-          : common.micError;
-      setMessages((current) => [...current, { id: messageId(), role: 'assistant', content }]);
-      onStateChange('idle');
-    }
-  };
-
   const close = () => {
     requestRef.current?.abort();
     requestRef.current = null;
     stopAudio(true);
-    stopRecorder();
+    stopLiveConversation();
     onClose();
   };
+
+  const liveStatusLabel = liveStatus === 'connecting'
+    ? common.liveConnecting
+    : liveStatus === 'thinking'
+      ? common.liveThinking
+      : liveStatus === 'speaking'
+        ? common.liveSpeaking
+        : common.liveReady;
 
   return (
     <aside
@@ -589,7 +675,12 @@ export default function AilaGuide({
       <header>
         <div><span>{entry.kicker}</span><i>LIVE</i></div>
         <div className={styles.ailaGuideControls}>
-          <button type="button" onClick={() => { setVoiceEnabled((current) => !current); if (voiceEnabled) stopAudio(true); }} aria-label={voiceEnabled ? common.voiceOn : common.voiceOff} title={voiceEnabled ? common.voiceOn : common.voiceOff}>
+          <button type="button" onClick={() => {
+            const nextVoiceEnabled = !voiceEnabled;
+            setVoiceEnabled(nextVoiceEnabled);
+            if (remoteAudioRef.current) remoteAudioRef.current.muted = !nextVoiceEnabled;
+            if (!nextVoiceEnabled) stopAudio(true);
+          }} aria-label={voiceEnabled ? common.voiceOn : common.voiceOff} title={voiceEnabled ? common.voiceOn : common.voiceOff}>
             {voiceEnabled ? <Volume2 size={15} /> : <VolumeX size={15} />}
           </button>
           <button type="button" onClick={close} aria-label={common.close}><X size={16} /></button>
@@ -634,12 +725,12 @@ export default function AilaGuide({
               <div key={message.id} className={styles.ailaGuideMessage} data-role={message.role}>
                 <span>{message.role === 'assistant' ? 'AILA' : lang === 'de' ? 'DU' : 'YOU'}</span>
                 <p>{message.content}</p>
-                {message.role === 'assistant' && message.content === lastAnswer && voiceEnabled && !busy && (
+                {message.role === 'assistant' && message.content === lastAnswer && voiceEnabled && !busy && liveStatus === 'off' && (
                   <button type="button" onClick={() => void speak(message.content)} aria-label={lang === 'de' ? 'Antwort vorlesen' : 'Read answer aloud'}><Volume2 size={13} /></button>
                 )}
               </div>
             ))}
-            {busy && <div className={styles.ailaGuideThinking}><LoaderCircle size={14} />{common.thinking}</div>}
+            {busy && liveStatus === 'off' && <div className={styles.ailaGuideThinking}><LoaderCircle size={14} />{common.thinking}</div>}
           </div>
 
           {quickReplies.length > 0 && (
@@ -652,6 +743,7 @@ export default function AilaGuide({
 
           {messages.some((message) => message.role === 'user') && !busy && (
             <button type="button" className={styles.ailaGuideHandoverCta} onClick={() => {
+              stopLiveConversation(false);
               setContactMode('form');
               trackWebsiteEvent('aila_contact_requested', { metadata: { stage: salesContext.currentStage, lead_temperature: salesContext.leadTemperature } });
             }}>
@@ -662,17 +754,39 @@ export default function AilaGuide({
             </button>
           )}
 
+          <div className={styles.ailaLiveConversation} data-state={liveStatus}>
+            <span className={styles.ailaLiveSignal} aria-hidden="true"><AudioLines size={17} /></span>
+            <span>
+              <strong>{liveStatus === 'off' || liveStatus === 'error' ? common.liveStart : liveStatusLabel}</strong>
+              <small>{common.liveHint}</small>
+            </span>
+            <button
+              type="button"
+              onClick={() => liveStatus === 'off' || liveStatus === 'error'
+                ? void startLiveConversation()
+                : stopLiveConversation()}
+              aria-label={liveStatus === 'off' || liveStatus === 'error' ? common.liveStart : common.liveStop}
+              title={liveStatus === 'off' || liveStatus === 'error' ? common.liveStart : common.liveStop}
+            >
+              {liveStatus === 'connecting'
+                ? <><LoaderCircle size={17} /><span>{common.liveStop}</span></>
+                : liveStatus === 'off' || liveStatus === 'error'
+                  ? <><AudioLines size={17} /><span>{common.liveStart}</span></>
+                  : <><PhoneOff size={16} /><span>{common.liveStop}</span></>}
+            </button>
+          </div>
+
           <form className={styles.ailaGuideComposer} onSubmit={submit}>
-            <textarea value={input} onChange={(event) => setInput(event.target.value)} placeholder={recording ? common.listening : common.placeholder} rows={2} maxLength={1200} disabled={busy || recording} onKeyDown={(event) => {
+            <textarea value={input} onChange={(event) => setInput(event.target.value)} placeholder={common.placeholder} rows={2} maxLength={1200} disabled={busy && liveStatus === 'off'} onKeyDown={(event) => {
               if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); void ask(input); }
             }} />
-            <button type="button" data-recording={recording ? 'true' : 'false'} onClick={() => void toggleRecording()} disabled={busy} aria-label={recording ? common.micStop : common.micStart} title={recording ? common.micStop : common.micStart}><Mic size={17} /></button>
-            <button type="submit" disabled={busy || recording || !input.trim()} aria-label={common.send} title={common.send}><Send size={16} /></button>
+            <button type="submit" disabled={(busy && liveStatus === 'off') || !input.trim()} aria-label={common.send} title={common.send}><Send size={16} /></button>
           </form>
 
           <footer>
             {sectionId !== 'journey-contact' && <button type="button" onClick={() => onNavigate(nextSectionId)}>{common.next}<ArrowRight size={14} /></button>}
             <button type="button" onClick={() => {
+              stopLiveConversation(false);
               window.dispatchEvent(new CustomEvent('aila:handover', { detail: buildAilaLeadObject(salesContext) }));
               trackWebsiteEvent('aila_contact_requested', { metadata: { stage: salesContext.currentStage, lead_temperature: salesContext.leadTemperature } });
               setContactMode('form');
