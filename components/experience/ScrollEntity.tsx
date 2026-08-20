@@ -95,21 +95,23 @@ const AILA_SWITCH_OUT_MS = 140;
 const AILA_SWITCH_IN_MS = 320;
 const AILA_SWITCH_STRENGTH = 0.34;
 
-const AILA_DUST_PARTICLES = Array.from({ length: 48 }, (_, index) => {
+const AILA_DUST_PARTICLES = Array.from({ length: 132 }, (_, index) => {
   const angle = index * 2.3999632297;
-  const spread = 24 + (index % 7) * 5;
+  const spread = 14 + (index % 11) * 3.2;
   return {
     style: {
-      '--dust-x': `${6 + ((index * 37) % 89)}%`,
-      '--dust-y': `${20 + ((index * 53) % 61)}%`,
+      '--dust-x': `${3 + ((index * 37) % 95)}%`,
+      '--dust-y': `${8 + ((index * 53) % 84)}%`,
       '--dust-from-x': `${Math.cos(angle) * spread}px`,
-      '--dust-from-y': `${Math.sin(angle) * spread * .62}px`,
-      '--dust-away-x': `${Math.cos(angle + .8) * (spread + 18)}px`,
-      '--dust-away-y': `${Math.sin(angle + .8) * (spread + 12)}px`,
-      '--dust-delay': `${(index % 11) * .055}s`,
-      '--dust-size': `${index % 9 === 0 ? 2.2 : index % 3 === 0 ? 1.6 : 1.1}px`,
+      '--dust-from-y': `${Math.sin(angle) * spread * .46}px`,
+      '--dust-away-x': `${Math.cos(angle + .8) * (spread + 24)}px`,
+      '--dust-away-y': `${Math.sin(angle + .8) * (spread + 15)}px`,
+      '--dust-delay': `${(index % 23) * .035}s`,
+      '--dust-size': `${index % 17 === 0 ? 1.15 : index % 5 === 0 ? .78 : .48}px`,
+      '--dust-alpha': `${.38 + (index % 7) * .075}`,
+      '--dust-blur': `${index % 6 === 0 ? .45 : index % 3 === 0 ? .2 : 0}px`,
     } as CSSProperties,
-    wine: index % 7 === 0,
+    tone: index % 11 === 0 ? 'wine' : index % 3 === 0 ? 'copper' : 'amber',
   };
 });
 
@@ -1403,7 +1405,7 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
               </span>
             </span>
             <span className={styles.ailaDustCloud}>
-              {AILA_DUST_PARTICLES.map((particle, index) => <i key={index} data-wine={particle.wine ? 'true' : undefined} style={particle.style} />)}
+              {AILA_DUST_PARTICLES.map((particle, index) => <i key={index} data-tone={particle.tone} style={particle.style} />)}
             </span>
           </span>
         </button>
