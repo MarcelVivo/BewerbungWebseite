@@ -45,7 +45,6 @@ const COMMON = {
     welcome: 'Frag mich frei zu Marcels Leistungen, Arbeitsweise oder zu deinem digitalen Vorhaben.',
     placeholder: 'Deine Frage an AILA …', send: 'Frage senden', micStart: 'Frage einsprechen', micStop: 'Aufnahme beenden',
     thinking: 'AILA denkt nach …', listening: 'AILA hört zu …', voiceOn: 'KI-Stimme ausschalten', voiceOff: 'KI-Stimme einschalten',
-    privacy: 'KI-Dialog über OpenAI. Bitte keine vertraulichen Daten eingeben.',
     error: 'Das hat gerade nicht funktioniert. Versuche es bitte noch einmal oder besprich dein Anliegen direkt mit Marcel.',
     unsupported: 'Die Sprachaufnahme wird von diesem Browser nicht unterstützt.',
     next: 'Nächstes Kapitel', contact: 'Mit Marcel sprechen', close: 'AILA schliessen',
@@ -55,7 +54,6 @@ const COMMON = {
     welcome: 'Ask me anything about Marcel’s services, his way of working or your digital project.',
     placeholder: 'Your question for AILA …', send: 'Send question', micStart: 'Record a question', micStop: 'Stop recording',
     thinking: 'AILA is thinking …', listening: 'AILA is listening …', voiceOn: 'Turn AI voice off', voiceOff: 'Turn AI voice on',
-    privacy: 'AI dialogue via OpenAI. Please do not enter confidential information.',
     error: 'That did not work just now. Please try again or discuss your question directly with Marcel.',
     unsupported: 'Voice recording is not supported by this browser.',
     next: 'Next chapter', contact: 'Talk to Marcel', close: 'Close AILA',
@@ -334,7 +332,6 @@ export default function AilaGuide({
         <button type="button" data-recording={recording ? 'true' : 'false'} onClick={() => void toggleRecording()} disabled={busy} aria-label={recording ? common.micStop : common.micStart} title={recording ? common.micStop : common.micStart}><Mic size={17} /></button>
         <button type="submit" disabled={busy || recording || !input.trim()} aria-label={common.send} title={common.send}><Send size={16} /></button>
       </form>
-      <small className={styles.ailaGuidePrivacy}>{common.privacy}</small>
 
       <footer>
         {sectionId !== 'journey-contact' && <button type="button" onClick={() => onNavigate(nextSectionId)}>{common.next}<ArrowRight size={14} /></button>}

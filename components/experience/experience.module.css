@@ -359,7 +359,6 @@
 .ailaGuideComposer > button:hover:not(:disabled) { color: #fff8d8; border-color: rgba(231,197,106,.52); }
 .ailaGuideComposer > button:disabled { opacity: .35; cursor: not-allowed; }
 .ailaGuideComposer > button[data-recording='true'] { color: #ffdf8a; border-color: rgba(255,179,56,.62); background: rgba(255,179,56,.1); animation: ailaRecordPulse 1.2s ease-in-out infinite; }
-.ailaGuidePrivacy { margin-top: .42rem; color: #686d67; font-size: .52rem; line-height: 1.4; }
 
 .ailaGuide > footer { margin-top: .75rem; padding-top: .7rem; display: flex; justify-content: space-between; gap: .55rem; border-top: 1px solid rgba(255,255,255,.08); }
 .ailaGuide > footer button { min-width: 0; padding: .5rem 0; display: inline-flex; align-items: center; gap: .4rem; border: 0; background: transparent; color: #b3b7b0; font-size: .61rem; font-weight: 600; text-align: left; cursor: pointer; }
