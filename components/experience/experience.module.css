@@ -104,7 +104,8 @@
   transform: scale(1.035);
 }
 
-.scrollEntity[data-aila-state='attention'] .scrollEntityGrabSurface { cursor: progress; }
+.scrollEntity[data-aila-state='attention'] .scrollEntityGrabSurface,
+.scrollEntity[data-aila-state='thinking'] .scrollEntityGrabSurface { cursor: progress; }
 .scrollEntityGrabSurface:focus-visible { outline: 1px solid rgba(231,197,106,.62); outline-offset: -8px; }
 .scrollEntity[data-docking='true'] .scrollEntityVideo,
 .scrollEntity[data-docking='true'] .scrollEntityCore { animation: entityDockedHover 7.4s ease-in-out infinite; }

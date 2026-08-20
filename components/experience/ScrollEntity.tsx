@@ -74,6 +74,8 @@ const MIN_HOLD_VIEWPORTS = 0.4;
 const HEADING_TILT_MAX_DEGREES = 8;
 const AILA_IDLE_VIDEO = '/cinematic/aila/aila-idle-v1-pingpong-greenscreen.mp4';
 const AILA_ATTENTION_VIDEO = '/cinematic/aila/aila-attention-v2-greenscreen.mp4';
+const AILA_THINKING_VIDEO = '/cinematic/aila/aila-thinking-v1-pingpong-greenscreen.mp4';
+type AilaVideoMode = 'idle' | 'attention' | 'thinking';
 
 export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
   const entityRef = useRef<HTMLDivElement | null>(null);
@@ -240,7 +242,7 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
     // report as a continuously interpolated clock rather than a frame-
     // quantized value.
     let newVideoFrameAvailable = true;
-    let videoMode: 'idle' | 'attention' = 'idle';
+    let videoMode: AilaVideoMode = 'idle';
     const supportsVideoFrameCallback = typeof video.requestVideoFrameCallback === 'function';
     let videoFrameCallbackHandle = 0;
     const scheduleVideoFrameCallback = () => {
@@ -255,11 +257,11 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       if (!reducedMotion.matches) void video.play().catch(() => undefined);
     };
 
-    const switchVideo = (source: string, mode: 'idle' | 'attention') => {
+    const switchVideo = (source: string, mode: AilaVideoMode) => {
       video.pause();
       videoMode = mode;
       entity.dataset.ailaState = mode;
-      interaction.setAttribute('aria-pressed', String(mode === 'attention'));
+      interaction.setAttribute('aria-pressed', String(mode !== 'idle'));
       video.loop = mode === 'idle';
       video.src = source;
       video.load();
@@ -267,19 +269,26 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       playVideo();
     };
 
-    const restoreIdle = () => {
-      if (videoMode !== 'attention') return;
-      switchVideo(AILA_IDLE_VIDEO, 'idle');
+    const advanceVideoState = () => {
+      if (videoMode === 'attention') {
+        switchVideo(AILA_THINKING_VIDEO, 'thinking');
+        return;
+      }
+      if (videoMode === 'thinking') switchVideo(AILA_IDLE_VIDEO, 'idle');
+    };
+
+    const recoverIdle = () => {
+      if (videoMode !== 'idle') switchVideo(AILA_IDLE_VIDEO, 'idle');
     };
 
     const triggerAttention = () => {
-      if (videoMode === 'attention' || reducedMotion.matches || (root.dataset.heroPhase ?? 'loading') !== 'revealed') return;
+      if (videoMode !== 'idle' || reducedMotion.matches || (root.dataset.heroPhase ?? 'loading') !== 'revealed') return;
       switchVideo(AILA_ATTENTION_VIDEO, 'attention');
     };
 
     interaction.addEventListener('click', triggerAttention);
-    video.addEventListener('ended', restoreIdle);
-    video.addEventListener('error', restoreIdle);
+    video.addEventListener('ended', advanceVideoState);
+    video.addEventListener('error', recoverIdle);
     entity.dataset.ailaState = 'idle';
 
     const renderCore = () => {
@@ -1026,8 +1035,8 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       if (supportsVideoFrameCallback) video.cancelVideoFrameCallback(videoFrameCallbackHandle);
       video.pause();
       interaction.removeEventListener('click', triggerAttention);
-      video.removeEventListener('ended', restoreIdle);
-      video.removeEventListener('error', restoreIdle);
+      video.removeEventListener('ended', advanceVideoState);
+      video.removeEventListener('error', recoverIdle);
       if (gl && texture) gl.deleteTexture(texture);
       if (gl && buffer) gl.deleteBuffer(buffer);
       if (gl && program) gl.deleteProgram(program);
@@ -1064,7 +1073,7 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
           ref={interactionRef}
           type="button"
           className={styles.scrollEntityGrabSurface}
-          aria-label="AILA zuhören lassen"
+          aria-label="AILA zuhören und analysieren lassen"
           aria-pressed="false"
         />
         <video
