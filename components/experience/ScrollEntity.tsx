@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect, useRef, useState, type CSSProperties, type RefObject } from 'react';
-import type { AilaAnimationState } from '@/app/lib/aila/types';
+import type { AilaAnimationState, AilaRecommendation, AilaSalesContext, AilaUiAction } from '@/app/lib/aila/types';
 // The project currently ships three without its optional declaration package.
 // @ts-expect-error Runtime ESM exports are present and already used elsewhere.
 import { Object3D } from 'three';
 import FlightPathEditor from './FlightPathEditor';
 import AilaGuide from './AilaGuide';
+import AilaSolutionPreview from './AilaSolutionPreview';
 import TitleDepthLayer from './TitleDepthLayer';
 import { chapters, type ExperienceLang } from './content';
 import {
@@ -121,6 +122,10 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
   const fallbackRef = useRef<HTMLImageElement | null>(null);
   const debugRef = useRef<HTMLOutputElement | null>(null);
   const [guide, setGuide] = useState({ open: false, sectionId: 'journey-start', x: 24, y: 96 });
+  const [solutionPreview, setSolutionPreview] = useState<{
+    recommendation: AilaRecommendation;
+    context: AilaSalesContext;
+  } | null>(null);
 
   const currentSection = () => {
     const probe = window.scrollY + window.innerHeight * .42;
@@ -177,6 +182,48 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
       window.removeEventListener('scroll', handleScroll);
     };
   }, [guide.open]);
+
+  useEffect(() => {
+    const handleUiAction = (event: Event) => {
+      const detail = (event as CustomEvent<{
+        action?: AilaUiAction;
+        recommendation?: AilaRecommendation;
+        context?: AilaSalesContext;
+      }>).detail;
+      const action = detail?.action;
+      if (!action) return;
+
+      if (
+        (action.type === 'SHOW_SOLUTION' || action.type === 'SHOW_RECOMMENDATION')
+        && detail.recommendation
+        && detail.context
+      ) {
+        setSolutionPreview({
+          recommendation: detail.recommendation,
+          context: detail.context,
+        });
+        window.dispatchEvent(new CustomEvent('aila:guide-state', { detail: { state: 'presenting' } }));
+        return;
+      }
+
+      if (action.type === 'SCROLL_TO_SECTION' && action.sectionId) {
+        const target = document.getElementById(action.sectionId);
+        if (!target) return;
+        const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+        target.scrollIntoView({ behavior, block: 'start' });
+      }
+
+      if (action.type === 'HIGHLIGHT_SERVICE' && action.serviceId) {
+        const target = document.querySelector<HTMLElement>(`[data-service-id="${CSS.escape(action.serviceId)}"]`);
+        if (!target) return;
+        target.dataset.ailaHighlight = 'true';
+        window.setTimeout(() => delete target.dataset.ailaHighlight, 2400);
+      }
+    };
+
+    window.addEventListener('aila:ui-action', handleUiAction);
+    return () => window.removeEventListener('aila:ui-action', handleUiAction);
+  }, []);
 
   useEffect(() => {
     const root = rootRef.current;
@@ -1377,6 +1424,17 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
         onStateChange={setAilaConversationState}
         onNavigate={navigateFromGuide}
       />
+      {solutionPreview && (
+        <AilaSolutionPreview
+          lang={lang}
+          recommendation={solutionPreview.recommendation}
+          context={solutionPreview.context}
+          onClose={() => {
+            setSolutionPreview(null);
+            window.dispatchEvent(new CustomEvent('aila:guide-state', { detail: { state: 'idle' } }));
+          }}
+        />
+      )}
       <output ref={debugRef} className={styles.scrollPathDebug} hidden aria-live="off" />
       <TitleDepthLayer />
       <FlightPathEditor />
