@@ -750,7 +750,7 @@ export function DashboardMockup({ lang }: { lang: 'de' | 'en' }) {
 }
 
 export function ArchitectureStack({ lang }: { lang: 'de' | 'en' }) {
-  const [activeLayer, setActiveLayer] = useState<number | null>(0);
+  const [activeLayer, setActiveLayer] = useState(0);
   const layers = lang === 'de'
     ? [
       {
@@ -796,33 +796,35 @@ export function ArchitectureStack({ lang }: { lang: 'de' | 'en' }) {
         value: 'Dependable metrics and decisions based on the same current source of truth.',
       },
     ];
+  const selectedLayer = layers[activeLayer];
+  const SelectedIcon = selectedLayer.Icon;
+
   return (
     <div className={styles.architectureStack} aria-label={lang === 'de' ? 'Vier Ebenen eines verbundenen digitalen Systems' : 'Four layers of a connected digital system'}>
       <header className={styles.architectureHeader}>
         <small>{lang === 'de' ? 'EIN DATENFLUSS · VIER EBENEN' : 'ONE DATA FLOW · FOUR LAYERS'}</small>
         <strong>{lang === 'de' ? 'Vom Kontaktpunkt zur verlässlichen Entscheidung.' : 'From touchpoint to dependable decision.'}</strong>
       </header>
-      <ol className={styles.architectureLayers}>
-        {layers.map(({ number, title, tech, Icon, detail, value }, index) => {
+      <ol className={styles.architectureLayers} role="tablist" aria-label={lang === 'de' ? 'Architekturebene auswählen' : 'Choose an architecture layer'}>
+        {layers.map(({ number, title, tech, Icon }, index) => {
           const isOpen = activeLayer === index;
-          const detailId = `architecture-layer-${index + 1}`;
           return (
             <li key={number} className={isOpen ? styles.architectureLayerOpen : ''}>
-              <button type="button" className={styles.architectureLayerToggle} aria-expanded={isOpen} aria-controls={detailId} onClick={() => setActiveLayer((current) => current === index ? null : index)}>
+              <button type="button" role="tab" className={styles.architectureLayerToggle} aria-selected={isOpen} aria-controls="architecture-layer-detail" onClick={() => setActiveLayer(index)}>
                 <span>{number}</span>
                 <i><Icon size={17} /></i>
                 <span><strong>{title}</strong><small>{tech}</small></span>
-                <b aria-hidden="true"><ChevronDown size={15} /></b>
+                <b aria-hidden="true"><ArrowRight size={15} /></b>
               </button>
-              <div id={detailId} className={styles.architectureLayerDetail} aria-hidden={!isOpen}>
-                <p>{detail}</p>
-                <footer><small>{lang === 'de' ? 'MEHRWERT' : 'VALUE'}</small><strong>{value}</strong></footer>
-              </div>
-              {index < layers.length - 1 && <span className={styles.architectureConnector} aria-hidden="true"><i /><ArrowRight size={13} /></span>}
             </li>
           );
         })}
       </ol>
+      <section id="architecture-layer-detail" className={styles.architectureLayerDetailPanel} role="tabpanel" aria-live="polite">
+        <header><span><SelectedIcon size={21} /></span><small>{lang === 'de' ? 'AKTIVE EBENE' : 'ACTIVE LAYER'} · {selectedLayer.number}</small></header>
+        <div><h3>{selectedLayer.title}</h3><p>{selectedLayer.detail}</p></div>
+        <footer><small>{lang === 'de' ? 'MEHRWERT' : 'VALUE'}</small><strong>{selectedLayer.value}</strong></footer>
+      </section>
       <div className={styles.architectureTrust}>
         <span><ShieldCheck size={22} /><LockKeyhole size={12} /></span>
         <div><small>{lang === 'de' ? 'SICHERHEIT ÜBER ALLE EBENEN' : 'SECURITY ACROSS EVERY LAYER'}</small><strong>{lang === 'de' ? 'Rollen, Protokollierung, Verschlüsselung und Backups sind Teil des Systems – kein Zusatz.' : 'Roles, audit trails, encryption and backups are part of the system, not an add-on.'}</strong></div>

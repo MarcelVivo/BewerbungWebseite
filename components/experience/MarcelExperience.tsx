@@ -849,27 +849,38 @@ export default function MarcelExperience() {
         </section>
 
         <section id="daten-intelligenz" className={`${styles.section} ${styles.dataSection} ${styles.layoutRight}`}>
-          <SectionDockingStation station="data" />
-          <div className={styles.pauseSticky}>
-            <div className={styles.pauseFit}>
-              <div className={styles.dataLayout}>
-                <div className={styles.sectionCopy} data-reveal="right">
-                  <p className={styles.eyebrow}><span />{c.dataEyebrow}</p>
-                  <h2>{c.dataTitle}</h2>
-                  <p className={styles.sectionLead}>{c.dataText}</p>
-                  <ArchitectureStack lang={lang} />
-                </div>
-                <div className={styles.trustCards}>
-                  <article data-reveal="up"><span><ShieldCheck size={22} /></span><p>SECURITY BY DESIGN</p><h3>{c.securityTitle}</h3><div>{c.securityText}</div><footer>{['AUTH', 'ROLES', 'RLS', 'BACKUP', 'LOG'].map((item) => <i key={item}>{item}</i>)}</footer></article>
-                  <article data-reveal="up"><span><Bot size={22} /></span><p>CONTROLLED AI FLOW</p><h3>{c.aiTitle}</h3><div>{c.aiText}</div><footer>{['CLASSIFY', 'DRAFT', 'REVIEW', 'ACT'].map((item) => <i key={item}>{item}</i>)}</footer></article>
+          <div className={styles.dataViewport}>
+            <header className={styles.dataHeader} data-reveal="up">
+              <div className={styles.dataHeaderMain}>
+                <p className={styles.eyebrow}><span />{c.dataEyebrow}</p>
+                <h2>{c.dataTitle}</h2>
+              </div>
+              <div className={styles.dataHeaderSide}>
+                <p>{c.dataText}</p>
+                <div className={styles.dataHeaderMetrics} aria-label={lang === 'de' ? 'Datenarchitektur in Zahlen' : 'Data architecture at a glance'}>
+                  <span><b>04</b><small>{lang === 'de' ? 'verbundene Ebenen' : 'connected layers'}</small></span>
+                  <span><b>01</b><small>{lang === 'de' ? 'kontrollierter Datenfluss' : 'controlled data flow'}</small></span>
+                  <span><b>HUMAN</b><small>{lang === 'de' ? 'Kontrolle bei AI' : 'control over AI'}</small></span>
                 </div>
               </div>
-              <dl className={styles.machineReadable} data-reveal="up">
-                <div><dt>{lang === 'de' ? 'Was baut marcelspahr.ch?' : 'What does marcelspahr.ch build?'}</dt><dd>{lang === 'de' ? 'Individuelle digitale Unternehmenssysteme aus Website, Marketing, Software, Daten und Automationen.' : 'Custom digital business systems combining websites, marketing, software, data and automation.'}</dd></div>
-                <div><dt>{lang === 'de' ? 'Für wen?' : 'For whom?'}</dt><dd>{lang === 'de' ? 'Für Schweizer KMU und Start-ups, die digitale Werkzeuge und Prozesse zu einem verlässlichen System verbinden wollen.' : 'For Swiss SMEs and startups that want to connect digital tools and processes into one dependable system.'}</dd></div>
-                <div><dt>{lang === 'de' ? 'Wie beginnt ein Projekt?' : 'How does a project begin?'}</dt><dd>{lang === 'de' ? 'Mit einer Analyse von Unternehmen, Zielen, Menschen, Engpässen, Daten und bestehenden Systemen.' : 'With an analysis of the company, goals, people, bottlenecks, data and existing systems.'}</dd></div>
-              </dl>
+            </header>
+
+            <div className={styles.dataWorkspace}>
+              <div className={styles.dataAilaBay} aria-hidden="true">
+                <SectionDockingStation station="data" />
+              </div>
+              <ArchitectureStack lang={lang} />
+              <div className={`${styles.trustCards} ${styles.dataAssurance}`}>
+                <article className={styles.dataAssuranceCard} data-reveal="up"><span><ShieldCheck size={21} /></span><p>SECURITY BY DESIGN</p><h3>{c.securityTitle}</h3><div>{c.securityText}</div><footer>{['AUTH', 'ROLES', 'RLS', 'BACKUP', 'LOG'].map((item) => <i key={item}>{item}</i>)}</footer></article>
+                <article className={styles.dataAssuranceCard} data-reveal="up"><span><Bot size={21} /></span><p>CONTROLLED AI FLOW</p><h3>{c.aiTitle}</h3><div>{c.aiText}</div><footer>{['CLASSIFY', 'DRAFT', 'REVIEW', 'ACT'].map((item) => <i key={item}>{item}</i>)}</footer></article>
+              </div>
             </div>
+
+            <dl className={styles.dataContextRail} data-reveal="up">
+              <div><dt>{lang === 'de' ? 'System' : 'System'}</dt><dd>{lang === 'de' ? 'Website, Marketing, Software, Daten und Automationen greifen auf dieselbe Grundlage zu.' : 'Website, marketing, software, data and automation use the same foundation.'}</dd></div>
+              <div><dt>{lang === 'de' ? 'Geeignet für' : 'Designed for'}</dt><dd>{lang === 'de' ? 'Schweizer KMU und Start-ups mit verbundenen Werkzeugen und Prozessen.' : 'Swiss SMEs and startups connecting tools and processes.'}</dd></div>
+              <div><dt>{lang === 'de' ? 'Projektstart' : 'Project start'}</dt><dd>{lang === 'de' ? 'Analyse von Zielen, Menschen, Engpässen, Daten und bestehenden Systemen.' : 'Analysis of goals, people, bottlenecks, data and existing systems.'}</dd></div>
+            </dl>
           </div>
         </section>
 
