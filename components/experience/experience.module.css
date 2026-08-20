@@ -348,30 +348,30 @@
 .ailaGuideThinking svg { color: var(--gold-light); animation: ailaThinkingSpin .9s linear infinite; }
 
 .ailaLiveConversation {
+  width: 100%;
   margin-top: .7rem;
   min-height: 3.35rem;
-  padding: .55rem;
-  display: grid;
-  grid-template-columns: 2rem minmax(0, 1fr) auto;
+  padding: .55rem .7rem;
+  display: flex;
   align-items: center;
   gap: .65rem;
   border: 1px solid rgba(231,197,106,.28);
   background: radial-gradient(circle at 8% 50%, rgba(231,197,106,.09), transparent 32%), rgba(0,0,0,.18);
+  color: #e8e8e0;
+  text-align: left;
+  cursor: pointer;
   transition: border-color .25s ease, background .25s ease;
 }
+.ailaLiveConversation:hover { border-color: rgba(255,226,139,.68); color: #fff8d9; }
 .ailaLiveConversation[data-state='listening'] { border-color: rgba(121,207,146,.38); background: radial-gradient(circle at 8% 50%, rgba(121,207,146,.11), transparent 34%), rgba(0,0,0,.2); }
 .ailaLiveConversation[data-state='speaking'] { border-color: rgba(231,197,106,.58); background: radial-gradient(circle at 8% 50%, rgba(231,197,106,.15), transparent 36%), rgba(0,0,0,.2); }
-.ailaLiveConversation > span:nth-child(2) { min-width: 0; display: grid; gap: .2rem; }
-.ailaLiveConversation strong { color: #e8e8e0; font-size: .65rem; font-weight: 650; line-height: 1.25; }
-.ailaLiveConversation small { color: #858a83; font-size: .52rem; line-height: 1.35; }
+.ailaLiveConversation strong { color: inherit; font: 650 .62rem/1.2 var(--font-chakra-petch), monospace; letter-spacing: .035em; }
 .ailaLiveSignal { width: 2rem; height: 2rem; display: grid; place-items: center; border: 1px solid rgba(231,197,106,.32); border-radius: 50%; color: var(--gold-pale); }
 .ailaLiveConversation[data-state='connecting'] .ailaLiveSignal,
 .ailaLiveConversation[data-state='thinking'] .ailaLiveSignal { animation: ailaRecordPulse 1.2s ease-in-out infinite; }
 .ailaLiveConversation[data-state='listening'] .ailaLiveSignal { border-color: rgba(121,207,146,.5); color: #9fd7af; animation: ailaRecordPulse 1.55s ease-in-out infinite; }
 .ailaLiveConversation[data-state='speaking'] .ailaLiveSignal svg { animation: ailaLiveWave .7s ease-in-out infinite alternate; }
-.ailaLiveConversation > button { min-height: 2.4rem; padding: .5rem .65rem; display: inline-flex; align-items: center; justify-content: center; gap: .4rem; border: 1px solid rgba(231,197,106,.4); background: rgba(200,154,61,.08); color: var(--gold-pale); font: 650 .53rem/1.2 var(--font-chakra-petch), monospace; cursor: pointer; }
-.ailaLiveConversation > button:hover { border-color: rgba(255,226,139,.75); color: #fff8d9; }
-.ailaLiveConversation[data-state='connecting'] > button svg { animation: ailaThinkingSpin .9s linear infinite; }
+.ailaLiveConversation[data-state='connecting'] .ailaLiveSignal svg { animation: ailaThinkingSpin .9s linear infinite; }
 
 .ailaGuideComposer { margin-top: .45rem; display: grid; grid-template-columns: 1fr 2rem; gap: .35rem; align-items: stretch; }
 .ailaGuideComposer textarea { min-width: 0; min-height: 3rem; max-height: 6.5rem; padding: .62rem .68rem; resize: vertical; border: 1px solid rgba(255,255,255,.12); border-radius: 0; outline: none; background: rgba(0,0,0,.24); color: #efefe8; font-family: inherit; font-size: .72rem; font-weight: 500; line-height: 1.45; }

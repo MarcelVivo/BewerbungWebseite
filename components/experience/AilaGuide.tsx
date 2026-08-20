@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight, AudioLines, Check, LoaderCircle, PhoneOff, Send, Volume2, VolumeX, X } from 'lucide-react';
+import { ArrowRight, AudioLines, Check, LoaderCircle, Send, Volume2, VolumeX, X } from 'lucide-react';
 import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from 'react';
 import { buildAilaLeadObject, createInitialAilaSalesContext, sanitizeAilaSalesContext } from '@/app/lib/aila/engine';
 import { trackWebsiteEvent } from '@/app/lib/analytics';
@@ -53,9 +53,7 @@ const COMMON = {
   de: {
     prompts: ['Ich habe ein Unternehmen', 'Ich bin selbständig', 'Ich baue ein Start-up', 'Ich habe eine konkrete Idee', 'Ich möchte sehen, was möglich ist'],
     welcome: 'Hallo, ich bin AILA. Wie kann ich dir helfen? Ich finde mit dir heraus, was dein Unternehmen digital wirklich braucht.',
-    placeholder: 'Deine Frage an AILA …', send: 'Frage senden', liveStart: 'Live-Gespräch starten', liveStop: 'Gespräch beenden',
-    liveConnecting: 'Live-Verbindung wird aufgebaut …', liveReady: 'AILA hört zu – sprich einfach.', liveThinking: 'AILA denkt kurz nach …', liveSpeaking: 'AILA antwortet – du kannst jederzeit dazwischen sprechen.',
-    liveHint: 'Ohne Aufnehmen und Absenden. AILA erkennt automatisch, wann du fertig gesprochen hast.',
+    placeholder: 'Deine Frage an AILA …', send: 'Frage senden', liveLabel: 'Mit AILA Sprechen', liveStop: 'Gespräch beenden',
     thinking: 'AILA denkt nach …', listening: 'AILA hört zu …', voiceOn: 'KI-Stimme ausschalten', voiceOff: 'KI-Stimme einschalten',
     error: 'Das hat gerade nicht funktioniert. Versuche es bitte noch einmal oder besprich dein Anliegen direkt mit Marcel.',
     micPermission: 'Bitte erlaube den Mikrofonzugriff für diese Website und versuche es erneut.',
@@ -71,9 +69,7 @@ const COMMON = {
   en: {
     prompts: ['I run a company', 'I am self-employed', 'I am building a start-up', 'I have a specific idea', 'Show me what is possible'],
     welcome: 'Hello, I’m AILA. How can I help? Together we can find out what your business really needs digitally.',
-    placeholder: 'Your question for AILA …', send: 'Send question', liveStart: 'Start live conversation', liveStop: 'End conversation',
-    liveConnecting: 'Connecting live conversation …', liveReady: 'AILA is listening — just speak.', liveThinking: 'AILA is thinking …', liveSpeaking: 'AILA is responding — you can interrupt at any time.',
-    liveHint: 'No recording or sending. AILA automatically detects when you have finished speaking.',
+    placeholder: 'Your question for AILA …', send: 'Send question', liveLabel: 'Speak with AILA', liveStop: 'End conversation',
     thinking: 'AILA is thinking …', listening: 'AILA is listening …', voiceOn: 'Turn AI voice off', voiceOff: 'Turn AI voice on',
     error: 'That did not work just now. Please try again or discuss your question directly with Marcel.',
     micPermission: 'Please allow microphone access for this website and try again.',
@@ -656,14 +652,6 @@ export default function AilaGuide({
     onClose();
   };
 
-  const liveStatusLabel = liveStatus === 'connecting'
-    ? common.liveConnecting
-    : liveStatus === 'thinking'
-      ? common.liveThinking
-      : liveStatus === 'speaking'
-        ? common.liveSpeaking
-        : common.liveReady;
-
   return (
     <aside
       className={styles.ailaGuide}
@@ -754,27 +742,21 @@ export default function AilaGuide({
             </button>
           )}
 
-          <div className={styles.ailaLiveConversation} data-state={liveStatus}>
-            <span className={styles.ailaLiveSignal} aria-hidden="true"><AudioLines size={17} /></span>
-            <span>
-              <strong>{liveStatus === 'off' || liveStatus === 'error' ? common.liveStart : liveStatusLabel}</strong>
-              <small>{common.liveHint}</small>
+          <button
+            type="button"
+            className={styles.ailaLiveConversation}
+            data-state={liveStatus}
+            onClick={() => liveStatus === 'off' || liveStatus === 'error'
+              ? void startLiveConversation()
+              : stopLiveConversation()}
+            aria-label={liveStatus === 'off' || liveStatus === 'error' ? common.liveLabel : common.liveStop}
+            title={liveStatus === 'off' || liveStatus === 'error' ? common.liveLabel : common.liveStop}
+          >
+            <span className={styles.ailaLiveSignal} aria-hidden="true">
+              {liveStatus === 'connecting' ? <LoaderCircle size={17} /> : <AudioLines size={17} />}
             </span>
-            <button
-              type="button"
-              onClick={() => liveStatus === 'off' || liveStatus === 'error'
-                ? void startLiveConversation()
-                : stopLiveConversation()}
-              aria-label={liveStatus === 'off' || liveStatus === 'error' ? common.liveStart : common.liveStop}
-              title={liveStatus === 'off' || liveStatus === 'error' ? common.liveStart : common.liveStop}
-            >
-              {liveStatus === 'connecting'
-                ? <><LoaderCircle size={17} /><span>{common.liveStop}</span></>
-                : liveStatus === 'off' || liveStatus === 'error'
-                  ? <><AudioLines size={17} /><span>{common.liveStart}</span></>
-                  : <><PhoneOff size={16} /><span>{common.liveStop}</span></>}
-            </button>
-          </div>
+            <strong>{common.liveLabel}</strong>
+          </button>
 
           <form className={styles.ailaGuideComposer} onSubmit={submit}>
             <textarea value={input} onChange={(event) => setInput(event.target.value)} placeholder={common.placeholder} rows={2} maxLength={1200} disabled={busy && liveStatus === 'off'} onKeyDown={(event) => {
