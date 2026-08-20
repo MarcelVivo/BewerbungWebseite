@@ -120,6 +120,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ answer: fallback.message, ...fallback, degraded: true });
     }
 
+    if (parsed.scope === 'off_topic') {
+      const message = lang === 'de'
+        ? 'Dabei bin ich nicht die richtige Assistentin. Ich helfe bei Website, Kundengewinnung, CRM, Prozessen, Daten, KI und Automatisierung – was möchtest du in deinem Unternehmen verbessern?'
+        : 'I am not the right assistant for that. I can help with websites, customer acquisition, CRM, processes, data, AI and automation—what would you like to improve in your business?';
+      const quickReplies = lang === 'de'
+        ? ['Mehr qualifizierte Anfragen', 'Abläufe vereinfachen', 'Noch nicht sicher']
+        : ['More qualified enquiries', 'Simplify workflows', 'Not sure yet'];
+
+      return NextResponse.json({
+        answer: message,
+        message,
+        context: currentContext,
+        recommendation: null,
+        uiActions: [],
+        animationState: 'speaking',
+        quickReplies,
+        shouldHandover: false,
+      });
+    }
+
     const mergedContext = mergeAilaSalesContext(currentContext, {
       ...parsed.extractedContext,
       currentStage: parsed.stage,

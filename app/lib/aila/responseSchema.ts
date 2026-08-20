@@ -56,6 +56,7 @@ export const AILA_RESPONSE_JSON_SCHEMA = {
   additionalProperties: false,
   required: [
     "message",
+    "scope",
     "extractedContext",
     "stage",
     "nextBestAction",
@@ -67,6 +68,10 @@ export const AILA_RESPONSE_JSON_SCHEMA = {
   ],
   properties: {
     message: { type: "string" },
+    scope: {
+      type: "string",
+      enum: ["business_relevant", "business_bridge", "off_topic"],
+    },
     extractedContext: {
       type: "object",
       additionalProperties: false,
@@ -147,6 +152,7 @@ export const AILA_RESPONSE_JSON_SCHEMA = {
 
 type ParsedModelOutput = {
   message: string;
+  scope: "business_relevant" | "business_bridge" | "off_topic";
   extractedContext: Record<string, unknown>;
   stage?: AilaSalesStage;
   nextBestAction?: AilaNextBestAction;
@@ -227,6 +233,12 @@ export function parseAilaModelOutput(value: unknown): ParsedModelOutput | null {
 
   return {
     message,
+    scope:
+      value.scope === "business_relevant" ||
+      value.scope === "business_bridge" ||
+      value.scope === "off_topic"
+        ? value.scope
+        : "off_topic",
     extractedContext,
     stage,
     nextBestAction,
