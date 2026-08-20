@@ -5,36 +5,34 @@ import path from 'node:path';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+type PerspectivePoint = { x: number; y: number };
+
 type DetailCardConfig = {
-  x: number;
-  y: number;
-  depth: number;
-  scale: number;
-  rotateX: number;
-  rotateY: number;
-  rotateZ: number;
+  points: [PerspectivePoint, PerspectivePoint, PerspectivePoint, PerspectivePoint];
   width: number;
   height: number;
   float: number;
 };
 
-const limits: Record<keyof DetailCardConfig, [number, number]> = {
-  x: [650, 1450],
-  y: [-600, 120],
-  depth: [-300, 500],
-  scale: [.55, 1.45],
-  rotateX: [-22, 22],
-  rotateY: [-22, 22],
-  rotateZ: [-18, 18],
+const limits = {
   width: [440, 820],
   height: [480, 820],
   float: [0, 16],
+} as const;
+
+const isPoint = (value: unknown): value is PerspectivePoint => {
+  if (!value || typeof value !== 'object') return false;
+  const point = value as Record<string, unknown>;
+  return typeof point.x === 'number' && Number.isFinite(point.x) && point.x >= -4 && point.x <= 104
+    && typeof point.y === 'number' && Number.isFinite(point.y) && point.y >= -4 && point.y <= 104;
 };
 
 const isDetailCardConfig = (value: unknown): value is DetailCardConfig => {
   if (!value || typeof value !== 'object') return false;
-  return (Object.entries(limits) as [keyof DetailCardConfig, [number, number]][]).every(([key, [min, max]]) => {
-    const field = (value as Record<string, unknown>)[key];
+  const config = value as Record<string, unknown>;
+  if (!Array.isArray(config.points) || config.points.length !== 4 || !config.points.every(isPoint)) return false;
+  return (Object.entries(limits) as [keyof typeof limits, readonly [number, number]][]).every(([key, [min, max]]) => {
+    const field = config[key];
     return typeof field === 'number' && Number.isFinite(field) && field >= min && field <= max;
   });
 };

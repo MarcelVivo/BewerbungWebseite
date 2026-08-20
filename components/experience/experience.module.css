@@ -2814,48 +2814,67 @@
   animation: perspectiveDetailReveal .42s cubic-bezier(.16,.8,.2,1) both;
 }
 
-.detailCardCalibration {
-  position: fixed;
-  z-index: 240;
-  top: 1rem;
-  left: 1rem;
-  width: min(340px, calc(100vw - 2rem));
-  padding: .8rem;
-  border: 1px solid rgba(231,197,106,.48);
-  background: rgba(7,9,8,.96);
-  box-shadow: 0 24px 70px rgba(0,0,0,.72), inset 0 1px rgba(255,246,213,.08);
-  backdrop-filter: blur(18px);
-  color: #ecece5;
-  font-family: var(--font-chakra-petch), monospace;
+.detailCardCornerEditor {
+  position: absolute;
+  z-index: 130;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.detailCardCornerEditor > svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 0 7px rgba(246,205,92,.34));
+}
+
+.detailCardCornerEditor polygon {
+  fill: rgba(246,205,92,.025);
+  stroke: rgba(255,218,108,.82);
+  stroke-width: 1.4;
+  stroke-dasharray: 6 7;
+  vector-effect: non-scaling-stroke;
+}
+
+.detailCardCornerEditor > button {
+  position: absolute;
+  width: 2rem;
+  height: 2rem;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(255,225,132,.96);
+  border-radius: 50%;
+  background: radial-gradient(circle, #f7d56d 0 22%, rgba(20,18,12,.98) 24% 58%, rgba(231,197,106,.38) 60% 100%);
+  color: #fff0b0;
+  box-shadow: 0 0 0 5px rgba(231,197,106,.09), 0 0 22px rgba(246,205,92,.5);
+  transform: translate(-50%, -50%);
   pointer-events: auto;
-}
-
-.detailCardCalibration > header {
-  margin: -.8rem -.8rem .65rem;
-  padding: .72rem .8rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: .75rem;
-  border-bottom: 1px solid rgba(231,197,106,.2);
   cursor: grab;
-  user-select: none;
+  touch-action: none;
 }
 
-.detailCardCalibration[data-dragging='true'] > header { cursor: grabbing; }
-.detailCardCalibration > header strong { color: var(--gold-light); font-size: .66rem; letter-spacing: .1em; }
-.detailCardCalibration > header span { color: rgba(220,221,213,.48); font-size: .43rem; letter-spacing: .09em; }
-.detailCardCalibration > label { min-height: 31px; display: grid; grid-template-columns: 5rem minmax(0, 1fr) 3rem; align-items: center; gap: .5rem; border-bottom: 1px solid rgba(255,255,255,.045); }
-.detailCardCalibration > label > span { color: rgba(225,226,218,.68); font-size: .48rem; letter-spacing: .055em; }
-.detailCardCalibration input { width: 100%; accent-color: var(--gold-light); }
-.detailCardCalibration output { color: var(--gold-pale); font-size: .5rem; text-align: right; }
-.detailCardCalibrationActions { margin-top: .7rem; display: grid; grid-template-columns: 1fr auto; gap: .45rem; }
-.detailCardCalibration button { min-height: 34px; padding: .45rem .65rem; border: 1px solid rgba(231,197,106,.24); background: rgba(255,255,255,.025); color: rgba(239,235,219,.76); font: 650 .47rem/1 var(--font-chakra-petch), monospace; letter-spacing: .05em; cursor: pointer; }
-.detailCardCalibration button:hover,
-.detailCardCalibration button:focus-visible { border-color: rgba(231,197,106,.68); color: var(--gold-pale); outline: none; }
-.detailCardCalibration > footer { margin-top: .55rem; display: flex; align-items: center; justify-content: space-between; gap: .65rem; }
-.detailCardCalibration > footer span { color: rgba(220,221,213,.42); font-size: .43rem; }
-.detailCardCalibration > footer button { border-color: rgba(231,197,106,.5); color: var(--gold-pale); }
+.detailCardCornerEditor > button:active { cursor: grabbing; transform: translate(-50%, -50%) scale(1.12); }
+.detailCardCornerEditor > button:focus-visible { outline: 2px solid #fff2bd; outline-offset: 4px; }
+.detailCardCornerEditor > button span { font: 750 .48rem/1 var(--font-chakra-petch), monospace; }
+
+.detailCardCornerEditor > small {
+  position: absolute;
+  z-index: 2;
+  top: 1rem;
+  right: 4.5rem;
+  padding: .55rem .72rem;
+  border: 1px solid rgba(231,197,106,.4);
+  background: rgba(7,9,8,.88);
+  color: rgba(255,226,137,.86);
+  box-shadow: 0 10px 28px rgba(0,0,0,.38);
+  backdrop-filter: blur(10px);
+  font: 700 .52rem/1 var(--font-chakra-petch), monospace;
+  letter-spacing: .12em;
+}
 
 .perspectiveFlowDetailPanel::before {
   content: '';

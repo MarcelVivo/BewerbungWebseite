@@ -1,21 +1,14 @@
 'use client';
 
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
 import { Activity, ArrowLeft, ArrowRight, Bot, Check, ChevronDown, Database, FileText, Globe2, LockKeyhole, Mail, MousePointerClick, Search, ShieldCheck, Sparkles, Users, Workflow, X } from 'lucide-react';
 import savedDetailCardConfig from './detail-card-config.json';
 import styles from './experience.module.css';
-import { useDraggableCalibrationPanel } from './useDraggableCalibrationPanel';
 
 type PerspectivePoint = { x: number; y: number };
 type SalesPerspectiveQuad = [PerspectivePoint, PerspectivePoint, PerspectivePoint, PerspectivePoint];
 type DetailCardConfig = {
-  x: number;
-  y: number;
-  depth: number;
-  scale: number;
-  rotateX: number;
-  rotateY: number;
-  rotateZ: number;
+  points: SalesPerspectiveQuad;
   width: number;
   height: number;
   float: number;
@@ -29,9 +22,15 @@ const DEFAULT_SALES_PERSPECTIVE: SalesPerspectiveQuad = [
   { x: 61.05468750000001, y: 79.88542329726289 },
   { x: 21.5625, y: 63.14449395289624 },
 ];
-const DEFAULT_DETAIL_CARD_CONFIG: DetailCardConfig = savedDetailCardConfig;
+const DEFAULT_DETAIL_CARD_CONFIG = savedDetailCardConfig as DetailCardConfig;
 
-function createPerspectiveMatrix(points: SalesPerspectiveQuad, width: number, height: number) {
+function createPerspectiveMatrix(
+  points: SalesPerspectiveQuad,
+  width: number,
+  height: number,
+  sourceWidth = PERSPECTIVE_SOURCE_WIDTH,
+  sourceHeight = PERSPECTIVE_SOURCE_HEIGHT,
+) {
   if (width <= 0 || height <= 0) return 'none';
   const [topLeft, topRight, bottomRight, bottomLeft] = points.map((point) => ({
     x: point.x / 100 * width,
@@ -52,14 +51,14 @@ function createPerspectiveMatrix(points: SalesPerspectiveQuad, width: number, he
   const scaleY = topRight.y - topLeft.y + projectiveX * topRight.y;
   const shearY = bottomLeft.y - topLeft.y + projectiveY * bottomLeft.y;
   return `matrix3d(${[
-    scaleX / PERSPECTIVE_SOURCE_WIDTH,
-    scaleY / PERSPECTIVE_SOURCE_WIDTH,
+    scaleX / sourceWidth,
+    scaleY / sourceWidth,
     0,
-    projectiveX / PERSPECTIVE_SOURCE_WIDTH,
-    shearX / PERSPECTIVE_SOURCE_HEIGHT,
-    shearY / PERSPECTIVE_SOURCE_HEIGHT,
+    projectiveX / sourceWidth,
+    shearX / sourceHeight,
+    shearY / sourceHeight,
     0,
-    projectiveY / PERSPECTIVE_SOURCE_HEIGHT,
+    projectiveY / sourceHeight,
     0, 0, 1, 0,
     topLeft.x,
     topLeft.y,
@@ -110,14 +109,14 @@ export function PerspectiveBusinessFlow({
   const [selectedFlow, setSelectedFlow] = useState<number | null>(null);
   const [detailCardConfig, setDetailCardConfig] = useState<DetailCardConfig>(DEFAULT_DETAIL_CARD_CONFIG);
   const [detailCardEditorEnabled, setDetailCardEditorEnabled] = useState(false);
-  const [driftPreviewEnabled, setDriftPreviewEnabled] = useState(false);
   const [detailCardSaveState, setDetailCardSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const perspectiveConfig = DEFAULT_SALES_PERSPECTIVE;
   const [sectionSize, setSectionSize] = useState({ width: 0, height: 0 });
   const perspectiveSectionRef = useRef<HTMLElement | null>(null);
   const detailPanelRef = useRef<HTMLElement | null>(null);
   const flowCardRefs = useRef<Array<HTMLButtonElement | null>>([]);
-  const detailCardCalibration = useDraggableCalibrationPanel('ms-detail-card-calibration-panel-v1');
+  const detailCardConfigRef = useRef<DetailCardConfig>(DEFAULT_DETAIL_CARD_CONFIG);
+  const draggingCornerRef = useRef<{ index: number; pointerId: number } | null>(null);
 
   useEffect(() => {
     const enabled = new URLSearchParams(window.location.search).get('detail-card-editor') === '1';
@@ -125,8 +124,13 @@ export function PerspectiveBusinessFlow({
     if (!enabled) return;
 
     try {
-      const stored = window.localStorage.getItem('ms-detail-card-config-v1');
-      if (stored) setDetailCardConfig((current) => ({ ...current, ...JSON.parse(stored) }));
+      const stored = window.localStorage.getItem('ms-detail-card-corners-v1');
+      const parsed = stored ? JSON.parse(stored) as Partial<DetailCardConfig> : null;
+      if (parsed?.points?.length === 4) {
+        const restored = { ...DEFAULT_DETAIL_CARD_CONFIG, ...parsed } as DetailCardConfig;
+        detailCardConfigRef.current = restored;
+        setDetailCardConfig(restored);
+      }
     } catch { /* The source defaults remain usable without local storage. */ }
 
     setSelectedFlow(4);
@@ -136,8 +140,59 @@ export function PerspectiveBusinessFlow({
 
   useEffect(() => {
     if (!detailCardEditorEnabled) return;
-    try { window.localStorage.setItem('ms-detail-card-config-v1', JSON.stringify(detailCardConfig)); } catch { /* Live editing remains available. */ }
+    try { window.localStorage.setItem('ms-detail-card-corners-v1', JSON.stringify(detailCardConfig)); } catch { /* Live editing remains available. */ }
   }, [detailCardConfig, detailCardEditorEnabled]);
+
+  useEffect(() => {
+    if (!detailCardEditorEnabled) return;
+
+    const moveCorner = (event: PointerEvent) => {
+      const drag = draggingCornerRef.current;
+      const section = perspectiveSectionRef.current;
+      if (!drag || drag.pointerId !== event.pointerId || !section) return;
+      const bounds = section.getBoundingClientRect();
+      if (!bounds.width || !bounds.height) return;
+
+      const nextPoint = {
+        x: Math.max(-4, Math.min(104, (event.clientX - bounds.left) / bounds.width * 100)),
+        y: Math.max(-4, Math.min(104, (event.clientY - bounds.top) / bounds.height * 100)),
+      };
+      setDetailCardConfig((current) => {
+        const points = current.points.map((point, index) => index === drag.index ? nextPoint : point) as SalesPerspectiveQuad;
+        const next = { ...current, points };
+        detailCardConfigRef.current = next;
+        return next;
+      });
+      setDetailCardSaveState('idle');
+    };
+
+    const finishCornerDrag = async (event: PointerEvent) => {
+      const drag = draggingCornerRef.current;
+      if (!drag || drag.pointerId !== event.pointerId) return;
+      draggingCornerRef.current = null;
+      setDetailCardSaveState('saving');
+      try {
+        const response = await fetch('/api/detail-card-config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(detailCardConfigRef.current),
+        });
+        if (!response.ok) throw new Error('Unable to persist detail-card configuration.');
+        setDetailCardSaveState('saved');
+      } catch {
+        setDetailCardSaveState('error');
+      }
+    };
+
+    window.addEventListener('pointermove', moveCorner);
+    window.addEventListener('pointerup', finishCornerDrag);
+    window.addEventListener('pointercancel', finishCornerDrag);
+    return () => {
+      window.removeEventListener('pointermove', moveCorner);
+      window.removeEventListener('pointerup', finishCornerDrag);
+      window.removeEventListener('pointercancel', finishCornerDrag);
+    };
+  }, [detailCardEditorEnabled]);
 
   useEffect(() => {
     const section = perspectiveSectionRef.current;
@@ -179,7 +234,7 @@ export function PerspectiveBusinessFlow({
 
   useEffect(() => {
     const panel = detailPanelRef.current;
-    if (selectedFlow === null || !panel || (detailCardEditorEnabled && !driftPreviewEnabled)) return;
+    if (selectedFlow === null || !panel || detailCardEditorEnabled) return;
 
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     if (reducedMotion.matches) return;
@@ -219,10 +274,16 @@ export function PerspectiveBusinessFlow({
       window.clearTimeout(timer);
       movement?.cancel();
     };
-  }, [detailCardConfig.float, detailCardEditorEnabled, driftPreviewEnabled, selectedFlow]);
+  }, [detailCardConfig.float, detailCardEditorEnabled, selectedFlow]);
 
   const planeTransform = createPerspectiveMatrix(perspectiveConfig, sectionSize.width, sectionSize.height);
-  const detailPlaneTransform = `${planeTransform === 'none' ? '' : planeTransform} translate3d(${detailCardConfig.x}px, ${detailCardConfig.y}px, ${detailCardConfig.depth}px) rotateX(${detailCardConfig.rotateX}deg) rotateY(${detailCardConfig.rotateY}deg) rotateZ(${detailCardConfig.rotateZ}deg) scale(${detailCardConfig.scale})`.trim();
+  const detailPlaneTransform = createPerspectiveMatrix(
+    detailCardConfig.points,
+    sectionSize.width,
+    sectionSize.height,
+    detailCardConfig.width,
+    detailCardConfig.height,
+  );
   const gridStyle = {
     left: 0,
     top: 0,
@@ -242,24 +303,11 @@ export function PerspectiveBusinessFlow({
     setSelectedFlow(index);
   };
 
-  const updateDetailCardConfig = (key: keyof DetailCardConfig, value: number) => {
-    setDetailCardConfig((current) => ({ ...current, [key]: value }));
-  };
-
-  const saveDetailCardConfig = async () => {
-    setDetailCardSaveState('saving');
-    try {
-      const response = await fetch('/api/detail-card-config', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(detailCardConfig),
-      });
-      if (!response.ok) throw new Error('Unable to persist detail-card configuration.');
-      setDetailCardSaveState('saved');
-      window.setTimeout(() => setDetailCardSaveState('idle'), 2200);
-    } catch {
-      setDetailCardSaveState('error');
-    }
+  const startDetailCornerDrag = (index: number, event: ReactPointerEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    draggingCornerRef.current = { index, pointerId: event.pointerId };
+    event.currentTarget.setPointerCapture(event.pointerId);
   };
 
   const previousFlow = selectedFlow === null ? null : steps[(selectedFlow - 1 + steps.length) % steps.length];
@@ -358,46 +406,32 @@ export function PerspectiveBusinessFlow({
         </aside>
       )}
 
-      {detailCardEditorEnabled && (
-        <aside
-          ref={detailCardCalibration.panelRef}
-          style={detailCardCalibration.panelStyle}
-          className={styles.detailCardCalibration}
-          aria-label="Perspektiven-Konfigurator der Detailkarte"
-        >
-          <header onPointerDown={detailCardCalibration.startDrag}>
-            <strong>DETAILKARTE</strong>
-            <span>PERSPEKTIVE · DRAG</span>
-          </header>
-          {([
-            ['X', 'x', 650, 1450, 5],
-            ['Y', 'y', -600, 120, 5],
-            ['TIEFE', 'depth', -300, 500, 5],
-            ['GRÖSSE', 'scale', .55, 1.45, .01],
-            ['NEIGUNG X', 'rotateX', -22, 22, .1],
-            ['NEIGUNG Y', 'rotateY', -22, 22, .1],
-            ['DREHUNG', 'rotateZ', -18, 18, .1],
-            ['BREITE', 'width', 440, 820, 5],
-            ['HÖHE', 'height', 480, 820, 5],
-            ['SCHWEBEN', 'float', 0, 16, .25],
-          ] as const).map(([label, key, min, max, step]) => (
-            <label key={key}>
-              <span>{label}</span>
-              <input type="range" min={min} max={max} step={step} value={detailCardConfig[key]} onChange={(event) => updateDetailCardConfig(key, Number(event.target.value))} />
-              <output>{detailCardConfig[key].toFixed(key === 'scale' || key.startsWith('rotate') || key === 'float' ? 2 : 0)}</output>
-            </label>
-          ))}
-          <div className={styles.detailCardCalibrationActions}>
-            <button type="button" onClick={() => setDriftPreviewEnabled((current) => !current)}>{driftPreviewEnabled ? 'SCHWEBEN PAUSIEREN' : 'SCHWEBEN TESTEN'}</button>
-            <button type="button" onClick={() => setDetailCardConfig(DEFAULT_DETAIL_CARD_CONFIG)}>RESET</button>
-          </div>
-          <footer>
-            <span>{detailCardSaveState === 'error' ? 'Speichern fehlgeschlagen' : 'Nur lokal sichtbar'}</span>
-            <button type="button" onClick={saveDetailCardConfig} disabled={detailCardSaveState === 'saving'}>
-              {detailCardSaveState === 'saving' ? 'SPEICHERT…' : detailCardSaveState === 'saved' ? 'GESPEICHERT ✓' : 'IN WEBSITE SPEICHERN'}
+      {detailCardEditorEnabled && selectedFlow !== null && (
+        <div className={styles.detailCardCornerEditor} aria-label="Vier Eckpunkte der Detailkarte ziehen">
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+            <polygon points={detailCardConfig.points.map((point) => `${point.x},${point.y}`).join(' ')} />
+          </svg>
+          {detailCardConfig.points.map((point, index) => (
+            <button
+              key={index}
+              type="button"
+              style={{ left: `${point.x}%`, top: `${point.y}%` }}
+              onPointerDown={(event) => startDetailCornerDrag(index, event)}
+              aria-label={`Kartenecke ${index + 1} ziehen`}
+            >
+              <span>{index + 1}</span>
             </button>
-          </footer>
-        </aside>
+          ))}
+          <small>
+            {detailCardSaveState === 'saving'
+              ? 'SPEICHERT…'
+              : detailCardSaveState === 'saved'
+                ? 'AUTOMATISCH GESPEICHERT ✓'
+                : detailCardSaveState === 'error'
+                  ? 'SPEICHERN FEHLGESCHLAGEN'
+                  : 'VIER ECKEN ZIEHEN'}
+          </small>
+        </div>
       )}
 
     </section>
