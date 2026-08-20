@@ -3325,52 +3325,24 @@
 .websiteDockingStation[data-editor='false'] *,
 .marketingDockingStation[data-editor='false'] *,
 .sectionRoundDockingStation[data-editor='false'] * { animation-play-state: paused !important; }
-.osLayout { width: var(--container); margin: 0 0 0 var(--container-left); display: grid; grid-template-columns: minmax(180px, .32fr) minmax(285px, .55fr) minmax(0, 1.25fr); gap: clamp(1rem, 1.55vw, 1.65rem); align-items: stretch; }
+.osLayout { width: var(--container); margin: 0 0 0 var(--container-left); display: grid; grid-template-columns: minmax(320px, .62fr) minmax(0, 1.38fr); gap: clamp(1.4rem, 2.2vw, 2.5rem); align-items: stretch; }
 .ailaBay {
   position: relative;
-  min-width: 0;
-  min-height: 650px;
-  border: 1px solid rgba(231,197,106,.14);
+  width: var(--container);
+  height: clamp(8.5rem, 17vh, 11rem);
+  margin: clamp(-.35rem, -.7vh, -.15rem) 0 clamp(1rem, 2vh, 1.5rem) var(--container-left);
   background:
-    radial-gradient(circle at 50% 66%, rgba(200,154,61,.08), transparent 35%),
-    linear-gradient(180deg, rgba(255,255,255,.018), rgba(5,7,5,.2));
-  box-shadow: inset 0 0 50px rgba(0,0,0,.2);
-  overflow: hidden;
+    radial-gradient(ellipse at 14% 55%, rgba(200,154,61,.055), transparent 20%),
+    linear-gradient(90deg, transparent, rgba(231,197,106,.028) 18%, transparent 44%);
+  overflow: visible;
 }
-.ailaBay::before {
-  content: '';
+.ailaBay .sectionDockLayer {
   position: absolute;
-  inset: 2.6rem .8rem .8rem;
-  border: 1px solid rgba(231,197,106,.07);
-  background-image:
-    linear-gradient(rgba(231,197,106,.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(231,197,106,.045) 1px, transparent 1px);
-  background-size: 30px 30px;
-  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,.45), transparent 82%);
-  mask-image: linear-gradient(to bottom, rgba(0,0,0,.45), transparent 82%);
-}
-.ailaBay > span {
-  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
   z-index: 1;
-  left: .8rem;
-  top: .85rem;
-  display: flex;
-  align-items: center;
-  gap: .42rem;
-  color: rgba(231,197,106,.78);
-  font: 650 .44rem/1 var(--font-chakra-petch), monospace;
-  letter-spacing: .12em;
-}
-.ailaBay > span i { width: 5px; height: 5px; border-radius: 50%; background: #77b88b; box-shadow: 0 0 8px rgba(119,184,139,.72); }
-.ailaBay > small {
-  position: absolute;
-  z-index: 1;
-  right: .8rem;
-  bottom: .8rem;
-  color: rgba(220,222,214,.26);
-  font: 600 .38rem/1 var(--font-chakra-petch), monospace;
-  letter-spacing: .11em;
-  writing-mode: vertical-rl;
 }
 .operatingModules { align-self: start; display: grid; border: 1px solid var(--line); background: rgba(7,9,7,.48); box-shadow: 0 28px 80px rgba(0,0,0,.22); }
 .operatingModule { position: relative; min-width: 0; border-bottom: 1px solid var(--line); background: rgba(255,255,255,.012); overflow: hidden; transition: background .3s ease, border-color .3s ease; }
@@ -3655,7 +3627,7 @@
   .systemComposer { grid-template-columns: minmax(300px, .65fr) minmax(0, 1.35fr); gap: 1.25rem; }
   .moduleTabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .heroLayout { grid-template-columns: minmax(360px, .85fr) minmax(450px, 1.15fr); }
-  .osLayout { grid-template-columns: minmax(150px, .28fr) minmax(250px, .58fr) minmax(0, 1.2fr); }
+  .osLayout { grid-template-columns: minmax(285px, .7fr) minmax(0, 1.3fr); }
   .dashboardLower { grid-template-columns: 1fr .58fr; }
   .dataLayout { grid-template-columns: minmax(0, 1fr); }
   .layoutRight .dataLayout > .sectionCopy,
@@ -3690,7 +3662,7 @@
   }
   .osHeaderMetrics span { padding-top: .65rem; padding-bottom: .62rem; }
   .osLayout { gap: clamp(1rem, 1.6vw, 1.65rem); }
-  .ailaBay { min-height: 500px; }
+  .ailaBay { height: clamp(7.5rem, 16vh, 9rem); }
   .operatingModuleToggle {
     min-height: 64px;
     padding: .65rem .85rem;
@@ -3815,10 +3787,10 @@
   .osHeader h2 { max-width: 12ch; }
   .osIntroText { padding-left: 1rem; }
   .osLayout { grid-template-columns: 1fr; }
-  .ailaBay { min-height: clamp(220px, 32svh, 280px); }
+  .ailaBay { height: clamp(8rem, 20svh, 11rem); }
   .sectionRoundDockingStation[data-docking-anchor='process'] {
     --dock-x: 50% !important;
-    --dock-y: 70% !important;
+    --dock-y: 50% !important;
   }
   .operatingModules { grid-template-columns: 1fr 1fr; }
   .operatingModule:nth-child(odd) { border-right: 1px solid var(--line); }

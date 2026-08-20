@@ -798,7 +798,6 @@ export default function MarcelExperience() {
 
         <span id="mobile-journey-value" className={styles.aliasAnchor} />
         <section id="business-os" className={`${styles.section} ${styles.osSection} ${styles.layoutLeft}`}>
-          <SectionDockingStation station="process" />
           <span id="journey-value" className={styles.aliasAnchor} />
           <div className={styles.pauseSticky}>
             <div className={styles.pauseFit}>
@@ -812,11 +811,10 @@ export default function MarcelExperience() {
                   <span><b>LIVE</b><small>{lang === 'de' ? 'Steuerung im Alltag' : 'Everyday control'}</small></span>
                 </div>
               </div>
+              <div className={styles.ailaBay}>
+                <SectionDockingStation station="process" />
+              </div>
               <div className={styles.osLayout}>
-                <div className={styles.ailaBay} aria-hidden="true">
-                  <span><i /> AILA · LIVE</span>
-                  <small>DIGITAL ASSISTANCE</small>
-                </div>
                 <div className={styles.operatingModules} data-reveal="left">
                   {OPERATING_MODULES[lang].map((module, index) => {
                     const isOpen = activeOperatingModule === index;
