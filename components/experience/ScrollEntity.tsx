@@ -140,6 +140,7 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
   const openGuide = () => {
     const entity = entityRef.current;
     if (!entity || (rootRef.current?.dataset.heroPhase ?? 'loading') !== 'revealed') return;
+    setSolutionPreview(null);
     window.dispatchEvent(new Event('aila:prime-audio'));
     const rect = entity.getBoundingClientRect();
     const panelWidth = Math.min(430, window.innerWidth - 32);
@@ -202,6 +203,7 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
           recommendation: detail.recommendation,
           context: detail.context,
         });
+        setGuide((current) => ({ ...current, open: false }));
         window.dispatchEvent(new CustomEvent('aila:guide-state', { detail: { state: 'presenting' } }));
         return;
       }
@@ -1429,6 +1431,11 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
           lang={lang}
           recommendation={solutionPreview.recommendation}
           context={solutionPreview.context}
+          onContinue={() => {
+            setSolutionPreview(null);
+            setGuide((current) => ({ ...current, open: true }));
+            window.dispatchEvent(new CustomEvent('aila:guide-state', { detail: { state: 'idle' } }));
+          }}
           onClose={() => {
             setSolutionPreview(null);
             window.dispatchEvent(new CustomEvent('aila:guide-state', { detail: { state: 'idle' } }));

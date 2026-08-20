@@ -147,6 +147,7 @@ export default function AilaGuide({
   const [quickReplies, setQuickReplies] = useState<string[]>([...common.prompts]);
   const [lastRecommendation, setLastRecommendation] = useState<AilaRecommendation | undefined>();
   const hasWelcomedRef = useRef(false);
+  const hasSpokenWelcomeRef = useRef(false);
   const wasOpenRef = useRef(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const primedAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -290,6 +291,8 @@ export default function AilaGuide({
 
   useEffect(() => {
     if (!open) return;
+    if (hasSpokenWelcomeRef.current) return;
+    hasSpokenWelcomeRef.current = true;
     const timer = window.setTimeout(() => void speak(common.welcome, true), 90);
     return () => window.clearTimeout(timer);
   }, [open, sectionId, lang, common.welcome]);
@@ -583,7 +586,7 @@ export default function AilaGuide({
       <p>{entry.intro}</p>
 
       <div ref={historyRef} className={styles.ailaGuideConversation} aria-live="polite" aria-label={lang === 'de' ? 'Gespräch mit AILA' : 'Conversation with AILA'}>
-        {messages.map((message) => (
+        {messages.slice(-2).map((message) => (
           <div key={message.id} className={styles.ailaGuideMessage} data-role={message.role}>
             <span>{message.role === 'assistant' ? 'AILA' : lang === 'de' ? 'DU' : 'YOU'}</span>
             <p>{message.content}</p>
@@ -595,11 +598,13 @@ export default function AilaGuide({
         {busy && <div className={styles.ailaGuideThinking}><LoaderCircle size={14} />{common.thinking}</div>}
       </div>
 
-      <div className={styles.ailaGuidePrompts} aria-label={lang === 'de' ? 'Fragen an AILA' : 'Questions for AILA'}>
-        {(quickReplies.length > 0 ? quickReplies : common.prompts).map((suggestion) => (
-          <button key={suggestion} type="button" onClick={() => void ask(suggestion, 'quick_reply')} disabled={busy}>{suggestion}</button>
-        ))}
-      </div>
+      {quickReplies.length > 0 && (
+        <div className={styles.ailaGuidePrompts} aria-label={lang === 'de' ? 'Fragen an AILA' : 'Questions for AILA'}>
+          {quickReplies.map((suggestion) => (
+            <button key={suggestion} type="button" onClick={() => void ask(suggestion, 'quick_reply')} disabled={busy}>{suggestion}</button>
+          ))}
+        </div>
+      )}
 
       <form className={styles.ailaGuideComposer} onSubmit={submit}>
         <textarea value={input} onChange={(event) => setInput(event.target.value)} placeholder={recording ? common.listening : common.placeholder} rows={2} maxLength={1200} disabled={busy || recording} onKeyDown={(event) => {

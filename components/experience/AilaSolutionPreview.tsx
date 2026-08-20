@@ -13,11 +13,13 @@ export default function AilaSolutionPreview({
   recommendation,
   context,
   onClose,
+  onContinue,
 }: {
   lang: ExperienceLang;
   recommendation: AilaRecommendation;
   context: AilaSalesContext;
   onClose: () => void;
+  onContinue: () => void;
 }) {
   const copy = lang === 'de'
     ? {
@@ -72,7 +74,7 @@ export default function AilaSolutionPreview({
         </div>
       )}
       <footer>
-        <button type="button" onClick={onClose}>{copy.continue}</button>
+        <button type="button" onClick={onContinue}>{copy.continue}</button>
         <button
           type="button"
           onClick={() => {
