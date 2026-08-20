@@ -77,7 +77,7 @@ const AILA_ATTENTION_VIDEO = '/cinematic/aila/aila-attention-v2-greenscreen.mp4'
 const AILA_THINKING_VIDEO = '/cinematic/aila/aila-thinking-v1-pingpong-greenscreen.mp4';
 const AILA_SPEAKING_VIDEO = '/cinematic/aila/aila-speaking-v1-greenscreen.mp4';
 const AILA_CTA_VIDEO = '/cinematic/aila/aila-cta-v1-greenscreen.mp4';
-type AilaVideoMode = 'idle' | 'attention' | 'thinking' | 'speaking' | 'cta';
+type AilaVideoMode = 'idle' | 'attention' | 'thinking' | 'speaking' | 'cta' | 'confirmation';
 
 export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
   const entityRef = useRef<HTMLDivElement | null>(null);
@@ -245,6 +245,7 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
     // quantized value.
     let newVideoFrameAvailable = true;
     let videoMode: AilaVideoMode = 'idle';
+    let confirmationTimer = 0;
     const supportsVideoFrameCallback = typeof video.requestVideoFrameCallback === 'function';
     let videoFrameCallbackHandle = 0;
     const scheduleVideoFrameCallback = () => {
@@ -260,6 +261,10 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
     };
 
     const switchVideo = (source: string, mode: AilaVideoMode) => {
+      if (confirmationTimer) {
+        window.clearTimeout(confirmationTimer);
+        confirmationTimer = 0;
+      }
       video.pause();
       videoMode = mode;
       entity.dataset.ailaState = mode;
@@ -269,6 +274,19 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       video.load();
       newVideoFrameAvailable = true;
       playVideo();
+    };
+
+    const finishConfirmation = () => {
+      confirmationTimer = 0;
+      videoMode = 'idle';
+      entity.dataset.ailaState = 'idle';
+      interaction.setAttribute('aria-pressed', 'false');
+      video.loop = true;
+    };
+
+    const enterConfirmation = () => {
+      switchVideo(AILA_IDLE_VIDEO, 'confirmation');
+      confirmationTimer = window.setTimeout(finishConfirmation, 1650);
     };
 
     const advanceVideoState = () => {
@@ -284,7 +302,7 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
         switchVideo(AILA_CTA_VIDEO, 'cta');
         return;
       }
-      if (videoMode === 'cta') switchVideo(AILA_IDLE_VIDEO, 'idle');
+      if (videoMode === 'cta') enterConfirmation();
     };
 
     const recoverIdle = () => {
@@ -1042,6 +1060,7 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
 
     return () => {
       if (frame) window.cancelAnimationFrame(frame);
+      if (confirmationTimer) window.clearTimeout(confirmationTimer);
       if (supportsVideoFrameCallback) video.cancelVideoFrameCallback(videoFrameCallbackHandle);
       video.pause();
       interaction.removeEventListener('click', triggerAttention);

@@ -107,7 +107,8 @@
 .scrollEntity[data-aila-state='attention'] .scrollEntityGrabSurface,
 .scrollEntity[data-aila-state='thinking'] .scrollEntityGrabSurface,
 .scrollEntity[data-aila-state='speaking'] .scrollEntityGrabSurface,
-.scrollEntity[data-aila-state='cta'] .scrollEntityGrabSurface { cursor: progress; }
+.scrollEntity[data-aila-state='cta'] .scrollEntityGrabSurface,
+.scrollEntity[data-aila-state='confirmation'] .scrollEntityGrabSurface { cursor: progress; }
 .scrollEntityGrabSurface:focus-visible { outline: 1px solid rgba(231,197,106,.62); outline-offset: -8px; }
 .scrollEntity[data-docking='true'] .scrollEntityVideo,
 .scrollEntity[data-docking='true'] .scrollEntityCore { animation: entityDockedHover 7.4s ease-in-out infinite; }
@@ -131,6 +132,22 @@
   border-radius: 50%;
   background: radial-gradient(circle, rgba(231, 197, 106, .11), rgba(91, 17, 28, .07) 42%, transparent 72%);
   filter: blur(22px);
+}
+
+.scrollEntity::after {
+  content: '';
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 50%;
+  width: 54%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 239, 180, .34), rgba(231, 197, 106, .12) 34%, rgba(135, 76, 16, .035) 55%, transparent 72%);
+  filter: blur(12px);
+  opacity: 0;
+  transform: translate3d(-50%, -50%, 0) scale(.62);
+  pointer-events: none;
 }
 
 .scrollEntityVideo,
@@ -1323,6 +1340,20 @@
   50% { transform: rotate(.24deg) scale(1.004); filter: brightness(1.055) saturate(1.035); }
 }
 
+@keyframes ailaConfirmationLift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); filter: brightness(1) saturate(1); }
+  24% { transform: translate3d(0, -2.7%, 0) scale(1.018); filter: brightness(1.14) saturate(1.06); }
+  48% { transform: translate3d(0, -3.5%, 0) scale(1.025); filter: brightness(1.24) saturate(1.1) drop-shadow(0 0 1rem rgba(231, 197, 106, .24)); }
+  72% { transform: translate3d(0, -1.4%, 0) scale(1.01); filter: brightness(1.08) saturate(1.035); }
+}
+
+@keyframes ailaConfirmationAfterglow {
+  0% { opacity: 0; transform: translate3d(-50%, -50%, 0) scale(.62); }
+  22% { opacity: .22; }
+  48% { opacity: .42; transform: translate3d(-50%, -50%, 0) scale(1.02); }
+  100% { opacity: 0; transform: translate3d(-50%, -50%, 0) scale(1.38); }
+}
+
 @keyframes heroDormantEntity {
   0%, 100% { transform: translate3d(0, -1%, 0) rotate(-.8deg) scale(.38); filter: brightness(.5) saturate(.72); }
   50% { transform: translate3d(0, 1%, 0) rotate(.8deg) scale(.4); filter: brightness(.6) saturate(.82); }
@@ -1498,6 +1529,13 @@
 .experience[data-hero-phase='ignition'] .scrollEntityCore { animation: heroEntityIgnition 1.08s cubic-bezier(.16,.8,.2,1) both !important; }
 .experience[data-hero-phase='revealed'] .scrollEntityVideo,
 .experience[data-hero-phase='revealed'] .scrollEntityCore { animation: entityCoreHover 5.8s ease-in-out infinite; }
+.experience .scrollEntity[data-aila-state='confirmation'] .scrollEntityVideo,
+.experience .scrollEntity[data-aila-state='confirmation'] .scrollEntityCore {
+  animation: ailaConfirmationLift 1.65s cubic-bezier(.2,.72,.2,1) both !important;
+}
+.experience .scrollEntity[data-aila-state='confirmation']::after {
+  animation: ailaConfirmationAfterglow 1.65s cubic-bezier(.16,.72,.18,1) both;
+}
 .experience[data-hero-phase='loading'] .scrollEntityTrail { opacity: .14; }
 .experience[data-hero-phase='ignition'] .scrollEntityTrail { opacity: 1; filter: brightness(1.9); }
 .experience[data-hero-phase='loading'] .heroVideo { filter: brightness(.42) saturate(.7); }
