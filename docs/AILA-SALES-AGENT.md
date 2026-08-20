@@ -13,7 +13,7 @@ AILA soll ein Unternehmen, Ziele und Probleme aus freier Sprache verstehen, gezi
 - `/api/aila/chat`: serverseitiger Zugriff auf die OpenAI Responses API.
 - `/api/aila/transcribe`: Sprache-zu-Text.
 - `/api/aila/speech`: Text-zu-Sprache.
-- `journeyNavigation.ts`: bestehende Navigation und bestehende Kontakt-/Projektformulare.
+- `/api/aila/lead`: sichere Übergabe an E-Mail, Kontaktanfragen, CRM-Kunden und Pipeline.
 - `analytics.ts` und `/api/analytics`: datensparsames, DNT-/GPC-respektierendes Eventsystem.
 
 ## Neue Module
@@ -55,6 +55,10 @@ Bereitet Adapter für Kalender, CRM und Offertenentwurf vor. Alle Adapter sind d
 
 Zeigt eine kompakte, responsive Lösungsskizze im bestehenden Schwarz-/Gold-Design. Sie enthält Kontext, Begründungen, Priorität und bewusst nicht priorisierte Leistungen.
 
+### `AilaContactCapture.tsx`
+
+Der kurze Abschluss verlangt Name, E-Mail und Telefonnummer, übernimmt optional das Unternehmen und verlangt eine ausdrückliche Datenschutz-Zustimmung. Gesprächszusammenfassung, Ziele, Probleme, Ausschlüsse, bestehende Systeme und Empfehlungen werden im Hintergrund mitgegeben; der Besucher muss sie nicht erneut eingeben.
+
 ## Gesprächsfluss
 
 1. Beim ersten Öffnen begrüsst AILA den Besucher proaktiv und bietet unverbindliche Quick Replies an.
@@ -64,7 +68,8 @@ Zeigt eine kompakte, responsive Lösungsskizze im bestehenden Schwarz-/Gold-Desi
 5. Die Server-Engine validiert und vereinigt die Daten. Bereits bekannte Werte werden nicht gelöscht und Listen werden nicht doppelt geführt.
 6. Die Next-Best-Action bestimmt, ob AILA weiter verstehen, diagnostizieren, qualifizieren, empfehlen oder übergeben soll.
 7. Bei ausreichendem Kontext kann eine Solution Preview erscheinen. Lange Service-Listen im Chat werden vermieden.
-8. Nach Zustimmung wird das bestehende Marcel-Formular geöffnet und ein sitzungsinternes Handover-Objekt erzeugt.
+8. Jeder gestartete Dialog bietet einen grossen persönlichen nächsten Schritt. Nach Zustimmung öffnet sich der kompakte AILA-Kontaktabschluss direkt im Flyout.
+9. Beim Absenden entstehen eine Kontaktanfrage, ein Kunden-/Lead-Datensatz und ein Pipeline-Deal. Marcel erhält die strukturierte Übergabe per E-Mail; der Besucher erhält eine Bestätigung.
 
 ## Session Memory
 
@@ -101,6 +106,9 @@ Tracking bleibt vollständig deaktiviert, wenn Global Privacy Control oder Do No
 - bestehende AILA-Animationen plus neue Zustände
 - bestehende Kontakt-/Projektformulare
 - sitzungsinterne Lead-/Handover-Vorbereitung
+- verbindlicher AILA-Kontaktabschluss mit Name, E-Mail, Telefon und Datenschutz-Zustimmung
+- Speicherung im Kontakt-Dashboard, Kunden-CRM und in der Deal-Pipeline
+- strukturierte E-Mail an Marcel und Eingangsbestätigung an den Besucher
 - Entwicklungs-Debugansicht
 - datensparsame AILA-Events
 - lokale Fallback-Fragen bei ungültiger oder vorübergehend fehlender Modellantwort
@@ -108,9 +116,7 @@ Tracking bleibt vollständig deaktiviert, wenn Global Privacy Control oder Do No
 ## Nur vorbereitet, nicht extern verbunden
 
 - Kalender-Verfügbarkeiten und Terminbuchung
-- CRM-Erstellung oder CRM-Aktualisierung
 - Offerten- oder Projektbrief-Erstellung in einem externen System
-- E-Mail-Bestätigungen
 - Preis-, Auslastungs- oder verbindliche Laufzeitdaten
 
 AILA muss bei diesen Punkten weiterhin transparent an Marcel übergeben.
@@ -131,11 +137,17 @@ OPENAI_AILA_TTS_MODEL=gpt-4o-mini-tts
 OPENAI_AILA_TRANSCRIBE_MODEL=gpt-4o-mini-transcribe
 ```
 
-Für die bestehende Analytics-Speicherung optional:
+Für CRM-Übergabe und bestehende Analytics-Speicherung:
 
 ```text
 NEXT_PUBLIC_SUPABASE_URL
 SUPABASE_SERVICE_ROLE_KEY
+```
+
+Für die E-Mail-Übergabe und Bestätigung:
+
+```text
+RESEND_API_KEY
 ```
 
 API-Schlüssel bleiben ausschliesslich in Serverrouten.
@@ -152,8 +164,9 @@ API-Schlüssel bleiben ausschliesslich in Serverrouten.
 8. Solution Preview öffnen, auf Mobile und Desktop prüfen und wieder schliessen.
 9. Denselben Flow per Mikrofon wiederholen.
 10. Audio deaktivieren und prüfen, dass Text weiterhin funktioniert.
-11. `Mit Marcel besprechen` wählen und das bestehende Formular prüfen.
-12. Im Development-Build `AILA DEBUG` öffnen und Kontext, Stage, Lead und Next Action kontrollieren.
+11. Den grossen Button `Kontakt mit Marcel aufnehmen` wählen und Name, E-Mail und Telefonnummer erfassen.
+12. Nach dem Absenden die Bestätigung im Flyout, die E-Mail an Marcel, die Kontaktanfrage, den CRM-Kunden und den Pipeline-Deal prüfen.
+13. Im Development-Build `AILA DEBUG` öffnen und Kontext, Stage, Lead und Next Action kontrollieren.
 
 ## Bekannte Einschränkungen
 

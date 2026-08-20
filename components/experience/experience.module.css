@@ -314,6 +314,27 @@
 .ailaGuidePrompts button:hover { color: #e7e5dc; border-color: rgba(231,197,106,.25); }
 .ailaGuidePrompts button:disabled { opacity: .45; cursor: wait; }
 
+.ailaGuideHandoverCta {
+  position: relative;
+  margin-top: .7rem;
+  padding: .8rem 2.8rem .8rem .85rem;
+  display: grid;
+  gap: .22rem;
+  width: 100%;
+  border: 1px solid rgba(231,197,106,.42);
+  border-left: 2px solid var(--gold-light);
+  background: linear-gradient(110deg, rgba(200,154,61,.13), rgba(200,154,61,.025));
+  color: #f1efe5;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .2s ease, background .2s ease, transform .2s ease;
+}
+.ailaGuideHandoverCta > span { color: var(--gold-light); font: 650 .45rem/1 var(--font-chakra-petch), monospace; letter-spacing: .14em; }
+.ailaGuideHandoverCta > strong { font-size: .8rem; font-weight: 650; }
+.ailaGuideHandoverCta > small { color: #9da19a; font-size: .59rem; line-height: 1.45; }
+.ailaGuideHandoverCta > svg { position: absolute; right: .85rem; top: 50%; color: var(--gold-pale); transform: translateY(-50%); }
+.ailaGuideHandoverCta:hover { border-color: rgba(231,197,106,.72); background: linear-gradient(110deg, rgba(200,154,61,.2), rgba(200,154,61,.045)); transform: translateY(-1px); }
+
 .ailaGuideConversation { min-height: 8.2rem; max-height: 17rem; margin-top: .7rem; padding: .2rem .2rem .2rem 0; display: flex; flex-direction: column; gap: .55rem; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: rgba(231,197,106,.28) transparent; }
 .ailaGuideMessage { position: relative; max-width: 92%; padding: .68rem .75rem; border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.025); }
 .ailaGuideMessage[data-role='assistant'] { align-self: flex-start; border-left-color: var(--gold-light); background: rgba(200,154,61,.05); }
@@ -340,6 +361,29 @@
 .ailaGuide > footer button { min-width: 0; padding: .5rem 0; display: inline-flex; align-items: center; gap: .4rem; border: 0; background: transparent; color: #b3b7b0; font-size: .61rem; font-weight: 600; text-align: left; cursor: pointer; }
 .ailaGuide > footer button:last-child { color: var(--gold-pale); }
 .ailaGuide > footer button:hover { color: #fff9df; }
+
+.ailaContactCapture { min-height: 0; margin-top: .9rem; padding-right: .18rem; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(231,197,106,.28) transparent; }
+.ailaContactKicker { color: var(--gold-light); font: 650 .48rem/1 var(--font-chakra-petch), monospace; letter-spacing: .14em; }
+.ailaContactCapture > h3 { margin: .7rem 0 0; color: #f0efe7; font-size: 1.18rem; font-weight: 620; line-height: 1.15; letter-spacing: -.025em; }
+.ailaContactCapture > p { margin: .48rem 0 0; color: #aeb2aa; font-size: .68rem; line-height: 1.5; }
+.ailaContactFields { margin-top: .8rem; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem; }
+.ailaContactFields label { display: grid; gap: .28rem; }
+.ailaContactFields label > span { color: #a4a8a1; font-size: .55rem; font-weight: 600; }
+.ailaContactFields input { min-width: 0; height: 2.35rem; padding: 0 .62rem; border: 1px solid rgba(255,255,255,.12); border-radius: 0; outline: none; background: rgba(0,0,0,.25); color: #efefe8; font: 500 .69rem/1.2 inherit; }
+.ailaContactFields input:focus { border-color: rgba(231,197,106,.52); box-shadow: inset 2px 0 0 rgba(231,197,106,.74); }
+.ailaContactConsent { margin-top: .75rem; display: grid; grid-template-columns: auto 1fr; align-items: start; gap: .48rem; color: #92978f; font-size: .53rem; line-height: 1.5; cursor: pointer; }
+.ailaContactConsent input { margin-top: .1rem; accent-color: #c89a3d; }
+.ailaContactConsent a { color: var(--gold-pale); }
+.ailaContactError { margin: .65rem 0 0; padding: .48rem .58rem; border-left: 2px solid #d48b62; background: rgba(164,74,48,.08); color: #e1b6a0; font-size: .57rem; line-height: 1.45; }
+.ailaContactActions { margin-top: .8rem; display: flex; align-items: stretch; justify-content: space-between; gap: .5rem; }
+.ailaContactActions button { min-height: 2.45rem; padding: .58rem .7rem; display: inline-flex; align-items: center; justify-content: center; gap: .38rem; border: 1px solid rgba(255,255,255,.11); background: transparent; color: #aeb2aa; font-size: .58rem; font-weight: 620; cursor: pointer; }
+.ailaContactActions button:last-child { flex: 1; border-color: rgba(231,197,106,.48); background: rgba(200,154,61,.1); color: #fff4c7; }
+.ailaContactActions button:disabled { opacity: .45; cursor: wait; }
+.ailaContactSuccess { margin: 1.2rem 0 .3rem; padding: 1.25rem; display: grid; justify-items: start; border: 1px solid rgba(121,207,146,.24); border-left: 2px solid #79cf92; background: rgba(121,207,146,.055); }
+.ailaContactSuccess > span { width: 2.2rem; height: 2.2rem; display: grid; place-items: center; border: 1px solid rgba(121,207,146,.28); color: #9fd7af; }
+.ailaContactSuccess h3 { margin: .85rem 0 0; color: #eff3ec; font-size: 1.15rem; line-height: 1.15; }
+.ailaContactSuccess p { margin: .5rem 0 0; color: #adb4ab; font-size: .7rem; line-height: 1.55; }
+.ailaContactSuccess button { margin-top: 1rem; padding: .62rem .72rem; display: inline-flex; align-items: center; gap: .42rem; border: 1px solid rgba(231,197,106,.38); background: rgba(200,154,61,.08); color: var(--gold-pale); font-size: .62rem; font-weight: 620; cursor: pointer; }
 
 .ailaGuideDebug { margin-top: .55rem; border-top: 1px dashed rgba(231,197,106,.2); color: #8e938c; }
 .ailaGuideDebug summary { padding-top: .5rem; cursor: pointer; font: 650 .45rem/1 var(--font-chakra-petch), monospace; letter-spacing: .12em; }
@@ -403,6 +447,8 @@
   }
   .ailaGuideConversation { max-height: 14rem; }
   .ailaGuide > footer { flex-direction: column; gap: .1rem; }
+  .ailaContactFields { grid-template-columns: 1fr; }
+  .ailaContactActions { flex-direction: column-reverse; }
   .ailaSolutionPreview {
     left: 1rem;
     right: 1rem;

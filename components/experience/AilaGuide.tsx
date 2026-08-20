@@ -1,10 +1,9 @@
 'use client';
 
-import { ArrowRight, LoaderCircle, Mic, Send, Volume2, VolumeX, X } from 'lucide-react';
+import { ArrowRight, Check, LoaderCircle, Mic, Send, Volume2, VolumeX, X } from 'lucide-react';
 import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from 'react';
 import { buildAilaLeadObject, createInitialAilaSalesContext, sanitizeAilaSalesContext } from '@/app/lib/aila/engine';
 import { trackWebsiteEvent } from '@/app/lib/analytics';
-import { openJourneyLeadForm } from '@/app/lib/journeyNavigation';
 import type {
   AilaAnimationState,
   AilaInputMode,
@@ -13,6 +12,7 @@ import type {
   AilaUiAction,
 } from '@/app/lib/aila/types';
 import type { ExperienceLang } from './content';
+import AilaContactCapture from './AilaContactCapture';
 import styles from './experience.module.css';
 
 type GuideEntry = {
@@ -62,6 +62,9 @@ const COMMON = {
     micUnsupported: 'Dieser Browser unterstützt die Spracheingabe leider nicht. Du kannst deine Frage weiterhin eintippen.',
     micError: 'Die Aufnahme konnte nicht gestartet werden. Prüfe den Mikrofonzugriff und versuche es erneut.',
     next: 'Nächstes Kapitel', contact: 'Mit Marcel sprechen', close: 'AILA schliessen',
+    handoverKicker: 'PERSÖNLICH WEITER', handoverTitle: 'Kontakt mit Marcel aufnehmen',
+    handoverText: 'Dein Gesprächskontext wird sicher übernommen. Du musst nichts nochmals erklären.',
+    successTitle: 'Alles ist bei Marcel angekommen.', successText: 'Deine Kontaktdaten und das AILA-Gespräch wurden per E-Mail und im CRM übermittelt. Marcel meldet sich persönlich bei dir.',
   },
   en: {
     prompts: ['I run a company', 'I am self-employed', 'I am building a start-up', 'I have a specific idea', 'Show me what is possible'],
@@ -75,6 +78,9 @@ const COMMON = {
     micUnsupported: 'This browser does not support voice input. You can still type your question.',
     micError: 'The recording could not be started. Check microphone access and try again.',
     next: 'Next chapter', contact: 'Talk to Marcel', close: 'Close AILA',
+    handoverKicker: 'CONTINUE PERSONALLY', handoverTitle: 'Contact Marcel',
+    handoverText: 'Your conversation context is transferred securely. You will not need to explain everything again.',
+    successTitle: 'Everything has reached Marcel.', successText: 'Your contact details and the AILA conversation were sent by email and stored in the CRM. Marcel will contact you personally.',
   },
 } as const;
 
@@ -146,6 +152,7 @@ export default function AilaGuide({
   const [salesContext, setSalesContext] = useState<AilaSalesContext>(() => createInitialAilaSalesContext());
   const [quickReplies, setQuickReplies] = useState<string[]>([...common.prompts]);
   const [lastRecommendation, setLastRecommendation] = useState<AilaRecommendation | undefined>();
+  const [contactMode, setContactMode] = useState<'idle' | 'form' | 'success'>('idle');
   const hasWelcomedRef = useRef(false);
   const hasSpokenWelcomeRef = useRef(false);
   const wasOpenRef = useRef(false);
@@ -219,6 +226,12 @@ export default function AilaGuide({
     setBusy(false);
     setVoiceEnabled(true);
   }, [open, sectionId, lang, common.welcome]);
+
+  useEffect(() => {
+    const openContact = () => setContactMode('form');
+    window.addEventListener('aila:open-contact-capture', openContact);
+    return () => window.removeEventListener('aila:open-contact-capture', openContact);
+  }, []);
 
   useEffect(() => {
     if (open) return;
@@ -317,14 +330,14 @@ export default function AilaGuide({
         trackWebsiteEvent('aila_handover', {
           metadata: { stage: context.currentStage, lead_temperature: context.leadTemperature },
         });
-        openJourneyLeadForm('consultation', { ctaId: 'aila-contact-handover' });
+        setContactMode('form');
       }
       if (action.type === 'OPEN_PROJECT_FLOW') {
         window.dispatchEvent(new CustomEvent('aila:handover', { detail: buildAilaLeadObject(context) }));
         trackWebsiteEvent('aila_handover', {
           metadata: { stage: context.currentStage, lead_temperature: context.leadTemperature },
         });
-        openJourneyLeadForm('project', { ctaId: 'aila-project-flow' });
+        setContactMode('form');
       }
       if (action.type === 'SHOW_SOLUTION' || action.type === 'SHOW_RECOMMENDATION') {
         trackWebsiteEvent('aila_solution_shown', {
@@ -582,47 +595,91 @@ export default function AilaGuide({
           <button type="button" onClick={close} aria-label={common.close}><X size={16} /></button>
         </div>
       </header>
-      <h2>{entry.title}</h2>
-      <p>{entry.intro}</p>
-
-      <div ref={historyRef} className={styles.ailaGuideConversation} aria-live="polite" aria-label={lang === 'de' ? 'Gespräch mit AILA' : 'Conversation with AILA'}>
-        {messages.slice(-2).map((message) => (
-          <div key={message.id} className={styles.ailaGuideMessage} data-role={message.role}>
-            <span>{message.role === 'assistant' ? 'AILA' : lang === 'de' ? 'DU' : 'YOU'}</span>
-            <p>{message.content}</p>
-            {message.role === 'assistant' && message.content === lastAnswer && voiceEnabled && !busy && (
-              <button type="button" onClick={() => void speak(message.content)} aria-label={lang === 'de' ? 'Antwort vorlesen' : 'Read answer aloud'}><Volume2 size={13} /></button>
-            )}
-          </div>
-        ))}
-        {busy && <div className={styles.ailaGuideThinking}><LoaderCircle size={14} />{common.thinking}</div>}
-      </div>
-
-      {quickReplies.length > 0 && (
-        <div className={styles.ailaGuidePrompts} aria-label={lang === 'de' ? 'Fragen an AILA' : 'Questions for AILA'}>
-          {quickReplies.map((suggestion) => (
-            <button key={suggestion} type="button" onClick={() => void ask(suggestion, 'quick_reply')} disabled={busy}>{suggestion}</button>
-          ))}
+      {contactMode === 'form' ? (
+        <AilaContactCapture
+          lang={lang}
+          lead={buildAilaLeadObject(salesContext)}
+          recommendation={lastRecommendation}
+          conversation={messages}
+          onBack={() => setContactMode('idle')}
+          onSuccess={(contact) => {
+            setSalesContext((current) => ({
+              ...current,
+              ...contact,
+              company: contact.company || current.company,
+              consentToContact: true,
+              previousStage: current.currentStage,
+              currentStage: 'handover',
+              nextBestAction: 'open_contact',
+              leadTemperature: 'hot',
+            }));
+            setContactMode('success');
+            onStateChange('success');
+          }}
+        />
+      ) : contactMode === 'success' ? (
+        <div className={styles.ailaContactSuccess} role="status">
+          <span><Check size={22} /></span>
+          <h3>{common.successTitle}</h3>
+          <p>{common.successText}</p>
+          <button type="button" onClick={close}>{common.close}<ArrowRight size={14} /></button>
         </div>
+      ) : (
+        <>
+          <h2>{entry.title}</h2>
+          <p>{entry.intro}</p>
+
+          <div ref={historyRef} className={styles.ailaGuideConversation} aria-live="polite" aria-label={lang === 'de' ? 'Gespräch mit AILA' : 'Conversation with AILA'}>
+            {messages.slice(-2).map((message) => (
+              <div key={message.id} className={styles.ailaGuideMessage} data-role={message.role}>
+                <span>{message.role === 'assistant' ? 'AILA' : lang === 'de' ? 'DU' : 'YOU'}</span>
+                <p>{message.content}</p>
+                {message.role === 'assistant' && message.content === lastAnswer && voiceEnabled && !busy && (
+                  <button type="button" onClick={() => void speak(message.content)} aria-label={lang === 'de' ? 'Antwort vorlesen' : 'Read answer aloud'}><Volume2 size={13} /></button>
+                )}
+              </div>
+            ))}
+            {busy && <div className={styles.ailaGuideThinking}><LoaderCircle size={14} />{common.thinking}</div>}
+          </div>
+
+          {quickReplies.length > 0 && (
+            <div className={styles.ailaGuidePrompts} aria-label={lang === 'de' ? 'Fragen an AILA' : 'Questions for AILA'}>
+              {quickReplies.map((suggestion) => (
+                <button key={suggestion} type="button" onClick={() => void ask(suggestion, 'quick_reply')} disabled={busy}>{suggestion}</button>
+              ))}
+            </div>
+          )}
+
+          {messages.some((message) => message.role === 'user') && !busy && (
+            <button type="button" className={styles.ailaGuideHandoverCta} onClick={() => {
+              setContactMode('form');
+              trackWebsiteEvent('aila_contact_requested', { metadata: { stage: salesContext.currentStage, lead_temperature: salesContext.leadTemperature } });
+            }}>
+              <span>{common.handoverKicker}</span>
+              <strong>{common.handoverTitle}</strong>
+              <small>{common.handoverText}</small>
+              <ArrowRight size={18} />
+            </button>
+          )}
+
+          <form className={styles.ailaGuideComposer} onSubmit={submit}>
+            <textarea value={input} onChange={(event) => setInput(event.target.value)} placeholder={recording ? common.listening : common.placeholder} rows={2} maxLength={1200} disabled={busy || recording} onKeyDown={(event) => {
+              if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); void ask(input); }
+            }} />
+            <button type="button" data-recording={recording ? 'true' : 'false'} onClick={() => void toggleRecording()} disabled={busy} aria-label={recording ? common.micStop : common.micStart} title={recording ? common.micStop : common.micStart}><Mic size={17} /></button>
+            <button type="submit" disabled={busy || recording || !input.trim()} aria-label={common.send} title={common.send}><Send size={16} /></button>
+          </form>
+
+          <footer>
+            {sectionId !== 'journey-contact' && <button type="button" onClick={() => onNavigate(nextSectionId)}>{common.next}<ArrowRight size={14} /></button>}
+            <button type="button" onClick={() => {
+              window.dispatchEvent(new CustomEvent('aila:handover', { detail: buildAilaLeadObject(salesContext) }));
+              trackWebsiteEvent('aila_contact_requested', { metadata: { stage: salesContext.currentStage, lead_temperature: salesContext.leadTemperature } });
+              setContactMode('form');
+            }}>{common.contact}<ArrowRight size={14} /></button>
+          </footer>
+        </>
       )}
-
-      <form className={styles.ailaGuideComposer} onSubmit={submit}>
-        <textarea value={input} onChange={(event) => setInput(event.target.value)} placeholder={recording ? common.listening : common.placeholder} rows={2} maxLength={1200} disabled={busy || recording} onKeyDown={(event) => {
-          if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); void ask(input); }
-        }} />
-        <button type="button" data-recording={recording ? 'true' : 'false'} onClick={() => void toggleRecording()} disabled={busy} aria-label={recording ? common.micStop : common.micStart} title={recording ? common.micStop : common.micStart}><Mic size={17} /></button>
-        <button type="submit" disabled={busy || recording || !input.trim()} aria-label={common.send} title={common.send}><Send size={16} /></button>
-      </form>
-
-      <footer>
-        {sectionId !== 'journey-contact' && <button type="button" onClick={() => onNavigate(nextSectionId)}>{common.next}<ArrowRight size={14} /></button>}
-        <button type="button" onClick={() => {
-          window.dispatchEvent(new CustomEvent('aila:handover', { detail: buildAilaLeadObject(salesContext) }));
-          trackWebsiteEvent('aila_contact_requested', { metadata: { stage: salesContext.currentStage, lead_temperature: salesContext.leadTemperature } });
-          trackWebsiteEvent('aila_handover', { metadata: { stage: salesContext.currentStage, lead_temperature: salesContext.leadTemperature } });
-          openJourneyLeadForm('consultation', { ctaId: 'aila-footer-contact' });
-        }}>{common.contact}<ArrowRight size={14} /></button>
-      </footer>
       {process.env.NODE_ENV !== 'production' && (
         <details className={styles.ailaGuideDebug}>
           <summary>AILA DEBUG</summary>

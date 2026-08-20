@@ -3,7 +3,6 @@
 import { ArrowRight, Check, X } from 'lucide-react';
 import { buildAilaLeadObject } from '@/app/lib/aila/engine';
 import { trackWebsiteEvent } from '@/app/lib/analytics';
-import { openJourneyLeadForm } from '@/app/lib/journeyNavigation';
 import type { AilaRecommendation, AilaSalesContext } from '@/app/lib/aila/types';
 import type { ExperienceLang } from './content';
 import styles from './experience.module.css';
@@ -14,12 +13,14 @@ export default function AilaSolutionPreview({
   context,
   onClose,
   onContinue,
+  onContact,
 }: {
   lang: ExperienceLang;
   recommendation: AilaRecommendation;
   context: AilaSalesContext;
   onClose: () => void;
   onContinue: () => void;
+  onContact: () => void;
 }) {
   const copy = lang === 'de'
     ? {
@@ -86,7 +87,7 @@ export default function AilaSolutionPreview({
             trackWebsiteEvent('aila_handover', {
               metadata: { stage: context.currentStage, lead_temperature: context.leadTemperature },
             });
-            openJourneyLeadForm('consultation', { ctaId: 'aila-solution-handover' });
+            onContact();
           }}
         >
           {copy.discuss}<ArrowRight size={15} />

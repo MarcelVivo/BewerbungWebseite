@@ -1436,6 +1436,11 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
             setGuide((current) => ({ ...current, open: true }));
             window.dispatchEvent(new CustomEvent('aila:guide-state', { detail: { state: 'idle' } }));
           }}
+          onContact={() => {
+            setSolutionPreview(null);
+            setGuide((current) => ({ ...current, open: true }));
+            window.requestAnimationFrame(() => window.dispatchEvent(new Event('aila:open-contact-capture')));
+          }}
           onClose={() => {
             setSolutionPreview(null);
             window.dispatchEvent(new CustomEvent('aila:guide-state', { detail: { state: 'idle' } }));

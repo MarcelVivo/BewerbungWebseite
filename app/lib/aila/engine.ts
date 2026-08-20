@@ -58,6 +58,7 @@ export function createInitialAilaSalesContext(): AilaSalesContext {
   return {
     currentStage: "welcome",
     secondaryProblems: [],
+    notWanted: [],
     currentTools: [],
     leadTemperature: "unknown",
     recommendedServices: [],
@@ -93,6 +94,10 @@ export function sanitizeAilaSalesContext(
       cleanList(value.secondaryProblems).length > 0
         ? cleanList(value.secondaryProblems)
         : fallback.secondaryProblems,
+    notWanted:
+      cleanList(value.notWanted).length > 0
+        ? cleanList(value.notWanted)
+        : fallback.notWanted,
     currentTools:
       cleanList(value.currentTools).length > 0
         ? cleanList(value.currentTools)
@@ -142,6 +147,9 @@ export function mergeAilaSalesContext(
   const currentTools = Array.from(
     new Set([...current.currentTools, ...candidate.currentTools]),
   ).slice(0, MAX_LIST_LENGTH);
+  const notWanted = Array.from(
+    new Set([...current.notWanted, ...candidate.notWanted]),
+  ).slice(0, MAX_LIST_LENGTH);
   const recommendedServices = Array.from(
     new Set([
       ...current.recommendedServices,
@@ -153,6 +161,7 @@ export function mergeAilaSalesContext(
     ...current,
     ...candidate,
     secondaryProblems,
+    notWanted,
     currentTools,
     recommendedServices,
   };
@@ -376,14 +385,20 @@ export function buildAilaLeadObject(
       website: context.website,
     },
     company: context.company,
+    businessType: context.businessType,
     industry: context.industry,
+    location: context.location,
     goals: context.primaryGoal ? [context.primaryGoal] : [],
     problems: [context.primaryProblem, ...context.secondaryProblems].filter(
       (problem): problem is string => Boolean(problem),
     ),
+    notWanted: context.notWanted,
     existingSystems: context.currentTools,
     recommendedServices: context.recommendedServices,
     leadTemperature: context.leadTemperature,
+    budgetSignal: context.budgetSignal,
+    timeframe: context.timeframe,
+    decisionAuthority: context.decisionAuthority,
     conversationSummary: context.conversationSummary,
     nextBestAction: context.nextBestAction,
   };

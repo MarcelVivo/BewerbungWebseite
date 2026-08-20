@@ -71,6 +71,7 @@ export type AilaSalesContext = AilaContactData & {
   primaryGoal?: string;
   primaryProblem?: string;
   secondaryProblems: string[];
+  notWanted: string[];
   currentTools: string[];
   websiteStatus?: string;
   marketingStatus?: string;
@@ -127,12 +128,18 @@ export type AilaLeadObject = {
   createdAt: string;
   contact: AilaContactData;
   company?: string;
+  businessType?: string;
   industry?: string;
+  location?: string;
   goals: string[];
   problems: string[];
+  notWanted: string[];
   existingSystems: string[];
   recommendedServices: string[];
   leadTemperature: AilaLeadTemperature;
+  budgetSignal?: string;
+  timeframe?: string;
+  decisionAuthority?: string;
   conversationSummary: string;
   nextBestAction: AilaNextBestAction;
 };

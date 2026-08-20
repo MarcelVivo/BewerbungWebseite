@@ -24,6 +24,7 @@ const contextProperties = {
   primaryGoal: nullableString,
   primaryProblem: nullableString,
   secondaryProblems: { type: "array", items: { type: "string" }, maxItems: 8 },
+  notWanted: { type: "array", items: { type: "string" }, maxItems: 8 },
   currentTools: { type: "array", items: { type: "string" }, maxItems: 8 },
   websiteStatus: nullableString,
   marketingStatus: nullableString,
