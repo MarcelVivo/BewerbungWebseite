@@ -341,7 +341,10 @@ export default function AilaGuide({
     stopAudio(false);
     const prior = messages.filter((message) => message.content !== common.welcome);
     const userMessage: ChatMessage = { id: messageId(), role: 'user', content: question };
-    setMessages((current) => [...current, userMessage]);
+    setMessages((current) => [
+      ...current.filter((message) => message.content !== common.welcome),
+      userMessage,
+    ]);
     trackWebsiteEvent('aila_message_sent', {
       station: sectionId,
       metadata: { input_mode: inputMode, stage: salesContext.currentStage },
@@ -579,12 +582,6 @@ export default function AilaGuide({
       <h2>{entry.title}</h2>
       <p>{entry.intro}</p>
 
-      <div className={styles.ailaGuidePrompts} aria-label={lang === 'de' ? 'Fragen an AILA' : 'Questions for AILA'}>
-        {(quickReplies.length > 0 ? quickReplies : common.prompts).map((suggestion) => (
-          <button key={suggestion} type="button" onClick={() => void ask(suggestion, 'quick_reply')} disabled={busy}>{suggestion}</button>
-        ))}
-      </div>
-
       <div ref={historyRef} className={styles.ailaGuideConversation} aria-live="polite" aria-label={lang === 'de' ? 'Gespräch mit AILA' : 'Conversation with AILA'}>
         {messages.map((message) => (
           <div key={message.id} className={styles.ailaGuideMessage} data-role={message.role}>
@@ -596,6 +593,12 @@ export default function AilaGuide({
           </div>
         ))}
         {busy && <div className={styles.ailaGuideThinking}><LoaderCircle size={14} />{common.thinking}</div>}
+      </div>
+
+      <div className={styles.ailaGuidePrompts} aria-label={lang === 'de' ? 'Fragen an AILA' : 'Questions for AILA'}>
+        {(quickReplies.length > 0 ? quickReplies : common.prompts).map((suggestion) => (
+          <button key={suggestion} type="button" onClick={() => void ask(suggestion, 'quick_reply')} disabled={busy}>{suggestion}</button>
+        ))}
       </div>
 
       <form className={styles.ailaGuideComposer} onSubmit={submit}>
