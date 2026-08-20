@@ -96,6 +96,7 @@ export function PerspectiveBusinessFlow({
   const perspectiveConfig = DEFAULT_SALES_PERSPECTIVE;
   const [sectionSize, setSectionSize] = useState({ width: 0, height: 0 });
   const perspectiveSectionRef = useRef<HTMLElement | null>(null);
+  const detailPanelRef = useRef<HTMLElement | null>(null);
   const flowCardRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   useEffect(() => {
@@ -135,6 +136,50 @@ export function PerspectiveBusinessFlow({
     window.addEventListener('click', routeClickToCard, true);
     return () => window.removeEventListener('click', routeClickToCard, true);
   }, [onSelect, selectedFlow]);
+
+  useEffect(() => {
+    const panel = detailPanelRef.current;
+    if (selectedFlow === null || !panel) return;
+
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (reducedMotion.matches) return;
+
+    let stopped = false;
+    let timer = 0;
+    let movement: Animation | null = null;
+    let current = { x: 0, y: 0 };
+    const organicOffset = (spread: number) => (Math.random() + Math.random() + Math.random() - 1.5) * spread;
+
+    const drift = () => {
+      if (stopped) return;
+      // A damped random walk keeps the card near its designed position
+      // without ever tracing a repeated path or visibly touching a limit.
+      const target = {
+        x: current.x * .38 + organicOffset(7.5),
+        y: current.y * .34 + organicOffset(5.8) - .7,
+      };
+      const duration = 3000 + Math.random() * 2800;
+
+      movement = panel.animate(
+        [
+          { translate: `${current.x.toFixed(2)}px ${current.y.toFixed(2)}px` },
+          { translate: `${target.x.toFixed(2)}px ${target.y.toFixed(2)}px` },
+        ],
+        { duration, easing: 'cubic-bezier(.42, 0, .28, 1)', fill: 'forwards' },
+      );
+      current = target;
+      movement.onfinish = () => {
+        timer = window.setTimeout(drift, 120 + Math.random() * 620);
+      };
+    };
+
+    timer = window.setTimeout(drift, 480);
+    return () => {
+      stopped = true;
+      window.clearTimeout(timer);
+      movement?.cancel();
+    };
+  }, [selectedFlow]);
 
   const planeTransform = createPerspectiveMatrix(perspectiveConfig, sectionSize.width, sectionSize.height);
   const gridStyle = {
@@ -201,6 +246,7 @@ export function PerspectiveBusinessFlow({
 
       {selectedFlow !== null && (
         <aside
+          ref={detailPanelRef}
           id="perspective-flow-detail-panel"
           className={styles.perspectiveFlowDetailPanel}
           style={{

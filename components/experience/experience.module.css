@@ -2811,9 +2811,7 @@
   transform-style: preserve-3d;
   will-change: transform, translate;
   pointer-events: auto;
-  animation:
-    perspectiveDetailReveal .42s cubic-bezier(.16,.8,.2,1) both,
-    perspectiveDetailFloat 7.2s ease-in-out .42s infinite;
+  animation: perspectiveDetailReveal .42s cubic-bezier(.16,.8,.2,1) both;
 }
 
 .perspectiveFlowDetailPanel::before {
@@ -3058,23 +3056,6 @@
 @keyframes perspectiveDetailReveal {
   from { opacity: 0; transform: var(--detail-plane-transform) translateX(46px) scale(.96); filter: blur(3px); }
   to { opacity: 1; transform: var(--detail-plane-transform) translateX(0) scale(1); filter: blur(0); }
-}
-
-@keyframes perspectiveDetailFloat {
-  0%, 100% {
-    translate: 0 0;
-    box-shadow: 10px 12px 0 rgba(117,86,34,.2), 22px 26px 0 rgba(31,27,17,.5), 0 38px 100px rgba(0,0,0,.72), 0 0 44px rgba(200,154,61,.1), inset 0 1px rgba(255,246,213,.09);
-  }
-  25% {
-    translate: 4px -2px;
-  }
-  50% {
-    translate: 0 -5px;
-    box-shadow: 11px 15px 0 rgba(117,86,34,.18), 24px 31px 0 rgba(31,27,17,.46), 0 46px 112px rgba(0,0,0,.76), 0 0 52px rgba(200,154,61,.14), inset 0 1px rgba(255,246,213,.11);
-  }
-  75% {
-    translate: -4px -2px;
-  }
 }
 
 .marketingSection { --marketing-progress: 0; --marketing-dock-engaged: 0; --marketing-dock-charge: 0; min-height: 220svh; padding: 0; overflow: visible; background: #070807; }
