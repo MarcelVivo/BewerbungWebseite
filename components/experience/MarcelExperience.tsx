@@ -841,8 +841,6 @@ export default function MarcelExperience() {
                 </div>
                 <div className={styles.osDashboardStage} data-reveal="right"><DashboardMockup lang={lang} /></div>
               </div>
-              <div className={styles.dashboardCopy} data-reveal="up"><p>{c.dashboardEyebrow}</p><h3>{c.dashboardTitle}</h3><span>{c.dashboardText}</span></div>
-
             </div>
           </div>
         </section>

@@ -5,7 +5,7 @@ export const DOCKING_STOPS = [
   { sectionId: 'journey-solutions', anchor: 'system', rest: .42, pointOccurrence: 1, number: '02', label: 'SYSTEM' },
   { sectionId: 'verkaufssystem', anchor: 'website', rest: .48, pointOccurrence: 1, number: '03', label: 'WEBSITE / VERKAUF' },
   { sectionId: 'marketing-engine', anchor: 'marketing', rest: .48, pointOccurrence: 1, number: '04', label: 'MARKETING' },
-  { sectionId: 'business-os', anchor: 'process', rest: .45, pointOccurrence: 2, number: '05', label: 'PROZESSE' },
+  { sectionId: 'business-os', anchor: 'process', rest: 0, pointOccurrence: 2, number: '05', label: 'PROZESSE' },
   { sectionId: 'daten-intelligenz', anchor: 'data', rest: .45, pointOccurrence: 1, number: '06', label: 'DATEN' },
   { sectionId: 'journey-references', anchor: 'projects', rest: .45, pointOccurrence: 1, number: '07', label: 'PROJEKTE' },
   { sectionId: 'journey-about', anchor: 'about', rest: .45, pointOccurrence: 1, number: '08', label: 'UEBER MICH' },
@@ -99,4 +99,3 @@ export function scrollToDockingStation(anchor: string) {
   window.setTimeout(jump, 300);
   window.setTimeout(jump, 900);
 }
-
