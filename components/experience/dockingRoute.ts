@@ -8,7 +8,7 @@ export const DOCKING_STOPS = [
   { sectionId: 'business-os', anchor: 'process', rest: 0, pointOccurrence: 2, number: '05', label: 'PROZESSE' },
   { sectionId: 'daten-intelligenz', anchor: 'data', rest: 0, pointOccurrence: 1, number: '06', label: 'DATEN' },
   { sectionId: 'journey-references', anchor: 'projects', rest: .45, pointOccurrence: 1, number: '07', label: 'PROJEKTE' },
-  { sectionId: 'journey-about', anchor: 'about', rest: .45, pointOccurrence: 1, number: '08', label: 'UEBER MICH' },
+  { sectionId: 'journey-about', anchor: 'about', rest: 0, pointOccurrence: 1, number: '08', label: 'UEBER MICH' },
   { sectionId: 'journey-contact', anchor: 'contact', rest: .42, pointOccurrence: 1, number: '09', label: 'KONTAKT' },
 ] as const;
 

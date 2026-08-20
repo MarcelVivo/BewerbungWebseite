@@ -162,6 +162,19 @@ const OPERATING_MODULES = {
   ],
 } as const;
 
+const ABOUT_METHOD = {
+  de: [
+    ['01', 'Verstehen', 'Ziele, Abläufe und bestehende Systeme gemeinsam einordnen.'],
+    ['02', 'Entscheiden', 'Prioritäten, Umfang und Architektur nachvollziehbar festlegen.'],
+    ['03', 'Umsetzen', 'Design, Entwicklung und Einführung persönlich begleiten.'],
+  ],
+  en: [
+    ['01', 'Understand', 'Put goals, workflows and existing systems into context together.'],
+    ['02', 'Decide', 'Define priorities, scope and architecture transparently.'],
+    ['03', 'Deliver', 'Personally guide design, development and introduction.'],
+  ],
+} as const;
+
 export default function MarcelExperience() {
   const { lang } = useLanguage();
   const c = copy[lang];
@@ -918,24 +931,32 @@ export default function MarcelExperience() {
 
         <span id="mobile-journey-about" className={styles.aliasAnchor} />
         <section id="journey-about" className={`${styles.section} ${styles.aboutSection} ${styles.layoutRight}`}>
-          <SectionDockingStation station="about" />
           <div id="about" className={styles.aliasAnchor} />
-          <div className={styles.pauseSticky}>
-            <div className={styles.pauseFit} data-fit>
-              <div className={styles.aboutLayout}>
-                <div className={styles.aboutImage} data-reveal="left">
+          <div className={styles.aboutViewport}>
+            <div className={styles.aboutEditorial}>
+              <figure className={styles.aboutPortrait} data-reveal="left">
                   <Image src="/assets/MarcelSpahrHeader.jpg" alt="Marcel Spahr im Arbeits- und Projektraum" fill sizes="(min-width: 1000px) 42vw, 94vw" />
-                  <div className={styles.imagePlate}><span>MS / BERN</span><strong>BUSINESS × DESIGN × TECH</strong></div>
-                </div>
-                <div className={styles.sectionCopy} data-reveal="right">
-                  <p className={styles.eyebrow}><span />{c.aboutEyebrow}</p>
-                  <h2>{c.aboutTitle}</h2>
-                  <p className={styles.sectionLead}>{c.aboutText}</p>
-                  <blockquote>"{c.aboutQuote}"</blockquote>
-                </div>
+                <figcaption><span>Marcel Spahr</span><small>{lang === 'de' ? 'Konzeption und Entwicklung · Bern' : 'Strategy and development · Bern'}</small></figcaption>
+              </figure>
+
+              <article className={styles.aboutStory} data-reveal="right">
+                <p className={styles.eyebrow}><span />{c.aboutEyebrow}</p>
+                <h2>{c.aboutTitle}</h2>
+                <p>{c.aboutText}</p>
+                <blockquote>“{c.aboutQuote}”</blockquote>
+                <ol className={styles.aboutMethod} aria-label={lang === 'de' ? 'Arbeitsweise' : 'Working method'}>
+                  {ABOUT_METHOD[lang].map(([number, title, text]) => <li key={number}><span>{number}</span><div><strong>{title}</strong><p>{text}</p></div></li>)}
+                </ol>
+              </article>
+
+              <div className={styles.aboutAilaBay} aria-hidden="true">
+                <SectionDockingStation station="about" />
               </div>
-              <div className={styles.factGrid} data-reveal="up">{c.facts.map(([value, label]) => <div key={value}><strong>{value}</strong><span>{label}</span></div>)}</div>
             </div>
+
+            <dl className={styles.aboutCredentials} data-reveal="up">
+              {c.facts.map(([value, label]) => <div key={value}><dt>{value}</dt><dd>{label}</dd></div>)}
+            </dl>
           </div>
         </section>
 
