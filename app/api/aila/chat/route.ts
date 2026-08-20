@@ -79,6 +79,7 @@ export async function POST(request: NextRequest) {
         }),
         input: [...history, { role: 'user', content: message }],
         max_output_tokens: 1200,
+        reasoning: { effort: 'low' },
         text: {
           format: {
             type: 'json_schema',
