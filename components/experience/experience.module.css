@@ -4634,20 +4634,6 @@
   mask-image: linear-gradient(180deg, transparent, #000 12% 88%, transparent);
 }
 
-.dataAilaBay::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  top: 55%;
-  width: 64%;
-  aspect-ratio: 1;
-  border: 1px solid rgba(231,197,106,.08);
-  border-radius: 50%;
-  transform: translate(-50%, -50%) rotateX(62deg);
-  box-shadow: 0 0 0 1.2rem rgba(231,197,106,.012), 0 0 3rem rgba(200,154,61,.04);
-  pointer-events: none;
-}
-
 .dataAilaBay .sectionDockLayer {
   position: absolute;
   z-index: 1;
