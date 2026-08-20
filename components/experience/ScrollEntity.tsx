@@ -1302,7 +1302,9 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
           className={styles.scrollEntityGrabSurface}
           aria-label={lang === 'de' ? 'AILA öffnen' : 'Open AILA'}
           aria-pressed="false"
+          aria-expanded={guide.open}
           aria-haspopup="dialog"
+          data-guide-open={guide.open ? 'true' : 'false'}
           onClick={openGuide}
         >
           <span className={styles.ailaDustPrompt} aria-hidden="true">
