@@ -3065,9 +3065,15 @@
     translate: 0 0;
     box-shadow: 10px 12px 0 rgba(117,86,34,.2), 22px 26px 0 rgba(31,27,17,.5), 0 38px 100px rgba(0,0,0,.72), 0 0 44px rgba(200,154,61,.1), inset 0 1px rgba(255,246,213,.09);
   }
+  25% {
+    translate: 4px -2px;
+  }
   50% {
     translate: 0 -5px;
     box-shadow: 11px 15px 0 rgba(117,86,34,.18), 24px 31px 0 rgba(31,27,17,.46), 0 46px 112px rgba(0,0,0,.76), 0 0 52px rgba(200,154,61,.14), inset 0 1px rgba(255,246,213,.11);
+  }
+  75% {
+    translate: -4px -2px;
   }
 }
 
