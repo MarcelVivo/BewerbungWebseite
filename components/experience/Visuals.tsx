@@ -256,26 +256,155 @@ export function PerspectiveBusinessFlow({
 }
 
 export function MarketingEngine({ lang }: { lang: 'de' | 'en' }) {
+  const [activeChannel, setActiveChannel] = useState(0);
   const channels = lang === 'de'
-    ? [['Suche', Search], ['Social', Users], ['Content', FileText], ['Kampagnen', Activity], ['Empfehlungen', Sparkles]] as const
-    : [['Search', Search], ['Social', Users], ['Content', FileText], ['Campaigns', Activity], ['Referrals', Sparkles]] as const;
-  const process = lang === 'de' ? ['Erfassen', 'Qualifizieren', 'CRM', 'Follow-up', 'Conversion', 'Analyse'] : ['Capture', 'Qualify', 'CRM', 'Follow-up', 'Conversion', 'Analyse'];
+    ? [
+      {
+        label: 'Suche', Icon: Search,
+        title: 'Gefunden werden, wenn Bedarf entsteht.',
+        text: 'Klare Angebotsseiten, lokaler Kontext und suchfähige Inhalte führen Interessierte direkt zur passenden Leistung.',
+        details: ['Bedarf und Suchbegriff bleiben sichtbar', 'Die Anfrage landet beim richtigen Angebot', 'SEO und AI-Suche nutzen dieselbe Struktur'],
+        result: 'Aus einer Suche wird eine konkrete Anfrage.',
+        flow: ['Gefunden', 'Anfrage', 'Antwort'],
+      },
+      {
+        label: 'Social', Icon: Users,
+        title: 'Aus Aufmerksamkeit wird ein bekannter Kontakt.',
+        text: 'Beiträge und Profile führen nicht in eine Sackgasse, sondern in einen passenden nächsten Schritt mit klarer Herkunft.',
+        details: ['Kanal und Beitrag bleiben zugeordnet', 'Kontaktwege passen zur Kampagne', 'Follow-ups gehen nicht vergessen'],
+        result: 'Interesse wird erfassbar und kann weitergeführt werden.',
+        flow: ['Interesse', 'Kontakt', 'Nächster Schritt'],
+      },
+      {
+        label: 'Content', Icon: FileText,
+        title: 'Antworten schaffen Vertrauen vor dem Gespräch.',
+        text: 'Hilfreiche Inhalte beantworten echte Kundenfragen und führen genau dort weiter, wo persönliche Beratung sinnvoll wird.',
+        details: ['Inhalte lösen konkrete Fragen', 'Passende Leistungen werden verknüpft', 'Wissen arbeitet über mehrere Kanäle'],
+        result: 'Aus Information entsteht eine fundierte Entscheidung.',
+        flow: ['Frage', 'Antwort', 'Entscheidung'],
+      },
+      {
+        label: 'Kampagnen', Icon: Activity,
+        title: 'Budget folgt dem Ergebnis, nicht nur dem Klick.',
+        text: 'Landingpage, Anfrage und Auftrag bleiben verbunden. So wird sichtbar, welche Kampagne tatsächlich Geschäft erzeugt.',
+        details: ['Klick und Anfrage bleiben verbunden', 'Kosten werden dem Ergebnis zugeordnet', 'Gute Kampagnen lassen sich gezielt stärken'],
+        result: 'Werbebudget wird nach Wirkung gesteuert.',
+        flow: ['Kampagne', 'Anfrage', 'Auftrag'],
+      },
+      {
+        label: 'Empfehlungen', Icon: Sparkles,
+        title: 'Empfehlungen bekommen einen klaren Weg.',
+        text: 'Persönlich empfohlene Kontakte landen mit Kontext, Zuständigkeit und nächstem Schritt direkt im richtigen Prozess.',
+        details: ['Empfehlungsquelle bleibt bekannt', 'Anliegen und Kontext gehen nicht verloren', 'Eine persönliche Reaktion wird planbar'],
+        result: 'Vertrauen wird ohne Reibungsverlust weitergeführt.',
+        flow: ['Empfehlung', 'Kontakt', 'Gespräch'],
+      },
+    ]
+    : [
+      {
+        label: 'Search', Icon: Search,
+        title: 'Be found when a real need appears.',
+        text: 'Clear service pages, local context and searchable content guide interested people directly to the right offer.',
+        details: ['Need and search term remain visible', 'The enquiry reaches the right service', 'SEO and AI search use one structure'],
+        result: 'A search becomes a concrete enquiry.',
+        flow: ['Found', 'Enquiry', 'Response'],
+      },
+      {
+        label: 'Social', Icon: Users,
+        title: 'Attention becomes a known contact.',
+        text: 'Posts and profiles lead to a useful next step while the original channel and context remain visible.',
+        details: ['Channel and post remain attributed', 'Contact paths fit the campaign', 'Follow-ups are not forgotten'],
+        result: 'Interest becomes traceable and actionable.',
+        flow: ['Interest', 'Contact', 'Next step'],
+      },
+      {
+        label: 'Content', Icon: FileText,
+        title: 'Answers build trust before the conversation.',
+        text: 'Helpful content answers real customer questions and moves people forward when personal guidance becomes useful.',
+        details: ['Content solves concrete questions', 'Relevant services are connected', 'Knowledge works across channels'],
+        result: 'Information supports a confident decision.',
+        flow: ['Question', 'Answer', 'Decision'],
+      },
+      {
+        label: 'Campaigns', Icon: Activity,
+        title: 'Budget follows outcomes, not just clicks.',
+        text: 'Landing page, enquiry and order remain connected, revealing which campaigns actually create business.',
+        details: ['Click and enquiry stay connected', 'Cost is tied to the outcome', 'Effective campaigns can be strengthened'],
+        result: 'Advertising spend is steered by impact.',
+        flow: ['Campaign', 'Enquiry', 'Order'],
+      },
+      {
+        label: 'Referrals', Icon: Sparkles,
+        title: 'Referrals get a clear path forward.',
+        text: 'Referred contacts enter the right process with context, ownership and a useful next step.',
+        details: ['The referral source remains known', 'Context does not get lost', 'A personal response becomes reliable'],
+        result: 'Trust moves forward without friction.',
+        flow: ['Referral', 'Contact', 'Conversation'],
+      },
+    ];
+  const selected = channels[activeChannel];
+  const SelectedIcon = selected.Icon;
 
   return (
-    <div className={styles.marketingEngine} aria-label={lang === 'de' ? 'Marketingkanäle führen in ein gemeinsames Lead-System' : 'Marketing channels feed one shared lead system'}>
-      <div className={styles.channelFan}>
-        {channels.map(([label, Icon], index) => (
-          <div key={label} style={{ '--i': index } as CSSProperties}><Icon size={17} /><span>{label}</span></div>
+    <div className={styles.marketingEngine} aria-label={lang === 'de' ? 'Interaktive Übersicht der Marketingkanäle' : 'Interactive overview of marketing channels'}>
+      <header className={styles.marketingEngineIntro}>
+        <div>
+          <span>{lang === 'de' ? 'KANAL WÄHLEN' : 'CHOOSE A CHANNEL'}</span>
+          <strong>{lang === 'de' ? 'So wird Sichtbarkeit zu einem nächsten Schritt.' : 'See how visibility becomes a next step.'}</strong>
+        </div>
+        <small>{String(activeChannel + 1).padStart(2, '0')} / 05</small>
+      </header>
+
+      <div className={styles.channelFan} role="tablist" aria-label={lang === 'de' ? 'Marketingkanal wählen' : 'Choose a marketing channel'}>
+        {channels.map(({ label, Icon }, index) => (
+          <button
+            key={label}
+            type="button"
+            role="tab"
+            id={`marketing-channel-${index}`}
+            aria-selected={activeChannel === index}
+            aria-controls="marketing-channel-detail"
+            data-active={activeChannel === index ? 'true' : 'false'}
+            onClick={() => setActiveChannel(index)}
+          >
+            <Icon size={18} />
+            <span>{label}</span>
+            <i>{String(index + 1).padStart(2, '0')}</i>
+          </button>
         ))}
       </div>
-      <div className={styles.leadCore}>
-        <span><Globe2 size={22} /></span>
-        <strong>{lang === 'de' ? 'LEAD SYSTEM' : 'LEAD SYSTEM'}</strong>
-        <small>{lang === 'de' ? 'Eine gemeinsame Pipeline' : 'One shared pipeline'}</small>
+
+      <div className={styles.marketingEngineBody}>
+        <article
+          id="marketing-channel-detail"
+          role="tabpanel"
+          aria-labelledby={`marketing-channel-${activeChannel}`}
+          className={styles.marketingChannelDetail}
+        >
+          <header><span><SelectedIcon size={20} /></span><small>{lang === 'de' ? 'AUSGEWÄHLTER KANAL' : 'SELECTED CHANNEL'}</small></header>
+          <h3>{selected.title}</h3>
+          <p>{selected.text}</p>
+          <ul>
+            {selected.details.map((detail) => <li key={detail}><Check size={14} />{detail}</li>)}
+          </ul>
+        </article>
+
+        <aside className={styles.marketingOutcome} aria-label={lang === 'de' ? 'Ergebnis und Ablauf' : 'Outcome and flow'}>
+          <span>{lang === 'de' ? 'WAS ENTSTEHT?' : 'WHAT DOES THIS CREATE?'}</span>
+          <strong>{selected.result}</strong>
+          <div className={styles.marketingOutcomeFlow}>
+            {selected.flow.map((step, index) => (
+              <div key={step}><i>{index + 1}</i><span>{step}</span>{index < selected.flow.length - 1 && <b aria-hidden="true">→</b>}</div>
+            ))}
+          </div>
+        </aside>
       </div>
-      <div className={styles.processRail}>
-        {process.map((item, index) => <span key={item}><i>{index + 1}</i>{item}</span>)}
-      </div>
+
+      <footer className={styles.marketingEngineFooter}>
+        <span><i />{lang === 'de' ? 'Quelle sichtbar' : 'Source visible'}</span>
+        <span><i />{lang === 'de' ? 'Nächster Schritt klar' : 'Next step clear'}</span>
+        <span><i />{lang === 'de' ? 'Ergebnis messbar' : 'Outcome measurable'}</span>
+      </footer>
     </div>
   );
 }
