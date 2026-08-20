@@ -107,7 +107,7 @@ export const copy = {
     aboutText: 'Ich verbinde über 15 Jahre Erfahrung in Technologie und Kundenprojekten mit präzisen KI-Werkzeugen. So entstehen schneller klare Analysen, fundierte Entscheidungen und Lösungen, die im Unternehmen wirklich tragen.',
     aboutQuote: 'KI liefert Tempo und Perspektiven. Ich liefere Kontext, Urteilskraft und übernehme die Verantwortung.',
     facts: [['15+', 'Jahre Praxis in Technologie und Kundenprojekten'], ['HF', 'Wirtschaftsinformatik in der Abschlussphase'], ['MENSCH + KI', 'Urteilskraft und Geschwindigkeit verbunden'], ['01', 'Verantwortung von der Analyse bis zum Betrieb']],
-    finalA: 'AILA · PERSÖNLICHE SYSTEMBERATUNG', finalB: 'Erzähl AILA, was sich verbessern soll.', finalText: 'AILA führt das Verkaufsgespräch, ordnet dein Anliegen ein und übergibt Marcel bei Interesse den vollständigen Kontext – ohne dass du alles nochmals erklären musst.',
+    finalA: 'AILA · PERSÖNLICHE ORIENTIERUNG', finalB: 'Erzähl AILA, was sich verbessern soll.', finalText: 'AILA führt dich durch ein kurzes Orientierungsgespräch, ordnet dein Anliegen ein und übergibt Marcel bei Interesse den vollständigen Kontext – ohne dass du alles nochmals erklären musst.',
     legal: 'Datenschutz und Impressum', privacy: 'Datenschutz', imprint: 'Impressum', footerLine: 'Digitale Unternehmenssysteme. Persönlich entwickelt in Bern.',
   },
   en: {
@@ -139,7 +139,7 @@ export const copy = {
     aboutText: 'I combine more than 15 years of technology and client-project experience with precise AI tools. The result is faster analysis, better-founded decisions and solutions built to work in the real organisation.',
     aboutQuote: 'AI brings speed and new perspectives. I bring context, judgement and personal accountability.',
     facts: [['15+', 'Years in technology and customer projects'], ['HF', 'Business Information Technology, final stage'], ['HUMAN + AI', 'Judgement and speed working together'], ['01', 'Accountability from analysis through operation']],
-    finalA: 'AILA · PERSONAL SYSTEM CONSULTATION', finalB: 'Tell AILA what should improve.', finalText: 'AILA leads the sales conversation, assesses your request and, if you are interested, hands the full context to Marcel—so you never need to explain everything twice.',
+    finalA: 'AILA · PERSONAL GUIDANCE', finalB: 'Tell AILA what should improve.', finalText: 'AILA guides you through a short conversation, assesses your request and, if you are interested, hands the full context to Marcel—so you never need to explain everything twice.',
     legal: 'Privacy and legal notice', privacy: 'Privacy', imprint: 'Legal notice', footerLine: 'Digital business systems. Personally developed in Bern.',
   },
 } as const;

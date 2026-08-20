@@ -990,7 +990,7 @@ export default function MarcelExperience() {
                   }}
                 >
                   <span>AILA · LIVE</span>
-                  <strong>{lang === 'de' ? 'Verkaufsgespräch mit AILA starten' : 'Start a sales conversation with AILA'}</strong>
+                  <strong>{lang === 'de' ? 'Gespräch mit AILA beginnen' : 'Start a conversation with AILA'}</strong>
                   <small>{lang === 'de' ? 'Per Text oder Stimme. Dein Gespräch wird bei Interesse vollständig an Marcel übergeben.' : 'By text or voice. If you are interested, the full conversation is handed over to Marcel.'}</small>
                   <ArrowRight size={18} />
                 </button>
