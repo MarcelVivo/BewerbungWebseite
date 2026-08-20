@@ -5101,25 +5101,36 @@
   text-align: left;
 }
 
-.aboutMethod {
+.aboutValue {
   margin: auto 0 0;
-  padding: clamp(.75rem, 1.4vh, 1rem) 0 0;
-  list-style: none;
-}
-
-.aboutMethod li {
-  min-width: 0;
-  padding: clamp(.55rem, 1vh, .75rem) 0;
+  padding: clamp(.9rem, 1.8vh, 1.25rem) 0 clamp(.15rem, .5vh, .35rem);
   display: grid;
-  grid-template-columns: 2rem minmax(0, 1fr);
-  gap: .75rem;
-  border-top: 1px solid rgba(255,255,255,.09);
+  gap: .55rem;
+  border-top: 1px solid rgba(255,255,255,.1);
 }
 
-.aboutMethod li > span { padding-top: .16rem; color: var(--gold-light); font: 650 .52rem/1 var(--font-chakra-petch), monospace; }
-.aboutMethod li > div { min-width: 0; display: grid; grid-template-columns: 6rem minmax(0, 1fr); gap: .8rem; align-items: baseline; }
-.aboutMethod strong { color: #e2e3dc; font-size: .76rem; font-weight: 620; }
-.aboutMethod p { margin: 0; color: #92968f; font-size: .66rem; line-height: 1.45; }
+.aboutValue > span {
+  color: var(--gold-light);
+  font: 650 clamp(.49rem, .54vw, .6rem)/1 var(--font-chakra-petch), monospace;
+  letter-spacing: .14em;
+}
+
+.aboutValue > strong {
+  max-width: 22ch;
+  color: #e6e6df;
+  font-size: clamp(1.02rem, 1.18vw, 1.3rem);
+  font-weight: 580;
+  line-height: 1.28;
+  letter-spacing: -.025em;
+}
+
+.aboutValue > p {
+  max-width: 42rem;
+  margin: 0;
+  color: #979b94;
+  font-size: clamp(.7rem, .76vw, .82rem);
+  line-height: 1.55;
+}
 
 .aboutAilaBay {
   position: absolute;
@@ -5163,8 +5174,9 @@
   .aboutStory h2 { font-size: clamp(2.25rem, 3.2vw, 3.4rem); }
   .aboutStory > p:not(.eyebrow) { margin-top: .75rem; font-size: .73rem; line-height: 1.5; }
   .aboutStory blockquote { margin-top: .7rem; font-size: .8rem; }
-  .aboutMethod { padding-top: .45rem; }
-  .aboutMethod li { padding: .42rem 0; }
+  .aboutValue { padding-top: .65rem; gap: .38rem; }
+  .aboutValue > strong { font-size: .95rem; }
+  .aboutValue > p { font-size: .67rem; }
   .aboutCredentials > div { padding-top: .55rem; padding-bottom: .55rem; }
 }
 
@@ -5173,7 +5185,6 @@
     grid-template-columns: minmax(0, 1.35fr) minmax(330px, .85fr);
   }
   .aboutStory h2 { font-size: clamp(2.15rem, 3vw, 3rem); }
-  .aboutMethod li > div { grid-template-columns: 5rem minmax(0, 1fr); }
 }
 
 @media (max-width: 960px) {
@@ -5187,9 +5198,9 @@
   .aboutStory h2 { max-width: 13ch; font-size: clamp(2.6rem, 8.5vw, 4.4rem); }
   .aboutStory > p:not(.eyebrow) { font-size: .94rem; }
   .aboutStory blockquote { font-size: 1rem; }
-  .aboutMethod { margin-top: 1rem; }
-  .aboutMethod strong { font-size: .82rem; }
-  .aboutMethod p { font-size: .74rem; }
+  .aboutValue { margin-top: 1.5rem; }
+  .aboutValue > strong { font-size: 1.2rem; }
+  .aboutValue > p { font-size: .82rem; }
   .aboutAilaBay { min-height: 280px; }
   .aboutCredentials { grid-template-columns: 1fr 1fr; }
   .aboutCredentials > div:nth-child(3) { padding-left: 0; border-left: 0; border-top: 1px solid rgba(255,255,255,.08); }
@@ -5203,7 +5214,6 @@
   .aboutAlliance { top: 1rem; right: 1rem; width: 48%; }
   .aboutPortrait figcaption { align-items: flex-start; flex-direction: column; gap: .25rem; }
   .aboutPortrait figcaption small { text-align: left; }
-  .aboutMethod li > div { grid-template-columns: 1fr; gap: .2rem; }
   .aboutCredentials { grid-template-columns: 1fr; }
   .aboutCredentials > div,
   .aboutCredentials > div + div,

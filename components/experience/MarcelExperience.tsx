@@ -162,17 +162,17 @@ const OPERATING_MODULES = {
   ],
 } as const;
 
-const ABOUT_METHOD = {
-  de: [
-    ['01', 'Erkennen', 'Komplexität, Chancen und Risiken mit Erfahrung und Daten früh sichtbar machen.'],
-    ['02', 'Verstärken', 'KI gezielt für Analyse, Entwurf und Automatisierung einsetzen.'],
-    ['03', 'Verantworten', 'Wesentliche Entscheidungen persönlich prüfen und bis zur Wirkung begleiten.'],
-  ],
-  en: [
-    ['01', 'Recognise', 'Use experience and data to surface complexity, opportunities and risks early.'],
-    ['02', 'Amplify', 'Apply AI selectively to analysis, design and automation.'],
-    ['03', 'Own', 'Personally review key decisions and guide them through to measurable impact.'],
-  ],
+const ABOUT_VALUE = {
+  de: {
+    label: 'NUTZEN FÜR DEIN UNTERNEHMEN',
+    title: 'Aus Komplexität wird ein klarer, umsetzbarer Weg.',
+    text: 'Strategie, Gestaltung, Technologie und KI bleiben in einer Verantwortung. Dadurch gehen weniger Informationen verloren und gute Entscheidungen werden schneller wirksam.',
+  },
+  en: {
+    label: 'VALUE FOR YOUR BUSINESS',
+    title: 'Complexity becomes a clear, actionable path.',
+    text: 'Strategy, design, technology and AI stay under one accountable lead. Less context is lost and sound decisions translate into impact sooner.',
+  },
 } as const;
 
 export default function MarcelExperience() {
@@ -955,9 +955,11 @@ export default function MarcelExperience() {
                 <h2>{c.aboutTitle}</h2>
                 <p>{c.aboutText}</p>
                 <blockquote>“{c.aboutQuote}”</blockquote>
-                <ol className={styles.aboutMethod} aria-label={lang === 'de' ? 'Arbeitsweise' : 'Working method'}>
-                  {ABOUT_METHOD[lang].map(([number, title, text]) => <li key={number}><span>{number}</span><div><strong>{title}</strong><p>{text}</p></div></li>)}
-                </ol>
+                <div className={styles.aboutValue}>
+                  <span>{ABOUT_VALUE[lang].label}</span>
+                  <strong>{ABOUT_VALUE[lang].title}</strong>
+                  <p>{ABOUT_VALUE[lang].text}</p>
+                </div>
               </article>
             </div>
 
