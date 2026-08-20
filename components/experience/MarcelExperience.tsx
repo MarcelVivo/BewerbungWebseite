@@ -801,11 +801,16 @@ export default function MarcelExperience() {
           <SectionDockingStation station="process" />
           <span id="journey-value" className={styles.aliasAnchor} />
           <div className={styles.pauseSticky}>
-            <div className={styles.pauseFit} data-fit>
-              <div className={styles.sectionHeader} data-reveal="left">
+            <div className={styles.pauseFit}>
+              <div className={`${styles.sectionHeader} ${styles.osHeader}`} data-reveal="left">
                 <p className={styles.eyebrow}><span />{c.osEyebrow}</p>
                 <h2>{c.osTitle}</h2>
-                <p>{c.osText}</p>
+                <p className={styles.osIntroText}>{c.osText}</p>
+                <div className={styles.osHeaderMetrics} aria-label={lang === 'de' ? 'Business OS Übersicht' : 'Business OS overview'}>
+                  <span><b>06</b><small>{lang === 'de' ? 'Module nach Bedarf' : 'Modules as needed'}</small></span>
+                  <span><b>01</b><small>{lang === 'de' ? 'Gemeinsame Datenbasis' : 'Shared data foundation'}</small></span>
+                  <span><b>LIVE</b><small>{lang === 'de' ? 'Steuerung im Alltag' : 'Everyday control'}</small></span>
+                </div>
               </div>
               <div className={styles.osLayout}>
                 <div className={styles.operatingModules} data-reveal="left">
@@ -834,7 +839,7 @@ export default function MarcelExperience() {
                     );
                   })}
                 </div>
-                <div data-reveal="right"><DashboardMockup lang={lang} /></div>
+                <div className={styles.osDashboardStage} data-reveal="right"><DashboardMockup lang={lang} /></div>
               </div>
               <div className={styles.dashboardCopy} data-reveal="up"><p>{c.dashboardEyebrow}</p><h3>{c.dashboardTitle}</h3><span>{c.dashboardText}</span></div>
 
