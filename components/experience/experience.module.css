@@ -106,7 +106,8 @@
 
 .scrollEntity[data-aila-state='attention'] .scrollEntityGrabSurface,
 .scrollEntity[data-aila-state='thinking'] .scrollEntityGrabSurface,
-.scrollEntity[data-aila-state='speaking'] .scrollEntityGrabSurface { cursor: progress; }
+.scrollEntity[data-aila-state='speaking'] .scrollEntityGrabSurface,
+.scrollEntity[data-aila-state='cta'] .scrollEntityGrabSurface { cursor: progress; }
 .scrollEntityGrabSurface:focus-visible { outline: 1px solid rgba(231,197,106,.62); outline-offset: -8px; }
 .scrollEntity[data-docking='true'] .scrollEntityVideo,
 .scrollEntity[data-docking='true'] .scrollEntityCore { animation: entityDockedHover 7.4s ease-in-out infinite; }

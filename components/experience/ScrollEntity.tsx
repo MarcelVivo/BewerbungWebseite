@@ -76,7 +76,8 @@ const AILA_IDLE_VIDEO = '/cinematic/aila/aila-idle-v1-pingpong-greenscreen.mp4';
 const AILA_ATTENTION_VIDEO = '/cinematic/aila/aila-attention-v2-greenscreen.mp4';
 const AILA_THINKING_VIDEO = '/cinematic/aila/aila-thinking-v1-pingpong-greenscreen.mp4';
 const AILA_SPEAKING_VIDEO = '/cinematic/aila/aila-speaking-v1-greenscreen.mp4';
-type AilaVideoMode = 'idle' | 'attention' | 'thinking' | 'speaking';
+const AILA_CTA_VIDEO = '/cinematic/aila/aila-cta-v1-greenscreen.mp4';
+type AilaVideoMode = 'idle' | 'attention' | 'thinking' | 'speaking' | 'cta';
 
 export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
   const entityRef = useRef<HTMLDivElement | null>(null);
@@ -279,7 +280,11 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
         switchVideo(AILA_SPEAKING_VIDEO, 'speaking');
         return;
       }
-      if (videoMode === 'speaking') switchVideo(AILA_IDLE_VIDEO, 'idle');
+      if (videoMode === 'speaking') {
+        switchVideo(AILA_CTA_VIDEO, 'cta');
+        return;
+      }
+      if (videoMode === 'cta') switchVideo(AILA_IDLE_VIDEO, 'idle');
     };
 
     const recoverIdle = () => {
@@ -1078,7 +1083,7 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
           ref={interactionRef}
           type="button"
           className={styles.scrollEntityGrabSurface}
-          aria-label="AILA zuhören, analysieren und antworten lassen"
+          aria-label="AILAs interaktive Demonstration starten"
           aria-pressed="false"
         />
         <video
