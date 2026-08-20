@@ -46,7 +46,11 @@ const COMMON = {
     placeholder: 'Deine Frage an AILA …', send: 'Frage senden', micStart: 'Frage einsprechen', micStop: 'Aufnahme beenden',
     thinking: 'AILA denkt nach …', listening: 'AILA hört zu …', voiceOn: 'KI-Stimme ausschalten', voiceOff: 'KI-Stimme einschalten',
     error: 'Das hat gerade nicht funktioniert. Versuche es bitte noch einmal oder besprich dein Anliegen direkt mit Marcel.',
-    unsupported: 'Die Sprachaufnahme wird von diesem Browser nicht unterstützt.',
+    micPermission: 'Bitte erlaube den Mikrofonzugriff für diese Website und versuche es erneut.',
+    micUnavailable: 'Es wurde kein verfügbares Mikrofon gefunden. Du kannst deine Frage weiterhin eintippen.',
+    micSecure: 'Die Spracheingabe funktioniert nur über eine sichere HTTPS-Verbindung.',
+    micUnsupported: 'Dieser Browser unterstützt die Spracheingabe leider nicht. Du kannst deine Frage weiterhin eintippen.',
+    micError: 'Die Aufnahme konnte nicht gestartet werden. Prüfe den Mikrofonzugriff und versuche es erneut.',
     next: 'Nächstes Kapitel', contact: 'Mit Marcel sprechen', close: 'AILA schliessen',
   },
   en: {
@@ -55,7 +59,11 @@ const COMMON = {
     placeholder: 'Your question for AILA …', send: 'Send question', micStart: 'Record a question', micStop: 'Stop recording',
     thinking: 'AILA is thinking …', listening: 'AILA is listening …', voiceOn: 'Turn AI voice off', voiceOff: 'Turn AI voice on',
     error: 'That did not work just now. Please try again or discuss your question directly with Marcel.',
-    unsupported: 'Voice recording is not supported by this browser.',
+    micPermission: 'Please allow microphone access for this website and try again.',
+    micUnavailable: 'No available microphone was found. You can still type your question.',
+    micSecure: 'Voice input requires a secure HTTPS connection.',
+    micUnsupported: 'This browser does not support voice input. You can still type your question.',
+    micError: 'The recording could not be started. Check microphone access and try again.',
     next: 'Next chapter', contact: 'Talk to Marcel', close: 'Close AILA',
   },
 } as const;
@@ -233,13 +241,20 @@ export default function AilaGuide({
       recorderRef.current?.stop();
       return;
     }
+    if (!window.isSecureContext) {
+      setMessages((current) => [...current, { id: messageId(), role: 'assistant', content: common.micSecure }]);
+      return;
+    }
     if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
-      setMessages((current) => [...current, { id: messageId(), role: 'assistant', content: common.unsupported }]);
+      setMessages((current) => [...current, { id: messageId(), role: 'assistant', content: common.micUnsupported }]);
       return;
     }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mimeType = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/webm'].find((type) => MediaRecorder.isTypeSupported(type)) || '';
+      const mimeTypes = ['audio/mp4;codecs=mp4a.40.2', 'audio/mp4', 'audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus'];
+      const mimeType = typeof MediaRecorder.isTypeSupported === 'function'
+        ? mimeTypes.find((type) => MediaRecorder.isTypeSupported(type)) || ''
+        : '';
       const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
       streamRef.current = stream;
       recorderRef.current = recorder;
@@ -256,7 +271,8 @@ export default function AilaGuide({
         onStateChange('thinking');
         try {
           const form = new FormData();
-          form.append('audio', new File([blob], `aila-question.${blob.type.includes('mp4') ? 'm4a' : 'webm'}`, { type: blob.type }));
+          const extension = blob.type.includes('mp4') ? 'm4a' : blob.type.includes('ogg') ? 'ogg' : 'webm';
+          form.append('audio', new File([blob], `aila-question.${extension}`, { type: blob.type }));
           form.append('lang', lang);
           const response = await fetch('/api/aila/transcribe', { method: 'POST', body: form });
           const payload = await response.json();
@@ -272,8 +288,14 @@ export default function AilaGuide({
       recorder.start();
       setRecording(true);
       onStateChange('idle');
-    } catch {
-      setMessages((current) => [...current, { id: messageId(), role: 'assistant', content: common.unsupported }]);
+    } catch (error) {
+      const name = error instanceof DOMException ? error.name : '';
+      const content = name === 'NotAllowedError' || name === 'SecurityError'
+        ? common.micPermission
+        : name === 'NotFoundError' || name === 'NotReadableError' || name === 'OverconstrainedError'
+          ? common.micUnavailable
+          : common.micError;
+      setMessages((current) => [...current, { id: messageId(), role: 'assistant', content }]);
       onStateChange('idle');
     }
   };
