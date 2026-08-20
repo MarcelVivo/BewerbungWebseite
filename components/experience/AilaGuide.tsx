@@ -65,6 +65,7 @@ const COMMON = {
     handoverKicker: 'PERSÖNLICH WEITER', handoverTitle: 'Kontakt mit Marcel aufnehmen',
     handoverText: 'Dein Gesprächskontext wird sicher übernommen. Du musst nichts nochmals erklären.',
     successTitle: 'Alles ist bei Marcel angekommen.', successText: 'Deine Kontaktdaten und das AILA-Gespräch wurden per E-Mail und im CRM übermittelt. Marcel meldet sich persönlich bei dir.',
+    directSuccessText: 'Deine Kontaktdaten und dein Anliegen wurden per E-Mail und im CRM übermittelt. Marcel meldet sich persönlich bei dir.',
   },
   en: {
     prompts: ['I run a company', 'I am self-employed', 'I am building a start-up', 'I have a specific idea', 'Show me what is possible'],
@@ -81,6 +82,7 @@ const COMMON = {
     handoverKicker: 'CONTINUE PERSONALLY', handoverTitle: 'Contact Marcel',
     handoverText: 'Your conversation context is transferred securely. You will not need to explain everything again.',
     successTitle: 'Everything has reached Marcel.', successText: 'Your contact details and the AILA conversation were sent by email and stored in the CRM. Marcel will contact you personally.',
+    directSuccessText: 'Your contact details and enquiry were sent by email and stored in the CRM. Marcel will contact you personally.',
   },
 } as const;
 
@@ -147,6 +149,8 @@ export default function AilaGuide({
   const completedAssistantItemsRef = useRef<Set<string>>(new Set());
   const historyRef = useRef<HTMLDivElement | null>(null);
   const requestRef = useRef<AbortController | null>(null);
+  const hasConversationContext = messages.some((message) => message.role === 'user' && message.content.trim())
+    || Boolean(salesContext.conversationSummary.trim());
 
   const stopAudio = (announceIdle = true) => {
     speechRequestRef.current?.abort();
@@ -700,7 +704,7 @@ export default function AilaGuide({
         <div className={styles.ailaContactSuccess} role="status">
           <span><Check size={22} /></span>
           <h3>{common.successTitle}</h3>
-          <p>{common.successText}</p>
+          <p>{hasConversationContext ? common.successText : common.directSuccessText}</p>
           <button type="button" onClick={close}>{common.close}<ArrowRight size={14} /></button>
         </div>
       ) : (

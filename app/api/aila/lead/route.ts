@@ -35,13 +35,24 @@ export async function POST(request: NextRequest) {
     const email = text(body?.contact?.email, 200).toLowerCase();
     const phone = text(body?.contact?.phone, 80);
     const company = text(body?.contact?.company, 200);
+    const directRequest = text(body?.directRequest, 1600);
     const language = body?.lang === 'en' ? 'en' : 'de';
+    const rawConversationHasUser = Array.isArray(body?.conversation) && body.conversation.some((message: unknown) => {
+      if (!message || typeof message !== 'object') return false;
+      const entry = message as Record<string, unknown>;
+      return entry.role === 'user' && Boolean(text(entry.content, 1600));
+    });
+    const rawConversationSummary = text(body?.lead?.conversationSummary || body?.conversationSummary, 1200);
+    const hasConversationContext = rawConversationHasUser || Boolean(rawConversationSummary);
 
     if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !/^[+()\d\s.\-/]{6,40}$/.test(phone) || body?.consent !== true) {
       return NextResponse.json({ error: 'Fehlende oder ungültige Pflichtfelder' }, { status: 400 });
     }
-    if (tooLong(body?.conversationSummary, 1200)) {
+    if (tooLong(body?.conversationSummary, 1200) || tooLong(body?.directRequest, 1600)) {
       return NextResponse.json({ error: 'Eingabe zu lang' }, { status: 400 });
+    }
+    if (!hasConversationContext && directRequest.length < 10) {
+      return NextResponse.json({ error: 'Ein konkretes Anliegen ist erforderlich' }, { status: 400 });
     }
     if (isSpamSubmission(body?.hpWebsite, body?.startedAt)) {
       return NextResponse.json({ ok: true });
@@ -86,23 +97,34 @@ export async function POST(request: NextRequest) {
     const transcript = conversation.length
       ? conversation.map((message) => `${message.role === 'assistant' ? 'AILA' : 'Kunde'}: ${message.content}`).join('\n\n')
       : 'Kein Gesprächsprotokoll verfügbar.';
-    const crmNotes = [
-      'AILA-GESPRÄCH',
-      conversationSummary ? `Zusammenfassung: ${conversationSummary}` : null,
-      industry ? `Branche: ${industry}` : null,
-      location ? `Standort: ${location}` : null,
-      section('Ziele / gewünscht', goals),
-      section('Probleme', problems),
-      section('Nicht gewünscht / ausgeschlossen', notWanted),
-      section('Bestehende Systeme', existingSystems),
-      section('Empfohlene Leistungen', recommendedServices),
-      section('Bewusst später / nicht priorisiert', deliberatelyLater),
-      `Lead-Einstufung: ${leadTemperature}`,
-      `Kontakt: ${name} · ${email} · ${phone}`,
-      '',
-      'GESPRÄCHSPROTOKOLL',
-      transcript,
-    ].filter((entry): entry is string => entry !== null).join('\n\n').slice(0, 30000);
+    const crmNotes = (hasConversationContext
+      ? [
+          'AILA-GESPRÄCH',
+          conversationSummary ? `Zusammenfassung: ${conversationSummary}` : null,
+          industry ? `Branche: ${industry}` : null,
+          location ? `Standort: ${location}` : null,
+          section('Ziele / gewünscht', goals),
+          section('Probleme', problems),
+          section('Nicht gewünscht / ausgeschlossen', notWanted),
+          section('Bestehende Systeme', existingSystems),
+          section('Empfohlene Leistungen', recommendedServices),
+          section('Bewusst später / nicht priorisiert', deliberatelyLater),
+          `Lead-Einstufung: ${leadTemperature}`,
+          `Kontakt: ${name} · ${email} · ${phone}`,
+          '',
+          'GESPRÄCHSPROTOKOLL',
+          transcript,
+        ]
+      : [
+          'DIREKTE ANFRAGE',
+          `Anliegen: ${directRequest}`,
+          industry ? `Branche: ${industry}` : null,
+          location ? `Standort: ${location}` : null,
+          `Kontakt: ${name} · ${email} · ${phone}`,
+        ])
+      .filter((entry): entry is string => entry !== null)
+      .join('\n\n')
+      .slice(0, 30000);
 
     const supabase = createClient(supabaseUrl, serviceKey, {
       auth: { persistSession: false, autoRefreshToken: false },
@@ -164,7 +186,7 @@ export async function POST(request: NextRequest) {
 
     const safe = {
       name: escapeHtml(name), email: escapeHtml(email), phone: escapeHtml(phone), company: escapeHtml(company),
-      industry: escapeHtml(industry), location: escapeHtml(location), summary: escapeHtml(conversationSummary),
+      industry: escapeHtml(industry), location: escapeHtml(location), summary: escapeHtml(conversationSummary), request: escapeHtml(directRequest),
     };
     const resend = new Resend(resendKey);
     const adminMail = await resend.emails.send({
@@ -175,7 +197,7 @@ export async function POST(request: NextRequest) {
       html: `
         <div style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto;background:#0d0e0c;color:#e9e8df;border:1px solid #443919">
           <div style="padding:26px 30px;border-bottom:1px solid #443919;background:#17150f">
-            <p style="margin:0 0 8px;color:#e7c56a;font-size:12px;letter-spacing:.14em;font-weight:700">AILA · QUALIFIZIERTER KONTAKT</p>
+            <p style="margin:0 0 8px;color:#e7c56a;font-size:12px;letter-spacing:.14em;font-weight:700">${hasConversationContext ? 'AILA · QUALIFIZIERTER KONTAKT' : 'DIREKTE ANFRAGE'}</p>
             <h1 style="margin:0;font-size:24px">${safe.company || safe.name}</h1>
           </div>
           <div style="padding:28px 30px">
@@ -187,11 +209,14 @@ export async function POST(request: NextRequest) {
               ${safe.industry ? `<tr><td style="padding:6px 0;color:#8f948c">Branche</td><td>${safe.industry}</td></tr>` : ''}
               ${safe.location ? `<tr><td style="padding:6px 0;color:#8f948c">Standort</td><td>${safe.location}</td></tr>` : ''}
             </table>
+            ${safe.request ? `<div style="padding:16px 18px;margin-bottom:22px;background:#17150f;border-left:3px solid #e7c56a"><strong style="color:#e7c56a;font-size:12px">ANLIEGEN</strong><p style="margin:8px 0 0;line-height:1.6">${safe.request}</p></div>` : ''}
             ${safe.summary ? `<div style="padding:16px 18px;margin-bottom:22px;background:#17150f;border-left:3px solid #e7c56a"><strong style="color:#e7c56a;font-size:12px">AILA-ZUSAMMENFASSUNG</strong><p style="margin:8px 0 0;line-height:1.6">${safe.summary}</p></div>` : ''}
-            <h2 style="font-size:14px;color:#e7c56a;margin:20px 0 4px">Gewünscht / Ziele</h2>${htmlList(goals)}
-            <h2 style="font-size:14px;color:#e7c56a;margin:20px 0 4px">Probleme</h2>${htmlList(problems)}
-            <h2 style="font-size:14px;color:#e7c56a;margin:20px 0 4px">Nicht gewünscht / ausgeschlossen</h2>${htmlList(notWanted)}
-            <h2 style="font-size:14px;color:#e7c56a;margin:20px 0 4px">Empfohlene Leistungen</h2>${htmlList(recommendedServices)}
+            ${hasConversationContext ? `
+              <h2 style="font-size:14px;color:#e7c56a;margin:20px 0 4px">Gewünscht / Ziele</h2>${htmlList(goals)}
+              <h2 style="font-size:14px;color:#e7c56a;margin:20px 0 4px">Probleme</h2>${htmlList(problems)}
+              <h2 style="font-size:14px;color:#e7c56a;margin:20px 0 4px">Nicht gewünscht / ausgeschlossen</h2>${htmlList(notWanted)}
+              <h2 style="font-size:14px;color:#e7c56a;margin:20px 0 4px">Empfohlene Leistungen</h2>${htmlList(recommendedServices)}
+            ` : ''}
             <div style="margin-top:28px">
               <a href="mailto:${safe.email}?subject=Ihre Anfrage bei Marcel Spahr" style="display:inline-block;padding:12px 20px;background:#e7c56a;color:#0d0e0c;text-decoration:none;font-weight:700">Direkt antworten</a>
               <a href="https://www.marcelspahr.ch/dashboard/kontakt" style="display:inline-block;padding:12px 16px;color:#e7c56a;text-decoration:none">Im CRM öffnen →</a>
@@ -205,10 +230,12 @@ export async function POST(request: NextRequest) {
     const customerMail = await resend.emails.send({
       from: 'Marcel Spahr <kontakt@marcelspahr.ch>',
       to: email,
-      subject: language === 'en' ? 'Your conversation with AILA has reached me.' : 'Dein Gespräch mit AILA ist bei mir angekommen.',
+      subject: hasConversationContext
+        ? language === 'en' ? 'Your conversation with AILA has reached me.' : 'Dein Gespräch mit AILA ist bei mir angekommen.'
+        : language === 'en' ? 'Your enquiry has reached me.' : 'Deine Anfrage ist bei mir angekommen.',
       html: language === 'en'
-        ? `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#20231f"><h1>Thank you, ${safe.name}.</h1><p>Your details and the context from your conversation with AILA have reached me. I will review everything personally and contact you within two business days.</p><p>Kind regards<br><strong>Marcel Spahr</strong></p></div>`
-        : `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#20231f"><h1>Danke, ${safe.name}.</h1><p>Deine Kontaktdaten und der Kontext aus deinem Gespräch mit AILA sind bei mir angekommen. Ich prüfe alles persönlich und melde mich innerhalb von zwei Arbeitstagen.</p><p>Freundliche Grüsse<br><strong>Marcel Spahr</strong></p></div>`,
+        ? `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#20231f"><h1>Thank you, ${safe.name}.</h1><p>${hasConversationContext ? 'Your details and the context from your conversation with AILA' : 'Your contact details and enquiry'} have reached me. I will review everything personally and contact you within two business days.</p><p>Kind regards<br><strong>Marcel Spahr</strong></p></div>`
+        : `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#20231f"><h1>Danke, ${safe.name}.</h1><p>${hasConversationContext ? 'Deine Kontaktdaten und der Kontext aus deinem Gespräch mit AILA' : 'Deine Kontaktdaten und dein Anliegen'} sind bei mir angekommen. Ich prüfe alles persönlich und melde mich innerhalb von zwei Arbeitstagen.</p><p>Freundliche Grüsse<br><strong>Marcel Spahr</strong></p></div>`,
     });
     if (customerMail.error) console.error('[aila-lead] Customer confirmation:', customerMail.error.message);
 
