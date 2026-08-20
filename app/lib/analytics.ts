@@ -11,7 +11,17 @@ export type WebsiteEventName =
   | 'form_step'
   | 'form_submit'
   | 'form_success'
-  | 'form_error';
+  | 'form_error'
+  | 'aila_opened'
+  | 'aila_message_sent'
+  | 'aila_voice_used'
+  | 'aila_industry_detected'
+  | 'aila_problem_detected'
+  | 'aila_solution_shown'
+  | 'aila_service_clicked'
+  | 'aila_contact_requested'
+  | 'aila_booking_started'
+  | 'aila_handover';
 
 export type WebsiteFormId = 'consultation' | 'project' | 'ki';
 
@@ -93,4 +103,3 @@ export function trackWebsiteEvent(
     // Analytics must never interrupt the public experience.
   });
 }
-

@@ -1,6 +1,8 @@
 'use client';
 
 import { ArrowRight, Check, X } from 'lucide-react';
+import { buildAilaLeadObject } from '@/app/lib/aila/engine';
+import { trackWebsiteEvent } from '@/app/lib/analytics';
 import { openJourneyLeadForm } from '@/app/lib/journeyNavigation';
 import type { AilaRecommendation, AilaSalesContext } from '@/app/lib/aila/types';
 import type { ExperienceLang } from './content';
@@ -75,6 +77,13 @@ export default function AilaSolutionPreview({
           type="button"
           onClick={() => {
             window.dispatchEvent(new CustomEvent('aila:guide-state', { detail: { state: 'success' } }));
+            window.dispatchEvent(new CustomEvent('aila:handover', { detail: buildAilaLeadObject(context) }));
+            trackWebsiteEvent('aila_contact_requested', {
+              metadata: { stage: context.currentStage, lead_temperature: context.leadTemperature },
+            });
+            trackWebsiteEvent('aila_handover', {
+              metadata: { stage: context.currentStage, lead_temperature: context.leadTemperature },
+            });
             openJourneyLeadForm('consultation', { ctaId: 'aila-solution-handover' });
           }}
         >

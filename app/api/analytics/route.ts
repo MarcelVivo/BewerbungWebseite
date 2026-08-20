@@ -5,9 +5,17 @@ const EVENT_NAMES = new Set([
   'page_view', 'page_exit', 'journey_station_view', 'journey_navigation',
   'cta_click', 'form_open', 'form_start', 'form_step', 'form_submit',
   'form_success', 'form_error',
+  'aila_opened', 'aila_message_sent', 'aila_voice_used',
+  'aila_industry_detected', 'aila_problem_detected', 'aila_solution_shown',
+  'aila_service_clicked', 'aila_contact_requested', 'aila_booking_started',
+  'aila_handover',
 ]);
 const FORM_IDS = new Set(['consultation', 'project', 'ki']);
-const META_KEYS = new Set(['duration_seconds', 'station_index', 'from_station', 'to_station', 'error_type']);
+const META_KEYS = new Set([
+  'duration_seconds', 'station_index', 'from_station', 'to_station', 'error_type',
+  'input_mode', 'stage', 'lead_temperature', 'service_id', 'service_count',
+  'detected',
+]);
 
 function text(value: unknown, max: number) {
   return typeof value === 'string' ? value.trim().slice(0, max) || null : null;

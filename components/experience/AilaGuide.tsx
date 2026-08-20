@@ -2,7 +2,8 @@
 
 import { ArrowRight, LoaderCircle, Mic, Send, Volume2, VolumeX, X } from 'lucide-react';
 import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from 'react';
-import { createInitialAilaSalesContext, sanitizeAilaSalesContext } from '@/app/lib/aila/engine';
+import { buildAilaLeadObject, createInitialAilaSalesContext, sanitizeAilaSalesContext } from '@/app/lib/aila/engine';
+import { trackWebsiteEvent } from '@/app/lib/analytics';
 import { openJourneyLeadForm } from '@/app/lib/journeyNavigation';
 import type {
   AilaAnimationState,
@@ -146,6 +147,7 @@ export default function AilaGuide({
   const [quickReplies, setQuickReplies] = useState<string[]>([...common.prompts]);
   const [lastRecommendation, setLastRecommendation] = useState<AilaRecommendation | undefined>();
   const hasWelcomedRef = useRef(false);
+  const wasOpenRef = useRef(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const primedAudioRef = useRef<HTMLAudioElement | null>(null);
   const audioUrlRef = useRef('');
@@ -196,6 +198,13 @@ export default function AilaGuide({
     recorderRef.current = null;
     setRecording(false);
   };
+
+  useEffect(() => {
+    if (open && !wasOpenRef.current) {
+      trackWebsiteEvent('aila_opened', { station: sectionId });
+    }
+    wasOpenRef.current = open;
+  }, [open, sectionId]);
 
   useEffect(() => {
     if (!open) return;
@@ -297,10 +306,31 @@ export default function AilaGuide({
         detail: { action, recommendation, context },
       }));
       if (action.type === 'OPEN_CONTACT') {
+        const lead = buildAilaLeadObject(context);
+        window.dispatchEvent(new CustomEvent('aila:handover', { detail: lead }));
+        trackWebsiteEvent('aila_contact_requested', {
+          metadata: { stage: context.currentStage, lead_temperature: context.leadTemperature },
+        });
+        trackWebsiteEvent('aila_handover', {
+          metadata: { stage: context.currentStage, lead_temperature: context.leadTemperature },
+        });
         openJourneyLeadForm('consultation', { ctaId: 'aila-contact-handover' });
       }
       if (action.type === 'OPEN_PROJECT_FLOW') {
+        window.dispatchEvent(new CustomEvent('aila:handover', { detail: buildAilaLeadObject(context) }));
+        trackWebsiteEvent('aila_handover', {
+          metadata: { stage: context.currentStage, lead_temperature: context.leadTemperature },
+        });
         openJourneyLeadForm('project', { ctaId: 'aila-project-flow' });
+      }
+      if (action.type === 'SHOW_SOLUTION' || action.type === 'SHOW_RECOMMENDATION') {
+        trackWebsiteEvent('aila_solution_shown', {
+          metadata: {
+            stage: context.currentStage,
+            lead_temperature: context.leadTemperature,
+            service_count: recommendation?.services.length ?? 0,
+          },
+        });
       }
     });
   };
@@ -312,6 +342,10 @@ export default function AilaGuide({
     const prior = messages.filter((message) => message.content !== common.welcome);
     const userMessage: ChatMessage = { id: messageId(), role: 'user', content: question };
     setMessages((current) => [...current, userMessage]);
+    trackWebsiteEvent('aila_message_sent', {
+      station: sectionId,
+      metadata: { input_mode: inputMode, stage: salesContext.currentStage },
+    });
     setInput('');
     setBusy(true);
     onStateChange('thinking');
@@ -342,6 +376,16 @@ export default function AilaGuide({
         : [];
       setMessages((current) => [...current, { id: messageId(), role: 'assistant', content: answer }]);
       setSalesContext(nextContext);
+      if (!salesContext.industry && nextContext.industry) {
+        trackWebsiteEvent('aila_industry_detected', {
+          metadata: { detected: true, stage: nextContext.currentStage },
+        });
+      }
+      if (!salesContext.primaryProblem && nextContext.primaryProblem) {
+        trackWebsiteEvent('aila_problem_detected', {
+          metadata: { detected: true, stage: nextContext.currentStage },
+        });
+      }
       setQuickReplies(nextReplies);
       setLastRecommendation(recommendation);
       setLastAnswer(answer);
@@ -455,6 +499,10 @@ export default function AilaGuide({
       return;
     }
     try {
+      trackWebsiteEvent('aila_voice_used', {
+        station: sectionId,
+        metadata: { stage: salesContext.currentStage },
+      });
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
         video: false,
@@ -560,7 +608,12 @@ export default function AilaGuide({
 
       <footer>
         {sectionId !== 'journey-contact' && <button type="button" onClick={() => onNavigate(nextSectionId)}>{common.next}<ArrowRight size={14} /></button>}
-        <button type="button" onClick={() => openJourneyLeadForm('consultation', { ctaId: 'aila-footer-contact' })}>{common.contact}<ArrowRight size={14} /></button>
+        <button type="button" onClick={() => {
+          window.dispatchEvent(new CustomEvent('aila:handover', { detail: buildAilaLeadObject(salesContext) }));
+          trackWebsiteEvent('aila_contact_requested', { metadata: { stage: salesContext.currentStage, lead_temperature: salesContext.leadTemperature } });
+          trackWebsiteEvent('aila_handover', { metadata: { stage: salesContext.currentStage, lead_temperature: salesContext.leadTemperature } });
+          openJourneyLeadForm('consultation', { ctaId: 'aila-footer-contact' });
+        }}>{common.contact}<ArrowRight size={14} /></button>
       </footer>
       {process.env.NODE_ENV !== 'production' && (
         <details className={styles.ailaGuideDebug}>
