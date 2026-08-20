@@ -52,6 +52,7 @@
   pointer-events: none;
   transform-origin: center;
   will-change: transform, opacity;
+  transition: opacity .28s ease, filter .28s ease;
   contain: layout style;
   /* Titles now have their own foreground depth layer, so the organism can be
      composited normally and retain its solid body, contrast and dark details. */
@@ -122,6 +123,13 @@
   pointer-events: none;
   mix-blend-mode: screen;
   opacity: .92;
+  transition: opacity .28s ease;
+}
+
+.scrollEntity[data-suppressed='true'],
+.scrollEntityTrail[data-suppressed='true'] {
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 .scrollEntity::before {

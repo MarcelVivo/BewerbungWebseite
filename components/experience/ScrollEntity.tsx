@@ -30,6 +30,7 @@ import styles from './experience.module.css';
 
 type ScrollEntityProps = {
   rootRef: RefObject<HTMLDivElement | null>;
+  suppressed?: boolean;
 };
 
 type ResolvedPoint = ResolvedFlightPathPoint;
@@ -83,7 +84,7 @@ const AILA_SWITCH_OUT_MS = 140;
 const AILA_SWITCH_IN_MS = 320;
 const AILA_SWITCH_STRENGTH = 0.34;
 
-export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
+export default function ScrollEntity({ rootRef, suppressed = false }: ScrollEntityProps) {
   const entityRef = useRef<HTMLDivElement | null>(null);
   const trailRef = useRef<HTMLCanvasElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -1159,11 +1160,13 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
 
   return (
     <>
-      <canvas ref={trailRef} className={styles.scrollEntityTrail} aria-hidden="true" />
+      <canvas ref={trailRef} className={styles.scrollEntityTrail} data-suppressed={suppressed ? 'true' : 'false'} aria-hidden="true" />
       <div
         ref={entityRef}
         className={styles.scrollEntity}
+        data-suppressed={suppressed ? 'true' : 'false'}
         data-scroll-path-follower
+        aria-hidden={suppressed}
         style={{
           left: `${getFlightPathDraft().start.x}vw`,
           top: `${getFlightPathDraft().start.y}vh`,
@@ -1177,6 +1180,7 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
           className={styles.scrollEntityGrabSurface}
           aria-label="AILAs interaktive Demonstration starten"
           aria-pressed="false"
+          disabled={suppressed}
         />
         <video
           ref={videoRef}

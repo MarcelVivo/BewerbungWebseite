@@ -558,7 +558,7 @@ export default function MarcelExperience() {
     <div ref={rootRef} className={`${styles.experience} experience-root`} data-hero-phase={heroPhase}>
       <a className={styles.skipLink} href="#main-content">{c.skip}</a>
       <ExperienceNav lang={lang} />
-      <ScrollEntity rootRef={rootRef} />
+      <ScrollEntity rootRef={rootRef} suppressed={activeOperatingModule !== null} />
 
       <main id="main-content">
         <section ref={heroSectionRef} id="journey-start" className={styles.hero} onPointerMove={onHeroPointer}>
