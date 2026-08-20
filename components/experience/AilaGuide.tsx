@@ -70,8 +70,40 @@ const COMMON = {
 
 type ChatMessage = { id: string; role: 'user' | 'assistant'; content: string };
 type AilaConversationState = 'thinking' | 'speaking' | 'idle';
+type WavRecorder = { stop: () => Promise<Blob>; cancel: () => void };
 
 const messageId = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+const encodeWav = (chunks: Float32Array[], sampleRate: number) => {
+  const sampleCount = chunks.reduce((total, chunk) => total + chunk.length, 0);
+  const buffer = new ArrayBuffer(44 + sampleCount * 2);
+  const view = new DataView(buffer);
+  const writeText = (offset: number, value: string) => {
+    for (let index = 0; index < value.length; index += 1) view.setUint8(offset + index, value.charCodeAt(index));
+  };
+  writeText(0, 'RIFF');
+  view.setUint32(4, 36 + sampleCount * 2, true);
+  writeText(8, 'WAVE');
+  writeText(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  writeText(36, 'data');
+  view.setUint32(40, sampleCount * 2, true);
+  let offset = 44;
+  chunks.forEach((chunk) => {
+    for (let index = 0; index < chunk.length; index += 1) {
+      const sample = Math.max(-1, Math.min(1, chunk[index]));
+      view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
+      offset += 2;
+    }
+  });
+  return new Blob([buffer], { type: 'audio/wav' });
+};
 
 export default function AilaGuide({
   open,
@@ -103,6 +135,7 @@ export default function AilaGuide({
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioUrlRef = useRef('');
   const recorderRef = useRef<MediaRecorder | null>(null);
+  const wavRecorderRef = useRef<WavRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const historyRef = useRef<HTMLDivElement | null>(null);
@@ -130,6 +163,8 @@ export default function AilaGuide({
       recorder.onstop = null;
       recorder.stop();
     }
+    wavRecorderRef.current?.cancel();
+    wavRecorderRef.current = null;
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
     recorderRef.current = null;
@@ -236,59 +271,132 @@ export default function AilaGuide({
     void ask(input);
   };
 
+  const transcribeRecording = async (blob: Blob) => {
+    setRecording(false);
+    if (!blob.size) {
+      onStateChange('idle');
+      return;
+    }
+    setBusy(true);
+    onStateChange('thinking');
+    try {
+      const form = new FormData();
+      const extension = blob.type.includes('mp4') ? 'm4a' : blob.type.includes('ogg') ? 'ogg' : blob.type.includes('wav') ? 'wav' : 'webm';
+      form.append('audio', new File([blob], `aila-question.${extension}`, { type: blob.type }));
+      form.append('lang', lang);
+      const response = await fetch('/api/aila/transcribe', { method: 'POST', body: form });
+      const payload = await response.json();
+      if (!response.ok || typeof payload?.text !== 'string' || !payload.text.trim()) throw new Error('transcription failed');
+      setBusy(false);
+      await ask(payload.text);
+    } catch {
+      setMessages((current) => [...current, { id: messageId(), role: 'assistant', content: common.error }]);
+      setBusy(false);
+      onStateChange('idle');
+    }
+  };
+
+  const startWavRecorder = async (stream: MediaStream) => {
+    const AudioContextConstructor = window.AudioContext
+      || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AudioContextConstructor) throw new Error('audio context unavailable');
+    const context = new AudioContextConstructor();
+    if (context.state === 'suspended') await context.resume();
+    const source = context.createMediaStreamSource(stream);
+    const processor = context.createScriptProcessor(4096, 1, 1);
+    const mutedOutput = context.createGain();
+    const samples: Float32Array[] = [];
+    const sampleRate = context.sampleRate;
+    mutedOutput.gain.value = 0;
+    processor.onaudioprocess = (event) => samples.push(new Float32Array(event.inputBuffer.getChannelData(0)));
+    source.connect(processor);
+    processor.connect(mutedOutput);
+    mutedOutput.connect(context.destination);
+    let stopped = false;
+    const disconnect = () => {
+      processor.onaudioprocess = null;
+      source.disconnect();
+      processor.disconnect();
+      mutedOutput.disconnect();
+      stream.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    };
+    wavRecorderRef.current = {
+      stop: async () => {
+        if (stopped) return new Blob([], { type: 'audio/wav' });
+        stopped = true;
+        disconnect();
+        await context.close();
+        return encodeWav(samples, sampleRate);
+      },
+      cancel: () => {
+        if (stopped) return;
+        stopped = true;
+        disconnect();
+        void context.close();
+      },
+    };
+  };
+
   const toggleRecording = async () => {
     if (recording) {
-      recorderRef.current?.stop();
+      if (recorderRef.current?.state === 'recording') {
+        recorderRef.current.stop();
+        return;
+      }
+      if (wavRecorderRef.current) {
+        const wavRecorder = wavRecorderRef.current;
+        wavRecorderRef.current = null;
+        await transcribeRecording(await wavRecorder.stop());
+      }
       return;
     }
     if (!window.isSecureContext) {
       setMessages((current) => [...current, { id: messageId(), role: 'assistant', content: common.micSecure }]);
       return;
     }
-    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
+    if (!navigator.mediaDevices?.getUserMedia) {
       setMessages((current) => [...current, { id: messageId(), role: 'assistant', content: common.micUnsupported }]);
       return;
     }
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mimeTypes = ['audio/mp4;codecs=mp4a.40.2', 'audio/mp4', 'audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus'];
-      const mimeType = typeof MediaRecorder.isTypeSupported === 'function'
-        ? mimeTypes.find((type) => MediaRecorder.isTypeSupported(type)) || ''
-        : '';
-      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+        video: false,
+      });
       streamRef.current = stream;
-      recorderRef.current = recorder;
-      chunksRef.current = [];
-      recorder.ondataavailable = (event) => { if (event.data.size) chunksRef.current.push(event.data); };
-      recorder.onstop = async () => {
-        const blob = new Blob(chunksRef.current, { type: recorder.mimeType || 'audio/webm' });
-        stream.getTracks().forEach((track) => track.stop());
-        streamRef.current = null;
-        recorderRef.current = null;
-        setRecording(false);
-        if (!blob.size) return;
-        setBusy(true);
-        onStateChange('thinking');
+      let recorder: MediaRecorder | null = null;
+      if (typeof MediaRecorder !== 'undefined') {
         try {
-          const form = new FormData();
-          const extension = blob.type.includes('mp4') ? 'm4a' : blob.type.includes('ogg') ? 'ogg' : 'webm';
-          form.append('audio', new File([blob], `aila-question.${extension}`, { type: blob.type }));
-          form.append('lang', lang);
-          const response = await fetch('/api/aila/transcribe', { method: 'POST', body: form });
-          const payload = await response.json();
-          if (!response.ok || typeof payload?.text !== 'string') throw new Error('transcription failed');
-          setBusy(false);
-          await ask(payload.text);
+          const mimeTypes = ['audio/webm;codecs=opus', 'audio/ogg;codecs=opus', 'audio/mp4;codecs=mp4a.40.2', 'audio/mp4', 'audio/webm'];
+          const mimeType = typeof MediaRecorder.isTypeSupported === 'function'
+            ? mimeTypes.find((type) => MediaRecorder.isTypeSupported(type)) || ''
+            : '';
+          recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
         } catch {
-          setMessages((current) => [...current, { id: messageId(), role: 'assistant', content: common.error }]);
-          setBusy(false);
-          onStateChange('idle');
+          recorder = null;
         }
-      };
-      recorder.start();
+      }
+      if (recorder) {
+        recorderRef.current = recorder;
+        chunksRef.current = [];
+        recorder.ondataavailable = (event) => { if (event.data.size) chunksRef.current.push(event.data); };
+        recorder.onstop = async () => {
+          const blob = new Blob(chunksRef.current, { type: recorder.mimeType || 'audio/webm' });
+          stream.getTracks().forEach((track) => track.stop());
+          streamRef.current = null;
+          recorderRef.current = null;
+          await transcribeRecording(blob);
+        };
+        recorder.start(250);
+      } else {
+        await startWavRecorder(stream);
+      }
       setRecording(true);
       onStateChange('idle');
     } catch (error) {
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
       const name = error instanceof DOMException ? error.name : '';
       const content = name === 'NotAllowedError' || name === 'SecurityError'
         ? common.micPermission
