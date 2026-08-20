@@ -396,6 +396,10 @@
 .ailaContactKicker { color: var(--gold-light); font: 650 .48rem/1 var(--font-chakra-petch), monospace; letter-spacing: .14em; }
 .ailaContactCapture > h3 { margin: .7rem 0 0; color: #f0efe7; font-size: 1.18rem; font-weight: 620; line-height: 1.15; letter-spacing: -.025em; }
 .ailaContactCapture > p { margin: .48rem 0 0; color: #aeb2aa; font-size: .68rem; line-height: 1.5; }
+.ailaContactAilaCta { width: 100%; min-height: 3.2rem; margin-top: .85rem; padding: .7rem .85rem; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: .65rem; border: 1px solid rgba(231,197,106,.58); background: linear-gradient(105deg, rgba(200,154,61,.2), rgba(200,154,61,.07)); color: #fff2bf; text-align: left; cursor: pointer; transition: border-color .2s ease, background .2s ease, transform .2s ease; }
+.ailaContactAilaCta strong { font-size: .72rem; font-weight: 680; }
+.ailaContactAilaCta > svg:first-child { color: var(--gold-light); }
+.ailaContactAilaCta:hover { border-color: rgba(255,226,139,.86); background: linear-gradient(105deg, rgba(200,154,61,.29), rgba(200,154,61,.1)); transform: translateY(-1px); }
 .ailaContactContext { margin-top: .8rem; display: grid; gap: .3rem; }
 .ailaContactContext > span { color: #d8d8cf; font-size: .6rem; font-weight: 650; }
 .ailaContactContext textarea { min-width: 0; min-height: 4.6rem; padding: .65rem .7rem; resize: vertical; border: 1px solid rgba(231,197,106,.28); border-radius: 0; outline: none; background: rgba(200,154,61,.035); color: #efefe8; font: 500 .69rem/1.5 inherit; }
@@ -413,6 +417,7 @@
 .ailaContactActions { margin-top: .8rem; display: flex; align-items: stretch; justify-content: space-between; gap: .5rem; }
 .ailaContactActions button { min-height: 2.45rem; padding: .58rem .7rem; display: inline-flex; align-items: center; justify-content: center; gap: .38rem; border: 1px solid rgba(255,255,255,.11); background: transparent; color: #aeb2aa; font-size: .58rem; font-weight: 620; cursor: pointer; }
 .ailaContactActions button:last-child { flex: 1; border-color: rgba(231,197,106,.48); background: rgba(200,154,61,.1); color: #fff4c7; }
+.ailaContactActions[data-direct='true'] button { width: 100%; }
 .ailaContactActions button:disabled { opacity: .45; cursor: wait; }
 .ailaContactSuccess { margin: 1.2rem 0 .3rem; padding: 1.25rem; display: grid; justify-items: start; border: 1px solid rgba(121,207,146,.24); border-left: 2px solid #79cf92; background: rgba(121,207,146,.055); }
 .ailaContactSuccess > span { width: 2.2rem; height: 2.2rem; display: grid; place-items: center; border: 1px solid rgba(121,207,146,.28); color: #9fd7af; }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState, type FormEvent } from 'react';
-import { ArrowLeft, ArrowRight, Check, LoaderCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, AudioLines, Check, LoaderCircle } from 'lucide-react';
 import { trackWebsiteEvent } from '@/app/lib/analytics';
 import type { AilaLeadObject, AilaRecommendation } from '@/app/lib/aila/types';
 import type { ExperienceLang } from './content';
@@ -33,6 +33,7 @@ export default function AilaContactCapture({
         intro: 'AILA sendet deine Kontaktdaten zusammen mit den Erkenntnissen aus diesem Gespräch. Du musst nichts nochmals erklären.',
         directIntro: 'Beschreibe kurz, worum es geht. So kann Marcel deine Anfrage sinnvoll einordnen und vorbereitet antworten.',
         request: 'Worum geht es?', requestPlaceholder: 'Was möchtest du verbessern, lösen oder erreichen?',
+        consult: 'Anliegen mit AILA klären',
         name: 'Name', email: 'E-Mail', phone: 'Telefonnummer', company: 'Unternehmen (optional)',
         consentA: 'Ich habe die ', consentLink: 'Datenschutzerklärung', consentB: ' gelesen und stimme der Kontaktaufnahme sowie der Übermittlung dieses AILA-Gesprächs zu.',
         directConsentB: ' gelesen und stimme der Kontaktaufnahme sowie der Übermittlung meiner Angaben zu.',
@@ -46,6 +47,7 @@ export default function AilaContactCapture({
         intro: 'AILA sends your contact details together with the insights from this conversation. You will not need to explain everything again.',
         directIntro: 'Briefly describe what you need so Marcel can assess your enquiry and respond prepared.',
         request: 'What is this about?', requestPlaceholder: 'What would you like to improve, solve or achieve?',
+        consult: 'Clarify your request with AILA',
         name: 'Name', email: 'Email', phone: 'Phone number', company: 'Company (optional)',
         consentA: 'I have read the ', consentLink: 'privacy policy', consentB: ' and agree to being contacted and to this AILA conversation being transmitted.',
         directConsentB: ' and agree to being contacted and to my information being transmitted.',
@@ -132,18 +134,25 @@ export default function AilaContactCapture({
       <h3>{copy.title}</h3>
       <p>{hasConversationContext ? copy.intro : copy.directIntro}</p>
       {!hasConversationContext && (
-        <label className={styles.ailaContactContext}>
-          <span>{copy.request}</span>
-          <textarea
-            value={requestContext}
-            onChange={(event) => { setRequestContext(event.target.value); setError(''); }}
-            placeholder={copy.requestPlaceholder}
-            rows={3}
-            minLength={10}
-            maxLength={1600}
-            required
-          />
-        </label>
+        <>
+          <button type="button" className={styles.ailaContactAilaCta} onClick={onBack}>
+            <AudioLines size={18} />
+            <strong>{copy.consult}</strong>
+            <ArrowRight size={17} />
+          </button>
+          <label className={styles.ailaContactContext}>
+            <span>{copy.request}</span>
+            <textarea
+              value={requestContext}
+              onChange={(event) => { setRequestContext(event.target.value); setError(''); }}
+              placeholder={copy.requestPlaceholder}
+              rows={3}
+              minLength={10}
+              maxLength={1600}
+              required
+            />
+          </label>
+        </>
       )}
       <div className={styles.ailaContactFields}>
         <label><span>{copy.name}</span><input value={contact.name} onChange={(event) => set('name', event.target.value)} autoComplete="name" required /></label>
@@ -157,8 +166,8 @@ export default function AilaContactCapture({
       </label>
       <label className={styles.honeypot} aria-hidden="true">Website<input value={hpWebsite} onChange={(event) => setHpWebsite(event.target.value)} tabIndex={-1} autoComplete="off" /></label>
       {error && <p className={styles.ailaContactError} role="alert">{error}</p>}
-      <div className={styles.ailaContactActions}>
-        <button type="button" onClick={onBack} disabled={submitting}><ArrowLeft size={14} />{copy.back}</button>
+      <div className={styles.ailaContactActions} data-direct={!hasConversationContext}>
+        {hasConversationContext && <button type="button" onClick={onBack} disabled={submitting}><ArrowLeft size={14} />{copy.back}</button>}
         <button type="submit" disabled={submitting}>{submitting ? <LoaderCircle className={styles.spinner} size={15} /> : <Check size={15} />}<span>{submitting ? copy.sending : copy.send}</span><ArrowRight size={15} /></button>
       </div>
     </form>
