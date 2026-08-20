@@ -87,6 +87,7 @@ const AILA_THINKING_VIDEO = '/cinematic/aila/aila-thinking-v1-pingpong-greenscre
 const AILA_SPEAKING_VIDEO = '/cinematic/aila/aila-speaking-v1-greenscreen.mp4';
 const AILA_CTA_VIDEO = '/cinematic/aila/aila-cta-v1-greenscreen.mp4';
 type AilaVideoMode = 'idle' | 'attention' | 'thinking' | 'speaking' | 'cta' | 'confirmation';
+type AilaConversationState = 'thinking' | 'speaking' | 'idle';
 type AilaSwitchPhase = 'none' | 'out' | 'loading' | 'in';
 const AILA_SWITCH_OUT_MS = 140;
 const AILA_SWITCH_IN_MS = 320;
@@ -134,20 +135,25 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
     const entity = entityRef.current;
     if (!entity || (rootRef.current?.dataset.heroPhase ?? 'loading') !== 'revealed') return;
     const rect = entity.getBoundingClientRect();
-    const panelWidth = Math.min(390, window.innerWidth - 32);
-    const panelHeight = 390;
+    const panelWidth = Math.min(430, window.innerWidth - 32);
+    const panelHeight = Math.min(680, window.innerHeight - 36);
     const centerX = rect.left + rect.width / 2;
     const desiredX = centerX < window.innerWidth / 2 ? rect.right - rect.width * .08 : rect.left - panelWidth + rect.width * .08;
     const x = Math.max(16, Math.min(window.innerWidth - panelWidth - (window.innerWidth > 900 ? 170 : 16), desiredX));
-    const y = Math.max(82, Math.min(window.innerHeight - panelHeight - 18, rect.top + rect.height * .08));
+    const minimumY = window.innerHeight > 760 ? 82 : 16;
+    const maximumY = Math.max(minimumY, window.innerHeight - panelHeight - 18);
+    const y = Math.max(minimumY, Math.min(maximumY, rect.top + rect.height * .08));
     const section = currentSection();
     setGuide({ open: true, sectionId: section.id, x, y });
   };
 
-  const closeGuide = () => setGuide((current) => ({ ...current, open: false }));
+  const closeGuide = () => {
+    setGuide((current) => ({ ...current, open: false }));
+    window.dispatchEvent(new CustomEvent('aila:guide-state', { detail: { state: 'idle' } }));
+  };
 
-  const reactToGuidePrompt = () => {
-    window.dispatchEvent(new CustomEvent('aila:guide-response'));
+  const setAilaConversationState = (state: AilaConversationState) => {
+    window.dispatchEvent(new CustomEvent('aila:guide-state', { detail: { state } }));
   };
 
   const navigateFromGuide = (target: string) => {
@@ -331,6 +337,7 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
     let switchPhaseStartedAt = 0;
     let switchTimer = 0;
     let confirmationTimer = 0;
+    let guideControlled = false;
     const supportsVideoFrameCallback = typeof video.requestVideoFrameCallback === 'function';
     let videoFrameCallbackHandle = 0;
     const scheduleVideoFrameCallback = () => {
@@ -360,7 +367,7 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
       videoMode = mode;
       entity.dataset.ailaState = mode;
       interaction.setAttribute('aria-pressed', String(mode !== 'idle'));
-      video.loop = mode === 'idle';
+      video.loop = mode === 'idle' || (guideControlled && (mode === 'thinking' || mode === 'speaking'));
       video.src = source;
       video.load();
       newVideoFrameAvailable = true;
@@ -406,6 +413,7 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
     };
 
     const advanceVideoState = () => {
+      if (guideControlled) return;
       if (videoMode === 'attention') {
         beginVideoSwitch(AILA_THINKING_VIDEO, 'thinking');
         return;
@@ -422,6 +430,7 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
     };
 
     const recoverIdle = () => {
+      guideControlled = false;
       if (videoMode === 'idle') return;
       finishSwitchEffect();
       applyVideoSource(AILA_IDLE_VIDEO, 'idle');
@@ -443,9 +452,18 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
       }
     };
 
-    const handleGuideResponse = () => triggerAttention();
+    const handleGuideState = (event: Event) => {
+      const state = (event as CustomEvent<{ state?: AilaConversationState }>).detail?.state;
+      if (state === 'idle') {
+        recoverIdle();
+        return;
+      }
+      if (state !== 'thinking' && state !== 'speaking') return;
+      guideControlled = true;
+      beginVideoSwitch(state === 'thinking' ? AILA_THINKING_VIDEO : AILA_SPEAKING_VIDEO, state);
+    };
     interaction.addEventListener('click', triggerAttention);
-    window.addEventListener('aila:guide-response', handleGuideResponse);
+    window.addEventListener('aila:guide-state', handleGuideState);
     video.addEventListener('ended', advanceVideoState);
     video.addEventListener('error', recoverIdle);
     video.addEventListener('loadeddata', handleVideoLoaded);
@@ -1259,7 +1277,7 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
       if (supportsVideoFrameCallback) video.cancelVideoFrameCallback(videoFrameCallbackHandle);
       video.pause();
       interaction.removeEventListener('click', triggerAttention);
-      window.removeEventListener('aila:guide-response', handleGuideResponse);
+      window.removeEventListener('aila:guide-state', handleGuideState);
       video.removeEventListener('ended', advanceVideoState);
       video.removeEventListener('error', recoverIdle);
       video.removeEventListener('loadeddata', handleVideoLoaded);
@@ -1343,7 +1361,7 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
         position={{ x: guide.x, y: guide.y }}
         nextSectionId={chapters[Math.min(chapters.length - 1, Math.max(0, chapters.findIndex((chapter) => chapter.id === guide.sectionId) + 1))].id}
         onClose={closeGuide}
-        onRespond={reactToGuidePrompt}
+        onStateChange={setAilaConversationState}
         onNavigate={navigateFromGuide}
       />
       <output ref={debugRef} className={styles.scrollPathDebug} hidden aria-live="off" />

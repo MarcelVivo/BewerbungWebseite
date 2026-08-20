@@ -17,7 +17,7 @@ const C: Record<'de' | 'en', { title: string; subtitle: string; back: string; up
     title: 'Datenschutzerklärung',
     subtitle: 'Gemäss Schweizer Bundesgesetz über den Datenschutz (nDSG)',
     back: '← Zurück zur Startseite',
-    updated: 'Stand: Juli 2026',
+    updated: 'Stand: August 2026',
     sections: [
       {
         heading: '1. Verantwortlicher',
@@ -29,7 +29,7 @@ const C: Record<'de' | 'en', { title: string; subtitle: string; back: string; up
       {
         heading: '2. Grundsatz',
         paragraphs: [
-          'Ich erhebe und verarbeite nur jene personenbezogenen Daten, die für die Erbringung meiner Dienstleistungen und den Betrieb dieser Website notwendig sind. Eine Weitergabe an Dritte erfolgt ausschliesslich in dem Umfang, der für den Betrieb der Website technisch erforderlich ist (Hosting, E-Mail-Versand).',
+          'Ich erhebe und verarbeite nur jene personenbezogenen Daten, die für die Erbringung meiner Dienstleistungen und den Betrieb dieser Website notwendig sind. Eine Weitergabe an Dritte erfolgt ausschliesslich in dem Umfang, der für den Betrieb der Website technisch erforderlich ist (Hosting, E-Mail-Versand, KI-Dialog).',
         ],
       },
       {
@@ -48,20 +48,27 @@ const C: Record<'de' | 'en', { title: string; subtitle: string; back: string; up
         ],
       },
       {
-        heading: '3.2 Server-Logs',
+        heading: '3.2 AILA KI-Dialog und Spracherkennung',
+        paragraphs: [
+          'Wenn Sie AILA nutzen, werden Ihre eingegebenen Fragen und die für die Antwort erforderlichen Gesprächsteile über die OpenAI API verarbeitet. Bei aktivierter Spracheingabe wird zusätzlich die Aufnahme zur Transkription übermittelt; bei aktivierter Sprachausgabe wird der Antworttext zur Erzeugung einer synthetischen KI-Stimme verarbeitet. Bitte geben Sie keine vertraulichen oder besonders schützenswerten Personendaten ein.',
+          'Die Verarbeitung dient ausschliesslich der Beantwortung Ihrer Frage. Die Anwendung speichert den Dialog nicht dauerhaft und fordert bei der Textgenerierung keine dauerhafte Speicherung durch die Responses API an. OpenAI verwendet API-Ein- und Ausgaben standardmässig nicht zum Training seiner Modelle. Abhängig vom Endpunkt können Inhalte in Sicherheitsprotokollen bis zu 30 Tage aufbewahrt werden; die Audio-Transkription selbst wird laut OpenAI nicht gespeichert. Eine Verarbeitung ausserhalb der Schweiz, insbesondere in den USA, kann stattfinden.',
+        ],
+      },
+      {
+        heading: '3.3 Server-Logs',
         paragraphs: [
           'Beim Aufruf dieser Website erfasst der Hosting-Anbieter Vercel Inc. (340 Pine Street, Suite 701, San Francisco, CA 94104, USA) automatisch technische Zugriffsdaten: IP-Adresse, Browser-Typ, Betriebssystem, Referrer-URL sowie Datum und Uhrzeit des Zugriffs.',
           'Diese Daten werden ausschliesslich für den sicheren und stabilen Betrieb der Website verwendet und nach spätestens 30 Tagen gelöscht. Rechtsgrundlage: berechtigtes Interesse (Art. 6 nDSG).',
         ],
       },
       {
-        heading: '3.3 Spracheinstellung (localStorage)',
+        heading: '3.4 Spracheinstellung (localStorage)',
         paragraphs: [
           'Ihre gewählte Sprache (Deutsch/Englisch) wird im localStorage Ihres Browsers gespeichert. Diese Information verlässt Ihren Browser nicht und wird nicht an externe Server übertragen. Es handelt sich ausdrücklich nicht um ein Cookie.',
         ],
       },
       {
-        heading: '3.4 Cookies',
+        heading: '3.5 Cookies',
         paragraphs: [
           'Diese Website setzt ausschliesslich technisch notwendige Cookies ein:',
         ],
@@ -122,7 +129,7 @@ const C: Record<'de' | 'en', { title: string; subtitle: string; back: string; up
     title: 'Privacy Policy',
     subtitle: 'In accordance with the Swiss Federal Act on Data Protection (nDSG)',
     back: '← Back to homepage',
-    updated: 'Last updated: July 2026',
+    updated: 'Last updated: August 2026',
     sections: [
       {
         heading: '1. Controller',
@@ -134,7 +141,7 @@ const C: Record<'de' | 'en', { title: string; subtitle: string; back: string; up
       {
         heading: '2. Principle',
         paragraphs: [
-          'I only collect and process personal data that is necessary for the provision of my services and the operation of this website. Data is only shared with third parties to the extent technically required for operating the website (hosting, email delivery).',
+          'I only collect and process personal data that is necessary for the provision of my services and the operation of this website. Data is only shared with third parties to the extent technically required for operating the website (hosting, email delivery, AI dialogue).',
         ],
       },
       {
@@ -153,20 +160,27 @@ const C: Record<'de' | 'en', { title: string; subtitle: string; back: string; up
         ],
       },
       {
-        heading: '3.2 Server Logs',
+        heading: '3.2 AILA AI Dialogue and Voice Recognition',
+        paragraphs: [
+          'When you use AILA, your questions and the conversation excerpts required for an answer are processed via the OpenAI API. If voice input is enabled, the recording is also transmitted for transcription; if voice output is enabled, the response text is processed to generate a synthetic AI voice. Please do not enter confidential or particularly sensitive personal data.',
+          'Processing is used solely to answer your question. The application does not permanently store the dialogue and requests no persistent Responses API storage for text generation. OpenAI does not use API inputs and outputs to train its models by default. Depending on the endpoint, content may be retained in safety logs for up to 30 days; according to OpenAI, the audio transcription itself is not stored. Processing outside Switzerland, particularly in the USA, may occur.',
+        ],
+      },
+      {
+        heading: '3.3 Server Logs',
         paragraphs: [
           'When you visit this website, the hosting provider Vercel Inc. (340 Pine Street, Suite 701, San Francisco, CA 94104, USA) automatically records technical access data: IP address, browser type, operating system, referrer URL, and date and time of access.',
           'This data is used solely to ensure secure and stable operation of the website and is deleted after a maximum of 30 days. Legal basis: legitimate interest (Art. 6 nDSG).',
         ],
       },
       {
-        heading: '3.3 Language Preference (localStorage)',
+        heading: '3.4 Language Preference (localStorage)',
         paragraphs: [
           'Your selected language (German/English) is stored in your browser\'s localStorage. This information never leaves your browser and is not transmitted to external servers. This is explicitly not a cookie.',
         ],
       },
       {
-        heading: '3.4 Cookies',
+        heading: '3.5 Cookies',
         paragraphs: [
           'This website uses only technically necessary cookies:',
         ],

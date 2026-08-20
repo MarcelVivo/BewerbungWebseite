@@ -1,11 +1,9 @@
 'use client';
 
-import { ArrowRight, X } from 'lucide-react';
-import { useEffect, useState, type CSSProperties } from 'react';
+import { ArrowRight, LoaderCircle, Mic, Send, Volume2, VolumeX, X } from 'lucide-react';
+import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from 'react';
 import type { ExperienceLang } from './content';
 import styles from './experience.module.css';
-
-type PromptId = 'benefit' | 'partnership' | 'start';
 
 type GuideEntry = {
   kicker: string;
@@ -43,18 +41,31 @@ const GUIDE: Record<ExperienceLang, Record<string, GuideEntry>> = {
 
 const COMMON = {
   de: {
-    prompts: { benefit: 'Was bringt das?', partnership: 'Wie arbeitet ihr zusammen?', start: 'Wie starten wir?' },
-    partnership: 'Marcel prüft Ziele, Kontext und Konsequenzen. AILA verdichtet Informationen, erkennt Muster und beschleunigt die Ausarbeitung. Entscheidungen und Verantwortung bleiben beim Menschen.',
-    start: 'Wir beginnen mit einem kompakten Gespräch über Ausgangslage, Ziele und Reibungspunkte. Danach erhältst du eine klare Empfehlung für den sinnvollsten nächsten Schritt.',
-    response: 'AILAS EINORDNUNG', next: 'Weiter zum nächsten Kapitel', contact: 'Projekt besprechen', close: 'AILA schliessen',
+    prompts: ['Was kann Marcel für mein Unternehmen tun?', 'Wie verbindet ihr Erfahrung und KI?', 'Wie starten wir?'],
+    welcome: 'Frag mich frei zu Marcels Leistungen, Arbeitsweise oder zu deinem digitalen Vorhaben.',
+    placeholder: 'Deine Frage an AILA …', send: 'Frage senden', micStart: 'Frage einsprechen', micStop: 'Aufnahme beenden',
+    thinking: 'AILA denkt nach …', listening: 'AILA hört zu …', voiceOn: 'KI-Stimme ausschalten', voiceOff: 'KI-Stimme einschalten',
+    privacy: 'KI-Dialog über OpenAI. Bitte keine vertraulichen Daten eingeben.',
+    error: 'Das hat gerade nicht funktioniert. Versuche es bitte noch einmal oder besprich dein Anliegen direkt mit Marcel.',
+    unsupported: 'Die Sprachaufnahme wird von diesem Browser nicht unterstützt.',
+    next: 'Nächstes Kapitel', contact: 'Mit Marcel sprechen', close: 'AILA schliessen',
   },
   en: {
-    prompts: { benefit: 'What is the benefit?', partnership: 'How do you work together?', start: 'How do we begin?' },
-    partnership: 'Marcel assesses goals, context and consequences. AILA condenses information, recognises patterns and accelerates development. Decisions and accountability remain human.',
-    start: 'We begin with a focused conversation about the current situation, goals and friction points. You then receive a clear recommendation for the most useful next step.',
-    response: 'AILA’S ASSESSMENT', next: 'Continue to the next chapter', contact: 'Discuss a project', close: 'Close AILA',
+    prompts: ['What could Marcel do for my company?', 'How do you combine experience and AI?', 'How do we begin?'],
+    welcome: 'Ask me anything about Marcel’s services, his way of working or your digital project.',
+    placeholder: 'Your question for AILA …', send: 'Send question', micStart: 'Record a question', micStop: 'Stop recording',
+    thinking: 'AILA is thinking …', listening: 'AILA is listening …', voiceOn: 'Turn AI voice off', voiceOff: 'Turn AI voice on',
+    privacy: 'AI dialogue via OpenAI. Please do not enter confidential information.',
+    error: 'That did not work just now. Please try again or discuss your question directly with Marcel.',
+    unsupported: 'Voice recording is not supported by this browser.',
+    next: 'Next chapter', contact: 'Talk to Marcel', close: 'Close AILA',
   },
 } as const;
+
+type ChatMessage = { id: string; role: 'user' | 'assistant'; content: string };
+type AilaConversationState = 'thinking' | 'speaking' | 'idle';
+
+const messageId = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
 export default function AilaGuide({
   open,
@@ -63,7 +74,7 @@ export default function AilaGuide({
   position,
   nextSectionId,
   onClose,
-  onRespond,
+  onStateChange,
   onNavigate,
 }: {
   open: boolean;
@@ -72,19 +83,210 @@ export default function AilaGuide({
   position: { x: number; y: number };
   nextSectionId: string;
   onClose: () => void;
-  onRespond: () => void;
+  onStateChange: (state: AilaConversationState) => void;
   onNavigate: (target: string) => void;
 }) {
-  const [prompt, setPrompt] = useState<PromptId>('benefit');
   const entry = GUIDE[lang][sectionId] ?? GUIDE[lang]['journey-start'];
   const common = COMMON[lang];
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [input, setInput] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
+  const [lastAnswer, setLastAnswer] = useState('');
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioUrlRef = useRef('');
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const historyRef = useRef<HTMLDivElement | null>(null);
+  const requestRef = useRef<AbortController | null>(null);
 
-  useEffect(() => { if (open) setPrompt('benefit'); }, [open, sectionId]);
+  const stopAudio = (announceIdle = true) => {
+    const audio = audioRef.current;
+    if (audio) {
+      audio.onended = null;
+      audio.onerror = null;
+      audio.pause();
+      audioRef.current = null;
+    }
+    if (audioUrlRef.current) {
+      URL.revokeObjectURL(audioUrlRef.current);
+      audioUrlRef.current = '';
+    }
+    if (announceIdle) onStateChange('idle');
+  };
+
+  const stopRecorder = () => {
+    const recorder = recorderRef.current;
+    if (recorder?.state === 'recording') {
+      recorder.ondataavailable = null;
+      recorder.onstop = null;
+      recorder.stop();
+    }
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
+    recorderRef.current = null;
+    setRecording(false);
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    setMessages([{ id: messageId(), role: 'assistant', content: common.welcome }]);
+    setInput('');
+    setBusy(false);
+    setLastAnswer('');
+  }, [open, sectionId, lang, common.welcome]);
+
+  useEffect(() => {
+    if (open) return;
+    requestRef.current?.abort();
+    requestRef.current = null;
+    stopAudio(false);
+    stopRecorder();
+  }, [open]);
+
+  useEffect(() => {
+    historyRef.current?.scrollTo({ top: historyRef.current.scrollHeight, behavior: 'smooth' });
+  }, [messages, busy]);
+
+  useEffect(() => () => {
+    requestRef.current?.abort();
+    stopAudio(false);
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+  }, []);
 
   if (!open) return null;
 
-  const response = prompt === 'benefit' ? entry.benefit : prompt === 'partnership' ? common.partnership : common.start;
-  const selectPrompt = (next: PromptId) => { setPrompt(next); onRespond(); };
+  const speak = async (text: string) => {
+    if (!voiceEnabled || !text) {
+      onStateChange('idle');
+      return;
+    }
+    stopAudio(false);
+    try {
+      const response = await fetch('/api/aila/speech', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, lang }),
+      });
+      if (!response.ok) throw new Error('speech failed');
+      const url = URL.createObjectURL(await response.blob());
+      audioUrlRef.current = url;
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      audio.onended = () => stopAudio(true);
+      audio.onerror = () => stopAudio(true);
+      await audio.play();
+      onStateChange('speaking');
+    } catch {
+      stopAudio(true);
+    }
+  };
+
+  const ask = async (rawQuestion: string) => {
+    const question = rawQuestion.trim();
+    if (!question || busy) return;
+    stopAudio(false);
+    const prior = messages.filter((message) => message.content !== common.welcome);
+    const userMessage: ChatMessage = { id: messageId(), role: 'user', content: question };
+    setMessages((current) => [...current, userMessage]);
+    setInput('');
+    setBusy(true);
+    onStateChange('thinking');
+    const controller = new AbortController();
+    requestRef.current = controller;
+    try {
+      const response = await fetch('/api/aila/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: question,
+          lang,
+          sectionId,
+          history: prior.slice(-8).map(({ role, content }) => ({ role, content })),
+        }),
+        signal: controller.signal,
+      });
+      const payload = await response.json();
+      if (!response.ok || typeof payload?.answer !== 'string') throw new Error(payload?.error || 'chat failed');
+      const answer = payload.answer.trim();
+      setMessages((current) => [...current, { id: messageId(), role: 'assistant', content: answer }]);
+      setLastAnswer(answer);
+      setBusy(false);
+      await speak(answer);
+    } catch {
+      if (controller.signal.aborted) return;
+      setMessages((current) => [...current, { id: messageId(), role: 'assistant', content: common.error }]);
+      setBusy(false);
+      onStateChange('idle');
+    } finally {
+      if (requestRef.current === controller) requestRef.current = null;
+    }
+  };
+
+  const submit = (event: FormEvent) => {
+    event.preventDefault();
+    void ask(input);
+  };
+
+  const toggleRecording = async () => {
+    if (recording) {
+      recorderRef.current?.stop();
+      return;
+    }
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
+      setMessages((current) => [...current, { id: messageId(), role: 'assistant', content: common.unsupported }]);
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mimeType = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/webm'].find((type) => MediaRecorder.isTypeSupported(type)) || '';
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      streamRef.current = stream;
+      recorderRef.current = recorder;
+      chunksRef.current = [];
+      recorder.ondataavailable = (event) => { if (event.data.size) chunksRef.current.push(event.data); };
+      recorder.onstop = async () => {
+        const blob = new Blob(chunksRef.current, { type: recorder.mimeType || 'audio/webm' });
+        stream.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+        recorderRef.current = null;
+        setRecording(false);
+        if (!blob.size) return;
+        setBusy(true);
+        onStateChange('thinking');
+        try {
+          const form = new FormData();
+          form.append('audio', new File([blob], `aila-question.${blob.type.includes('mp4') ? 'm4a' : 'webm'}`, { type: blob.type }));
+          form.append('lang', lang);
+          const response = await fetch('/api/aila/transcribe', { method: 'POST', body: form });
+          const payload = await response.json();
+          if (!response.ok || typeof payload?.text !== 'string') throw new Error('transcription failed');
+          setBusy(false);
+          await ask(payload.text);
+        } catch {
+          setMessages((current) => [...current, { id: messageId(), role: 'assistant', content: common.error }]);
+          setBusy(false);
+          onStateChange('idle');
+        }
+      };
+      recorder.start();
+      setRecording(true);
+      onStateChange('idle');
+    } catch {
+      setMessages((current) => [...current, { id: messageId(), role: 'assistant', content: common.unsupported }]);
+      onStateChange('idle');
+    }
+  };
+
+  const close = () => {
+    requestRef.current?.abort();
+    requestRef.current = null;
+    stopAudio(true);
+    stopRecorder();
+    onClose();
+  };
 
   return (
     <aside
@@ -96,21 +298,43 @@ export default function AilaGuide({
     >
       <header>
         <div><span>{entry.kicker}</span><i>LIVE</i></div>
-        <button type="button" onClick={onClose} aria-label={common.close}><X size={16} /></button>
+        <div className={styles.ailaGuideControls}>
+          <button type="button" onClick={() => { setVoiceEnabled((current) => !current); if (voiceEnabled) stopAudio(true); }} aria-label={voiceEnabled ? common.voiceOn : common.voiceOff} title={voiceEnabled ? common.voiceOn : common.voiceOff}>
+            {voiceEnabled ? <Volume2 size={15} /> : <VolumeX size={15} />}
+          </button>
+          <button type="button" onClick={close} aria-label={common.close}><X size={16} /></button>
+        </div>
       </header>
       <h2>{entry.title}</h2>
       <p>{entry.intro}</p>
 
       <div className={styles.ailaGuidePrompts} aria-label={lang === 'de' ? 'Fragen an AILA' : 'Questions for AILA'}>
-        {(Object.keys(common.prompts) as PromptId[]).map((id) => (
-          <button key={id} type="button" data-active={prompt === id ? 'true' : 'false'} onClick={() => selectPrompt(id)}>{common.prompts[id]}</button>
+        {common.prompts.map((suggestion) => (
+          <button key={suggestion} type="button" onClick={() => void ask(suggestion)} disabled={busy}>{suggestion}</button>
         ))}
       </div>
 
-      <div className={styles.ailaGuideResponse} aria-live="polite">
-        <span>{common.response}</span>
-        <p>{response}</p>
+      <div ref={historyRef} className={styles.ailaGuideConversation} aria-live="polite" aria-label={lang === 'de' ? 'Gespräch mit AILA' : 'Conversation with AILA'}>
+        {messages.map((message) => (
+          <div key={message.id} className={styles.ailaGuideMessage} data-role={message.role}>
+            <span>{message.role === 'assistant' ? 'AILA' : lang === 'de' ? 'DU' : 'YOU'}</span>
+            <p>{message.content}</p>
+            {message.role === 'assistant' && message.content === lastAnswer && voiceEnabled && !busy && (
+              <button type="button" onClick={() => void speak(message.content)} aria-label={lang === 'de' ? 'Antwort vorlesen' : 'Read answer aloud'}><Volume2 size={13} /></button>
+            )}
+          </div>
+        ))}
+        {busy && <div className={styles.ailaGuideThinking}><LoaderCircle size={14} />{common.thinking}</div>}
       </div>
+
+      <form className={styles.ailaGuideComposer} onSubmit={submit}>
+        <textarea value={input} onChange={(event) => setInput(event.target.value)} placeholder={recording ? common.listening : common.placeholder} rows={2} maxLength={1200} disabled={busy || recording} onKeyDown={(event) => {
+          if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); void ask(input); }
+        }} />
+        <button type="button" data-recording={recording ? 'true' : 'false'} onClick={() => void toggleRecording()} disabled={busy} aria-label={recording ? common.micStop : common.micStart} title={recording ? common.micStop : common.micStart}><Mic size={17} /></button>
+        <button type="submit" disabled={busy || recording || !input.trim()} aria-label={common.send} title={common.send}><Send size={16} /></button>
+      </form>
+      <small className={styles.ailaGuidePrivacy}>{common.privacy}</small>
 
       <footer>
         {sectionId !== 'journey-contact' && <button type="button" onClick={() => onNavigate(nextSectionId)}>{common.next}<ArrowRight size={14} /></button>}
