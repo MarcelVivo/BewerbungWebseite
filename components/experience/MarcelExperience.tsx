@@ -804,15 +804,15 @@ export default function MarcelExperience() {
               <div className={`${styles.sectionHeader} ${styles.osHeader}`} data-reveal="left">
                 <p className={styles.eyebrow}><span />{c.osEyebrow}</p>
                 <h2>{c.osTitle}</h2>
+                <div className={styles.ailaBay}>
+                  <SectionDockingStation station="process" />
+                </div>
                 <p className={styles.osIntroText}>{c.osText}</p>
                 <div className={styles.osHeaderMetrics} aria-label={lang === 'de' ? 'Business OS Übersicht' : 'Business OS overview'}>
                   <span><b>06</b><small>{lang === 'de' ? 'Module nach Bedarf' : 'Modules as needed'}</small></span>
                   <span><b>01</b><small>{lang === 'de' ? 'Gemeinsame Datenbasis' : 'Shared data foundation'}</small></span>
                   <span><b>LIVE</b><small>{lang === 'de' ? 'Steuerung im Alltag' : 'Everyday control'}</small></span>
                 </div>
-              </div>
-              <div className={styles.ailaBay}>
-                <SectionDockingStation station="process" />
               </div>
               <div className={styles.osLayout}>
                 <div className={styles.operatingModules} data-reveal="left">
