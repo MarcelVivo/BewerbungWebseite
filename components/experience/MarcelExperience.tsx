@@ -164,14 +164,14 @@ const OPERATING_MODULES = {
 
 const ABOUT_METHOD = {
   de: [
-    ['01', 'Verstehen', 'Ziele, Abläufe und bestehende Systeme gemeinsam einordnen.'],
-    ['02', 'Entscheiden', 'Prioritäten, Umfang und Architektur nachvollziehbar festlegen.'],
-    ['03', 'Umsetzen', 'Design, Entwicklung und Einführung persönlich begleiten.'],
+    ['01', 'Erkennen', 'Komplexität, Chancen und Risiken mit Erfahrung und Daten früh sichtbar machen.'],
+    ['02', 'Verstärken', 'KI gezielt für Analyse, Entwurf und Automatisierung einsetzen.'],
+    ['03', 'Verantworten', 'Wesentliche Entscheidungen persönlich prüfen und bis zur Wirkung begleiten.'],
   ],
   en: [
-    ['01', 'Understand', 'Put goals, workflows and existing systems into context together.'],
-    ['02', 'Decide', 'Define priorities, scope and architecture transparently.'],
-    ['03', 'Deliver', 'Personally guide design, development and introduction.'],
+    ['01', 'Recognise', 'Use experience and data to surface complexity, opportunities and risks early.'],
+    ['02', 'Amplify', 'Apply AI selectively to analysis, design and automation.'],
+    ['03', 'Own', 'Personally review key decisions and guide them through to measurable impact.'],
   ],
 } as const;
 
@@ -937,8 +937,13 @@ export default function MarcelExperience() {
               <div className={styles.aboutVisualStage} data-reveal="left">
                 <figure className={styles.aboutPortrait}>
                   <Image src="/assets/marcel-spahr-aila-editorial-v1.png" alt={lang === 'de' ? 'Marcel Spahr an seinem Arbeitsplatz in Bern' : 'Marcel Spahr at his workspace in Bern'} fill sizes="(min-width: 1000px) 68vw, 94vw" priority={false} />
-                  <figcaption><span>Marcel Spahr</span><small>{lang === 'de' ? 'Konzeption und Entwicklung · Bern' : 'Strategy and development · Bern'}</small></figcaption>
+                  <figcaption><span>Marcel Spahr</span><small>{lang === 'de' ? 'Urteilskraft × KI-Werkzeuge · Bern' : 'Judgement × AI tools · Bern'}</small></figcaption>
                 </figure>
+
+                <div className={styles.aboutAlliance} aria-hidden="true">
+                  <span>{lang === 'de' ? 'ERFAHRUNG × KI' : 'EXPERIENCE × AI'}</span>
+                  <strong>{lang === 'de' ? 'Mehr Klarheit. Mehr Tempo. Eine Verantwortung.' : 'More clarity. More speed. One accountable partner.'}</strong>
+                </div>
 
                 <div className={styles.aboutAilaBay} aria-hidden="true">
                   <SectionDockingStation station="about" />

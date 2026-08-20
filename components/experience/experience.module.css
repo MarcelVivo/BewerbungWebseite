@@ -4942,6 +4942,33 @@
 .aboutPortrait figcaption span { color: #eeeeE8; font-size: .78rem; font-weight: 620; }
 .aboutPortrait figcaption small { color: #a9aca5; font-size: .58rem; text-align: right; }
 
+.aboutAlliance {
+  position: absolute;
+  z-index: 1;
+  top: clamp(1.15rem, 4.2vh, 3.2rem);
+  right: clamp(1rem, 2vw, 2.2rem);
+  width: min(38%, 21rem);
+  padding: .75rem 0 0;
+  display: grid;
+  gap: .55rem;
+  border-top: 1px solid rgba(231,197,106,.46);
+  text-align: right;
+  pointer-events: none;
+}
+
+.aboutAlliance span {
+  color: var(--gold-light);
+  font: 650 clamp(.52rem, .58vw, .66rem)/1 var(--font-chakra-petch), monospace;
+  letter-spacing: .16em;
+}
+
+.aboutAlliance strong {
+  color: rgba(236,236,228,.86);
+  font-size: clamp(.78rem, .96vw, 1.08rem);
+  font-weight: 560;
+  line-height: 1.38;
+}
+
 .aboutStory {
   min-width: 0;
   min-height: 0;
@@ -5012,7 +5039,7 @@
   top: 0;
   right: 0;
   bottom: 0;
-  width: 44%;
+  width: 48%;
   min-width: 0;
   min-height: 0;
   overflow: visible;
@@ -5067,6 +5094,7 @@
   .aboutEditorial { grid-template-columns: 1fr; gap: 1rem; }
   .aboutVisualStage { min-height: clamp(430px, 72vw, 620px); }
   .aboutPortrait { min-height: 100%; }
+  .aboutAlliance { width: min(42%, 20rem); }
   .aboutStory { padding: 1.1rem 0; }
   .aboutStory h2 { max-width: 13ch; font-size: clamp(2.6rem, 8.5vw, 4.4rem); }
   .aboutStory > p:not(.eyebrow) { font-size: .94rem; }
@@ -5084,6 +5112,7 @@
 
 @media (max-width: 620px) {
   .aboutVisualStage { min-height: min(128vw, 520px); }
+  .aboutAlliance { top: 1rem; right: 1rem; width: 48%; }
   .aboutPortrait figcaption { align-items: flex-start; flex-direction: column; gap: .25rem; }
   .aboutPortrait figcaption small { text-align: left; }
   .aboutMethod li > div { grid-template-columns: 1fr; gap: .2rem; }
