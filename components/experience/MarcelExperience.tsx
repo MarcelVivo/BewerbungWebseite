@@ -558,7 +558,7 @@ export default function MarcelExperience() {
     <div ref={rootRef} className={`${styles.experience} experience-root`} data-hero-phase={heroPhase}>
       <a className={styles.skipLink} href="#main-content">{c.skip}</a>
       <ExperienceNav lang={lang} />
-      <ScrollEntity rootRef={rootRef} suppressed={activeOperatingModule !== null} />
+      <ScrollEntity rootRef={rootRef} />
 
       <main id="main-content">
         <section ref={heroSectionRef} id="journey-start" className={styles.hero} onPointerMove={onHeroPointer}>
@@ -813,6 +813,10 @@ export default function MarcelExperience() {
                 </div>
               </div>
               <div className={styles.osLayout}>
+                <div className={styles.ailaBay} aria-hidden="true">
+                  <span><i /> AILA · LIVE</span>
+                  <small>DIGITAL ASSISTANCE</small>
+                </div>
                 <div className={styles.operatingModules} data-reveal="left">
                   {OPERATING_MODULES[lang].map((module, index) => {
                     const isOpen = activeOperatingModule === index;
