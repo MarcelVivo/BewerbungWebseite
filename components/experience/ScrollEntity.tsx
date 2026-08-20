@@ -92,7 +92,7 @@ const AILA_SWITCH_OUT_MS = 140;
 const AILA_SWITCH_IN_MS = 320;
 const AILA_SWITCH_STRENGTH = 0.34;
 
-const AILA_DUST_PARTICLES = Array.from({ length: 32 }, (_, index) => {
+const AILA_DUST_PARTICLES = Array.from({ length: 48 }, (_, index) => {
   const angle = index * 2.3999632297;
   const spread = 24 + (index % 7) * 5;
   return {

@@ -102,8 +102,8 @@
   position: absolute;
   left: 50%;
   top: -.5rem;
-  width: 190%;
-  height: 3.35rem;
+  width: 170%;
+  height: 3.7rem;
   transform: translate(-50%, -100%);
   pointer-events: none;
 }
@@ -117,28 +117,30 @@
   margin: 0;
   color: transparent;
   background:
-    radial-gradient(circle, rgba(255,241,186,.98) 0 1px, transparent 1.25px) 0 0 / 3.4px 3.4px,
-    radial-gradient(circle, rgba(181,112,26,.82) 0 .7px, transparent 1px) 1.6px 1.2px / 4.6px 4.6px;
+    radial-gradient(circle, rgba(255,244,196,1) 0 .9px, transparent 1.08px) 0 0 / 2.25px 2.25px,
+    radial-gradient(circle, rgba(191,121,31,.9) 0 .58px, transparent .86px) 1.1px .8px / 3.35px 3.35px;
   -webkit-background-clip: text;
   background-clip: text;
-  filter: blur(5px) drop-shadow(0 0 7px rgba(231,197,106,.5));
+  -webkit-text-stroke: .3px rgba(255,232,151,.72);
+  paint-order: stroke fill;
+  filter: blur(4px) drop-shadow(0 0 9px rgba(231,197,106,.58));
   opacity: 0;
   white-space: nowrap;
   pointer-events: none;
 }
 
 .ailaDustQuestion {
-  left: 8%;
-  font: 680 1.38rem/1 var(--font-chakra-petch), monospace;
+  left: 25%;
+  font: 700 1.62rem/1 var(--font-chakra-petch), monospace;
   transform: translate3d(-.8rem, -50%, 0) scale(.66) rotate(-8deg);
   animation: ailaDustQuestion 9.2s ease-in-out infinite;
 }
 
 .ailaDustText {
-  left: 50%;
-  font: 650 clamp(.48rem, .72vw, .7rem)/1 var(--font-chakra-petch), monospace;
-  letter-spacing: .17em;
-  transform: translate3d(-44%, calc(-50% + .22rem), 0) scale(.93);
+  left: 57%;
+  font: 680 clamp(.66rem, 1vw, .9rem)/1 var(--font-chakra-petch), monospace;
+  letter-spacing: .115em;
+  transform: translate3d(-48%, calc(-50% + .18rem), 0) scale(.93);
   animation: ailaDustText 9.2s ease-in-out infinite;
 }
 
@@ -183,7 +185,7 @@
   animation: none;
   opacity: 1;
   filter: blur(0) drop-shadow(0 0 8px rgba(231,197,106,.38));
-  transform: translate3d(-44%, -50%, 0) scale(1);
+  transform: translate3d(-44%, calc(-50% + .18rem), 0) scale(1);
 }
 
 .scrollEntityGrabSurface:hover .ailaDustCloud i,
@@ -196,15 +198,15 @@
 @keyframes ailaDustQuestion {
   0%, 12%, 88%, 100% { opacity: 0; filter: blur(6px) drop-shadow(0 0 3px rgba(231,197,106,.12)); transform: translate3d(-.8rem, -50%, 0) scale(.58) rotate(-8deg); }
   22%, 31% { opacity: .9; filter: blur(0) drop-shadow(0 0 8px rgba(231,197,106,.52)); transform: translate3d(0, -50%, 0) scale(1) rotate(0); }
-  42%, 62% { opacity: .72; filter: blur(.15px) drop-shadow(0 0 7px rgba(231,197,106,.42)); transform: translate3d(0, -50%, 0) scale(.94) rotate(0); }
-  76% { opacity: 0; filter: blur(5px) drop-shadow(0 0 10px rgba(139,35,56,.2)); transform: translate3d(.9rem, calc(-50% - .4rem), 0) scale(.72) rotate(7deg); }
+  42%, 68% { opacity: .92; filter: blur(0) drop-shadow(0 0 8px rgba(231,197,106,.52)); transform: translate3d(0, -50%, 0) scale(1) rotate(0); }
+  79% { opacity: 0; filter: blur(5px) drop-shadow(0 0 10px rgba(139,35,56,.2)); transform: translate3d(.9rem, calc(-50% - .4rem), 0) scale(.72) rotate(7deg); }
 }
 
 @keyframes ailaDustText {
-  0%, 26%, 88%, 100% { opacity: 0; filter: blur(7px) drop-shadow(0 0 3px rgba(231,197,106,.1)); transform: translate3d(-44%, calc(-50% + .35rem), 0) scale(.88); letter-spacing: .24em; }
-  38% { opacity: .72; filter: blur(1.8px) drop-shadow(0 0 9px rgba(231,197,106,.46)); }
-  47%, 62% { opacity: 1; filter: blur(0) drop-shadow(0 0 8px rgba(231,197,106,.38)); transform: translate3d(-44%, -50%, 0) scale(1); letter-spacing: .17em; }
-  77% { opacity: 0; filter: blur(6px) drop-shadow(0 0 11px rgba(139,35,56,.18)); transform: translate3d(-40%, calc(-50% - .55rem), 0) scale(1.08); letter-spacing: .27em; }
+  0%, 26%, 88%, 100% { opacity: 0; filter: blur(5px) drop-shadow(0 0 3px rgba(231,197,106,.1)); transform: translate3d(-54%, calc(-50% + .28rem), 0) scale(.88); letter-spacing: .18em; }
+  37% { opacity: .8; filter: blur(1.1px) drop-shadow(0 0 10px rgba(231,197,106,.54)); }
+  44%, 69% { opacity: 1; filter: blur(0) drop-shadow(0 0 9px rgba(231,197,106,.5)); transform: translate3d(-44%, calc(-50% + .18rem), 0) scale(1); letter-spacing: .115em; }
+  80% { opacity: 0; filter: blur(6px) drop-shadow(0 0 11px rgba(139,35,56,.18)); transform: translate3d(-38%, calc(-50% - .48rem), 0) scale(1.08); letter-spacing: .21em; }
 }
 
 @keyframes ailaDustParticle {
@@ -5325,5 +5327,5 @@
   .ailaDustQuestion,
   .ailaDustText { animation: none !important; filter: none; opacity: .72; }
   .ailaDustQuestion { transform: translate3d(0, -50%, 0) scale(1); }
-  .ailaDustText { transform: translate3d(-44%, -50%, 0) scale(1); }
+  .ailaDustText { transform: translate3d(-44%, calc(-50% + .18rem), 0) scale(1); }
 }
