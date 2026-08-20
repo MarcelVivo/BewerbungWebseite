@@ -2,10 +2,24 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Activity, ArrowLeft, ArrowRight, Bot, Check, ChevronDown, Database, FileText, Globe2, LockKeyhole, Mail, MousePointerClick, Search, ShieldCheck, Sparkles, Users, Workflow, X } from 'lucide-react';
+import savedDetailCardConfig from './detail-card-config.json';
 import styles from './experience.module.css';
+import { useDraggableCalibrationPanel } from './useDraggableCalibrationPanel';
 
 type PerspectivePoint = { x: number; y: number };
 type SalesPerspectiveQuad = [PerspectivePoint, PerspectivePoint, PerspectivePoint, PerspectivePoint];
+type DetailCardConfig = {
+  x: number;
+  y: number;
+  depth: number;
+  scale: number;
+  rotateX: number;
+  rotateY: number;
+  rotateZ: number;
+  width: number;
+  height: number;
+  float: number;
+};
 
 const PERSPECTIVE_SOURCE_WIDTH = 1000;
 const PERSPECTIVE_SOURCE_HEIGHT = 360;
@@ -15,6 +29,7 @@ const DEFAULT_SALES_PERSPECTIVE: SalesPerspectiveQuad = [
   { x: 61.05468750000001, y: 79.88542329726289 },
   { x: 21.5625, y: 63.14449395289624 },
 ];
+const DEFAULT_DETAIL_CARD_CONFIG: DetailCardConfig = savedDetailCardConfig;
 
 function createPerspectiveMatrix(points: SalesPerspectiveQuad, width: number, height: number) {
   if (width <= 0 || height <= 0) return 'none';
@@ -93,11 +108,36 @@ export function PerspectiveBusinessFlow({
   lang: 'de' | 'en';
 }) {
   const [selectedFlow, setSelectedFlow] = useState<number | null>(null);
+  const [detailCardConfig, setDetailCardConfig] = useState<DetailCardConfig>(DEFAULT_DETAIL_CARD_CONFIG);
+  const [detailCardEditorEnabled, setDetailCardEditorEnabled] = useState(false);
+  const [driftPreviewEnabled, setDriftPreviewEnabled] = useState(false);
+  const [detailCardSaveState, setDetailCardSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const perspectiveConfig = DEFAULT_SALES_PERSPECTIVE;
   const [sectionSize, setSectionSize] = useState({ width: 0, height: 0 });
   const perspectiveSectionRef = useRef<HTMLElement | null>(null);
   const detailPanelRef = useRef<HTMLElement | null>(null);
   const flowCardRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const detailCardCalibration = useDraggableCalibrationPanel('ms-detail-card-calibration-panel-v1');
+
+  useEffect(() => {
+    const enabled = new URLSearchParams(window.location.search).get('detail-card-editor') === '1';
+    setDetailCardEditorEnabled(enabled);
+    if (!enabled) return;
+
+    try {
+      const stored = window.localStorage.getItem('ms-detail-card-config-v1');
+      if (stored) setDetailCardConfig((current) => ({ ...current, ...JSON.parse(stored) }));
+    } catch { /* The source defaults remain usable without local storage. */ }
+
+    setSelectedFlow(4);
+    onSelect(4);
+    window.setTimeout(() => document.getElementById('verkaufssystem')?.scrollIntoView({ behavior: 'auto', block: 'start' }), 120);
+  }, [onSelect]);
+
+  useEffect(() => {
+    if (!detailCardEditorEnabled) return;
+    try { window.localStorage.setItem('ms-detail-card-config-v1', JSON.stringify(detailCardConfig)); } catch { /* Live editing remains available. */ }
+  }, [detailCardConfig, detailCardEditorEnabled]);
 
   useEffect(() => {
     const section = perspectiveSectionRef.current;
@@ -139,7 +179,7 @@ export function PerspectiveBusinessFlow({
 
   useEffect(() => {
     const panel = detailPanelRef.current;
-    if (selectedFlow === null || !panel) return;
+    if (selectedFlow === null || !panel || (detailCardEditorEnabled && !driftPreviewEnabled)) return;
 
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     if (reducedMotion.matches) return;
@@ -155,8 +195,8 @@ export function PerspectiveBusinessFlow({
       // A damped random walk keeps the card near its designed position
       // without ever tracing a repeated path or visibly touching a limit.
       const target = {
-        x: current.x * .38 + organicOffset(7.5),
-        y: current.y * .34 + organicOffset(5.8) - .7,
+        x: current.x * .38 + organicOffset(detailCardConfig.float),
+        y: current.y * .34 + organicOffset(detailCardConfig.float * .78) - detailCardConfig.float * .09,
       };
       const duration = 3000 + Math.random() * 2800;
 
@@ -179,9 +219,10 @@ export function PerspectiveBusinessFlow({
       window.clearTimeout(timer);
       movement?.cancel();
     };
-  }, [selectedFlow]);
+  }, [detailCardConfig.float, detailCardEditorEnabled, driftPreviewEnabled, selectedFlow]);
 
   const planeTransform = createPerspectiveMatrix(perspectiveConfig, sectionSize.width, sectionSize.height);
+  const detailPlaneTransform = `${planeTransform === 'none' ? '' : planeTransform} translate3d(${detailCardConfig.x}px, ${detailCardConfig.y}px, ${detailCardConfig.depth}px) rotateX(${detailCardConfig.rotateX}deg) rotateY(${detailCardConfig.rotateY}deg) rotateZ(${detailCardConfig.rotateZ}deg) scale(${detailCardConfig.scale})`.trim();
   const gridStyle = {
     left: 0,
     top: 0,
@@ -199,6 +240,26 @@ export function PerspectiveBusinessFlow({
   const showFlow = (index: number) => {
     onSelect(index);
     setSelectedFlow(index);
+  };
+
+  const updateDetailCardConfig = (key: keyof DetailCardConfig, value: number) => {
+    setDetailCardConfig((current) => ({ ...current, [key]: value }));
+  };
+
+  const saveDetailCardConfig = async () => {
+    setDetailCardSaveState('saving');
+    try {
+      const response = await fetch('/api/detail-card-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(detailCardConfig),
+      });
+      if (!response.ok) throw new Error('Unable to persist detail-card configuration.');
+      setDetailCardSaveState('saved');
+      window.setTimeout(() => setDetailCardSaveState('idle'), 2200);
+    } catch {
+      setDetailCardSaveState('error');
+    }
   };
 
   const previousFlow = selectedFlow === null ? null : steps[(selectedFlow - 1 + steps.length) % steps.length];
@@ -250,9 +311,9 @@ export function PerspectiveBusinessFlow({
           id="perspective-flow-detail-panel"
           className={styles.perspectiveFlowDetailPanel}
           style={{
-            '--detail-plane-transform': planeTransform === 'none'
-              ? 'translate3d(1050px, -300px, 0)'
-              : `${planeTransform} translate3d(1050px, -300px, 0)`,
+            '--detail-plane-transform': detailPlaneTransform,
+            '--detail-card-width': `${detailCardConfig.width}px`,
+            '--detail-card-height': `${detailCardConfig.height}px`,
           } as CSSProperties}
           aria-live="polite"
         >
@@ -293,6 +354,48 @@ export function PerspectiveBusinessFlow({
                 <ArrowRight size={19} aria-hidden="true" />
               </button>
             </div>
+          </footer>
+        </aside>
+      )}
+
+      {detailCardEditorEnabled && (
+        <aside
+          ref={detailCardCalibration.panelRef}
+          style={detailCardCalibration.panelStyle}
+          className={styles.detailCardCalibration}
+          aria-label="Perspektiven-Konfigurator der Detailkarte"
+        >
+          <header onPointerDown={detailCardCalibration.startDrag}>
+            <strong>DETAILKARTE</strong>
+            <span>PERSPEKTIVE · DRAG</span>
+          </header>
+          {([
+            ['X', 'x', 650, 1450, 5],
+            ['Y', 'y', -600, 120, 5],
+            ['TIEFE', 'depth', -300, 500, 5],
+            ['GRÖSSE', 'scale', .55, 1.45, .01],
+            ['NEIGUNG X', 'rotateX', -22, 22, .1],
+            ['NEIGUNG Y', 'rotateY', -22, 22, .1],
+            ['DREHUNG', 'rotateZ', -18, 18, .1],
+            ['BREITE', 'width', 440, 820, 5],
+            ['HÖHE', 'height', 480, 820, 5],
+            ['SCHWEBEN', 'float', 0, 16, .25],
+          ] as const).map(([label, key, min, max, step]) => (
+            <label key={key}>
+              <span>{label}</span>
+              <input type="range" min={min} max={max} step={step} value={detailCardConfig[key]} onChange={(event) => updateDetailCardConfig(key, Number(event.target.value))} />
+              <output>{detailCardConfig[key].toFixed(key === 'scale' || key.startsWith('rotate') || key === 'float' ? 2 : 0)}</output>
+            </label>
+          ))}
+          <div className={styles.detailCardCalibrationActions}>
+            <button type="button" onClick={() => setDriftPreviewEnabled((current) => !current)}>{driftPreviewEnabled ? 'SCHWEBEN PAUSIEREN' : 'SCHWEBEN TESTEN'}</button>
+            <button type="button" onClick={() => setDetailCardConfig(DEFAULT_DETAIL_CARD_CONFIG)}>RESET</button>
+          </div>
+          <footer>
+            <span>{detailCardSaveState === 'error' ? 'Speichern fehlgeschlagen' : 'Nur lokal sichtbar'}</span>
+            <button type="button" onClick={saveDetailCardConfig} disabled={detailCardSaveState === 'saving'}>
+              {detailCardSaveState === 'saving' ? 'SPEICHERT…' : detailCardSaveState === 'saved' ? 'GESPEICHERT ✓' : 'IN WEBSITE SPEICHERN'}
+            </button>
           </footer>
         </aside>
       )}
