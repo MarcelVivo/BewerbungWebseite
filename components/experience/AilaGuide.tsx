@@ -42,7 +42,7 @@ const GUIDE: Record<ExperienceLang, Record<string, GuideEntry>> = {
 const COMMON = {
   de: {
     prompts: ['Was kann Marcel für mein Unternehmen tun?', 'Wie verbindet ihr Erfahrung und KI?', 'Wie starten wir?'],
-    welcome: 'Frag mich frei zu Marcels Leistungen, Arbeitsweise oder zu deinem digitalen Vorhaben.',
+    welcome: 'Hallo, ich bin AILA, wie kann ich dir helfen?',
     placeholder: 'Deine Frage an AILA …', send: 'Frage senden', micStart: 'Frage einsprechen', micStop: 'Aufnahme beenden',
     thinking: 'AILA denkt nach …', listening: 'AILA hört zu …', voiceOn: 'KI-Stimme ausschalten', voiceOff: 'KI-Stimme einschalten',
     error: 'Das hat gerade nicht funktioniert. Versuche es bitte noch einmal oder besprich dein Anliegen direkt mit Marcel.',
@@ -55,7 +55,7 @@ const COMMON = {
   },
   en: {
     prompts: ['What could Marcel do for my company?', 'How do you combine experience and AI?', 'How do we begin?'],
-    welcome: 'Ask me anything about Marcel’s services, his way of working or your digital project.',
+    welcome: 'Hello, I’m AILA. How can I help you?',
     placeholder: 'Your question for AILA …', send: 'Send question', micStart: 'Record a question', micStop: 'Stop recording',
     thinking: 'AILA is thinking …', listening: 'AILA is listening …', voiceOn: 'Turn AI voice off', voiceOff: 'Turn AI voice on',
     error: 'That did not work just now. Please try again or discuss your question directly with Marcel.',
@@ -73,6 +73,7 @@ type AilaConversationState = 'thinking' | 'speaking' | 'idle';
 type WavRecorder = { stop: () => Promise<Blob>; cancel: () => void };
 
 const messageId = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+const SILENT_WAV = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
 
 const encodeWav = (chunks: Float32Array[], sampleRate: number) => {
   const sampleCount = chunks.reduce((total, chunk) => total + chunk.length, 0);
@@ -133,7 +134,9 @@ export default function AilaGuide({
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [lastAnswer, setLastAnswer] = useState('');
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const primedAudioRef = useRef<HTMLAudioElement | null>(null);
   const audioUrlRef = useRef('');
+  const speechRequestRef = useRef<AbortController | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const wavRecorderRef = useRef<WavRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -142,6 +145,8 @@ export default function AilaGuide({
   const requestRef = useRef<AbortController | null>(null);
 
   const stopAudio = (announceIdle = true) => {
+    speechRequestRef.current?.abort();
+    speechRequestRef.current = null;
     const audio = audioRef.current;
     if (audio) {
       audio.onended = null;
@@ -154,6 +159,14 @@ export default function AilaGuide({
       audioUrlRef.current = '';
     }
     if (announceIdle) onStateChange('idle');
+  };
+
+  const discardPrimedAudio = () => {
+    const audio = primedAudioRef.current;
+    if (!audio) return;
+    audio.pause();
+    audio.removeAttribute('src');
+    primedAudioRef.current = null;
   };
 
   const stopRecorder = () => {
@@ -176,7 +189,8 @@ export default function AilaGuide({
     setMessages([{ id: messageId(), role: 'assistant', content: common.welcome }]);
     setInput('');
     setBusy(false);
-    setLastAnswer('');
+    setVoiceEnabled(true);
+    setLastAnswer(common.welcome);
   }, [open, sectionId, lang, common.welcome]);
 
   useEffect(() => {
@@ -184,8 +198,24 @@ export default function AilaGuide({
     requestRef.current?.abort();
     requestRef.current = null;
     stopAudio(false);
+    discardPrimedAudio();
     stopRecorder();
   }, [open]);
+
+  useEffect(() => {
+    const primeAudio = () => {
+      discardPrimedAudio();
+      const audio = new Audio(SILENT_WAV);
+      audio.setAttribute('playsinline', '');
+      primedAudioRef.current = audio;
+      void audio.play().then(() => {
+        audio.pause();
+        audio.currentTime = 0;
+      }).catch(() => undefined);
+    };
+    window.addEventListener('aila:prime-audio', primeAudio);
+    return () => window.removeEventListener('aila:prime-audio', primeAudio);
+  }, []);
 
   useEffect(() => {
     historyRef.current?.scrollTo({ top: historyRef.current.scrollHeight, behavior: 'smooth' });
@@ -194,27 +224,32 @@ export default function AilaGuide({
   useEffect(() => () => {
     requestRef.current?.abort();
     stopAudio(false);
+    discardPrimedAudio();
     streamRef.current?.getTracks().forEach((track) => track.stop());
   }, []);
 
-  if (!open) return null;
-
-  const speak = async (text: string) => {
-    if (!voiceEnabled || !text) {
+  const speak = async (text: string, force = false) => {
+    if ((!voiceEnabled && !force) || !text) {
       onStateChange('idle');
       return;
     }
     stopAudio(false);
+    const controller = new AbortController();
+    speechRequestRef.current = controller;
     try {
       const response = await fetch('/api/aila/speech', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text, lang }),
+        signal: controller.signal,
       });
       if (!response.ok) throw new Error('speech failed');
       const url = URL.createObjectURL(await response.blob());
       audioUrlRef.current = url;
-      const audio = new Audio(url);
+      const audio = primedAudioRef.current || new Audio();
+      primedAudioRef.current = null;
+      audio.src = url;
+      audio.setAttribute('playsinline', '');
       audioRef.current = audio;
       audio.onended = () => stopAudio(true);
       audio.onerror = () => stopAudio(true);
@@ -222,8 +257,18 @@ export default function AilaGuide({
       onStateChange('speaking');
     } catch {
       stopAudio(true);
+    } finally {
+      if (speechRequestRef.current === controller) speechRequestRef.current = null;
     }
   };
+
+  useEffect(() => {
+    if (!open) return;
+    const timer = window.setTimeout(() => void speak(common.welcome, true), 90);
+    return () => window.clearTimeout(timer);
+  }, [open, sectionId, lang, common.welcome]);
+
+  if (!open) return null;
 
   const ask = async (rawQuestion: string) => {
     const question = rawQuestion.trim();

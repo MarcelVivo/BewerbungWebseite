@@ -134,6 +134,7 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
   const openGuide = () => {
     const entity = entityRef.current;
     if (!entity || (rootRef.current?.dataset.heroPhase ?? 'loading') !== 'revealed') return;
+    window.dispatchEvent(new Event('aila:prime-audio'));
     const rect = entity.getBoundingClientRect();
     const panelWidth = Math.min(430, window.innerWidth - 32);
     const panelHeight = Math.min(680, window.innerHeight - 36);
@@ -1327,7 +1328,6 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
         >
           <span className={styles.ailaDustPrompt} aria-hidden="true">
             <span className={styles.ailaDustQuestion}>?</span>
-            <span className={styles.ailaDustText}>{lang === 'de' ? 'AILA FRAGEN' : 'ASK AILA'}</span>
             <span className={styles.ailaDustCloud}>
               {AILA_DUST_PARTICLES.map((particle, index) => <i key={index} data-wine={particle.wine ? 'true' : undefined} style={particle.style} />)}
             </span>
