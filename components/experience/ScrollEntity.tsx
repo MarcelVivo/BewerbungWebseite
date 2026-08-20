@@ -1,11 +1,13 @@
 'use client';
 
-import { useEffect, useRef, type RefObject } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 // The project currently ships three without its optional declaration package.
 // @ts-expect-error Runtime ESM exports are present and already used elsewhere.
 import { Object3D } from 'three';
 import FlightPathEditor from './FlightPathEditor';
+import AilaGuide from './AilaGuide';
 import TitleDepthLayer from './TitleDepthLayer';
+import { chapters, type ExperienceLang } from './content';
 import {
   getFlightPathDraft,
   setFlightPathRuntime,
@@ -30,6 +32,7 @@ import styles from './experience.module.css';
 
 type ScrollEntityProps = {
   rootRef: RefObject<HTMLDivElement | null>;
+  lang: ExperienceLang;
 };
 
 type ResolvedPoint = ResolvedFlightPathPoint;
@@ -89,7 +92,7 @@ const AILA_SWITCH_OUT_MS = 140;
 const AILA_SWITCH_IN_MS = 320;
 const AILA_SWITCH_STRENGTH = 0.34;
 
-export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
+export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
   const entityRef = useRef<HTMLDivElement | null>(null);
   const trailRef = useRef<HTMLCanvasElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -97,6 +100,57 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
   const coreCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const fallbackRef = useRef<HTMLImageElement | null>(null);
   const debugRef = useRef<HTMLOutputElement | null>(null);
+  const [guide, setGuide] = useState({ open: false, sectionId: 'journey-start', x: 24, y: 96 });
+
+  const currentSection = () => {
+    const probe = window.scrollY + window.innerHeight * .42;
+    let index = 0;
+    chapters.forEach((chapter, chapterIndex) => {
+      const section = document.getElementById(chapter.id);
+      if (section && section.offsetTop <= probe) index = chapterIndex;
+    });
+    return { index, id: chapters[index].id };
+  };
+
+  const openGuide = () => {
+    const entity = entityRef.current;
+    if (!entity || (rootRef.current?.dataset.heroPhase ?? 'loading') !== 'revealed') return;
+    const rect = entity.getBoundingClientRect();
+    const panelWidth = Math.min(390, window.innerWidth - 32);
+    const panelHeight = 390;
+    const centerX = rect.left + rect.width / 2;
+    const desiredX = centerX < window.innerWidth / 2 ? rect.right - rect.width * .08 : rect.left - panelWidth + rect.width * .08;
+    const x = Math.max(16, Math.min(window.innerWidth - panelWidth - (window.innerWidth > 900 ? 170 : 16), desiredX));
+    const y = Math.max(82, Math.min(window.innerHeight - panelHeight - 18, rect.top + rect.height * .08));
+    const section = currentSection();
+    setGuide({ open: true, sectionId: section.id, x, y });
+  };
+
+  const closeGuide = () => setGuide((current) => ({ ...current, open: false }));
+
+  const reactToGuidePrompt = () => {
+    window.dispatchEvent(new CustomEvent('aila:guide-response'));
+  };
+
+  const navigateFromGuide = (target: string) => {
+    closeGuide();
+    const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+    document.getElementById(target)?.scrollIntoView({ behavior, block: 'start' });
+    window.history.replaceState(null, '', `#${target}`);
+  };
+
+  useEffect(() => {
+    if (!guide.open) return;
+    const openedAt = window.scrollY;
+    const handleKey = (event: KeyboardEvent) => { if (event.key === 'Escape') closeGuide(); };
+    const handleScroll = () => { if (Math.abs(window.scrollY - openedAt) > 24) closeGuide(); };
+    window.addEventListener('keydown', handleKey);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('keydown', handleKey);
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [guide.open]);
 
   useEffect(() => {
     const root = rootRef.current;
@@ -371,7 +425,9 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       }
     };
 
+    const handleGuideResponse = () => triggerAttention();
     interaction.addEventListener('click', triggerAttention);
+    window.addEventListener('aila:guide-response', handleGuideResponse);
     video.addEventListener('ended', advanceVideoState);
     video.addEventListener('error', recoverIdle);
     video.addEventListener('loadeddata', handleVideoLoaded);
@@ -1185,6 +1241,7 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       if (supportsVideoFrameCallback) video.cancelVideoFrameCallback(videoFrameCallbackHandle);
       video.pause();
       interaction.removeEventListener('click', triggerAttention);
+      window.removeEventListener('aila:guide-response', handleGuideResponse);
       video.removeEventListener('ended', advanceVideoState);
       video.removeEventListener('error', recoverIdle);
       video.removeEventListener('loadeddata', handleVideoLoaded);
@@ -1225,8 +1282,11 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
           ref={interactionRef}
           type="button"
           className={styles.scrollEntityGrabSurface}
-          aria-label="AILAs interaktive Demonstration starten"
+          aria-label={lang === 'de' ? 'AILA öffnen' : 'Open AILA'}
+          data-interaction-label={lang === 'de' ? 'AILA FRAGEN' : 'ASK AILA'}
           aria-pressed="false"
+          aria-haspopup="dialog"
+          onClick={openGuide}
         />
         <video
           ref={videoRef}
@@ -1249,6 +1309,16 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
         />
         <canvas ref={coreCanvasRef} className={styles.scrollEntityVideo} width="960" height="540" />
       </div>
+      <AilaGuide
+        open={guide.open}
+        lang={lang}
+        sectionId={guide.sectionId}
+        position={{ x: guide.x, y: guide.y }}
+        nextSectionId={chapters[Math.min(chapters.length - 1, Math.max(0, chapters.findIndex((chapter) => chapter.id === guide.sectionId) + 1))].id}
+        onClose={closeGuide}
+        onRespond={reactToGuidePrompt}
+        onNavigate={navigateFromGuide}
+      />
       <output ref={debugRef} className={styles.scrollPathDebug} hidden aria-live="off" />
       <TitleDepthLayer />
       <FlightPathEditor />

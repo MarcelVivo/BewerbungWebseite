@@ -98,11 +98,35 @@
   transition: border-color .3s ease, box-shadow .3s ease, transform .3s ease;
 }
 
+.scrollEntityGrabSurface::before {
+  content: attr(data-interaction-label);
+  position: absolute;
+  left: 50%;
+  top: -1.35rem;
+  padding: .42rem .58rem;
+  border: 1px solid rgba(231,197,106,.28);
+  background: rgba(7,8,7,.88);
+  color: var(--gold-pale);
+  font: 650 .48rem/1 var(--font-chakra-petch), monospace;
+  letter-spacing: .13em;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-50%, .35rem);
+  transition: opacity .22s ease, transform .22s ease;
+  pointer-events: none;
+}
+
 .scrollEntityGrabSurface:hover::after,
 .scrollEntityGrabSurface:focus-visible::after {
   border-color: rgba(231, 197, 106, .32);
   box-shadow: 0 0 1.2rem rgba(231, 197, 106, .14), inset 0 0 1rem rgba(231, 197, 106, .06);
   transform: scale(1.035);
+}
+
+.scrollEntityGrabSurface:hover::before,
+.scrollEntityGrabSurface:focus-visible::before {
+  opacity: 1;
+  transform: translate(-50%, 0);
 }
 
 .scrollEntity[data-aila-state='attention'] .scrollEntityGrabSurface,
@@ -187,6 +211,70 @@
   height: 1px;
   opacity: 0;
   pointer-events: none;
+}
+
+.ailaGuide {
+  position: fixed;
+  z-index: 205;
+  left: var(--aila-guide-x);
+  top: var(--aila-guide-y);
+  width: min(390px, calc(100vw - 2rem));
+  padding: 1rem;
+  border: 1px solid rgba(231,197,106,.34);
+  background: linear-gradient(145deg, rgba(18,19,16,.97), rgba(7,8,7,.98));
+  box-shadow: 0 1.5rem 4rem rgba(0,0,0,.58), 0 0 2rem rgba(200,154,61,.06);
+  backdrop-filter: blur(18px);
+  animation: ailaGuideIn .34s cubic-bezier(.16,.8,.2,1) both;
+}
+
+.ailaGuide::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-left: 2px solid rgba(231,197,106,.75);
+  pointer-events: none;
+}
+
+.ailaGuide > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.ailaGuide > header > div { display: flex; align-items: center; gap: .65rem; }
+.ailaGuide > header span { color: var(--gold-light); font: 650 .52rem/1 var(--font-chakra-petch), monospace; letter-spacing: .14em; }
+.ailaGuide > header i { display: inline-flex; align-items: center; gap: .3rem; color: #9fd7af; font: 650 .46rem/1 var(--font-chakra-petch), monospace; font-style: normal; letter-spacing: .1em; }
+.ailaGuide > header i::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: #79cf92; box-shadow: 0 0 9px rgba(121,207,146,.65); }
+.ailaGuide > header button { width: 1.8rem; height: 1.8rem; display: grid; place-items: center; padding: 0; border: 1px solid rgba(255,255,255,.1); background: transparent; color: #a8aca5; cursor: pointer; }
+.ailaGuide > header button:hover { color: var(--gold-pale); border-color: rgba(231,197,106,.35); }
+.ailaGuide h2 { margin: .85rem 0 0; color: #efefe8; font-size: clamp(1.25rem, 1.6vw, 1.55rem); font-weight: 590; line-height: 1.12; letter-spacing: -.035em; text-align: left; text-shadow: none; filter: none; transform: none; }
+.ailaGuide > p { margin: .65rem 0 0; color: #aeb2aa; font-size: .76rem; line-height: 1.55; }
+
+.ailaGuidePrompts { margin-top: .9rem; display: flex; flex-wrap: wrap; gap: .35rem; }
+.ailaGuidePrompts button { padding: .46rem .58rem; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.025); color: #9ca19a; font-size: .6rem; cursor: pointer; transition: color .2s ease, border-color .2s ease, background .2s ease; }
+.ailaGuidePrompts button:hover { color: #e7e5dc; border-color: rgba(231,197,106,.25); }
+.ailaGuidePrompts button[data-active='true'] { color: var(--gold-pale); border-color: rgba(231,197,106,.48); background: rgba(200,154,61,.08); }
+
+.ailaGuideResponse { min-height: 5.5rem; margin-top: .7rem; padding: .75rem .8rem; border-left: 1px solid var(--gold-light); background: rgba(200,154,61,.045); }
+.ailaGuideResponse span { color: var(--gold-light); font: 650 .46rem/1 var(--font-chakra-petch), monospace; letter-spacing: .13em; }
+.ailaGuideResponse p { margin: .45rem 0 0; color: #d2d3cb; font-size: .68rem; line-height: 1.55; }
+
+.ailaGuide > footer { margin-top: .75rem; padding-top: .7rem; display: flex; justify-content: space-between; gap: .55rem; border-top: 1px solid rgba(255,255,255,.08); }
+.ailaGuide > footer button { min-width: 0; padding: .5rem 0; display: inline-flex; align-items: center; gap: .4rem; border: 0; background: transparent; color: #b3b7b0; font-size: .61rem; font-weight: 600; text-align: left; cursor: pointer; }
+.ailaGuide > footer button:last-child { color: var(--gold-pale); }
+.ailaGuide > footer button:hover { color: #fff9df; }
+
+@keyframes ailaGuideIn {
+  from { opacity: 0; transform: translate3d(0, .8rem, 0) scale(.975); filter: blur(5px); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
+}
+
+@media (max-width: 700px) {
+  .ailaGuide {
+    left: 1rem !important;
+    right: 1rem;
+    top: auto !important;
+    bottom: max(1rem, env(safe-area-inset-bottom));
+    width: auto;
+    max-height: min(70svh, 560px);
+    overflow-y: auto;
+  }
+  .ailaGuide > footer { flex-direction: column; gap: .1rem; }
 }
 
 .scrollPathDebug {
