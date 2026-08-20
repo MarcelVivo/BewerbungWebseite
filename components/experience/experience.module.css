@@ -4607,8 +4607,8 @@
 
 .dataHeaderMetrics span { min-width: 0; padding: .72rem .65rem .68rem 0; display: grid; gap: .28rem; }
 .dataHeaderMetrics span + span { padding-left: .65rem; border-left: 1px solid rgba(231,197,106,.11); }
-.dataHeaderMetrics b { color: var(--gold-light); font: 680 clamp(.78rem, 1vw, 1.08rem)/1 var(--font-chakra-petch), monospace; }
-.dataHeaderMetrics small { color: rgba(220,222,214,.54); font: 650 clamp(.38rem, .42vw, .46rem)/1.3 var(--font-chakra-petch), monospace; letter-spacing: .07em; text-transform: uppercase; }
+.dataHeaderMetrics b { color: var(--gold-light); font: 680 clamp(.95rem, 1.15vw, 1.28rem)/1 var(--font-chakra-petch), monospace; }
+.dataHeaderMetrics small { color: rgba(220,222,214,.54); font: 650 clamp(.48rem, .52vw, .58rem)/1.3 var(--font-chakra-petch), monospace; letter-spacing: .07em; text-transform: uppercase; }
 
 .dataWorkspace {
   width: var(--container);
@@ -4667,8 +4667,8 @@
   border-bottom: 1px solid rgba(231,197,106,.13);
 }
 
-.architectureHeader small { flex: 0 0 auto; color: var(--gold-light); font-size: clamp(.42rem, .47vw, .5rem); }
-.architectureHeader strong { max-width: 28rem; color: #e9e9e2; font-size: clamp(.8rem, .92vw, 1rem); line-height: 1.25; text-align: right; }
+.architectureHeader small { flex: 0 0 auto; color: var(--gold-light); font-size: clamp(.52rem, .56vw, .62rem); }
+.architectureHeader strong { max-width: 30rem; color: #e9e9e2; font-size: clamp(.95rem, 1.05vw, 1.15rem); line-height: 1.25; text-align: right; }
 
 .architectureLayers {
   margin: 0;
@@ -4705,11 +4705,11 @@
   cursor: pointer;
 }
 
-.architectureLayerToggle > span:first-child { color: var(--gold-deep); font-size: .5rem; }
+.architectureLayerToggle > span:first-child { color: var(--gold-deep); font-size: .6rem; }
 .architectureLayerToggle > i { width: 34px; height: 34px; }
 .architectureLayerToggle > span:nth-child(3) { min-width: 0; display: grid; gap: .18rem; }
-.architectureLayerToggle strong { color: #e7e7e0; font-size: clamp(.72rem, .8vw, .87rem); }
-.architectureLayerToggle small { color: var(--faint); font-size: clamp(.49rem, .55vw, .6rem); white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+.architectureLayerToggle strong { color: #e7e7e0; font-size: clamp(.88rem, .94vw, 1.02rem); }
+.architectureLayerToggle small { color: var(--faint); font-size: clamp(.61rem, .66vw, .72rem); white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
 .architectureLayerToggle > b { width: 28px; height: 28px; transform: none; }
 .architectureLayerToggle[aria-selected='true'] > b { border-color: rgba(231,197,106,.5); color: var(--gold-pale); transform: translateX(2px); }
 .architectureLayerToggle[aria-selected='true'] > i { border-color: rgba(231,197,106,.42); background: rgba(200,154,61,.08); }
@@ -4729,11 +4729,11 @@
 .architectureLayerDetailPanel > header { display: flex; align-items: center; gap: .65rem; }
 .architectureLayerDetailPanel > header span { width: 38px; height: 38px; display: grid; place-items: center; border: 1px solid rgba(231,197,106,.25); color: var(--gold-light); }
 .architectureLayerDetailPanel > header small,
-.architectureLayerDetailPanel > footer small { color: var(--gold-light); font: 650 .44rem/1 var(--font-chakra-petch), monospace; letter-spacing: .11em; }
-.architectureLayerDetailPanel > div h3 { margin: 0; color: #f0f0e9; font-size: clamp(1.35rem, 1.75vw, 2rem); font-weight: 570; letter-spacing: -.045em; }
-.architectureLayerDetailPanel > div p { max-width: 48rem; margin: .55rem 0 0; color: #c5c8c1; font-size: clamp(.69rem, .76vw, .82rem); line-height: 1.56; }
+.architectureLayerDetailPanel > footer small { color: var(--gold-light); font: 650 .54rem/1 var(--font-chakra-petch), monospace; letter-spacing: .11em; }
+.architectureLayerDetailPanel > div h3 { margin: 0; color: #f0f0e9; font-size: clamp(1.55rem, 1.9vw, 2.25rem); font-weight: 570; letter-spacing: -.045em; }
+.architectureLayerDetailPanel > div p { max-width: 52rem; margin: .55rem 0 0; color: #c5c8c1; font-size: clamp(.82rem, .88vw, .96rem); line-height: 1.56; }
 .architectureLayerDetailPanel > footer { align-self: end; padding: .75rem .8rem; display: grid; gap: .35rem; border-left: 2px solid var(--gold-light); background: rgba(200,154,61,.05); }
-.architectureLayerDetailPanel > footer strong { color: #e6e6df; font-size: clamp(.68rem, .75vw, .8rem); font-weight: 570; line-height: 1.45; }
+.architectureLayerDetailPanel > footer strong { color: #e6e6df; font-size: clamp(.82rem, .88vw, .96rem); font-weight: 570; line-height: 1.45; }
 
 .architectureTrust {
   margin: 0;
@@ -4744,8 +4744,8 @@
   background: linear-gradient(100deg, rgba(119,184,139,.055), transparent 76%);
 }
 .architectureTrust > span { width: 34px; height: 34px; }
-.architectureTrust small { font-size: .39rem; }
-.architectureTrust strong { font-size: clamp(.57rem, .62vw, .67rem); line-height: 1.38; }
+.architectureTrust small { font-size: .49rem; }
+.architectureTrust strong { font-size: clamp(.7rem, .75vw, .82rem); line-height: 1.38; }
 
 .dataAssurance.trustCards {
   min-width: 0;
@@ -4770,11 +4770,11 @@
 
 .dataAssurance .dataAssuranceCard::after { width: 150px; right: -88px; top: -88px; }
 .dataAssurance .dataAssuranceCard > span { grid-column: 1; grid-row: 1 / 3; width: 34px; height: 34px; }
-.dataAssurance .dataAssuranceCard > p { grid-column: 2; grid-row: 1; margin: .05rem 0 .35rem; font-size: clamp(.39rem, .43vw, .46rem); }
-.dataAssurance .dataAssuranceCard h3 { grid-column: 2; grid-row: 2; margin: 0; font-size: clamp(1rem, 1.25vw, 1.42rem); line-height: 1.02; }
-.dataAssurance .dataAssuranceCard > div { grid-column: 1 / -1; grid-row: 3; margin-top: .65rem; color: #bfc2bb; font-size: clamp(.61rem, .68vw, .73rem); line-height: 1.5; }
+.dataAssurance .dataAssuranceCard > p { grid-column: 2; grid-row: 1; margin: .05rem 0 .35rem; font-size: clamp(.48rem, .51vw, .55rem); }
+.dataAssurance .dataAssuranceCard h3 { grid-column: 2; grid-row: 2; margin: 0; font-size: clamp(1.16rem, 1.38vw, 1.58rem); line-height: 1.02; }
+.dataAssurance .dataAssuranceCard > div { grid-column: 1 / -1; grid-row: 3; margin-top: .65rem; color: #bfc2bb; font-size: clamp(.75rem, .8vw, .86rem); line-height: 1.5; }
 .dataAssurance .dataAssuranceCard footer { grid-column: 1 / -1; grid-row: 4; margin-top: .6rem; padding-top: .55rem; gap: .28rem; border-top: 1px solid rgba(231,197,106,.09); }
-.dataAssurance .dataAssuranceCard footer i { padding: .25rem .3rem; font-size: .37rem; }
+.dataAssurance .dataAssuranceCard footer i { padding: .28rem .34rem; font-size: .44rem; }
 
 .dataContextRail {
   width: var(--container);
@@ -4787,8 +4787,8 @@
 
 .dataContextRail > div { min-width: 0; padding: clamp(.55rem, .9vh, .8rem) .85rem clamp(.55rem, .9vh, .8rem) 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .65rem; align-items: baseline; }
 .dataContextRail > div + div { padding-left: .85rem; border-left: 1px solid rgba(231,197,106,.1); }
-.dataContextRail dt { color: var(--gold-light); font: 650 clamp(.42rem, .46vw, .5rem)/1 var(--font-chakra-petch), monospace; letter-spacing: .08em; text-transform: uppercase; }
-.dataContextRail dd { min-width: 0; margin: 0; color: rgba(213,215,208,.63); font-size: clamp(.56rem, .62vw, .67rem); line-height: 1.4; }
+.dataContextRail dt { color: var(--gold-light); font: 650 clamp(.5rem, .54vw, .59rem)/1 var(--font-chakra-petch), monospace; letter-spacing: .08em; text-transform: uppercase; }
+.dataContextRail dd { min-width: 0; margin: 0; color: rgba(213,215,208,.63); font-size: clamp(.66rem, .71vw, .77rem); line-height: 1.4; }
 
 @media (min-width: 961px) and (max-height: 900px) {
   .dataViewport { min-height: 100svh; padding: 1.05rem 0 .85rem; gap: .65rem; }
@@ -4803,14 +4803,14 @@
   .architectureLayerToggle > i { width: 28px; height: 28px; }
   .architectureLayerDetailPanel { padding: .65rem .8rem; gap: .45rem; }
   .architectureLayerDetailPanel > header span { width: 30px; height: 30px; }
-  .architectureLayerDetailPanel > div h3 { font-size: clamp(1.1rem, 1.35vw, 1.45rem); }
-  .architectureLayerDetailPanel > div p { margin-top: .35rem; font-size: clamp(.62rem, .67vw, .71rem); line-height: 1.45; }
+  .architectureLayerDetailPanel > div h3 { font-size: clamp(1.28rem, 1.48vw, 1.62rem); }
+  .architectureLayerDetailPanel > div p { margin-top: .35rem; font-size: clamp(.7rem, .75vw, .8rem); line-height: 1.45; }
   .architectureLayerDetailPanel > footer { padding: .5rem .6rem; }
   .architectureTrust { padding: .45rem .6rem; }
   .architectureTrust > span { width: 28px; height: 28px; }
   .dataAssurance .dataAssuranceCard { padding: .65rem .75rem; }
   .dataAssurance .dataAssuranceCard > span { width: 28px; height: 28px; }
-  .dataAssurance .dataAssuranceCard > div { margin-top: .45rem; font-size: .61rem; line-height: 1.42; }
+  .dataAssurance .dataAssuranceCard > div { margin-top: .45rem; font-size: .68rem; line-height: 1.42; }
   .dataAssurance .dataAssuranceCard footer { margin-top: .4rem; padding-top: .4rem; }
   .dataContextRail > div { padding-top: .45rem; padding-bottom: .45rem; }
 }
