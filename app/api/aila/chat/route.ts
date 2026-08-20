@@ -96,7 +96,12 @@ export async function POST(request: NextRequest) {
     const payload = await openAiResponse.json();
     if (!openAiResponse.ok) {
       console.error('AILA response error', openAiResponse.status, payload?.error?.type);
-      return NextResponse.json({ error: lang === 'de' ? 'AILA kann gerade nicht antworten.' : 'AILA cannot answer right now.' }, { status: 502 });
+      const fallback = buildFallbackAilaResponse(currentContext, lang);
+      return NextResponse.json({
+        answer: fallback.message,
+        ...fallback,
+        degraded: true,
+      });
     }
 
     const output = outputText(payload);
@@ -112,7 +117,7 @@ export async function POST(request: NextRequest) {
     const parsed = parseAilaModelOutput(parsedJson);
     if (!parsed) {
       const fallback = buildFallbackAilaResponse(currentContext, lang);
-      return NextResponse.json({ answer: fallback.message, ...fallback });
+      return NextResponse.json({ answer: fallback.message, ...fallback, degraded: true });
     }
 
     const mergedContext = mergeAilaSalesContext(currentContext, {

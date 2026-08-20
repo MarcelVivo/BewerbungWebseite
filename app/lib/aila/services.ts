@@ -92,6 +92,18 @@ export const AILA_SERVICE_LIBRARY: AilaServiceDefinition[] = [
     priority: 78,
   },
   {
+    id: "online-ordering",
+    name: "Online-Bestellung & Vorbestellung",
+    category: "software",
+    description:
+      "Ermöglicht strukturierte Bestellungen mit Sortiment, Abhol- oder Lieferfenstern und automatischer Bestätigung.",
+    solves: ["telefonische Bestellungen", "Übertragungsfehler", "unklare Abholzeiten"],
+    suitableFor: ["Gastronomie", "Bäckereien", "Detailhandel", "wiederkehrende Bestellungen"],
+    dependencies: ["gepflegtes Sortiment", "klarer Erfüllungsprozess"],
+    incompatibleWith: ["unklare Verfügbarkeit oder täglich völlig wechselnde Abläufe"],
+    priority: 85,
+  },
+  {
     id: "local-search",
     name: "Lokale Sichtbarkeit",
     category: "marketing",
