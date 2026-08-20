@@ -6,7 +6,6 @@ import { useEffect, useRef, type RefObject } from 'react';
 import { Object3D } from 'three';
 import FlightPathEditor from './FlightPathEditor';
 import TitleDepthLayer from './TitleDepthLayer';
-import AilaParticleGreeting from './AilaParticleGreeting';
 import {
   getFlightPathDraft,
   setFlightPathRuntime,
@@ -276,7 +275,6 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
     const triggerAttention = () => {
       if (videoMode === 'attention' || reducedMotion.matches || (root.dataset.heroPhase ?? 'loading') !== 'revealed') return;
       switchVideo(AILA_ATTENTION_VIDEO, 'attention');
-      entity.dataset.greeting = 'false';
     };
 
     interaction.addEventListener('click', triggerAttention);
@@ -829,10 +827,6 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       }
 
       const activeStop = DOCKING_STOPS[pathTarget.activeStationIndex];
-      const greetingVisible = (root.dataset.heroPhase ?? 'loading') === 'revealed'
-        && window.scrollY <= window.innerHeight * .58
-        && videoMode === 'idle';
-      entity.dataset.greeting = greetingVisible ? 'true' : 'false';
       // The route needs a projected dock position before that station is on
       // screen. Once the follower is genuinely docked, however, use the
       // browser's live ring rectangle as the final authority. This keeps the
@@ -939,7 +933,7 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       const visiblePosition = mobileViewport
         ? {
             ...current,
-            x: greetingVisible ? 27 : clamp(current.x, 26, 74),
+            x: clamp(current.x, 26, 74),
             y: clamp(current.y, 17, 78),
             scale: Math.min(current.scale, .76),
             rotation: current.rotation * .42,
@@ -949,7 +943,6 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
       entity.style.left = `${visiblePosition.x.toFixed(3)}vw`;
       entity.style.top = `${visiblePosition.y.toFixed(3)}vh`;
       entity.style.transform = `translate3d(-50%, -50%, 0) rotate(${visiblePosition.rotation.toFixed(3)}deg) scale(${visiblePosition.scale.toFixed(4)})`;
-      entity.style.setProperty('--aila-counter-rotation', `${(-visiblePosition.rotation).toFixed(3)}deg`);
       entity.style.opacity = visiblePosition.opacity.toFixed(3);
       renderCore();
       if (!mobileViewport) renderTrail();
@@ -1067,7 +1060,6 @@ export default function ScrollEntity({ rootRef }: ScrollEntityProps) {
           transform: `translate3d(-50%, -50%, 0) rotate(${getFlightPathDraft().start.rotation}deg) scale(${getFlightPathDraft().start.scale})`,
         }}
       >
-        <AilaParticleGreeting />
         <button
           ref={interactionRef}
           type="button"

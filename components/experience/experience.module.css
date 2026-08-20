@@ -52,7 +52,6 @@
   pointer-events: none;
   transform-origin: center;
   will-change: transform, opacity;
-  /* The AILA greeting deliberately sits outside the carrier's image bounds. */
   contain: layout style;
   /* Titles now have their own foreground depth layer, so the organism can be
      composited normally and retain its solid body, contrast and dark details. */
@@ -68,64 +67,6 @@
     drop-shadow(0 1.8rem 3rem rgba(0, 0, 0, .7))
     drop-shadow(0 0 2rem rgba(139, 42, 42, .17))
     drop-shadow(0 0 1.35rem rgba(231, 197, 106, .16));
-}
-
-.ailaGreeting {
-  position: absolute;
-  z-index: 8;
-  top: 58%;
-  right: auto;
-  left: 64%;
-  width: clamp(18rem, 28vw, 24rem);
-  aspect-ratio: 2.86 / 1;
-  display: block;
-  opacity: 0;
-  visibility: hidden;
-  mix-blend-mode: normal;
-  filter:
-    drop-shadow(0 0 .7rem rgba(246, 227, 161, .12))
-    drop-shadow(0 .8rem 1.8rem rgba(0, 0, 0, .38));
-  transform: translate3d(-.65rem, -.45rem, 0) scale(.9);
-  transform-origin: left top;
-  transition:
-    opacity .48s ease,
-    visibility 0s linear .48s,
-    transform .7s cubic-bezier(.16, .8, .2, 1);
-  pointer-events: none;
-}
-
-.ailaGreetingCanvas {
-  width: 100%;
-  height: 100%;
-  display: block;
-  transform-origin: left center;
-  will-change: transform;
-  animation: ailaGreetingDrift 7.2s ease-in-out infinite;
-}
-
-.scrollEntity[data-greeting='true'] .ailaGreeting {
-  opacity: 1;
-  visibility: visible;
-  transform: translate3d(0, 0, 0) scale(1);
-  transition-delay: .62s, 0s, .62s;
-}
-
-.ailaGreetingAccessible {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-@keyframes ailaGreetingDrift {
-  0%, 100% { transform: rotate(var(--aila-counter-rotation, 0deg)) translate3d(0, 0, 0); }
-  32% { transform: rotate(var(--aila-counter-rotation, 0deg)) translate3d(.18rem, -.22rem, 0); }
-  68% { transform: rotate(var(--aila-counter-rotation, 0deg)) translate3d(-.12rem, .12rem, 0); }
 }
 
 .scrollEntityGrabSurface {
@@ -3813,13 +3754,6 @@
     filter:
       drop-shadow(0 .8rem 1.4rem rgba(0, 0, 0, .56))
       drop-shadow(0 0 .75rem rgba(231, 197, 106, .1));
-  }
-
-  .ailaGreeting {
-    top: 55%;
-    right: auto;
-    left: 55%;
-    width: clamp(15rem, 70vw, 17rem);
   }
 
   .mobileNavigator {
