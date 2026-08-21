@@ -1,9 +1,5 @@
-// Shared server-side spam guard for the public lead forms (/api/kontakt,
-// /api/re-anfrage). No external service (Upstash/Redis) is configured, so
-// this deliberately skips IP-based rate limiting — Vercel functions are
-// stateless per-invocation and an in-memory counter would give false
-// confidence. Instead it relies on two checks that catch the overwhelming
-// majority of scripted/bot spam without any infrastructure:
+// Shared server-side spam guard for public lead forms. It complements the
+// best-effort per-instance request limiter with two payload-level checks:
 //   1. Honeypot field: invisible to humans, almost always filled by bots.
 //   2. Minimum fill time: a human needs a few seconds to complete a form;
 //      scripted submissions post near-instantly.

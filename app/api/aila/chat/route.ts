@@ -12,25 +12,12 @@ import {
   parseAilaModelOutput,
 } from '@/app/lib/aila/responseSchema';
 import type { AilaAnimationState, AilaUiAction } from '@/app/lib/aila/types';
+import { validatePublicPost } from '@/app/lib/security';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 type HistoryMessage = { role: 'user' | 'assistant'; content: string };
-
-const requests = new Map<string, number[]>();
-const WINDOW_MS = 60_000;
-const MAX_REQUESTS = 12;
-
-function allowed(request: NextRequest) {
-  const address = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'local';
-  const now = Date.now();
-  const recent = (requests.get(address) ?? []).filter((time) => now - time < WINDOW_MS);
-  if (recent.length >= MAX_REQUESTS) return false;
-  recent.push(now);
-  requests.set(address, recent);
-  return true;
-}
 
 function outputText(payload: any) {
   if (typeof payload?.output_text === 'string') return payload.output_text.trim();
@@ -42,9 +29,14 @@ function outputText(payload: any) {
 }
 
 export async function POST(request: NextRequest) {
-  if (!allowed(request)) {
-    return NextResponse.json({ error: 'Zu viele Anfragen. Bitte kurz warten.' }, { status: 429 });
-  }
+  const rejected = validatePublicPost(request, {
+    key: 'aila-chat',
+    limit: 12,
+    windowMs: 60_000,
+    contentTypes: ['application/json'],
+    maxBytes: 32_000,
+  });
+  if (rejected) return rejected;
 
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) return NextResponse.json({ error: 'AILA ist noch nicht konfiguriert.' }, { status: 503 });
@@ -60,6 +52,10 @@ export async function POST(request: NextRequest) {
           .slice(-10)
           .map((item: any) => ({ role: item.role, content: item.content.slice(0, 1600) }))
       : [];
+    const historyLength = history.reduce((sum, entry) => sum + entry.content.length, 0);
+    if (historyLength > 12_000) {
+      return NextResponse.json({ error: 'Gespräch ist zu lang. Bitte starte eine neue Sitzung.' }, { status: 413 });
+    }
     const currentContext = sanitizeAilaSalesContext(
       body?.context,
       createInitialAilaSalesContext(),
@@ -91,6 +87,7 @@ export async function POST(request: NextRequest) {
         store: false,
       }),
       cache: 'no-store',
+      signal: AbortSignal.timeout(30_000),
     });
 
     const payload = await openAiResponse.json();
@@ -169,7 +166,10 @@ export async function POST(request: NextRequest) {
         parsed.shouldHandover || mergedContext.currentStage === 'handover',
     };
 
-    return NextResponse.json({ answer: response.message, ...response });
+    return NextResponse.json(
+      { answer: response.message, ...response },
+      { headers: { 'Cache-Control': 'no-store' } },
+    );
   } catch (error) {
     console.error('AILA chat failed', error instanceof Error ? error.message : 'unknown error');
     return NextResponse.json({ error: 'AILA ist voruebergehend nicht erreichbar.' }, { status: 500 });

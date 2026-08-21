@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { NextResponse } from 'next/server';
 import { requireOwner } from '../../../lib/auth';
+import { rateLimit, validateSameOrigin } from '../../lib/security';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -9,6 +10,7 @@ export const dynamic = 'force-dynamic';
 // Use /tmp on Vercel (read-only file system), otherwise write into public/uploads locally.
 const isVercel = !!process.env.VERCEL;
 const uploadDir = isVercel ? path.join('/tmp', 'uploads') : path.join(process.cwd(), 'public', 'uploads');
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 
 function safeName(name = '') {
   return name
@@ -18,6 +20,10 @@ function safeName(name = '') {
 }
 
 export async function POST(request) {
+  const originError = validateSameOrigin(request);
+  if (originError) return originError;
+  const limited = rateLimit(request, { key: 'owner-upload', limit: 10, windowMs: 10 * 60_000 });
+  if (limited) return limited;
   const session = requireOwner();
   if (!session) return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
 
@@ -26,10 +32,16 @@ export async function POST(request) {
   if (!file || typeof file === 'string') {
     return NextResponse.json({ ok: false, error: 'Keine Datei übergeben' }, { status: 400 });
   }
+  if (file.size <= 0 || file.size > MAX_UPLOAD_BYTES || file.type !== 'application/pdf') {
+    return NextResponse.json({ ok: false, error: 'Nur PDF-Dateien bis 10 MB sind erlaubt.' }, { status: 415 });
+  }
 
   try {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
+    if (buffer.subarray(0, 5).toString('ascii') !== '%PDF-') {
+      return NextResponse.json({ ok: false, error: 'Die Datei ist keine gültige PDF-Datei.' }, { status: 415 });
+    }
     const original = safeName(file.name);
     const filename = `${Date.now()}-${original}`;
     await fs.mkdir(uploadDir, { recursive: true });
@@ -55,6 +67,8 @@ export async function GET(request) {
       headers: {
         'Content-Type': ct,
         'Content-Disposition': `inline; filename="${name}"`,
+        'Cache-Control': 'private, no-store, max-age=0',
+        'X-Content-Type-Options': 'nosniff',
       },
     });
   } catch (e) {

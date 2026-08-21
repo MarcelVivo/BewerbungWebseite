@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { createClient } from '@supabase/supabase-js';
 import { escapeHtml, isSpamSubmission, tooLong } from '../../lib/spamGuard';
+import { cleanText, validEmail, validatePublicPost } from '../../lib/security';
 
 type Anforderung = { text: string; prio: 'must' | 'nice' };
 
@@ -31,16 +32,42 @@ function pill(items: string[], color = '#1e2235', text = '#e2e8f0') {
 }
 
 export async function POST(req: Request) {
-  try {
-    const body = (await req.json()) as Payload;
-    const { name, email, firma, telefon, branche, projekttyp,
-            istSituation, schmerzpunkte, anforderungen, nfAnforderungen,
-            budget, zeitrahmen, notizen, consent, hpWebsite, startedAt } = body;
+  const rejected = validatePublicPost(req, {
+    key: 'project-request',
+    limit: 4,
+    windowMs: 10 * 60_000,
+    contentTypes: ['application/json'],
+    maxBytes: 48_000,
+  });
+  if (rejected) return rejected;
 
-    if (!name?.trim() || !email?.trim() || !branche || !projekttyp || consent !== true) {
+  try {
+    const raw = (await req.json()) as Partial<Payload>;
+    const name = cleanText(raw.name, 200);
+    const email = cleanText(raw.email, 200).toLowerCase();
+    const firma = cleanText(raw.firma, 200);
+    const telefon = cleanText(raw.telefon, 80);
+    const branche = cleanText(raw.branche, 200);
+    const projekttyp = cleanText(raw.projekttyp, 200);
+    const budget = cleanText(raw.budget, 120);
+    const zeitrahmen = cleanText(raw.zeitrahmen, 120);
+    const notizen = cleanText(raw.notizen, 5_000);
+    const istSituation = Array.isArray(raw.istSituation) ? raw.istSituation.map(value => cleanText(value, 300)).filter(Boolean).slice(0, 20) : [];
+    const schmerzpunkte = Array.isArray(raw.schmerzpunkte) ? raw.schmerzpunkte.map(value => cleanText(value, 300)).filter(Boolean).slice(0, 20) : [];
+    const nfAnforderungen = Array.isArray(raw.nfAnforderungen) ? raw.nfAnforderungen.map(value => cleanText(value, 300)).filter(Boolean).slice(0, 20) : [];
+    const anforderungen: Anforderung[] = Array.isArray(raw.anforderungen)
+      ? raw.anforderungen
+          .filter((value): value is Anforderung => Boolean(value) && typeof value === 'object' && (value.prio === 'must' || value.prio === 'nice'))
+          .map(value => ({ text: cleanText(value.text, 500), prio: value.prio }))
+          .filter(value => value.text)
+          .slice(0, 30)
+      : [];
+    const { consent, hpWebsite, startedAt } = raw;
+
+    if (!name || !validEmail(email) || !branche || !projekttyp || consent !== true) {
       return NextResponse.json({ error: 'Fehlende Pflichtfelder' }, { status: 400 });
     }
-    if (tooLong(name, 200) || tooLong(email, 200) || tooLong(firma, 200) || tooLong(notizen)) {
+    if (tooLong(raw.name, 200) || tooLong(raw.email, 200) || tooLong(raw.firma, 200) || tooLong(raw.notizen)) {
       return NextResponse.json({ error: 'Eingabe zu lang' }, { status: 400 });
     }
     if (isSpamSubmission(hpWebsite, startedAt)) {

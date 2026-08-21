@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { validatePublicPost } from '@/app/lib/security';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -6,6 +7,15 @@ export const dynamic = 'force-dynamic';
 const MAX_AUDIO_BYTES = 8 * 1024 * 1024;
 
 export async function POST(request: NextRequest) {
+  const rejected = validatePublicPost(request, {
+    key: 'aila-transcribe',
+    limit: 8,
+    windowMs: 60_000,
+    contentTypes: ['multipart/form-data'],
+    maxBytes: MAX_AUDIO_BYTES + 512_000,
+  });
+  if (rejected) return rejected;
+
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) return NextResponse.json({ error: 'AILA ist noch nicht konfiguriert.' }, { status: 503 });
 
@@ -15,6 +25,9 @@ export async function POST(request: NextRequest) {
     const lang = incoming.get('lang') === 'en' ? 'en' : 'de';
     if (!(audio instanceof File) || audio.size === 0 || audio.size > MAX_AUDIO_BYTES) {
       return NextResponse.json({ error: lang === 'de' ? 'Die Aufnahme ist ungueltig oder zu gross.' : 'The recording is invalid or too large.' }, { status: 400 });
+    }
+    if (audio.type && !/^audio\/(webm|mpeg|mp4|ogg|wav|x-m4a|aac)$/i.test(audio.type)) {
+      return NextResponse.json({ error: 'Nicht unterstütztes Audioformat.' }, { status: 415 });
     }
 
     const form = new FormData();
@@ -27,6 +40,7 @@ export async function POST(request: NextRequest) {
       headers: { Authorization: `Bearer ${apiKey}` },
       body: form,
       cache: 'no-store',
+      signal: AbortSignal.timeout(30_000),
     });
     const payload = await response.json();
     if (!response.ok || typeof payload?.text !== 'string') {

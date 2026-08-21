@@ -88,8 +88,9 @@ function contentDisposition(disposition: 'inline' | 'attachment', filename: stri
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { slug: string } },
+  { params }: { params: Promise<{ slug: string }> },
 ) {
+  const { slug } = await params;
   const session = getSessionFromCookies();
   if (!session) {
     return Response.json(
@@ -98,7 +99,7 @@ export async function GET(
     );
   }
 
-  const definition = DOCUMENTS[params.slug];
+  const definition = DOCUMENTS[slug];
   if (!definition) {
     return Response.json({ error: 'Dokument nicht gefunden.' }, { status: 404 });
   }
@@ -114,7 +115,7 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error(`Expertise document could not be read: ${params.slug}`, error);
+    console.error(`Expertise document could not be read: ${slug}`, error);
     return Response.json({ error: 'Dokument derzeit nicht verfügbar.' }, { status: 503 });
   }
 }

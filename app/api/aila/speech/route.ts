@@ -1,9 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { validatePublicPost } from '@/app/lib/security';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
+  const rejected = validatePublicPost(request, {
+    key: 'aila-speech',
+    limit: 10,
+    windowMs: 60_000,
+    contentTypes: ['application/json'],
+    maxBytes: 8_000,
+  });
+  if (rejected) return rejected;
+
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) return NextResponse.json({ error: 'AILA ist noch nicht konfiguriert.' }, { status: 503 });
 
@@ -26,6 +36,7 @@ export async function POST(request: NextRequest) {
         response_format: 'mp3',
       }),
       cache: 'no-store',
+      signal: AbortSignal.timeout(25_000),
     });
 
     if (!response.ok) {
@@ -41,4 +52,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Sprachausgabe nicht verfuegbar.' }, { status: 500 });
   }
 }
-

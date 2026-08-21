@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { cookies } from 'next/headers';
+import { validatePublicPost } from '../../lib/security';
 
 function sign(payload, secret) {
   const b64 = Buffer.from(JSON.stringify(payload)).toString('base64url');
@@ -14,6 +15,15 @@ function secureEqual(value, expected) {
 }
 
 export async function POST(request) {
+  const rejected = validatePublicPost(request, {
+    key: 'expertise-login',
+    limit: 5,
+    windowMs: 15 * 60_000,
+    contentTypes: ['application/json'],
+    maxBytes: 4_000,
+  });
+  if (rejected) return rejected;
+
   const ADMIN_USER = process.env.ADMIN_USER;
   const ADMIN_PASS = process.env.ADMIN_PASS;
   const SESSION_SECRET = process.env.SESSION_SECRET;
@@ -33,8 +43,8 @@ export async function POST(request) {
     return Response.json({ error: 'Ungültige Anfrage.' }, { status: 400 });
   }
 
-  const username = typeof credentials?.username === 'string' ? credentials.username : '';
-  const password = typeof credentials?.password === 'string' ? credentials.password : '';
+  const username = typeof credentials?.username === 'string' ? credentials.username.slice(0, 200) : '';
+  const password = typeof credentials?.password === 'string' ? credentials.password.slice(0, 500) : '';
   const usernameMatches = secureEqual(username, ADMIN_USER);
   const passwordMatches = secureEqual(password, ADMIN_PASS);
   const authenticated = usernameMatches && passwordMatches;
@@ -51,7 +61,7 @@ export async function POST(request) {
   const token = sign({ u: username, r: role, exp }, SESSION_SECRET);
   cookies().set('msb_token', token, {
     httpOnly: true,
-    sameSite: 'lax',
+    sameSite: 'strict',
     secure: process.env.NODE_ENV === 'production',
     path: '/',
     maxAge: 60 * 60 * 8,

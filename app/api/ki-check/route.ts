@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { createClient } from '@supabase/supabase-js';
+import { escapeHtml, isSpamSubmission, tooLong } from '@/app/lib/spamGuard';
+import { cleanText, validEmail, validatePublicPost } from '@/app/lib/security';
 
 type CheckPayload = {
   answers: Record<string, string | string[]>;
@@ -9,6 +11,8 @@ type CheckPayload = {
   firma: string;
   telefon?: string;
   consent: boolean;
+  hpWebsite?: string;
+  startedAt?: number;
 };
 
 function label(v: string | string[] | undefined): string {
@@ -127,14 +131,52 @@ function generateReport(answers: Record<string, string | string[]>) {
 }
 
 export async function POST(req: Request) {
-  try {
-    const { answers, name, email, firma, telefon, consent } = (await req.json()) as CheckPayload;
+  const rejected = validatePublicPost(req, {
+    key: 'ki-check',
+    limit: 4,
+    windowMs: 10 * 60_000,
+    contentTypes: ['application/json'],
+    maxBytes: 24_000,
+  });
+  if (rejected) return rejected;
 
-    if (!name?.trim() || !email?.trim() || !firma?.trim() || consent !== true) {
+  try {
+    const raw = (await req.json()) as Partial<CheckPayload>;
+    const name = cleanText(raw.name, 200).replace(/\s+/g, ' ');
+    const email = cleanText(raw.email, 200).toLowerCase();
+    const firma = cleanText(raw.firma, 200).replace(/\s+/g, ' ');
+    const telefon = cleanText(raw.telefon, 80).replace(/\s+/g, ' ');
+    const consent = raw.consent;
+    const rawAnswers = raw.answers && typeof raw.answers === 'object' && !Array.isArray(raw.answers)
+      ? raw.answers
+      : {};
+    const answers = Object.fromEntries(Object.keys(QUESTION_LABELS).map((key) => {
+      const value = rawAnswers[key];
+      if (Array.isArray(value)) {
+        return [key, value.map(entry => cleanText(entry, 300)).filter(Boolean).slice(0, 12)];
+      }
+      return [key, cleanText(value, 500)];
+    })) as Record<string, string | string[]>;
+
+    if (!name || !validEmail(email) || !firma || consent !== true) {
       return NextResponse.json({ error: 'Fehlende Felder' }, { status: 400 });
+    }
+    if (tooLong(raw.name, 200) || tooLong(raw.email, 200) || tooLong(raw.firma, 200) || tooLong(raw.telefon, 80)) {
+      return NextResponse.json({ error: 'Eingabe zu lang' }, { status: 400 });
+    }
+    if (isSpamSubmission(raw.hpWebsite, raw.startedAt)) {
+      return NextResponse.json({ ok: true });
     }
 
     const { readinessLabel, readinessDesc, top3 } = generateReport(answers);
+    const safe = {
+      name: escapeHtml(name),
+      email: escapeHtml(email),
+      firma: escapeHtml(firma),
+      telefon: escapeHtml(telefon),
+      readinessLabel: escapeHtml(readinessLabel),
+      readinessDesc: escapeHtml(readinessDesc),
+    };
 
     // ── Supabase: Kunden-Eintrag anlegen ──────────────────────────────────
     if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
@@ -175,7 +217,7 @@ export async function POST(req: Request) {
         .map(([id, lbl]) => `
           <tr>
             <td style="padding:5px 16px 5px 0;color:#94a3b8;font-size:12px;white-space:nowrap;vertical-align:top">${lbl}</td>
-            <td style="padding:5px 0;color:#e2e8f0;font-size:13px">${label(answers[id])}</td>
+            <td style="padding:5px 0;color:#e2e8f0;font-size:13px">${escapeHtml(label(answers[id]))}</td>
           </tr>`)
         .join('');
 
@@ -183,7 +225,7 @@ export async function POST(req: Request) {
         from:    'noreply@marcelspahr.ch',
         to:      'kontakt@marcelspahr.ch',
         replyTo: email,
-        subject: `🎯 KI-Check Lead: ${firma} (${name})`,
+        subject: `KI-Check Lead: ${firma} (${name})`,
         html: `
           <div style="font-family:sans-serif;max-width:640px;margin:0 auto;background:#0f1117;color:#e2e8f0;border-radius:12px;overflow:hidden">
             <div style="background:#c9a84c;padding:22px 32px">
@@ -192,14 +234,14 @@ export async function POST(req: Request) {
             </div>
             <div style="padding:28px 32px">
               <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
-                <tr><td style="padding:5px 0;color:#94a3b8;font-size:13px;width:110px">Name</td><td style="color:#f1f5f9;font-size:13px;font-weight:600">${name}</td></tr>
-                <tr><td style="padding:5px 0;color:#94a3b8;font-size:13px">E-Mail</td><td><a href="mailto:${email}" style="color:#c9a84c;font-size:13px">${email}</a></td></tr>
-                <tr><td style="padding:5px 0;color:#94a3b8;font-size:13px">Firma</td><td style="color:#f1f5f9;font-size:13px">${firma}</td></tr>
-                ${telefon ? `<tr><td style="padding:5px 0;color:#94a3b8;font-size:13px">Telefon</td><td style="color:#f1f5f9;font-size:13px">${telefon}</td></tr>` : ''}
+                <tr><td style="padding:5px 0;color:#94a3b8;font-size:13px;width:110px">Name</td><td style="color:#f1f5f9;font-size:13px;font-weight:600">${safe.name}</td></tr>
+                <tr><td style="padding:5px 0;color:#94a3b8;font-size:13px">E-Mail</td><td><a href="mailto:${safe.email}" style="color:#c9a84c;font-size:13px">${safe.email}</a></td></tr>
+                <tr><td style="padding:5px 0;color:#94a3b8;font-size:13px">Firma</td><td style="color:#f1f5f9;font-size:13px">${safe.firma}</td></tr>
+                ${safe.telefon ? `<tr><td style="padding:5px 0;color:#94a3b8;font-size:13px">Telefon</td><td style="color:#f1f5f9;font-size:13px">${safe.telefon}</td></tr>` : ''}
               </table>
               <div style="background:#1e2235;border-radius:8px;padding:14px 18px;margin-bottom:20px;border-left:3px solid #c9a84c">
-                <p style="margin:0 0 3px;color:#c9a84c;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700">${readinessLabel}</p>
-                <p style="margin:0;color:#e2e8f0;font-size:13px;line-height:1.6">${readinessDesc}</p>
+                <p style="margin:0 0 3px;color:#c9a84c;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700">${safe.readinessLabel}</p>
+                <p style="margin:0;color:#e2e8f0;font-size:13px;line-height:1.6">${safe.readinessDesc}</p>
               </div>
               <p style="margin:0 0 10px;color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;font-weight:600">Alle Antworten</p>
               <table style="width:100%;border-collapse:collapse">${answerRows}</table>
@@ -216,8 +258,8 @@ export async function POST(req: Request) {
       // 2. Personalized report to user
       const recHtml = top3.map(r => `
         <div style="background:#f8fafc;border-radius:8px;padding:16px 20px;margin-bottom:12px;border-left:3px solid #c9a84c">
-          <p style="margin:0 0 4px;font-weight:700;color:#1e293b;font-size:14px">${r.title}</p>
-          <p style="margin:0 0 8px;color:#475569;font-size:13px;line-height:1.6">${r.reason}</p>
+          <p style="margin:0 0 4px;font-weight:700;color:#1e293b;font-size:14px">${escapeHtml(r.title)}</p>
+          <p style="margin:0 0 8px;color:#475569;font-size:13px;line-height:1.6">${escapeHtml(r.reason)}</p>
           <a href="${r.url}" target="_blank" rel="noopener noreferrer" style="color:#b8943a;font-size:13px;text-decoration:none;font-weight:600;display:inline-block">Mehr erfahren →</a>
         </div>`).join('');
 
@@ -232,7 +274,7 @@ export async function POST(req: Request) {
               <p style="margin:6px 0 0;color:#7a6d5a;font-size:13px">Persönlich geprüft von Marcel Spahr. marcelspahr.ch.</p>
             </div>
             <div style="padding:32px">
-              <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#334155">Guten Tag ${name},</p>
+              <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#334155">Guten Tag ${safe.name},</p>
               <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#334155">
                 vielen Dank für Ihre Antworten. Ich habe Ihre Angaben geprüft und daraus diese
                 Einschätzung erstellt. Sie berücksichtigt Ihre heutige Situation und die Ziele,
@@ -240,8 +282,8 @@ export async function POST(req: Request) {
               </p>
               <div style="background:#0c0a06;border-radius:10px;padding:20px 24px;margin-bottom:28px">
                 <p style="margin:0 0 4px;color:#c9a84c;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700">Ihr KI-Reifegrad</p>
-                <p style="margin:0 0 8px;color:#f4edd8;font-size:18px;font-weight:700">${readinessLabel}</p>
-                <p style="margin:0;color:#a89880;font-size:13px;line-height:1.6">${readinessDesc}</p>
+                <p style="margin:0 0 8px;color:#f4edd8;font-size:18px;font-weight:700">${safe.readinessLabel}</p>
+                <p style="margin:0;color:#a89880;font-size:13px;line-height:1.6">${safe.readinessDesc}</p>
               </div>
               <p style="margin:0 0 14px;font-size:15px;color:#1e293b;font-weight:600">Meine konkreten Empfehlungen für Sie:</p>
               ${recHtml}

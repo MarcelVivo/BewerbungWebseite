@@ -8,8 +8,9 @@ export function generateStaticParams() {
   return PROJECTS.map(p => ({ slug: p.slug }));
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const project = getProject(params.slug);
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const project = getProject(slug);
   if (!project) return {};
   return {
     title: `${project.de.title} | Marcel Spahr`,
@@ -25,8 +26,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default function PortfolioDetailPage({ params }: { params: { slug: string } }) {
-  const project = getProject(params.slug);
+export default async function PortfolioDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const project = getProject(slug);
   if (!project) notFound();
-  return <PortfolioDetailContent slug={params.slug} />;
+  return <PortfolioDetailContent slug={slug} />;
 }

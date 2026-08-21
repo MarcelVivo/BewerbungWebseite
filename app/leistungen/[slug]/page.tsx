@@ -8,8 +8,9 @@ export function generateStaticParams() {
   return SERVICES.map(s => ({ slug: s.slug }));
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const s = getService(params.slug);
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const s = getService(slug);
   if (!s) return {};
   return {
     title: `${s.de.title} Schweiz | Marcel Spahr`,
@@ -24,8 +25,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default function ServicePage({ params }: { params: { slug: string } }) {
-  const s = getService(params.slug);
+export default async function ServicePage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const s = getService(slug);
   if (!s) notFound();
 
   const serviceJsonLd = {
@@ -49,7 +51,7 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
       />
-      <ServicePageContent slug={params.slug} />
+      <ServicePageContent slug={slug} />
     </>
   );
 }

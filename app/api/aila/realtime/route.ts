@@ -2,45 +2,28 @@ import { createHash } from 'node:crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import type { AilaLanguage } from '@/app/lib/ailaKnowledge';
 import { buildAilaRealtimeInstructions } from '@/app/lib/aila/prompt';
+import { validatePublicPost } from '@/app/lib/security';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-
-const requests = new Map<string, number[]>();
-const WINDOW_MS = 60_000;
-const MAX_REQUESTS = 8;
 
 function clientAddress(request: NextRequest) {
   return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'local';
 }
 
-function allowed(request: NextRequest) {
-  const address = clientAddress(request);
-  const now = Date.now();
-  const recent = (requests.get(address) ?? []).filter((time) => now - time < WINDOW_MS);
-  if (recent.length >= MAX_REQUESTS) return false;
-  recent.push(now);
-  requests.set(address, recent);
-  return true;
-}
-
 export async function POST(request: NextRequest) {
-  const origin = request.headers.get('origin');
-  if (origin && origin !== new URL(request.url).origin) {
-    return NextResponse.json({ error: 'Invalid origin' }, { status: 403 });
-  }
-  if (!allowed(request)) {
-    return NextResponse.json({ error: 'Zu viele Verbindungen. Bitte kurz warten.' }, { status: 429 });
-  }
+  const rejected = validatePublicPost(request, {
+    key: 'aila-realtime',
+    limit: 6,
+    windowMs: 5 * 60_000,
+    contentTypes: ['application/sdp'],
+    maxBytes: 120_000,
+  });
+  if (rejected) return rejected;
 
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     return NextResponse.json({ error: 'AILA ist noch nicht konfiguriert.' }, { status: 503 });
-  }
-
-  const contentType = request.headers.get('content-type') || '';
-  if (!contentType.includes('application/sdp')) {
-    return NextResponse.json({ error: 'Ungültige Sitzungsanfrage.' }, { status: 415 });
   }
 
   const sdp = await request.text();

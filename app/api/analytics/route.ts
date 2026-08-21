@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { validatePublicPost } from '@/app/lib/security';
 
 const EVENT_NAMES = new Set([
   'page_view', 'page_exit', 'journey_station_view', 'journey_navigation',
@@ -29,11 +30,16 @@ function safeMetadata(value: unknown) {
 }
 
 export async function POST(request: NextRequest) {
+  const rejected = validatePublicPost(request, {
+    key: 'analytics',
+    limit: 90,
+    windowMs: 60_000,
+    contentTypes: ['application/json'],
+    maxBytes: 8_000,
+  });
+  if (rejected) return rejected;
+
   try {
-    const origin = request.headers.get('origin');
-    if (origin && origin !== new URL(request.url).origin) {
-      return NextResponse.json({ error: 'Invalid origin' }, { status: 403 });
-    }
     const body = await request.json();
     if (!EVENT_NAMES.has(body.eventName) || typeof body.visitId !== 'string' || !/^[0-9a-f-]{36}$/i.test(body.visitId)) {
       return NextResponse.json({ error: 'Invalid event' }, { status: 400 });

@@ -2,15 +2,29 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 import { escapeHtml, isSpamSubmission, tooLong } from '../../lib/spamGuard';
+import { cleanText, validEmail, validatePublicPost } from '../../lib/security';
 
 export async function POST(request: Request) {
-  try {
-    const { name, email, message, consent, hpWebsite, startedAt } = await request.json();
+  const rejected = validatePublicPost(request, {
+    key: 'contact-form',
+    limit: 5,
+    windowMs: 10 * 60_000,
+    contentTypes: ['application/json'],
+    maxBytes: 12_000,
+  });
+  if (rejected) return rejected;
 
-    if (!name || !email || !message || consent !== true) {
+  try {
+    const body = await request.json();
+    const name = cleanText(body?.name, 200);
+    const email = cleanText(body?.email, 200).toLowerCase();
+    const message = cleanText(body?.message, 5_000);
+    const { consent, hpWebsite, startedAt } = body;
+
+    if (!name || !validEmail(email) || !message || consent !== true) {
       return NextResponse.json({ error: 'Fehlende Felder' }, { status: 400 });
     }
-    if (tooLong(name, 200) || tooLong(email, 200) || tooLong(message)) {
+    if (tooLong(body?.name, 200) || tooLong(body?.email, 200) || tooLong(body?.message)) {
       return NextResponse.json({ error: 'Eingabe zu lang' }, { status: 400 });
     }
     if (isSpamSubmission(hpWebsite, startedAt)) {

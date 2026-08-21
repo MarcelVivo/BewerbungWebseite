@@ -8,21 +8,14 @@ const nextConfig = {
   // "Cannot read properties of null (reading 'precision')".
   reactStrictMode: false,
   poweredByHeader: false,
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  experimental: {
-    outputFileTracingIncludes: {
-      '/api/expertise-documents/[slug]': ['./private/expertise/**/*.pdf'],
-    },
+  outputFileTracingIncludes: {
+    '/api/expertise-documents/[slug]': ['./private/expertise/**/*.pdf'],
   },
   async headers() {
     // No inline-script nonce infrastructure exists yet, so Next.js's own
-    // hydration/bootstrap scripts need 'unsafe-inline'/'unsafe-eval' in
-    // script-src. Everything else (frames, objects, forms, base) is locked
+    // hydration/bootstrap scripts currently need 'unsafe-inline' in
+    // script-src. 'unsafe-eval' is only permitted by the local dev server.
+    // Everything else (frames, objects, forms, base) is locked
     // to 'self'. The public site itself makes no third-party calls, but
     // /dashboard/* pages talk to Supabase directly from the browser
     // (createBrowserClient in lib/supabase/client.ts — REST + realtime
@@ -32,16 +25,19 @@ const nextConfig = {
     const supabaseWsUrl = supabaseUrl.replace(/^https:/, 'wss:');
     const csp = [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''}`,
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob:",
       "media-src 'self' blob: data:",
       "font-src 'self' data:",
+      "worker-src 'self' blob:",
+      "manifest-src 'self'",
       `connect-src 'self'${supabaseUrl ? ` ${supabaseUrl} ${supabaseWsUrl}` : ''}`,
       "frame-ancestors 'none'",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",
+      ...(process.env.NODE_ENV === 'production' ? ['upgrade-insecure-requests'] : []),
     ].join('; ');
 
     const securityHeaders = [
@@ -51,12 +47,37 @@ const nextConfig = {
       { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
       { key: 'Permissions-Policy', value: 'camera=(), microphone=(self), geolocation=(), payment=()' },
       { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+      { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
+      { key: 'Cross-Origin-Resource-Policy', value: 'same-origin' },
+      { key: 'X-DNS-Prefetch-Control', value: 'off' },
+      { key: 'Origin-Agent-Cluster', value: '?1' },
     ];
 
     return [
       {
         source: '/:path*',
         headers: securityHeaders,
+      },
+      {
+        source: '/api/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'private, no-store, max-age=0' },
+          { key: 'X-Robots-Tag', value: 'noindex, noarchive, nosnippet' },
+        ],
+      },
+      {
+        source: '/dashboard/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'private, no-store, max-age=0' },
+          { key: 'X-Robots-Tag', value: 'noindex, noarchive, nosnippet' },
+        ],
+      },
+      {
+        source: '/recruiter/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'private, no-store, max-age=0' },
+          { key: 'X-Robots-Tag', value: 'noindex, noarchive, nosnippet' },
+        ],
       },
     ];
   },

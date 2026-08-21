@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Rechnung } from '@/lib/types';
 
@@ -20,8 +21,8 @@ const TYP_LABEL: Record<string, string> = {
   mahnung:  'Zahlungserinnerung',
 };
 
-export default function PrintPage({ params }: { params: { id: string } }) {
-  const { id }                    = params;
+export default function PrintPage() {
+  const { id }                    = useParams<{ id: string }>();
   const [doc, setDoc]             = useState<Rechnung | null>(null);
   const [loading, setLoading]     = useState(true);
   const [notFound, setNotFound]   = useState(false);

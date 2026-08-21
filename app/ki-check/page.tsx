@@ -263,6 +263,7 @@ export default function KiCheckPage() {
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [form, setForm]       = useState({ name: '', email: '', firma: '', telefon: '' });
   const [consent, setConsent] = useState(false);
+  const [hpWebsite, setHpWebsite] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError]     = useState<string | null>(null);
   const startedRef = useRef(false);
@@ -271,6 +272,7 @@ export default function KiCheckPage() {
   const emailInputRef = useRef<HTMLInputElement | null>(null);
   const companyInputRef = useRef<HTMLInputElement | null>(null);
   const consentInputRef = useRef<HTMLInputElement | null>(null);
+  const formOpenedAtRef = useRef(Date.now());
 
   function showFormError(
     message: string,
@@ -347,7 +349,13 @@ export default function KiCheckPage() {
       const res = await fetch('/api/ki-check', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ answers, ...form, consent }),
+        body: JSON.stringify({
+          answers,
+          ...form,
+          consent,
+          hpWebsite,
+          startedAt: formOpenedAtRef.current,
+        }),
       });
       if (res.ok) {
         trackWebsiteEvent('form_success', { formId: 'ki', step: 12 });
@@ -502,6 +510,16 @@ export default function KiCheckPage() {
               className="ki-check-contact-form space-y-4"
               noValidate
             >
+              <label aria-hidden="true" style={{ position: 'absolute', left: '-10000px', width: 1, height: 1, overflow: 'hidden' }}>
+                Website
+                <input
+                  name="website"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  value={hpWebsite}
+                  onChange={event => setHpWebsite(event.target.value)}
+                />
+              </label>
               <input
                 ref={nameInputRef}
                 name="name"

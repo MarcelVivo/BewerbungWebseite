@@ -174,7 +174,10 @@ export default function RecruiterPage() {
   const router = useRouter();
 
   async function handleLogout() {
-    await fetch('/api/auth/recruiter', { method: 'DELETE' });
+    await fetch('/api/auth/recruiter', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+    });
     router.push('/recruiter/login');
     router.refresh();
   }

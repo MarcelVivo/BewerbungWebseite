@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 import { escapeHtml, isSpamSubmission, tooLong } from '@/app/lib/spamGuard';
+import { validatePublicPost } from '@/app/lib/security';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -24,12 +25,16 @@ function htmlList(items: string[], empty = 'Keine Angabe.') {
 }
 
 export async function POST(request: NextRequest) {
-  try {
-    const origin = request.headers.get('origin');
-    if (origin && origin !== new URL(request.url).origin) {
-      return NextResponse.json({ error: 'Ungültige Herkunft' }, { status: 403 });
-    }
+  const rejected = validatePublicPost(request, {
+    key: 'aila-lead',
+    limit: 5,
+    windowMs: 10 * 60_000,
+    contentTypes: ['application/json'],
+    maxBytes: 64_000,
+  });
+  if (rejected) return rejected;
 
+  try {
     const body = await request.json();
     const name = text(body?.contact?.name, 200);
     const email = text(body?.contact?.email, 200).toLowerCase();
