@@ -126,6 +126,7 @@ export function PerspectiveBusinessFlow({
   const perspectiveConfig = DEFAULT_SALES_PERSPECTIVE;
   const [sectionSize, setSectionSize] = useState({ width: 0, height: 0 });
   const perspectiveSectionRef = useRef<HTMLElement | null>(null);
+  const flowGridRef = useRef<HTMLDivElement | null>(null);
   const detailPanelRef = useRef<HTMLElement | null>(null);
   const flowCardRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const detailCardConfigRef = useRef<DetailCardConfig>(DEFAULT_DETAIL_CARD_CONFIG);
@@ -241,6 +242,82 @@ export function PerspectiveBusinessFlow({
   }, [sectionSize]);
 
   useEffect(() => {
+    const grid = flowGridRef.current;
+    if (!grid) return;
+
+    const compactQuery = window.matchMedia('(max-width: 699px)');
+    let frame = 0;
+
+    const clearDrumStyles = () => {
+      flowCardRefs.current.forEach((card) => {
+        if (!card) return;
+        card.style.removeProperty('--flow-drum-angle');
+        card.style.removeProperty('--flow-drum-depth');
+        card.style.removeProperty('--flow-drum-scale');
+        card.style.removeProperty('--flow-drum-opacity');
+        delete card.dataset.drumPosition;
+      });
+    };
+
+    const updateDrum = () => {
+      frame = 0;
+      if (!compactQuery.matches) {
+        clearDrumStyles();
+        return;
+      }
+
+      const gridBounds = grid.getBoundingClientRect();
+      const gridCenter = gridBounds.left + gridBounds.width / 2;
+
+      flowCardRefs.current.forEach((card) => {
+        if (!card) return;
+        const cardBounds = card.getBoundingClientRect();
+        const cardCenter = cardBounds.left + cardBounds.width / 2;
+        const distance = (cardCenter - gridCenter) / Math.max(cardBounds.width, 1);
+        const limitedDistance = Math.max(-1.55, Math.min(1.55, distance));
+        const distanceMagnitude = Math.min(1, Math.abs(limitedDistance));
+
+        card.style.setProperty('--flow-drum-angle', `${(-limitedDistance * 31).toFixed(2)}deg`);
+        card.style.setProperty('--flow-drum-depth', `${(-distanceMagnitude * 82).toFixed(2)}px`);
+        card.style.setProperty('--flow-drum-scale', (1 - distanceMagnitude * .105).toFixed(3));
+        card.style.setProperty('--flow-drum-opacity', (1 - distanceMagnitude * .32).toFixed(3));
+        card.dataset.drumPosition = distanceMagnitude < .34 ? 'front' : 'side';
+      });
+    };
+
+    const scheduleDrumUpdate = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(updateDrum);
+    };
+
+    updateDrum();
+    grid.addEventListener('scroll', scheduleDrumUpdate, { passive: true });
+    compactQuery.addEventListener('change', scheduleDrumUpdate);
+    const observer = new ResizeObserver(scheduleDrumUpdate);
+    observer.observe(grid);
+
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame);
+      grid.removeEventListener('scroll', scheduleDrumUpdate);
+      compactQuery.removeEventListener('change', scheduleDrumUpdate);
+      observer.disconnect();
+      clearDrumStyles();
+    };
+  }, [steps.length]);
+
+  const centerMobileFlowCard = (index: number) => {
+    if (typeof window === 'undefined' || !window.matchMedia('(max-width: 699px)').matches) return;
+    const grid = flowGridRef.current;
+    const card = flowCardRefs.current[index];
+    if (!grid || !card) return;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    grid.scrollTo({
+      left: card.offsetLeft - (grid.clientWidth - card.offsetWidth) / 2,
+      behavior: reducedMotion ? 'auto' : 'smooth',
+    });
+  };
+
+  useEffect(() => {
     if (selectedFlow === null) return;
 
     if (isCompactExperience()) return;
@@ -338,11 +415,13 @@ export function PerspectiveBusinessFlow({
   const selectFlow = (index: number) => {
     onSelect(index);
     setSelectedFlow((current) => current === index ? null : index);
+    centerMobileFlowCard(index);
   };
 
   const showFlow = (index: number) => {
     onSelect(index);
     setSelectedFlow(index);
+    centerMobileFlowCard(index);
   };
 
   const closeFlow = () => {
@@ -367,6 +446,7 @@ export function PerspectiveBusinessFlow({
     }}>
       <div className={styles.perspectiveFlowStage}>
         <div
+          ref={flowGridRef}
           className={`${styles.perspectiveFlowCardGrid} ${selectedFlow !== null ? styles.perspectiveFlowCardGridOpen : ''}`}
           style={gridStyle}
           data-interaction-hint={lang === 'de' ? 'KARTE WÄHLEN · DETAILS ÖFFNEN' : 'SELECT CARD · OPEN DETAILS'}

@@ -6132,6 +6132,79 @@
   .perspectiveFlowCardDetail { display: none; }
   .perspectiveFlowDetailPanel { margin-top: .3rem; }
 
+  /* Only the ten swipeable process cards form a spatial selection drum. */
+  .perspectiveFlowCardGrid {
+    gap: .9rem;
+    padding: .75rem 11vw 1.15rem !important;
+    scroll-padding-inline: 11vw;
+    scroll-snap-type: x mandatory;
+    perspective: 720px !important;
+    perspective-origin: center;
+  }
+  .perspectiveFlowCardGrid .perspectiveFlowNode,
+  .perspectiveFlowCardGrid .perspectiveFlowNode:hover,
+  .perspectiveFlowCardGrid .perspectiveFlowNode:focus-visible,
+  .perspectiveFlowCardGrid .perspectiveFlowNode[aria-current='step'],
+  .perspectiveFlowCardGrid .perspectiveFlowNode.perspectiveFlowSelected {
+    flex: 0 0 min(76vw, 20rem);
+    min-height: 5.35rem;
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+    border: 1px solid rgba(231,197,106,.34);
+    border-radius: .55rem;
+    background:
+      linear-gradient(180deg, rgba(255,242,194,.1), transparent 22%, transparent 72%, rgba(0,0,0,.3)),
+      radial-gradient(ellipse at 50% 0%, rgba(231,197,106,.11), transparent 62%),
+      linear-gradient(100deg, rgba(7,9,8,.98), rgba(27,28,23,.98) 48%, rgba(6,8,7,.98));
+    box-shadow:
+      inset 0 .2rem .28rem rgba(255,246,208,.08),
+      inset 0 -.35rem .48rem rgba(0,0,0,.5),
+      0 .8rem 1.45rem rgba(0,0,0,.36);
+    opacity: var(--flow-drum-opacity, .72) !important;
+    transform:
+      perspective(720px)
+      translateZ(var(--flow-drum-depth, -50px))
+      rotateY(var(--flow-drum-angle, 0deg))
+      scale(var(--flow-drum-scale, .94)) !important;
+    transform-style: preserve-3d;
+    transform-origin: center;
+    transition:
+      border-color .24s ease,
+      background .24s ease,
+      box-shadow .24s ease,
+      opacity .16s linear,
+      transform .16s linear !important;
+    will-change: transform, opacity;
+  }
+  .perspectiveFlowCardGrid .perspectiveFlowNode::before {
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(90deg, rgba(255,246,210,.03), rgba(255,224,136,.15) 48%, rgba(255,255,255,.025));
+    opacity: .55;
+    transform: none;
+  }
+  .perspectiveFlowCardGrid .perspectiveFlowNode[data-drum-position='front'] {
+    z-index: 4 !important;
+    border-color: rgba(246,205,92,.7);
+    background:
+      linear-gradient(180deg, rgba(255,242,194,.17), transparent 24%, transparent 68%, rgba(0,0,0,.28)),
+      radial-gradient(ellipse at 50% 0%, rgba(231,197,106,.2), transparent 64%),
+      linear-gradient(100deg, rgba(13,15,12,.99), rgba(40,38,29,.99) 50%, rgba(8,10,8,.99));
+    box-shadow:
+      inset 0 .22rem .34rem rgba(255,246,208,.13),
+      inset 0 -.38rem .55rem rgba(0,0,0,.48),
+      0 1rem 2rem rgba(0,0,0,.48),
+      0 0 1.3rem rgba(231,197,106,.1);
+  }
+  .perspectiveFlowCardGrid .perspectiveFlowCardHead,
+  .perspectiveFlowCardGrid .perspectiveFlowSelected .perspectiveFlowCardHead {
+    min-height: 5.35rem;
+    padding: 1rem 1.05rem;
+  }
+  .perspectiveFlowCardGrid .perspectiveFlowCardHead > b { font-size: .9rem; }
+  .perspectiveFlowCardGrid .perspectiveFlowCardHead > strong { font-size: 1.18rem; }
+  .perspectiveFlowCardGrid .perspectiveFlowCardHead > i { width: 2.2rem; height: 2.2rem; }
+
   .channelFan > button { min-height: 4.6rem; }
   .channelFan button:last-child { grid-column: auto; }
   .channelFan button span { font-size: .64rem; }
