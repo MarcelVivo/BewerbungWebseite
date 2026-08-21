@@ -126,6 +126,7 @@ export function PerspectiveBusinessFlow({
   const perspectiveConfig = DEFAULT_SALES_PERSPECTIVE;
   const [sectionSize, setSectionSize] = useState({ width: 0, height: 0 });
   const perspectiveSectionRef = useRef<HTMLElement | null>(null);
+  const flowDrumRef = useRef<HTMLDivElement | null>(null);
   const flowGridRef = useRef<HTMLDivElement | null>(null);
   const detailPanelRef = useRef<HTMLElement | null>(null);
   const flowCardRefs = useRef<Array<HTMLButtonElement | null>>([]);
@@ -243,12 +244,14 @@ export function PerspectiveBusinessFlow({
 
   useEffect(() => {
     const grid = flowGridRef.current;
-    if (!grid) return;
+    const drum = flowDrumRef.current;
+    if (!grid || !drum) return;
 
     const compactQuery = window.matchMedia('(max-width: 699px)');
     let frame = 0;
     let settleTimer = 0;
     let centeredCardIndex = -1;
+    let settledCardIndex = active;
 
     const clearDrumStyles = () => {
       flowCardRefs.current.forEach((card) => {
@@ -259,8 +262,10 @@ export function PerspectiveBusinessFlow({
         card.style.removeProperty('--flow-drum-scale');
         card.style.removeProperty('--flow-drum-opacity');
         card.style.removeProperty('--flow-drum-brightness');
+        card.style.removeProperty('--flow-drum-blur');
         delete card.dataset.drumPosition;
       });
+      drum.style.removeProperty('--flow-drum-roll');
     };
 
     const updateDrum = () => {
@@ -297,8 +302,17 @@ export function PerspectiveBusinessFlow({
         card.style.setProperty('--flow-drum-scale', (.95 + surfaceLight * .05).toFixed(3));
         card.style.setProperty('--flow-drum-opacity', (.18 + surfaceLight * .82).toFixed(3));
         card.style.setProperty('--flow-drum-brightness', (.44 + surfaceLight * .56).toFixed(3));
+        card.style.setProperty('--flow-drum-blur', `${(distanceMagnitude * .72).toFixed(2)}px`);
         card.dataset.drumPosition = distanceMagnitude < .34 ? 'front' : 'side';
       });
+
+      const firstCard = flowCardRefs.current[0];
+      const secondCard = flowCardRefs.current[1];
+      const pitch = firstCard && secondCard
+        ? Math.max(secondCard.offsetTop - firstCard.offsetTop, firstCard.offsetHeight)
+        : Math.max(firstCard?.offsetHeight ?? 1, 1);
+      const roll = ((grid.scrollTop % pitch) + pitch) % pitch;
+      drum.style.setProperty('--flow-drum-roll', `${roll.toFixed(2)}px`);
     };
 
     const scheduleDrumUpdate = () => {
@@ -310,7 +324,12 @@ export function PerspectiveBusinessFlow({
       scheduleDrumUpdate();
       window.clearTimeout(settleTimer);
       settleTimer = window.setTimeout(() => {
-        if (centeredCardIndex >= 0) onSelect(centeredCardIndex);
+        if (centeredCardIndex < 0) return;
+        if (centeredCardIndex !== settledCardIndex) {
+          settledCardIndex = centeredCardIndex;
+          if ('vibrate' in navigator) navigator.vibrate(7);
+        }
+        onSelect(centeredCardIndex);
       }, 140);
     };
 
@@ -328,7 +347,7 @@ export function PerspectiveBusinessFlow({
       observer.disconnect();
       clearDrumStyles();
     };
-  }, [onSelect, steps.length]);
+  }, [active, onSelect, steps.length]);
 
   const centerMobileFlowCard = (index: number) => {
     if (typeof window === 'undefined' || !window.matchMedia('(max-width: 699px)').matches) return;
@@ -470,7 +489,7 @@ export function PerspectiveBusinessFlow({
       if (event.key === 'Escape') closeFlow();
     }}>
       <div className={styles.perspectiveFlowStage}>
-        <div className={styles.perspectiveFlowDrumShell}>
+        <div ref={flowDrumRef} className={styles.perspectiveFlowDrumShell}>
           <div
             ref={flowGridRef}
             className={`${styles.perspectiveFlowCardGrid} ${selectedFlow !== null ? styles.perspectiveFlowCardGridOpen : ''}`}

@@ -6144,15 +6144,17 @@
     border: 1px solid rgba(231,197,106,.48);
     border-radius: 999px;
     background:
-      radial-gradient(ellipse 94% 115% at 50% 50%, rgba(58,54,40,.96) 0, rgba(24,25,20,.98) 48%, rgba(5,7,6,1) 100%),
+      radial-gradient(ellipse 94% 118% at 50% 50%, rgba(67,62,45,.97) 0, rgba(28,28,21,.99) 46%, rgba(5,7,6,1) 100%),
       linear-gradient(90deg, rgba(5,7,6,1), rgba(29,29,23,.98) 12%, rgba(29,29,23,.98) 88%, rgba(5,7,6,1)),
       #080a08;
     box-shadow:
       inset 1.3rem 0 1.3rem rgba(0,0,0,.7),
       inset -1.3rem 0 1.3rem rgba(0,0,0,.7),
-      inset 0 .85rem 1.1rem rgba(0,0,0,.64),
-      inset 0 -.9rem 1.1rem rgba(0,0,0,.76),
-      0 .65rem 1.5rem rgba(0,0,0,.4);
+      inset 0 .85rem 1.1rem rgba(0,0,0,.7),
+      inset 0 -.9rem 1.1rem rgba(0,0,0,.82),
+      inset 0 1px rgba(255,241,194,.16),
+      0 .65rem 1.5rem rgba(0,0,0,.4),
+      0 0 1.2rem rgba(231,197,106,.045);
     isolation: isolate;
   }
   .perspectiveFlowDrumShell::before,
@@ -6170,8 +6172,10 @@
     background:
       radial-gradient(ellipse 1.4rem 68% at 0 50%, rgba(231,197,106,.24), rgba(40,36,25,.42) 46%, rgba(0,0,0,.78) 74%, transparent 76%),
       radial-gradient(ellipse 1.4rem 68% at 100% 50%, rgba(231,197,106,.24), rgba(40,36,25,.42) 46%, rgba(0,0,0,.78) 74%, transparent 76%),
+      repeating-linear-gradient(180deg, rgba(255,239,184,.018) 0, rgba(255,239,184,.018) 1px, transparent 1px, transparent 7px),
       linear-gradient(180deg, rgba(2,3,3,.88) 0, rgba(3,4,3,.42) 19%, transparent 41%, transparent 59%, rgba(3,4,3,.48) 81%, rgba(2,3,3,.92) 100%),
       linear-gradient(90deg, rgba(231,197,106,.12), transparent 11%, transparent 89%, rgba(231,197,106,.12));
+    background-position: 0 0, 0 0, 0 var(--flow-drum-roll, 0), 0 0, 0 0;
     box-shadow:
       inset 0 .12rem rgba(255,238,184,.12),
       inset 0 -.12rem rgba(0,0,0,.92);
@@ -6198,6 +6202,8 @@
     padding: 1.4rem .75rem !important;
     overflow-x: hidden !important;
     overflow-y: auto !important;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
     scroll-padding-block: 1.4rem;
     scroll-snap-type: y mandatory;
     overscroll-behavior-block: contain;
@@ -6206,6 +6212,7 @@
     perspective-origin: center;
     background: transparent;
   }
+  .perspectiveFlowCardGrid::-webkit-scrollbar { display: none; }
   .perspectiveFlowCardGrid .perspectiveFlowNode,
   .perspectiveFlowCardGrid .perspectiveFlowNode:hover,
   .perspectiveFlowCardGrid .perspectiveFlowNode:focus-visible,
@@ -6218,18 +6225,13 @@
     scroll-snap-align: center;
     scroll-snap-stop: always;
     border: 0;
-    border-top: 1px solid rgba(231,197,106,.22);
-    border-bottom: 1px solid rgba(231,197,106,.22);
+    border-top: 1px solid rgba(231,197,106,.09);
+    border-bottom: 1px solid rgba(0,0,0,.16);
     border-radius: .18rem;
-    background:
-      linear-gradient(180deg, rgba(255,242,194,.1), transparent 22%, transparent 72%, rgba(0,0,0,.3)),
-      radial-gradient(ellipse at 50% 0%, rgba(231,197,106,.11), transparent 62%),
-      linear-gradient(100deg, rgba(7,9,8,.98), rgba(27,28,23,.98) 48%, rgba(6,8,7,.98));
-    box-shadow:
-      inset 0 .12rem .18rem rgba(255,246,208,.08),
-      inset 0 -.2rem .28rem rgba(0,0,0,.48);
+    background: transparent;
+    box-shadow: none;
     opacity: var(--flow-drum-opacity, .72) !important;
-    filter: brightness(var(--flow-drum-brightness, .7)) !important;
+    filter: brightness(var(--flow-drum-brightness, .7)) blur(var(--flow-drum-blur, 0)) !important;
     transform:
       perspective(460px)
       translateY(var(--flow-drum-shift, 0px))
@@ -6250,23 +6252,20 @@
   .perspectiveFlowCardGrid .perspectiveFlowNode::before {
     inset: 0;
     border-radius: inherit;
-    background: linear-gradient(180deg, rgba(255,246,210,.03), rgba(255,224,136,.15) 48%, rgba(255,255,255,.025));
-    opacity: .55;
+    background: linear-gradient(180deg, rgba(255,246,210,.025), transparent 38%, rgba(0,0,0,.12));
+    opacity: .7;
     transform: none;
   }
   .perspectiveFlowCardGrid .perspectiveFlowNode[data-drum-position='front'] {
     z-index: 4 !important;
-    border-top-color: rgba(246,205,92,.7);
-    border-bottom-color: rgba(246,205,92,.7);
+    border-top-color: rgba(246,205,92,.22);
+    border-bottom-color: rgba(246,205,92,.3);
     background:
-      linear-gradient(180deg, rgba(255,242,194,.17), transparent 24%, transparent 68%, rgba(0,0,0,.28)),
-      radial-gradient(ellipse at 50% 0%, rgba(231,197,106,.2), transparent 64%),
-      linear-gradient(100deg, rgba(13,15,12,.99), rgba(40,38,29,.99) 50%, rgba(8,10,8,.99));
+      linear-gradient(90deg, transparent, rgba(255,236,168,.035) 14%, rgba(255,236,168,.08) 50%, rgba(255,236,168,.035) 86%, transparent),
+      linear-gradient(180deg, rgba(255,242,194,.04), transparent 42%, rgba(0,0,0,.12));
     box-shadow:
-      inset 0 .22rem .34rem rgba(255,246,208,.13),
-      inset 0 -.38rem .55rem rgba(0,0,0,.48),
-      0 .25rem .7rem rgba(0,0,0,.42),
-      0 0 .8rem rgba(231,197,106,.1);
+      inset 0 1px rgba(255,246,208,.075),
+      inset 0 -1px rgba(0,0,0,.34);
   }
   .perspectiveFlowCardGrid .perspectiveFlowCardHead,
   .perspectiveFlowCardGrid .perspectiveFlowSelected .perspectiveFlowCardHead {
@@ -6276,6 +6275,10 @@
   .perspectiveFlowCardGrid .perspectiveFlowCardHead > b { font-size: .72rem; }
   .perspectiveFlowCardGrid .perspectiveFlowCardHead > strong { font-size: 1rem; }
   .perspectiveFlowCardGrid .perspectiveFlowCardHead > i { width: 1.9rem; height: 1.9rem; }
+  .perspectiveFlowCardGrid .perspectiveFlowNode[data-drum-position='front'] .perspectiveFlowCardHead > strong {
+    color: #f3f0e6;
+    text-shadow: 0 1px rgba(255,255,255,.08), 0 .25rem .65rem rgba(0,0,0,.7);
+  }
 
   .channelFan > button { min-height: 4.6rem; }
   .channelFan button:last-child { grid-column: auto; }
