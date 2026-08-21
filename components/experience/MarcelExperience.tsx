@@ -267,7 +267,8 @@ export default function MarcelExperience() {
   useEffect(() => {
     const flightEditorActive = new URLSearchParams(window.location.search).get('flight-editor') === '1';
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (flightEditorActive || reducedMotion || window.scrollY > 12) {
+    const compactExperience = window.matchMedia('(max-width: 960px), (hover: none) and (pointer: coarse)').matches;
+    if (flightEditorActive || reducedMotion || compactExperience || window.scrollY > 12) {
       setHeroLoadProgress(100);
       setHeroPhase('revealed');
       document.documentElement.classList.remove('hero-intro-locked');
@@ -595,12 +596,13 @@ export default function MarcelExperience() {
               <video
                 ref={heroVideoRef}
                 className={styles.heroVideo}
-                src="/cinematic/hero-swiss-precision/swiss-precision-awakening.mp4"
                 poster="/cinematic/hero-swiss-precision/swiss-alpine-organic-dormant-v2.png"
                 muted
                 playsInline
-                preload="auto"
-              />
+                preload="metadata"
+              >
+                <source media="(min-width: 961px)" src="/cinematic/hero-swiss-precision/swiss-precision-awakening.mp4" type="video/mp4" />
+              </video>
               <img
                 className={`${styles.heroAlpineFrame} ${styles.heroAlpineDormant}`}
                 src="/cinematic/hero-swiss-precision/swiss-alpine-organic-dormant-v2.png"
@@ -640,12 +642,13 @@ export default function MarcelExperience() {
               <video
                 ref={problemVideoRef}
                 className={styles.problemVideo}
-                src="/cinematic/02-connected-system-scroll.mp4"
                 poster="/cinematic/02-fragmented-start.png"
                 muted
                 playsInline
                 preload="metadata"
-              />
+              >
+                <source media="(min-width: 961px)" src="/cinematic/02-connected-system-scroll.mp4" type="video/mp4" />
+              </video>
             </div>
             <ProblemDockingStation />
             <div className={`${styles.sectionGrid} ${styles.problemContent}`}>
@@ -678,12 +681,13 @@ export default function MarcelExperience() {
                 <video
                   ref={systemVideoRef}
                   className={styles.systemArchitectureVideo}
-                  src="/cinematic/system/connected-system-architecture-scroll.mp4"
                   poster="/cinematic/system/connected-system-architecture-scroll-poster.jpg"
                   muted
                   playsInline
                   preload="metadata"
-                />
+                >
+                  <source media="(min-width: 961px)" src="/cinematic/system/connected-system-architecture-scroll.mp4" type="video/mp4" />
+                </video>
                 <span className={styles.systemArchitectureHalo} />
               </div>
               <div className={styles.systemControlColumn}>
@@ -751,12 +755,13 @@ export default function MarcelExperience() {
               <video
                 ref={salesVideoRef}
                 className={styles.salesVideo}
-                src="/cinematic/03-sales-system-scroll.mp4"
                 poster="/cinematic/03-sales-system-start.png"
                 muted
                 playsInline
                 preload="metadata"
-              />
+              >
+                <source media="(min-width: 961px)" src="/cinematic/03-sales-system-scroll.mp4" type="video/mp4" />
+              </video>
             </div>
             <WebsiteDockingStation />
             <div className={`${styles.sectionHeader} ${styles.salesHeader}`} data-reveal="left">
@@ -783,12 +788,13 @@ export default function MarcelExperience() {
               <video
                 ref={marketingVideoRef}
                 className={styles.marketingVideo}
-                src="/cinematic/04-marketing-engine-scroll.mp4"
                 poster="/cinematic/04-marketing-engine-start.png"
                 muted
                 playsInline
                 preload="metadata"
-              />
+              >
+                <source media="(min-width: 961px)" src="/cinematic/04-marketing-engine-scroll.mp4" type="video/mp4" />
+              </video>
             </div>
             <MarketingDockingStation />
             <div className={styles.marketingExperience}>

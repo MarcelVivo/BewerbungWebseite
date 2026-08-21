@@ -251,7 +251,7 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
     const debugOutput = debugRef.current;
     if (!root || !entity || !canvas || !video || !interaction || !coreCanvas || !fallback || !debugOutput) return;
 
-    const mobileViewport = window.matchMedia('(max-width: 699px)').matches;
+    const mobileViewport = window.matchMedia('(max-width: 960px), (hover: none) and (pointer: coarse)').matches;
 
     // Mobile keeps AILA alive as a compact companion. A smaller render target
     // preserves the keyed animation without making a phone upload the same
@@ -355,7 +355,7 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
     const texture = programLinked && gl ? gl.createTexture() : null;
     const videoLocation = programLinked && gl && program ? gl.getUniformLocation(program, 'u_video') : null;
     const switchOffLocation = programLinked && gl && program ? gl.getUniformLocation(program, 'u_switchOff') : null;
-    const coreRendererAvailable = Boolean(gl && program && buffer && texture && videoLocation && switchOffLocation);
+    const coreRendererAvailable = Boolean(!mobileViewport && gl && program && buffer && texture && videoLocation && switchOffLocation);
     if (gl && program && buffer && texture && coreRendererAvailable) {
       gl.useProgram(program);
       gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
@@ -410,10 +410,10 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
         scheduleVideoFrameCallback();
       });
     };
-    if (supportsVideoFrameCallback) scheduleVideoFrameCallback();
+    if (!mobileViewport && supportsVideoFrameCallback) scheduleVideoFrameCallback();
 
     const playVideo = () => {
-      if (!reducedMotion.matches) void video.play().catch(() => undefined);
+      if (!mobileViewport && !reducedMotion.matches) void video.play().catch(() => undefined);
     };
 
     const clearSwitchTimer = () => {
@@ -431,6 +431,11 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
       videoMode = mode;
       entity.dataset.ailaState = mode;
       interaction.setAttribute('aria-pressed', String(mode !== 'idle'));
+      if (mobileViewport) {
+        coreCanvas.style.opacity = '0';
+        fallback.style.opacity = '1';
+        return;
+      }
       video.loop = mode === 'idle' || (guideControlled && (mode === 'thinking' || mode === 'speaking'));
       video.src = source;
       video.load();
@@ -447,7 +452,7 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
 
     const beginVideoSwitch = (source: string, mode: AilaVideoMode) => {
       clearSwitchTimer();
-      if (reducedMotion.matches) {
+      if (mobileViewport || reducedMotion.matches) {
         finishSwitchEffect();
         applyVideoSource(source, mode);
         return;
@@ -1420,9 +1425,9 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
           loop
           playsInline
           disablePictureInPicture
-          preload="auto"
+          preload="metadata"
         >
-          <source src={AILA_IDLE_VIDEO} type="video/mp4" />
+          <source media="(min-width: 961px)" src={AILA_IDLE_VIDEO} type="video/mp4" />
         </video>
         <img
           ref={fallbackRef}
