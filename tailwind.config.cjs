@@ -19,11 +19,26 @@ module.exports = {
           600: '#0284c7',
           700: '#0369a1',
         },
+        // Dashboard-Designsprache – dieselben Werte wie die öffentliche
+        // Website (app/globals.css, app/impressum/page.tsx u.a.), damit
+        // das Command Center visuell zur Marke passt statt generisches
+        // SaaS-Indigo zu sein.
+        dash: {
+          bg: '#0c0a06',
+          surface: '#1c1912',
+          surfaceAlt: '#100d09',
+          border: '#2d2820',
+          gold: '#c9a84c',
+          goldHover: '#b8943a',
+          textBright: '#f4edd8',
+          textSubtle: '#d4c4a8',
+          textMuted: '#a89880',
+          textDim: '#7a6d5a',
+        },
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
-        brand: ['Poppins', 'Inter', 'sans-serif'],
-        display: ['"Space Grotesk"', 'Inter', 'sans-serif'],
+        display: ['var(--font-dashboard-display)', '"Chakra Petch"', 'Inter', 'sans-serif'],
       },
     },
   },

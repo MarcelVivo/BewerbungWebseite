@@ -1,13 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { Bell, Play, Square, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTimeTracking } from '@/lib/hooks/useTimeTracking';
 
 const ROUTE_LABELS: Record<string, string> = {
   '/dashboard':              'Dashboard',
   '/dashboard/aila':         'AILA',
+  '/dashboard/eingang':      'Eingang',
   '/dashboard/pipeline':     'Pipeline',
   '/dashboard/kunden':       'Kunden',
   '/dashboard/outreach':     'Outreach',
@@ -23,85 +25,90 @@ const ROUTE_LABELS: Record<string, string> = {
   '/dashboard/einstellungen':'Einstellungen',
 };
 
+function formatElapsed(startIso: string): string {
+  const seconds = Math.max(0, Math.floor((Date.now() - new Date(startIso).getTime()) / 1000));
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
 export default function TopBar() {
   const pathname = usePathname();
-  const [timerRunning, setTimerRunning] = useState(false);
-  const [seconds, setSeconds]           = useState(0);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
+  const { active, start, stop } = useTimeTracking();
 
   const pageTitle = ROUTE_LABELS[pathname] ?? 'Dashboard';
 
+  // Sekunden-Tick nur, solange ein Timer läuft.
   useEffect(() => {
-    if (!timerRunning) return;
-    const id = setInterval(() => setSeconds((s) => s + 1), 1000);
+    if (!active) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
-  }, [timerRunning]);
-
-  function formatTimer(s: number): string {
-    const h = Math.floor(s / 3600);
-    const m = Math.floor((s % 3600) / 60);
-    const sec = s % 60;
-    if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
-    return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
-  }
+  }, [active]);
+  void now;
 
   return (
-    <header className="h-14 bg-[#1a1d27] border-b border-[#2d3144] flex items-center px-5 gap-4 flex-shrink-0">
+    <header className="h-14 bg-dash-surfaceAlt border-b border-dash-border flex items-center px-5 gap-4 flex-shrink-0">
       {/* Page Title */}
       <div className="flex-1 min-w-0">
-        <h1 className="text-sm font-semibold text-white truncate">{pageTitle}</h1>
+        <h1 className="font-display text-sm text-dash-textBright truncate">{pageTitle}</h1>
       </div>
 
       {/* ── Timer Widget ── */}
-      <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#252836] border border-[#2d3144]">
+      <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-dash-surface border border-dash-border">
         <button
-          onClick={() => { setTimerRunning(!timerRunning); if (!timerRunning) setSeconds(0); }}
+          onClick={() => (active ? stop() : start({ beschreibung: 'Schnellstart' }))}
           className={cn(
             'w-5 h-5 rounded-full flex items-center justify-center transition-colors',
-            timerRunning ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' : 'bg-[#6366f1]/20 text-[#6366f1] hover:bg-[#6366f1]/30'
+            active ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' : 'bg-dash-gold/20 text-dash-gold hover:bg-dash-gold/30'
           )}
-          title={timerRunning ? 'Timer stoppen' : 'Timer starten'}
+          title={active ? 'Timer stoppen' : 'Timer starten'}
         >
-          {timerRunning ? <Square size={9} fill="currentColor" /> : <Play size={9} fill="currentColor" />}
+          {active ? <Square size={9} fill="currentColor" /> : <Play size={9} fill="currentColor" />}
         </button>
-        <span className={cn('text-xs font-mono font-semibold', timerRunning ? 'text-red-400' : 'text-slate-400')}>
-          {formatTimer(seconds)}
+        <span className={cn('text-xs font-mono font-semibold', active ? 'text-red-400' : 'text-dash-textMuted')}>
+          {active ? formatElapsed(active.start_zeit) : '00:00'}
         </span>
-        {timerRunning && (
-          <span className="text-[10px] text-slate-500 hidden sm:inline">Kein Projekt</span>
+        {active && (
+          <span className="text-[10px] text-dash-textDim hidden sm:inline">
+            {active.projekte?.name ?? 'Kein Projekt'}
+          </span>
         )}
       </div>
 
       {/* ── Notifications ── */}
-      <button className="relative p-2 rounded-lg text-slate-400 hover:text-white hover:bg-[#252836] transition-colors">
+      <button className="relative p-2 rounded-lg text-dash-textMuted hover:text-dash-textBright hover:bg-dash-surface transition-colors">
         <Bell size={17} />
-        <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-[#6366f1] rounded-full" />
+        <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-dash-gold rounded-full" />
       </button>
 
       {/* ── User Menu ── */}
       <div className="relative">
         <button
           onClick={() => setUserMenuOpen(!userMenuOpen)}
-          className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-[#252836] transition-colors"
+          className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-dash-surface transition-colors"
         >
-          <div className="w-7 h-7 rounded-full bg-[#6366f1] flex items-center justify-center shadow shadow-indigo-500/30">
-            <span className="text-white text-[10px] font-bold">MS</span>
+          <div className="w-7 h-7 rounded-full bg-dash-gold/15 border border-dash-gold/30 flex items-center justify-center">
+            <span className="font-display text-dash-gold text-[10px]">MS</span>
           </div>
-          <span className="text-sm text-white font-medium hidden sm:block">Marcel</span>
-          <ChevronDown size={13} className="text-slate-400" />
+          <span className="text-sm text-dash-textBright font-medium hidden sm:block">Marcel</span>
+          <ChevronDown size={13} className="text-dash-textMuted" />
         </button>
 
         {userMenuOpen && (
           <>
             <div className="fixed inset-0 z-10" onClick={() => setUserMenuOpen(false)} />
-            <div className="absolute right-0 mt-1 w-52 bg-[#252836] border border-[#2d3144] rounded-xl shadow-xl z-20 py-1 overflow-hidden">
-              <div className="px-3 py-2.5 border-b border-[#2d3144]">
-                <div className="text-sm font-semibold text-white">Marcel Spahr</div>
-                <div className="text-xs text-slate-400">kontakt@marcelspahr.ch</div>
+            <div className="absolute right-0 mt-1 w-52 bg-dash-surface border border-dash-border rounded-xl shadow-xl z-20 py-1 overflow-hidden">
+              <div className="px-3 py-2.5 border-b border-dash-border">
+                <div className="text-sm font-semibold text-dash-textBright">Marcel Spahr</div>
+                <div className="text-xs text-dash-textMuted">kontakt@marcelspahr.ch</div>
               </div>
               <a
                 href="/dashboard/einstellungen"
-                className="flex items-center gap-2.5 px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-[#2d3144] transition-colors"
+                className="flex items-center gap-2.5 px-3 py-2 text-sm text-dash-textSubtle hover:text-dash-textBright hover:bg-dash-border/40 transition-colors"
               >
                 Einstellungen
               </a>
@@ -109,11 +116,11 @@ export default function TopBar() {
                 href="/"
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center gap-2.5 px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-[#2d3144] transition-colors"
+                className="flex items-center gap-2.5 px-3 py-2 text-sm text-dash-textSubtle hover:text-dash-textBright hover:bg-dash-border/40 transition-colors"
               >
                 Öffentliche Website ↗
               </a>
-              <div className="border-t border-[#2d3144] mt-1" />
+              <div className="border-t border-dash-border mt-1" />
               <button
                 onClick={async () => {
                   const { createClient } = await import('@/lib/supabase/client');

@@ -1,18 +1,20 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback, FormEvent } from 'react';
+import { useEffect, useState, useCallback, FormEvent } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Zeiteintrag, ZeitKategorie, Projekt, Kunde } from '@/lib/types';
-import { Play, Square, Plus, Trash2, X, Clock, ChevronDown } from 'lucide-react';
+import { Play, Square, Plus, Trash2, Clock } from 'lucide-react';
+import { Modal, Input, Select, Button, Card, PageHeader, EmptyState, Badge } from '@/components/dashboard/ui';
+import { useTimeTracking } from '@/lib/hooks/useTimeTracking';
 
 // ── Config ────────────────────────────────────────────────
 
-const KATEGORIEN: Record<ZeitKategorie, { label: string; color: string }> = {
-  beratung:     { label: 'Beratung',     color: 'bg-indigo-900/60 text-indigo-300' },
-  entwicklung:  { label: 'Entwicklung',  color: 'bg-cyan-900/60 text-cyan-300' },
-  meeting:      { label: 'Meeting',      color: 'bg-purple-900/60 text-purple-300' },
-  admin:        { label: 'Admin',        color: 'bg-slate-700 text-slate-300' },
-  marketing:    { label: 'Marketing',    color: 'bg-pink-900/60 text-pink-300' },
+const KATEGORIEN: Record<ZeitKategorie, { label: string; variant: 'info' | 'gold' | 'warning' | 'neutral' | 'danger' }> = {
+  beratung:    { label: 'Beratung',    variant: 'info' },
+  entwicklung: { label: 'Entwicklung', variant: 'gold' },
+  meeting:     { label: 'Meeting',     variant: 'warning' },
+  admin:       { label: 'Admin',       variant: 'neutral' },
+  marketing:   { label: 'Marketing',   variant: 'danger' },
 };
 
 function minutesToHM(min: number) {
@@ -56,18 +58,12 @@ function EntryModal({ projekte, kunden, onClose, onSaved }: {
 }) {
   const today = new Date().toISOString().slice(0, 10);
   const [form, setForm] = useState({
-    beschreibung: '',
-    kategorie:    'beratung' as ZeitKategorie,
-    projekt_id:   '',
-    kunden_id:    '',
-    datum:        today,
-    start:        '09:00',
-    end:          '10:00',
-    abrechenbar:  true,
+    beschreibung: '', kategorie: 'beratung' as ZeitKategorie, projekt_id: '', kunden_id: '',
+    datum: today, start: '09:00', end: '10:00', abrechenbar: true,
   });
   const [saving, setSaving] = useState(false);
 
-  function set(k: string, v: any) { setForm(f => ({ ...f, [k]: v })); }
+  function set(k: string, v: any) { setForm((f) => ({ ...f, [k]: v })); }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -89,79 +85,45 @@ function EntryModal({ projekte, kunden, onClose, onSaved }: {
     onSaved();
   }
 
-  const inputCls = 'w-full rounded-lg bg-[#0f1117] border border-[#2d3144] focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1] outline-none px-3 py-2 text-white text-sm placeholder-slate-600 transition-colors';
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-      <div className="relative w-full max-w-md bg-[#1a1d27] rounded-2xl border border-[#2d3144] shadow-2xl" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#2d3144]">
-          <h2 className="font-semibold text-white">Zeiteintrag hinzufügen</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-white"><X size={18} /></button>
+    <Modal
+      onClose={onClose}
+      title="Zeiteintrag hinzufügen"
+      footer={
+        <>
+          <Button variant="secondary" type="button" onClick={onClose}>Abbrechen</Button>
+          <Button variant="primary" type="submit" form="entry-form" loading={saving}>Speichern</Button>
+        </>
+      }
+    >
+      <form id="entry-form" onSubmit={handleSubmit} className="space-y-4">
+        <Input label="Beschreibung" autoFocus value={form.beschreibung} onChange={(e) => set('beschreibung', e.target.value)} placeholder="Woran hast du gearbeitet?" />
+        <div className="grid grid-cols-2 gap-3">
+          <Select label="Kategorie" value={form.kategorie} onChange={(e) => set('kategorie', e.target.value)}>
+            {(Object.keys(KATEGORIEN) as ZeitKategorie[]).map((k) => <option key={k} value={k}>{KATEGORIEN[k].label}</option>)}
+          </Select>
+          <Input label="Datum" type="date" value={form.datum} onChange={(e) => set('datum', e.target.value)} className="[color-scheme:dark]" />
         </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div>
-            <label className="block text-xs text-slate-500 mb-1">Beschreibung</label>
-            <input value={form.beschreibung} onChange={e => set('beschreibung', e.target.value)}
-              className={inputCls} placeholder="Woran hast du gearbeitet?" autoFocus />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs text-slate-500 mb-1">Kategorie</label>
-              <select value={form.kategorie} onChange={e => set('kategorie', e.target.value)} className={inputCls}>
-                {(Object.keys(KATEGORIEN) as ZeitKategorie[]).map(k => (
-                  <option key={k} value={k}>{KATEGORIEN[k].label}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs text-slate-500 mb-1">Datum</label>
-              <input type="date" value={form.datum} onChange={e => set('datum', e.target.value)}
-                className={inputCls + ' [color-scheme:dark]'} />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs text-slate-500 mb-1">Startzeit</label>
-              <input type="time" value={form.start} onChange={e => set('start', e.target.value)}
-                className={inputCls + ' [color-scheme:dark]'} />
-            </div>
-            <div>
-              <label className="block text-xs text-slate-500 mb-1">Endzeit</label>
-              <input type="time" value={form.end} onChange={e => set('end', e.target.value)}
-                className={inputCls + ' [color-scheme:dark]'} />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs text-slate-500 mb-1">Projekt</label>
-              <select value={form.projekt_id} onChange={e => set('projekt_id', e.target.value)} className={inputCls}>
-                <option value="">Kein Projekt.</option>
-                {projekte.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs text-slate-500 mb-1">Kunde</label>
-              <select value={form.kunden_id} onChange={e => set('kunden_id', e.target.value)} className={inputCls}>
-                <option value="">Kein Kunde.</option>
-                {kunden.map(k => <option key={k.id} value={k.id}>{k.firmenname || k.kontaktperson}</option>)}
-              </select>
-            </div>
-          </div>
-          <label className="flex items-center gap-2 cursor-pointer select-none">
-            <input type="checkbox" checked={form.abrechenbar} onChange={e => set('abrechenbar', e.target.checked)}
-              className="w-4 h-4 accent-[#6366f1] rounded" />
-            <span className="text-sm text-slate-300">Abrechenbar</span>
-          </label>
-          <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-slate-400 hover:text-white border border-[#2d3144] transition-colors">Abbrechen</button>
-            <button type="submit" disabled={saving} className="px-4 py-2 rounded-lg text-sm font-medium bg-[#6366f1] hover:bg-[#5254cc] disabled:opacity-50 text-white transition-colors">
-              {saving ? 'Ich speichere den Eintrag.' : 'Speichern'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <div className="grid grid-cols-2 gap-3">
+          <Input label="Startzeit" type="time" value={form.start} onChange={(e) => set('start', e.target.value)} className="[color-scheme:dark]" />
+          <Input label="Endzeit" type="time" value={form.end} onChange={(e) => set('end', e.target.value)} className="[color-scheme:dark]" />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <Select label="Projekt" value={form.projekt_id} onChange={(e) => set('projekt_id', e.target.value)}>
+            <option value="">Kein Projekt.</option>
+            {projekte.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+          </Select>
+          <Select label="Kunde" value={form.kunden_id} onChange={(e) => set('kunden_id', e.target.value)}>
+            <option value="">Kein Kunde.</option>
+            {kunden.map((k) => <option key={k.id} value={k.id}>{k.firmenname || k.kontaktperson}</option>)}
+          </Select>
+        </div>
+        <label className="flex items-center gap-2 cursor-pointer select-none">
+          <input type="checkbox" checked={form.abrechenbar} onChange={(e) => set('abrechenbar', e.target.checked)} className="w-4 h-4 accent-dash-gold rounded" />
+          <span className="text-sm text-dash-textSubtle">Abrechenbar</span>
+        </label>
+      </form>
+    </Modal>
   );
 }
 
@@ -173,15 +135,12 @@ export default function ZeiterfassungPage() {
   const [kunden, setKunden]         = useState<Kunde[]>([]);
   const [loading, setLoading]       = useState(true);
   const [modal, setModal]           = useState(false);
+  const [now, setNow] = useState(() => Date.now());
 
-  // Timer state
-  const [running, setRunning]       = useState(false);
-  const [elapsed, setElapsed]       = useState(0);
   const [timerDesc, setTimerDesc]   = useState('');
   const [timerKat, setTimerKat]     = useState<ZeitKategorie>('beratung');
   const [timerProj, setTimerProj]   = useState('');
-  const [timerStart, setTimerStart] = useState<Date | null>(null);
-  const intervalRef                 = useRef<NodeJS.Timeout | null>(null);
+  const { active, start, stop } = useTimeTracking();
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -200,39 +159,21 @@ export default function ZeiterfassungPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  // Ticker
   useEffect(() => {
-    if (running) {
-      intervalRef.current = setInterval(() => setElapsed(s => s + 1), 1000);
-    } else {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    }
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [running]);
+    if (!active) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [active]);
 
-  function startTimer() {
-    setTimerStart(new Date());
-    setElapsed(0);
-    setRunning(true);
+  const elapsed = active ? Math.floor((now - new Date(active.start_zeit).getTime()) / 1000) : 0;
+
+  async function handleStart() {
+    await start({ beschreibung: timerDesc, kategorie: timerKat, projekt_id: timerProj || null });
+    setTimerDesc('');
   }
 
-  async function stopTimer() {
-    if (!timerStart) return;
-    setRunning(false);
-    const end   = new Date();
-    const dauer = Math.round((end.getTime() - timerStart.getTime()) / 60000);
-    await createClient().from('zeiteintraege').insert({
-      beschreibung:  timerDesc || null,
-      kategorie:     timerKat,
-      projekt_id:    timerProj || null,
-      start_zeit:    timerStart.toISOString(),
-      end_zeit:      end.toISOString(),
-      dauer_minuten: dauer,
-      abrechenbar:   true,
-    });
-    setTimerDesc('');
-    setElapsed(0);
-    setTimerStart(null);
+  async function handleStop() {
+    await stop();
     load();
   }
 
@@ -241,93 +182,73 @@ export default function ZeiterfassungPage() {
     load();
   }
 
-  // Stats
   const today       = new Date().toISOString().slice(0, 10);
   const weekStart   = new Date(); weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1);
-  const todayMin    = eintraege.filter(e => e.start_zeit.startsWith(today)).reduce((s, e) => s + (e.dauer_minuten ?? 0), 0);
-  const weekMin     = eintraege.filter(e => new Date(e.start_zeit) >= weekStart).reduce((s, e) => s + (e.dauer_minuten ?? 0), 0);
-  const abrechenMin = eintraege.filter(e => e.abrechenbar).reduce((s, e) => s + (e.dauer_minuten ?? 0), 0);
+  const todayMin    = eintraege.filter((e) => e.start_zeit.startsWith(today)).reduce((s, e) => s + (e.dauer_minuten ?? 0), 0);
+  const weekMin     = eintraege.filter((e) => new Date(e.start_zeit) >= weekStart).reduce((s, e) => s + (e.dauer_minuten ?? 0), 0);
+  const abrechenMin = eintraege.filter((e) => e.abrechenbar).reduce((s, e) => s + (e.dauer_minuten ?? 0), 0);
   const totalMin    = eintraege.reduce((s, e) => s + (e.dauer_minuten ?? 0), 0);
 
   const groups = groupByDate(eintraege);
 
-  const inputCls = 'rounded-lg bg-[#0f1117] border border-[#2d3144] focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1] outline-none px-3 py-2 text-white text-sm placeholder-slate-600 transition-colors';
-
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-white">Zeiterfassung</h1>
-          <p className="text-sm text-slate-400 mt-0.5">{eintraege.length} Einträge gesamt</p>
-        </div>
-        <button onClick={() => setModal(true)} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#252836] hover:bg-[#2d3144] text-slate-300 text-sm font-medium transition-colors border border-[#2d3144]">
-          <Plus size={16} /> Manuell hinzufügen
-        </button>
-      </div>
+    <div className="max-w-5xl mx-auto">
+      <PageHeader
+        title="Zeiterfassung"
+        subtitle={`${eintraege.length} Einträge gesamt`}
+        actions={<Button variant="secondary" icon={<Plus size={16} />} onClick={() => setModal(true)}>Manuell hinzufügen</Button>}
+      />
 
-      {/* Stats */}
       <div className="grid grid-cols-4 gap-4 mb-6">
         {[
-          { label: 'Heute',        value: minutesToHM(todayMin) },
-          { label: 'Diese Woche',  value: minutesToHM(weekMin) },
-          { label: 'Abrechenbar',  value: minutesToHM(abrechenMin) },
-          { label: 'Gesamt',       value: minutesToHM(totalMin) },
-        ].map(s => (
-          <div key={s.label} className="bg-[#1a1d27] border border-[#2d3144] rounded-xl p-4">
-            <p className="text-xs text-slate-500 mb-1">{s.label}</p>
-            <p className="text-xl font-bold text-white">{s.value}</p>
-          </div>
+          { label: 'Heute',       value: minutesToHM(todayMin) },
+          { label: 'Diese Woche', value: minutesToHM(weekMin) },
+          { label: 'Abrechenbar', value: minutesToHM(abrechenMin) },
+          { label: 'Gesamt',      value: minutesToHM(totalMin) },
+        ].map((s) => (
+          <Card key={s.label} padding="sm">
+            <p className="text-xs text-dash-textDim mb-1">{s.label}</p>
+            <p className="text-xl font-display text-dash-textBright">{s.value}</p>
+          </Card>
         ))}
       </div>
 
       {/* Timer */}
-      <div className="bg-[#1a1d27] border border-[#2d3144] rounded-2xl p-5 mb-8">
+      <Card padding="md" className="mb-8">
         <div className="flex items-center gap-4 flex-wrap">
           <input
-            value={timerDesc}
-            onChange={e => setTimerDesc(e.target.value)}
+            value={active ? (active.beschreibung ?? '') : timerDesc}
+            onChange={(e) => setTimerDesc(e.target.value)}
             placeholder="Woran arbeitest du gerade?"
-            className={inputCls + ' flex-1 min-w-48'}
-            disabled={running}
+            className="flex-1 min-w-48 rounded-lg bg-dash-bg border border-dash-border focus:border-dash-gold focus:ring-1 focus:ring-dash-gold outline-none px-3 py-2 text-sm text-dash-textBright placeholder-dash-textDim transition-colors disabled:opacity-60"
+            disabled={!!active}
           />
-          <select value={timerKat} onChange={e => setTimerKat(e.target.value as ZeitKategorie)}
-            className={inputCls + ' w-36'} disabled={running}>
-            {(Object.keys(KATEGORIEN) as ZeitKategorie[]).map(k => (
-              <option key={k} value={k}>{KATEGORIEN[k].label}</option>
-            ))}
+          <select value={active ? (active.kategorie ?? 'beratung') : timerKat} onChange={(e) => setTimerKat(e.target.value as ZeitKategorie)}
+            className="w-36 rounded-lg bg-dash-bg border border-dash-border focus:border-dash-gold focus:ring-1 focus:ring-dash-gold outline-none px-3 py-2 text-sm text-dash-textBright disabled:opacity-60" disabled={!!active}>
+            {(Object.keys(KATEGORIEN) as ZeitKategorie[]).map((k) => <option key={k} value={k}>{KATEGORIEN[k].label}</option>)}
           </select>
-          <select value={timerProj} onChange={e => setTimerProj(e.target.value)}
-            className={inputCls + ' w-40'} disabled={running}>
+          <select value={active ? (active.projekt_id ?? '') : timerProj} onChange={(e) => setTimerProj(e.target.value)}
+            className="w-40 rounded-lg bg-dash-bg border border-dash-border focus:border-dash-gold focus:ring-1 focus:ring-dash-gold outline-none px-3 py-2 text-sm text-dash-textBright disabled:opacity-60" disabled={!!active}>
             <option value="">Kein Projekt</option>
-            {projekte.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+            {projekte.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
           <div className="flex items-center gap-3 ml-auto">
-            <span className={`font-mono text-2xl font-bold tabular-nums ${running ? 'text-[#6366f1]' : 'text-slate-500'}`}>
+            <span className={`font-mono text-2xl font-bold tabular-nums ${active ? 'text-dash-gold' : 'text-dash-textDim'}`}>
               {secondsToHMS(elapsed)}
             </span>
-            {!running ? (
-              <button onClick={startTimer}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#6366f1] hover:bg-[#5254cc] text-white font-medium transition-colors shadow-lg shadow-indigo-500/20">
-                <Play size={16} fill="white" /> Start
-              </button>
+            {!active ? (
+              <Button variant="primary" icon={<Play size={16} fill="currentColor" />} onClick={handleStart}>Start</Button>
             ) : (
-              <button onClick={stopTimer}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-medium transition-colors shadow-lg shadow-red-500/20">
-                <Square size={16} fill="white" /> Stop
-              </button>
+              <Button variant="danger" icon={<Square size={16} fill="currentColor" />} onClick={handleStop}>Stop</Button>
             )}
           </div>
         </div>
-      </div>
+      </Card>
 
-      {/* Entries */}
       {loading ? (
-        <div className="py-12 text-center text-slate-500 text-sm">Die Einträge werden geladen.</div>
+        <div className="py-12 text-center text-dash-textMuted text-sm">Die Einträge werden geladen.</div>
       ) : groups.length === 0 ? (
-        <div className="py-12 text-center">
-          <Clock size={32} className="mx-auto mb-3 text-slate-600" />
-          <p className="text-slate-400 text-sm">Noch keine Zeiteinträge. Starte den Timer!</p>
-        </div>
+        <EmptyState icon={<Clock size={32} />} title="Noch keine Zeiteinträge. Starte den Timer!" />
       ) : (
         <div className="space-y-6">
           {groups.map(([day, entries]) => {
@@ -335,45 +256,38 @@ export default function ZeiterfassungPage() {
             return (
               <div key={day}>
                 <div className="flex items-center justify-between mb-2 px-1">
-                  <span className="text-sm font-semibold text-slate-300">{formatDate(day + 'T12:00:00')}</span>
-                  <span className="text-sm text-slate-500">{minutesToHM(dayTotal)}</span>
+                  <span className="text-sm font-semibold text-dash-textSubtle">{formatDate(day + 'T12:00:00')}</span>
+                  <span className="text-sm text-dash-textDim">{minutesToHM(dayTotal)}</span>
                 </div>
-                <div className="rounded-xl border border-[#2d3144] bg-[#1a1d27] overflow-hidden divide-y divide-[#2d3144]/50">
-                  {entries.map(e => (
-                    <div key={e.id} className="flex items-center gap-4 px-4 py-3 hover:bg-[#252836] transition-colors group">
-                      {/* Kategorie dot */}
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${e.kategorie ? KATEGORIEN[e.kategorie].color : 'bg-slate-700 text-slate-400'}`}>
+                <Card padding="none" className="divide-y divide-dash-border/60">
+                  {entries.map((e) => (
+                    <div key={e.id} className="flex items-center gap-4 px-4 py-3 hover:bg-dash-surfaceAlt transition-colors group">
+                      <Badge variant={e.kategorie ? KATEGORIEN[e.kategorie].variant : 'neutral'} className="flex-shrink-0">
                         {e.kategorie ? KATEGORIEN[e.kategorie].label : 'Keine Angabe.'}
-                      </span>
-                      {/* Beschreibung */}
-                      <span className="flex-1 text-sm text-white truncate">{e.beschreibung || <span className="text-slate-500 italic">Keine Beschreibung</span>}</span>
-                      {/* Projekt */}
+                      </Badge>
+                      <span className="flex-1 text-sm text-dash-textBright truncate">{e.beschreibung || <span className="text-dash-textDim italic">Keine Beschreibung</span>}</span>
                       {e.projekte && (
-                        <span className="hidden md:flex items-center gap-1.5 text-xs text-slate-400 flex-shrink-0">
+                        <span className="hidden md:flex items-center gap-1.5 text-xs text-dash-textMuted flex-shrink-0">
                           <span className="w-2 h-2 rounded-full" style={{ background: e.projekte.farbe }} />
                           {e.projekte.name}
                         </span>
                       )}
-                      {/* Zeit */}
-                      <span className="text-xs text-slate-500 flex-shrink-0">
+                      <span className="text-xs text-dash-textDim flex-shrink-0">
                         {formatTime(e.start_zeit)} bis {e.end_zeit ? formatTime(e.end_zeit) : 'offen'}
                       </span>
-                      {/* Dauer */}
-                      <span className="font-mono text-sm font-bold text-white w-16 text-right flex-shrink-0">
+                      <span className="font-mono text-sm font-bold text-dash-textBright w-16 text-right flex-shrink-0">
                         {e.dauer_minuten ? minutesToHM(e.dauer_minuten) : 'Keine Angabe.'}
                       </span>
-                      {/* Abrechenbar */}
-                      <span className={`text-xs flex-shrink-0 ${e.abrechenbar ? 'text-green-400' : 'text-slate-600'}`}>
+                      <span className={`text-xs flex-shrink-0 ${e.abrechenbar ? 'text-green-400' : 'text-dash-textDim'}`}>
                         {e.abrechenbar ? '●' : '○'}
                       </span>
-                      {/* Delete */}
                       <button onClick={() => handleDelete(e.id)}
-                        className="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-red-400 transition-all flex-shrink-0">
+                        className="opacity-0 group-hover:opacity-100 p-1 text-dash-textDim hover:text-red-400 transition-all flex-shrink-0">
                         <Trash2 size={13} />
                       </button>
                     </div>
                   ))}
-                </div>
+                </Card>
               </div>
             );
           })}

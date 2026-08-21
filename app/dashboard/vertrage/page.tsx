@@ -1,12 +1,14 @@
 'use client';
 
-import { useEffect, useState, FormEvent } from 'react';
+import { useEffect, useState, FormEvent, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import {
-  Plus, X, FileSignature, Send, CheckCircle2,
+  Plus, FileSignature, Send, CheckCircle2,
   Pencil, Trash2, Search, AlertCircle,
 } from 'lucide-react';
 import { Kunde, Projekt } from '@/lib/types';
+import { Modal, Input, Textarea, Select, Button, Badge, Card, PageHeader, EmptyState } from '@/components/dashboard/ui';
 
 // ── Types ──────────────────────────────────────────────────
 
@@ -28,11 +30,11 @@ interface Vertrag {
   projekte?: Pick<Projekt, 'id' | 'name'>;
 }
 
-const STATUS_CFG: Record<VertragStatus, { label: string; cls: string; Icon: React.ElementType; next?: VertragStatus }> = {
-  entwurf:      { label: 'Entwurf',       cls: 'bg-slate-700/60 text-slate-300',   Icon: FileSignature, next: 'gesendet' },
-  gesendet:     { label: 'Gesendet',      cls: 'bg-blue-900/50 text-blue-300',     Icon: Send,          next: 'unterzeichnet' },
-  unterzeichnet:{ label: 'Unterzeichnet', cls: 'bg-green-900/50 text-green-300',   Icon: CheckCircle2 },
-  abgelaufen:   { label: 'Abgelaufen',    cls: 'bg-orange-900/40 text-orange-300', Icon: AlertCircle },
+const STATUS_CFG: Record<VertragStatus, { label: string; variant: 'neutral' | 'info' | 'success' | 'warning'; Icon: React.ElementType; next?: VertragStatus }> = {
+  entwurf:       { label: 'Entwurf',       variant: 'neutral', Icon: FileSignature, next: 'gesendet' },
+  gesendet:      { label: 'Gesendet',      variant: 'info',    Icon: Send,          next: 'unterzeichnet' },
+  unterzeichnet: { label: 'Unterzeichnet', variant: 'success', Icon: CheckCircle2 },
+  abgelaufen:    { label: 'Abgelaufen',    variant: 'warning', Icon: AlertCircle },
 };
 
 const TEMPLATE_CFG: Record<TemplateTyp, string> = {
@@ -74,7 +76,7 @@ function VertragModal({ vertrag, kunden, projekte, onClose, onSaved }: {
   const [tab, setTab]       = useState<'info' | 'inhalt'>('info');
   const isEdit = !!vertrag.id;
 
-  function set(k: keyof Vertrag, v: unknown) { setForm(f => ({ ...f, [k]: v })); }
+  function set(k: keyof Vertrag, v: unknown) { setForm((f) => ({ ...f, [k]: v })); }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -105,122 +107,85 @@ function VertragModal({ vertrag, kunden, projekte, onClose, onSaved }: {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="bg-[#1e2235] border border-[#2d3144] rounded-2xl w-full max-w-2xl shadow-2xl max-h-[90vh] flex flex-col">
-        <div className="flex items-center justify-between p-6 border-b border-[#2d3144]">
-          <h2 className="text-white font-semibold text-lg">{isEdit ? 'Vertrag bearbeiten' : 'Neuer Vertrag'}</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-white"><X size={20} /></button>
+    <Modal
+      onClose={onClose}
+      title={isEdit ? 'Vertrag bearbeiten' : 'Neuer Vertrag'}
+      size="lg"
+      footer={
+        <div className="w-full flex items-center justify-between">
+          {isEdit
+            ? <Button variant="danger" type="button" icon={<Trash2 size={14} />} onClick={handleDelete}>Löschen</Button>
+            : <div />}
+          <div className="flex gap-3">
+            <Button variant="secondary" type="button" onClick={onClose}>Abbrechen</Button>
+            <Button variant="primary" type="submit" form="vertrag-form" loading={saving}>Speichern</Button>
+          </div>
         </div>
+      }
+    >
+      <div className="flex border-b border-dash-border -mt-2 mb-4">
+        {(['info', 'inhalt'] as const).map((t) => (
+          <button key={t} onClick={() => setTab(t)}
+            className={`px-4 py-2.5 text-sm font-medium transition-colors ${
+              tab === t ? 'text-dash-gold border-b-2 border-dash-gold -mb-px' : 'text-dash-textMuted hover:text-dash-textBright'
+            }`}>
+            {t === 'info' ? 'Informationen' : 'Vertragstext'}
+          </button>
+        ))}
+      </div>
 
-        <div className="flex border-b border-[#2d3144]">
-          {(['info', 'inhalt'] as const).map(t => (
-            <button key={t} onClick={() => setTab(t)}
-              className={`px-6 py-3 text-sm font-medium transition-colors ${
-                tab === t ? 'text-ms-400 border-b-2 border-ms-400 -mb-px' : 'text-slate-400 hover:text-white'
-              }`}>
-              {t === 'info' ? 'Informationen' : 'Vertragstext'}
-            </button>
-          ))}
-        </div>
-
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6">
-          {tab === 'info' ? (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs text-slate-400 mb-1">Titel *</label>
-                <input value={form.titel || ''} onChange={e => set('titel', e.target.value)}
-                  placeholder="z.B. Beratungsvertrag Q3 2026"
-                  className="w-full bg-[#2d3144] border border-[#3d4460] rounded-lg px-3 py-2 text-white text-sm" />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1">Kunde</label>
-                  <select value={form.kunden_id || ''} onChange={e => set('kunden_id', e.target.value || undefined)}
-                    className="w-full bg-[#2d3144] border border-[#3d4460] rounded-lg px-3 py-2 text-white text-sm">
-                    <option value="">Kein Kunde.</option>
-                    {kunden.map(k => (
-                      <option key={k.id} value={k.id}>
-                        {k.firmenname ? `${k.firmenname}. ${k.kontaktperson}.` : k.kontaktperson}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1">Projekt</label>
-                  <select value={form.projekt_id || ''} onChange={e => set('projekt_id', e.target.value || undefined)}
-                    className="w-full bg-[#2d3144] border border-[#3d4460] rounded-lg px-3 py-2 text-white text-sm">
-                    <option value="">Kein Projekt.</option>
-                    {projekte.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                  </select>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1">Vorlage</label>
-                  <select value={form.template_typ || ''} onChange={e => set('template_typ', e.target.value || undefined)}
-                    className="w-full bg-[#2d3144] border border-[#3d4460] rounded-lg px-3 py-2 text-white text-sm">
-                    <option value="">Bitte wählen.</option>
-                    {(Object.keys(TEMPLATE_CFG) as TemplateTyp[]).map(k => (
-                      <option key={k} value={k}>{TEMPLATE_CFG[k]}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1">Status</label>
-                  <select value={form.status || 'entwurf'} onChange={e => set('status', e.target.value)}
-                    className="w-full bg-[#2d3144] border border-[#3d4460] rounded-lg px-3 py-2 text-white text-sm">
-                    {(Object.keys(STATUS_CFG) as VertragStatus[]).map(k => (
-                      <option key={k} value={k}>{STATUS_CFG[k].label}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1">Gültig bis</label>
-                  <input type="date" value={form.gueltig_bis || ''} onChange={e => set('gueltig_bis', e.target.value || undefined)}
-                    className="w-full bg-[#2d3144] border border-[#3d4460] rounded-lg px-3 py-2 text-white text-sm" />
-                </div>
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1">Unterzeichnet am</label>
-                  <input type="date" value={form.unterzeichnet_am ? form.unterzeichnet_am.slice(0, 10) : ''}
-                    onChange={e => set('unterzeichnet_am', e.target.value || undefined)}
-                    className="w-full bg-[#2d3144] border border-[#3d4460] rounded-lg px-3 py-2 text-white text-sm" />
-                </div>
-              </div>
+      <form id="vertrag-form" onSubmit={handleSubmit}>
+        {tab === 'info' ? (
+          <div className="space-y-4">
+            <Input label="Titel" required value={form.titel || ''} onChange={(e) => set('titel', e.target.value)} placeholder="z.B. Beratungsvertrag Q3 2026" />
+            <div className="grid grid-cols-2 gap-3">
+              <Select label="Kunde" value={form.kunden_id || ''} onChange={(e) => set('kunden_id', e.target.value || undefined)}>
+                <option value="">Kein Kunde.</option>
+                {kunden.map((k) => (
+                  <option key={k.id} value={k.id}>{k.firmenname ? `${k.firmenname}. ${k.kontaktperson}.` : k.kontaktperson}</option>
+                ))}
+              </Select>
+              <Select label="Projekt" value={form.projekt_id || ''} onChange={(e) => set('projekt_id', e.target.value || undefined)} hint={!form.projekt_id ? 'Ohne Projekt bleibt der Vertrag als Alleingang markiert.' : undefined}>
+                <option value="">Kein Projekt.</option>
+                {projekte.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+              </Select>
             </div>
-          ) : (
-            <div>
-              <label className="block text-xs text-slate-400 mb-2">Vertragstext</label>
-              <textarea rows={18} value={form.inhalt || ''} onChange={e => set('inhalt', e.target.value)}
-                placeholder="Gib hier den vollständigen Vertragstext ein."
-                className="w-full bg-[#2d3144] border border-[#3d4460] rounded-lg px-3 py-2 text-white text-xs font-mono leading-relaxed resize-none" />
+            <div className="grid grid-cols-2 gap-3">
+              <Select label="Vorlage" value={form.template_typ || ''} onChange={(e) => set('template_typ', e.target.value || undefined)}>
+                <option value="">Bitte wählen.</option>
+                {(Object.keys(TEMPLATE_CFG) as TemplateTyp[]).map((k) => <option key={k} value={k}>{TEMPLATE_CFG[k]}</option>)}
+              </Select>
+              <Select label="Status" value={form.status || 'entwurf'} onChange={(e) => set('status', e.target.value)}>
+                {(Object.keys(STATUS_CFG) as VertragStatus[]).map((k) => <option key={k} value={k}>{STATUS_CFG[k].label}</option>)}
+              </Select>
             </div>
-          )}
-
-          {error && <p className="text-red-400 text-xs mt-3">{error}</p>}
-
-          <div className="flex items-center justify-between pt-4">
-            {isEdit
-              ? <button type="button" onClick={handleDelete} className="flex items-center gap-1.5 text-red-400 hover:text-red-300 text-sm"><Trash2 size={14} /> Löschen</button>
-              : <div />}
-            <div className="flex gap-3">
-              <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-slate-400 hover:text-white text-sm">Abbrechen</button>
-              <button type="submit" disabled={saving} className="px-4 py-2 bg-ms-500 hover:bg-ms-600 text-white rounded-lg text-sm disabled:opacity-50">
-                {saving ? 'Ich speichere den Vertrag.' : 'Speichern'}
-              </button>
+            <div className="grid grid-cols-2 gap-3">
+              <Input label="Gültig bis" type="date" value={form.gueltig_bis || ''} onChange={(e) => set('gueltig_bis', e.target.value || undefined)} className="[color-scheme:dark]" />
+              <Input label="Unterzeichnet am" type="date" value={form.unterzeichnet_am ? form.unterzeichnet_am.slice(0, 10) : ''} onChange={(e) => set('unterzeichnet_am', e.target.value || undefined)} className="[color-scheme:dark]" />
             </div>
           </div>
-        </form>
-      </div>
-    </div>
+        ) : (
+          <Textarea label="Vertragstext" rows={18} value={form.inhalt || ''} onChange={(e) => set('inhalt', e.target.value)} placeholder="Gib hier den vollständigen Vertragstext ein." className="font-mono text-xs" />
+        )}
+        {error && <p className="text-red-400 text-xs mt-3">{error}</p>}
+      </form>
+    </Modal>
   );
 }
 
 // ── Page ───────────────────────────────────────────────────
 
 export default function VertragePage() {
+  return (
+    <Suspense fallback={<div className="max-w-6xl mx-auto text-dash-textMuted text-sm">Die Verträge werden geladen.</div>}>
+      <VertragePageInner />
+    </Suspense>
+  );
+}
+
+function VertragePageInner() {
   const supabase = createClient();
+  const searchParams = useSearchParams();
   const [vertraege, setVertraege]   = useState<Vertrag[]>([]);
   const [kunden, setKunden]         = useState<Kunde[]>([]);
   const [projekte, setProjekte]     = useState<Projekt[]>([]);
@@ -228,6 +193,7 @@ export default function VertragePage() {
   const [modal, setModal]           = useState<Partial<Vertrag> | null>(null);
   const [search, setSearch]         = useState('');
   const [filterStatus, setFilter]   = useState<VertragStatus | ''>('');
+  const [prefillHandled, setPrefillHandled] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -244,6 +210,19 @@ export default function VertragePage() {
 
   useEffect(() => { load(); }, []);
 
+  // Geführt, aber flexibel: aus der Kundenkartei verlinkt (?kunde=...) öffnet
+  // sich das Erstellen-Formular direkt vorausgefüllt, statt den Kunden erneut
+  // manuell auswählen zu müssen.
+  useEffect(() => {
+    if (prefillHandled || loading) return;
+    const kundeId = searchParams.get('kunde');
+    const projektId = searchParams.get('projekt');
+    if (kundeId || projektId) {
+      setModal({ status: 'entwurf', kunden_id: kundeId || undefined, projekt_id: projektId || undefined });
+    }
+    setPrefillHandled(true);
+  }, [searchParams, prefillHandled, loading]);
+
   async function advanceStatus(v: Vertrag) {
     const next = STATUS_CFG[v.status].next;
     if (!next) return;
@@ -252,7 +231,7 @@ export default function VertragePage() {
     load();
   }
 
-  const filtered = vertraege.filter(v =>
+  const filtered = vertraege.filter((v) =>
     (v.titel.toLowerCase().includes(search.toLowerCase()) ||
      (v.kunden?.kontaktperson || '').toLowerCase().includes(search.toLowerCase()) ||
      (v.kunden?.firmenname || '').toLowerCase().includes(search.toLowerCase())) &&
@@ -260,87 +239,71 @@ export default function VertragePage() {
   );
 
   return (
-    <div className="p-6 space-y-6 max-w-6xl">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-white">Verträge</h1>
-          <p className="text-slate-400 text-sm mt-0.5">Verträge erstellen, versenden und unterzeichnen</p>
-        </div>
-        <button onClick={() => setModal({ status: 'entwurf' })}
-          className="flex items-center gap-2 bg-ms-500 hover:bg-ms-600 text-white px-4 py-2 rounded-xl text-sm font-medium">
-          <Plus size={16} /> Neuer Vertrag
-        </button>
-      </div>
+    <div className="max-w-6xl mx-auto">
+      <PageHeader
+        title="Verträge"
+        subtitle="Verträge erstellen, versenden und unterzeichnen"
+        actions={<Button variant="primary" icon={<Plus size={16} />} onClick={() => setModal({ status: 'entwurf' })}>Neuer Vertrag</Button>}
+      />
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         {[
-          { label: 'Gesamt',        value: vertraege.length,                                         cls: 'text-white' },
-          { label: 'Entwürfe',      value: vertraege.filter(v => v.status === 'entwurf').length,     cls: 'text-slate-400' },
-          { label: 'Unterzeichnet', value: vertraege.filter(v => v.status === 'unterzeichnet').length, cls: 'text-green-400' },
-          { label: 'Läuft ab (<14 Tage)', value: vertraege.filter(v => isExpiringSoon(v.gueltig_bis)).length,
-            cls: vertraege.filter(v => isExpiringSoon(v.gueltig_bis)).length > 0 ? 'text-orange-400' : 'text-slate-400' },
-        ].map(s => (
-          <div key={s.label} className="bg-[#1e2235] border border-[#2d3144] rounded-xl p-4">
-            <p className="text-slate-400 text-xs mb-1">{s.label}</p>
-            <p className={`text-2xl font-bold ${s.cls}`}>{s.value}</p>
-          </div>
+          { label: 'Gesamt',        value: vertraege.length,                                         cls: 'text-dash-textBright' },
+          { label: 'Entwürfe',      value: vertraege.filter((v) => v.status === 'entwurf').length,     cls: 'text-dash-textMuted' },
+          { label: 'Unterzeichnet', value: vertraege.filter((v) => v.status === 'unterzeichnet').length, cls: 'text-green-400' },
+          { label: 'Läuft ab (<14 Tage)', value: vertraege.filter((v) => isExpiringSoon(v.gueltig_bis)).length,
+            cls: vertraege.filter((v) => isExpiringSoon(v.gueltig_bis)).length > 0 ? 'text-amber-400' : 'text-dash-textMuted' },
+        ].map((s) => (
+          <Card key={s.label} padding="sm">
+            <p className="text-dash-textDim text-xs mb-1">{s.label}</p>
+            <p className={`font-display text-2xl ${s.cls}`}>{s.value}</p>
+          </Card>
         ))}
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-col sm:flex-row gap-3 mb-5">
         <div className="relative flex-1">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-          <input type="text" placeholder="Suche nach Titel oder Kunde." value={search} onChange={e => setSearch(e.target.value)}
-            className="w-full bg-[#1e2235] border border-[#2d3144] rounded-xl pl-9 pr-3 py-2.5 text-white text-sm placeholder-slate-500 focus:border-ms-500 outline-none" />
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-dash-textDim" />
+          <Input placeholder="Suche nach Titel oder Kunde." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
         </div>
-        <select value={filterStatus} onChange={e => setFilter(e.target.value as VertragStatus | '')}
-          className="bg-[#1e2235] border border-[#2d3144] rounded-xl px-3 py-2.5 text-white text-sm">
+        <Select value={filterStatus} onChange={(e) => setFilter(e.target.value as VertragStatus | '')} className="sm:w-52">
           <option value="">Alle Status</option>
-          {(Object.keys(STATUS_CFG) as VertragStatus[]).map(k => (
-            <option key={k} value={k}>{STATUS_CFG[k].label}</option>
-          ))}
-        </select>
+          {(Object.keys(STATUS_CFG) as VertragStatus[]).map((k) => <option key={k} value={k}>{STATUS_CFG[k].label}</option>)}
+        </Select>
       </div>
 
       {loading ? (
-        <div className="text-slate-400 text-sm">Die Verträge werden geladen.</div>
+        <div className="text-dash-textMuted text-sm">Die Verträge werden geladen.</div>
       ) : filtered.length === 0 ? (
-        <div className="bg-[#1e2235] border border-[#2d3144] rounded-2xl p-12 text-center">
-          <FileSignature size={40} className="mx-auto text-slate-600 mb-3" />
-          <p className="text-slate-400">Noch keine Verträge</p>
-          <button onClick={() => setModal({ status: 'entwurf' })} className="mt-4 text-ms-400 text-sm hover:underline">Ersten Vertrag erstellen</button>
-        </div>
+        <EmptyState icon={<FileSignature size={32} />} title="Noch keine Verträge." action={<button onClick={() => setModal({ status: 'entwurf' })} className="text-dash-gold text-sm hover:underline">Ersten Vertrag erstellen</button>} />
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {filtered.map(v => {
+          {filtered.map((v) => {
             const cfg  = STATUS_CFG[v.status];
             const Icon = cfg.Icon;
             const expiring = isExpiringSoon(v.gueltig_bis);
             const expired  = isExpired(v.gueltig_bis, v.status);
             return (
-              <div key={v.id} className="bg-[#1e2235] border border-[#2d3144] rounded-2xl p-5 hover:border-[#3d4460] transition-colors">
+              <Card key={v.id} padding="md" interactive>
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-white font-semibold truncate">{v.titel}</h3>
-                    <p className="text-slate-400 text-sm mt-0.5">
+                    <h3 className="text-dash-textBright font-semibold truncate">{v.titel}</h3>
+                    <p className="text-dash-textMuted text-sm mt-0.5">
                       {v.kunden?.firmenname || v.kunden?.kontaktperson || 'Kein Kunde'}
-                      {v.projekte && <span className="text-slate-600"> · {v.projekte.name}</span>}
+                      {v.projekte && <span className="text-dash-textDim"> · {v.projekte.name}</span>}
                     </p>
                   </div>
-                  <span className={`ml-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium flex-shrink-0 ${cfg.cls}`}>
-                    <Icon size={12} /> {cfg.label}
-                  </span>
+                  <Badge variant={cfg.variant} className="ml-3 flex-shrink-0"><Icon size={12} /> {cfg.label}</Badge>
                 </div>
 
-                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500 mb-4">
-                  {v.template_typ && <span className="text-indigo-400">{TEMPLATE_CFG[v.template_typ]}</span>}
+                {!v.projekt_id && <Badge variant="neutral" className="mb-3">Kein Projekt verknüpft</Badge>}
+
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-dash-textDim mb-4">
+                  {v.template_typ && <span className="text-dash-gold">{TEMPLATE_CFG[v.template_typ]}</span>}
                   <span>Erstellt {formatDate(v.created_at)}</span>
                   {v.gueltig_bis && (
-                    <span className={expiring ? 'text-orange-400 font-medium' : expired ? 'text-red-400' : ''}>
-                      {expiring ? '⚠ Läuft ab ' : 'Bis '}
-                      {formatDate(v.gueltig_bis)}
+                    <span className={expiring ? 'text-amber-400 font-medium' : expired ? 'text-red-400' : ''}>
+                      {expiring ? '⚠ Läuft ab ' : 'Bis '}{formatDate(v.gueltig_bis)}
                     </span>
                   )}
                   {v.unterzeichnet_am && <span className="text-green-400">✓ Unterz. {formatDate(v.unterzeichnet_am)}</span>}
@@ -353,10 +316,9 @@ export default function VertragePage() {
                       return (
                         <div key={s} className="flex items-center gap-1">
                           <div className={`w-2 h-2 rounded-full ${
-                            v.status === s ? 'bg-ms-400' :
-                            statusOrder > i ? 'bg-green-500' : 'bg-[#2d3144]'
+                            v.status === s ? 'bg-dash-gold' : statusOrder > i ? 'bg-green-500' : 'bg-dash-border'
                           }`} />
-                          {i < 3 && <div className="w-4 h-px bg-[#2d3144]" />}
+                          {i < 3 && <div className="w-4 h-px bg-dash-border" />}
                         </div>
                       );
                     })}
@@ -364,17 +326,16 @@ export default function VertragePage() {
                   <div className="flex items-center gap-2">
                     {cfg.next && (
                       <button onClick={() => advanceStatus(v)}
-                        className="px-3 py-1.5 bg-ms-500/20 hover:bg-ms-500/40 text-ms-400 rounded-lg text-xs font-medium transition-colors">
+                        className="px-3 py-1.5 bg-dash-gold/15 hover:bg-dash-gold/25 text-dash-gold rounded-lg text-xs font-medium transition-colors">
                         → {STATUS_CFG[cfg.next].label}
                       </button>
                     )}
-                    <button onClick={() => setModal(v)}
-                      className="p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-[#2d3144] transition-colors">
+                    <button onClick={() => setModal(v)} className="p-1.5 rounded-lg text-dash-textDim hover:text-dash-textBright hover:bg-dash-border/40 transition-colors">
                       <Pencil size={14} />
                     </button>
                   </div>
                 </div>
-              </div>
+              </Card>
             );
           })}
         </div>

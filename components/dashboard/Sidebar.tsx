@@ -8,7 +8,7 @@ import {
   FolderKanban, Timer, Receipt, FileText, Calendar,
   Bot, FolderOpen, BarChart3, Settings,
   ChevronLeft, ChevronRight, LogOut, Briefcase,
-  Search, Command, MessageSquare, ClipboardList, Sparkles,
+  Search, Command, Inbox, ClipboardList, Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
@@ -25,12 +25,12 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    label: 'BUSINESS',
+    label: 'TRICHTER',
     items: [
+      { label: 'Eingang',   href: '/dashboard/eingang',  icon: Inbox, badgeKey: 'kontakt' },
       { label: 'Pipeline',  href: '/dashboard/pipeline',  icon: GitBranch },
       { label: 'Kunden',    href: '/dashboard/kunden',    icon: Users },
       { label: 'Outreach',  href: '/dashboard/outreach',  icon: Megaphone },
-      { label: 'Kontakt',   href: '/dashboard/kontakt',   icon: MessageSquare, badgeKey: 'kontakt' },
     ],
   },
   {
@@ -99,26 +99,26 @@ export default function Sidebar() {
   return (
     <aside
       className={cn(
-        'flex flex-col h-screen bg-[#1a1d27] border-r border-[#2d3144] transition-all duration-300 ease-in-out flex-shrink-0 overflow-hidden',
+        'flex flex-col h-screen bg-dash-surfaceAlt border-r border-dash-border transition-all duration-300 ease-in-out flex-shrink-0 overflow-hidden',
         collapsed ? 'w-16' : 'w-60'
       )}
     >
       {/* ── Logo + Collapse Button ── */}
-      <div className="flex items-center h-16 px-3 border-b border-[#2d3144] flex-shrink-0">
+      <div className="flex items-center h-16 px-3 border-b border-dash-border flex-shrink-0">
         <div className="flex items-center gap-3 min-w-0 flex-1">
-          <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-[#6366f1] flex items-center justify-center shadow-lg shadow-indigo-500/30">
-            <span className="text-white text-xs font-bold tracking-tight">MS</span>
+          <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-dash-gold/15 border border-dash-gold/30 flex items-center justify-center">
+            <span className="font-display text-dash-gold text-xs">MS</span>
           </div>
           {!collapsed && (
             <div className="min-w-0">
-              <div className="text-sm font-semibold text-white truncate leading-tight">Command Center</div>
-              <div className="text-[10px] text-slate-400 truncate">Marcel Spahr</div>
+              <div className="font-display text-sm text-dash-textBright truncate leading-tight">Command Center</div>
+              <div className="text-[10px] text-dash-textDim truncate">Marcel Spahr</div>
             </div>
           )}
         </div>
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="flex-shrink-0 p-1.5 rounded-md text-slate-500 hover:text-white hover:bg-[#252836] transition-colors"
+          className="flex-shrink-0 p-1.5 rounded-md text-dash-textDim hover:text-dash-textBright hover:bg-dash-surface transition-colors"
           title={collapsed ? 'Ausklappen' : 'Einklappen'}
         >
           {collapsed ? <ChevronRight size={15} /> : <ChevronLeft size={15} />}
@@ -127,8 +127,8 @@ export default function Sidebar() {
 
       {/* ── Suchleiste ── */}
       {!collapsed && (
-        <div className="px-3 py-2.5 border-b border-[#2d3144]">
-          <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-[#252836] text-slate-400 text-xs cursor-pointer hover:bg-[#2d3144] transition-colors select-none">
+        <div className="px-3 py-2.5 border-b border-dash-border">
+          <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-dash-surface text-dash-textDim text-xs cursor-pointer hover:bg-dash-border/40 transition-colors select-none">
             <Search size={12} />
             <span className="flex-1">Suchen...</span>
             <div className="flex items-center gap-0.5 opacity-60">
@@ -143,11 +143,11 @@ export default function Sidebar() {
         {NAV_GROUPS.map((group) => (
           <div key={group.label} className="mb-3">
             {!collapsed && (
-              <div className="px-2 mb-1 mt-2 text-[9px] font-bold text-slate-600 tracking-widest uppercase select-none">
+              <div className="px-2 mb-1 mt-2 text-[9px] font-bold text-dash-textDim tracking-widest uppercase select-none">
                 {group.label}
               </div>
             )}
-            {collapsed && <div className="my-2 border-t border-[#2d3144]" />}
+            {collapsed && <div className="my-2 border-t border-dash-border" />}
             {group.items.map((item) => {
               const Icon   = item.icon;
               const active = isActive(item.href);
@@ -159,23 +159,23 @@ export default function Sidebar() {
                   className={cn(
                     'relative flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm transition-all duration-150 group',
                     active
-                      ? 'bg-[#6366f1] text-white shadow-md shadow-indigo-500/20'
-                      : 'text-slate-400 hover:text-white hover:bg-[#252836]',
+                      ? 'bg-dash-gold/12 text-dash-gold'
+                      : 'text-dash-textMuted hover:text-dash-textBright hover:bg-dash-surface',
                     collapsed && 'justify-center px-0'
                   )}
                 >
                   <Icon
                     size={17}
-                    className={cn('flex-shrink-0', active ? 'text-white' : 'text-slate-400 group-hover:text-white')}
+                    className={cn('flex-shrink-0', active ? 'text-dash-gold' : 'text-dash-textDim group-hover:text-dash-textBright')}
                   />
                   {!collapsed && <span className="truncate font-medium flex-1">{item.label}</span>}
                   {!collapsed && item.badgeKey && (badges[item.badgeKey] ?? 0) > 0 && (
-                    <span className="ml-auto flex-shrink-0 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-blue-500 text-white text-[10px] font-bold px-1">
+                    <span className="ml-auto flex-shrink-0 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-dash-gold text-dash-bg text-[10px] font-bold px-1">
                       {badges[item.badgeKey]}
                     </span>
                   )}
                   {collapsed && item.badgeKey && (badges[item.badgeKey] ?? 0) > 0 && (
-                    <span className="absolute top-0.5 right-0.5 w-2 h-2 rounded-full bg-blue-500" />
+                    <span className="absolute top-0.5 right-0.5 w-2 h-2 rounded-full bg-dash-gold" />
                   )}
                 </Link>
               );
@@ -185,12 +185,12 @@ export default function Sidebar() {
       </nav>
 
       {/* ── Bottom Section ── */}
-      <div className="flex-shrink-0 border-t border-[#2d3144] p-2 space-y-1">
+      <div className="flex-shrink-0 border-t border-dash-border p-2 space-y-1">
         <Link
           href="/dashboard/einstellungen"
           title={collapsed ? 'Einstellungen' : undefined}
           className={cn(
-            'flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-[#252836] transition-colors',
+            'flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm text-dash-textMuted hover:text-dash-textBright hover:bg-dash-surface transition-colors',
             collapsed && 'justify-center px-0'
           )}
         >
@@ -198,27 +198,27 @@ export default function Sidebar() {
           {!collapsed && <span className="font-medium">Einstellungen</span>}
         </Link>
 
-        <div className="pt-2 border-t border-[#2d3144]">
+        <div className="pt-2 border-t border-dash-border">
           {collapsed ? (
             <button
               onClick={handleLogout}
-              className="w-full flex justify-center py-2 rounded-lg text-slate-400 hover:text-red-400 hover:bg-[#252836] transition-colors"
+              className="w-full flex justify-center py-2 rounded-lg text-dash-textMuted hover:text-red-400 hover:bg-dash-surface transition-colors"
               title="Abmelden"
             >
               <LogOut size={17} />
             </button>
           ) : (
             <div className="flex items-center gap-2.5 px-2 py-1.5">
-              <div className="w-7 h-7 rounded-full bg-[#6366f1] flex items-center justify-center flex-shrink-0 shadow shadow-indigo-500/30">
-                <span className="text-white text-[10px] font-bold">MS</span>
+              <div className="w-7 h-7 rounded-full bg-dash-gold/15 border border-dash-gold/30 flex items-center justify-center flex-shrink-0">
+                <span className="font-display text-dash-gold text-[10px]">MS</span>
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-xs text-white font-semibold truncate">Marcel Spahr</div>
-                <div className="text-[10px] text-slate-500 truncate">kontakt@marcelspahr.ch</div>
+                <div className="text-xs text-dash-textBright font-semibold truncate">Marcel Spahr</div>
+                <div className="text-[10px] text-dash-textDim truncate">kontakt@marcelspahr.ch</div>
               </div>
               <button
                 onClick={handleLogout}
-                className="flex-shrink-0 p-1 rounded-md text-slate-500 hover:text-red-400 hover:bg-[#252836] transition-colors"
+                className="flex-shrink-0 p-1 rounded-md text-dash-textDim hover:text-red-400 hover:bg-dash-surface transition-colors"
                 title="Abmelden"
               >
                 <LogOut size={14} />
