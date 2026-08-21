@@ -17,6 +17,7 @@ export default function MobileAilaCompanion({ lang }: { lang: ExperienceLang }) 
   const reachedAboutRef = useRef(false);
   const [stage, setStage] = useState<MobileAilaStage>('hero');
   const [guideOpen, setGuideOpen] = useState(false);
+  const [greetingSpeaking, setGreetingSpeaking] = useState(false);
 
   useEffect(() => {
     let frame = 0;
@@ -126,17 +127,28 @@ export default function MobileAilaCompanion({ lang }: { lang: ExperienceLang }) 
     return () => window.removeEventListener('aila:guide-open-change', handleGuideOpen);
   }, []);
 
+  useEffect(() => {
+    const handleGuideState = (event: Event) => {
+      const state = (event as CustomEvent<{ state?: string }>).detail?.state;
+      setGreetingSpeaking(state === 'speaking');
+    };
+    window.addEventListener('aila:guide-state', handleGuideState);
+    return () => window.removeEventListener('aila:guide-state', handleGuideState);
+  }, []);
+
   const openAila = () => {
     window.dispatchEvent(new Event('aila:prime-audio'));
     window.dispatchEvent(new Event('aila:open-sales-conversation'));
     trackWebsiteEvent('aila_opened', { station: stage === 'final' ? 'journey-contact' : stage === 'about' || stage === 'transit' ? 'journey-about' : 'journey-start', metadata: { source: `mobile_companion_${stage}` } });
   };
 
-  const videoMode: AilaVideoMode = stage === 'nav'
-    ? 'idle'
-    : stage === 'final'
-      ? 'cta'
-      : 'attention';
+  const videoMode: AilaVideoMode = greetingSpeaking
+    ? 'speaking'
+    : stage === 'nav'
+      ? 'idle'
+      : stage === 'final'
+        ? 'cta'
+        : 'attention';
 
   return (
     <button

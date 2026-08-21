@@ -6,6 +6,7 @@ import { ArrowDown, ArrowRight, ArrowUpRight, Bot, Check, Database, ExternalLink
 import { useLanguage } from '../../app/LanguageContext';
 import { trackWebsiteEvent } from '../../app/lib/analytics';
 import { PROJECTS } from '../../app/portfolio/data';
+import AilaGreeting from './AilaGreeting';
 import ExperienceNav from './ExperienceNav';
 import MarketingDockingStation from './MarketingDockingStation';
 import ProblemDockingStation from './ProblemDockingStation';
@@ -583,6 +584,7 @@ export default function MarcelExperience() {
       <a className={styles.skipLink} href="#main-content">{c.skip}</a>
       <ExperienceNav lang={lang} />
       <ScrollEntity rootRef={rootRef} lang={lang} />
+      <AilaGreeting lang={lang} heroPhase={heroPhase} />
 
       <main id="main-content">
         <section ref={heroSectionRef} id="journey-start" className={styles.hero} onPointerMove={onHeroPointer}>

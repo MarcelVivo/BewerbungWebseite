@@ -18,6 +18,21 @@ export const systemNodes = {
   en: ['Website', 'Marketing', 'Customers', 'Email', 'Quotes', 'Projects', 'Finance', 'Team', 'Analytics', 'Data', 'Calendar', 'Social media'],
 };
 
+export const heroGreeting = {
+  de: [
+    'Hallo, ich bin AILA.',
+    'Ich zeige dir, wie hier alles zusammenhängt.',
+    'Website, Prozesse, Daten – ein System, ein Blick.',
+    'Scroll einfach weiter. Ich bin da, wenn du Fragen hast.',
+  ],
+  en: [
+    "Hello, I'm AILA.",
+    "I'll show you how everything here connects.",
+    'Website, processes, data — one system, one view.',
+    "Just keep scrolling. I'm here if you have questions.",
+  ],
+} as const;
+
 export const flowSteps = {
   de: ['Google-Suche', 'Website', 'Anfrage', 'CRM', 'Termin', 'Beratung', 'Offerte', 'Freigabe', 'Auftrag', 'Projekt'],
   en: ['Google search', 'Website', 'Enquiry', 'CRM', 'Meeting', 'Consultation', 'Quote', 'Approval', 'Order', 'Project'],
