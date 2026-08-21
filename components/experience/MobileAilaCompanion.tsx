@@ -5,7 +5,7 @@ import type { ExperienceLang } from './content';
 import { trackWebsiteEvent } from '../../app/lib/analytics';
 import styles from './experience.module.css';
 
-type MobileAilaStage = 'hero' | 'nav' | 'about' | 'final';
+type MobileAilaStage = 'hero' | 'nav' | 'about' | 'transit' | 'final';
 
 const clamp = (value: number, minimum = 0, maximum = 1) => Math.min(maximum, Math.max(minimum, value));
 const mix = (from: number, to: number, progress: number) => from + (to - from) * progress;
@@ -35,8 +35,14 @@ export default function MobileAilaCompanion({ lang }: { lang: ExperienceLang }) 
       const navRect = nav.getBoundingClientRect();
       const aboutRect = about.getBoundingClientRect();
       const finalRect = final.getBoundingClientRect();
+      const aboutSection = document.getElementById('journey-about');
+      const finalSection = document.getElementById('journey-contact');
       const finalVisible = finalRect.top < window.innerHeight * .78 && finalRect.bottom > window.innerHeight * .12;
       const aboutVisible = aboutRect.top < window.innerHeight * .76 && aboutRect.bottom > window.innerHeight * .18;
+      const transitStart = aboutSection ? aboutSection.offsetTop + aboutSection.offsetHeight * .58 : Number.POSITIVE_INFINITY;
+      const transitEnd = finalSection ? Math.max(transitStart + 1, finalSection.offsetTop - window.innerHeight * .18) : transitStart + 1;
+      const transitProgress = ease(clamp((window.scrollY - transitStart) / (transitEnd - transitStart)));
+      const inDownwardTransit = window.scrollY >= transitStart && Boolean(finalSection && window.scrollY < finalSection.offsetTop);
       const travel = ease(clamp(window.scrollY / Math.max(150, window.innerHeight * .22)));
 
       const navWidth = clamp(window.innerWidth * .27, 102, 132);
@@ -62,6 +68,12 @@ export default function MobileAilaCompanion({ lang }: { lang: ExperienceLang }) 
         top = aboutRect.top;
         width = aboutRect.width;
         height = aboutRect.height;
+      } else if (inDownwardTransit) {
+        nextStage = 'transit';
+        width = clamp(window.innerWidth * .29, 108, 136);
+        height = width * .76;
+        left = window.innerWidth - width - Math.max(8, window.innerWidth * .025);
+        top = mix(window.innerHeight * .18, window.innerHeight * .58, transitProgress);
       } else if (travel < .96) {
         nextStage = 'hero';
       }
@@ -105,7 +117,7 @@ export default function MobileAilaCompanion({ lang }: { lang: ExperienceLang }) 
   const openAila = () => {
     window.dispatchEvent(new Event('aila:prime-audio'));
     window.dispatchEvent(new Event('aila:open-sales-conversation'));
-    trackWebsiteEvent('aila_opened', { station: stage === 'final' ? 'journey-contact' : stage === 'about' ? 'journey-about' : 'journey-start', metadata: { source: `mobile_companion_${stage}` } });
+    trackWebsiteEvent('aila_opened', { station: stage === 'final' ? 'journey-contact' : stage === 'about' || stage === 'transit' ? 'journey-about' : 'journey-start', metadata: { source: `mobile_companion_${stage}` } });
   };
 
   return (
@@ -121,7 +133,7 @@ export default function MobileAilaCompanion({ lang }: { lang: ExperienceLang }) 
     >
       <span className={styles.mobileAilaAura} aria-hidden="true" />
       <span className={styles.mobileAilaNavPrompt} aria-hidden="true">
-        <span>{lang === 'de' ? 'Gespräch mit AILA beginnen' : 'Start a conversation with AILA'}</span><b>→</b>
+        <span>{lang === 'de' ? 'Gespräch mit AILA beginnen' : 'Start a conversation with AILA'}</span>
       </span>
       <img src="/cinematic/aila/aila-idle-v1-fallback-transparent.png" alt="" aria-hidden="true" draggable="false" />
       <span className={styles.mobileAilaSignal} aria-hidden="true"><i /><i /><i /><i /></span>

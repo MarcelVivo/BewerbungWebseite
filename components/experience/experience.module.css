@@ -6252,8 +6252,8 @@
     z-index: 4;
     top: 42%;
     right: 2%;
-    width: clamp(10.5rem, 28vw, 14rem);
-    height: clamp(8rem, 21vw, 10.5rem);
+    width: clamp(14rem, 37vw, 18.5rem);
+    height: clamp(10.6rem, 28vw, 14rem);
     display: block;
     pointer-events: none;
   }
@@ -6319,49 +6319,55 @@
     position: absolute;
     z-index: 8;
     top: 50%;
-    right: 87%;
-    width: clamp(7.2rem, 24vw, 9rem);
-    display: flex;
+    right: 84%;
+    width: clamp(7.7rem, 25vw, 9.6rem);
+    min-height: 2.1rem;
+    padding: .32rem 1.15rem .32rem .35rem;
+    display: grid;
     align-items: center;
-    justify-content: flex-end;
-    gap: .42rem;
-    color: #f2e5bd;
+    justify-items: end;
+    color: #e9dfc1;
     opacity: 0;
     transform: translate3d(.55rem, -50%, 0);
     transition: opacity .28s ease, transform .42s cubic-bezier(.16,.8,.2,1);
     pointer-events: none;
   }
   .mobileAilaNavPrompt > span {
-    max-width: 6.4rem;
-    font: 680 clamp(.48rem, 1.65vw, .61rem)/1.28 var(--font-chakra-petch), monospace;
-    letter-spacing: .055em;
+    max-width: 7.25rem;
+    font: 640 clamp(.48rem, 1.62vw, .6rem)/1.32 var(--font-chakra-petch), monospace;
+    letter-spacing: .045em;
     text-align: right;
     text-wrap: balance;
   }
-  .mobileAilaNavPrompt b {
-    color: #e7c56a;
-    font: 500 1.05rem/1 system-ui, sans-serif;
-    text-shadow: 0 0 .55rem rgba(231,197,106,.4);
+  .mobileAilaNavPrompt::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 0;
+    width: .95rem;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(231,197,106,.18), rgba(255,216,111,.92));
+    box-shadow: .65rem 0 .55rem rgba(226,155,48,.42);
   }
   .mobileAilaCompanion[data-stage='nav'] .mobileAilaNavPrompt { opacity: 1; transform: translate3d(0, -50%, 0); }
 
   .mobileAilaSignal {
     position: absolute;
     z-index: 5;
-    top: 21%;
+    top: 24%;
     left: 50%;
-    width: 26%;
-    height: 18%;
+    width: 18%;
+    height: 12%;
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    gap: 5%;
+    gap: 8%;
     transform: translateX(-50%);
     opacity: .72;
     pointer-events: none;
   }
   .mobileAilaSignal i {
-    width: 7%;
+    width: 9%;
     height: 42%;
     border-radius: 999px;
     background: linear-gradient(180deg, #ffe4a0, #dc792b 72%, transparent);
@@ -6398,14 +6404,21 @@
   .mobileAilaCompanion[data-stage='about'] .mobileAilaSignal,
   .mobileAilaCompanion[data-stage='about'] .mobileAilaParticles { opacity: .8; }
   .mobileAilaCompanion[data-stage='about'] > img { animation-duration: 4.1s; }
+  .mobileAilaCompanion[data-stage='transit'] .mobileAilaSignal { opacity: .68; }
+  .mobileAilaCompanion[data-stage='transit'] .mobileAilaParticles { opacity: .48; }
+  .mobileAilaCompanion[data-stage='transit'] > img {
+    animation-duration: 3.6s;
+    filter: drop-shadow(0 .55rem .85rem rgba(0,0,0,.58)) drop-shadow(0 0 .48rem rgba(218,157,47,.2));
+  }
   .mobileAilaCompanion[data-stage='final'] .mobileAilaSignal { opacity: 1; animation: mobileAilaInvite 2.2s ease-in-out infinite; }
   .mobileAilaCompanion[data-stage='final'] .mobileAilaAura { animation-duration: 2.2s; }
 
   .ailaGuide[data-mobile-dialog='true'] .ailaGuideMobileIdentity {
     position: relative;
-    width: 6.4rem;
-    min-height: 5.7rem;
-    margin: .2rem 0 0;
+    z-index: 2;
+    width: 12.4rem;
+    min-height: 8.6rem;
+    margin: -.25rem 0 -1.2rem;
     display: block;
     border: 0;
     background: transparent;
@@ -6413,8 +6426,8 @@
   }
   .ailaGuideMobileAvatar {
     position: relative;
-    width: 5.8rem;
-    height: 5.4rem;
+    width: 11.6rem;
+    height: 10.8rem;
     display: block;
   }
   .ailaGuideMobileAvatar img {
@@ -6427,22 +6440,27 @@
     filter: drop-shadow(0 .5rem .85rem rgba(0,0,0,.56)) drop-shadow(0 0 .48rem rgba(218,157,47,.2));
     animation: mobileAilaFloat 3.8s ease-in-out infinite;
   }
+  .ailaGuide[data-mobile-dialog='true'] .ailaGuideMobileIdentity .ailaGuideMobileAvatar img {
+    width: 100%;
+    height: 100%;
+  }
   .ailaGuideMobileAvatar i {
     position: absolute;
     z-index: 3;
-    top: 21%;
+    top: 24%;
     left: calc(44% + var(--guide-signal-x, 0px));
-    width: .12rem;
-    height: .6rem;
+    width: .2rem;
+    height: .74rem;
     border-radius: 999px;
     background: linear-gradient(#ffe39b, #d8762b);
     box-shadow: 0 0 .3rem rgba(255,173,58,.58);
     transform-origin: bottom;
     animation: mobileAilaSignal 1.15s ease-in-out infinite alternate;
   }
-  .ailaGuideMobileAvatar i:nth-of-type(2) { --guide-signal-x: .38rem; height: .92rem; animation-delay: -.5s; }
-  .ailaGuideMobileAvatar i:nth-of-type(3) { --guide-signal-x: .76rem; height: .72rem; animation-delay: -.8s; }
-  .ailaGuideMobileAvatar i:nth-of-type(4) { --guide-signal-x: 1.14rem; height: .48rem; animation-delay: -.2s; }
+  .ailaGuideMobileAvatar i:nth-of-type(2) { --guide-signal-x: .62rem; height: 1.18rem; animation-delay: -.5s; }
+  .ailaGuideMobileAvatar i:nth-of-type(3) { --guide-signal-x: 1.24rem; height: .9rem; animation-delay: -.8s; }
+  .ailaGuideMobileAvatar i:nth-of-type(4) { --guide-signal-x: 1.86rem; height: .62rem; animation-delay: -.2s; }
+  .ailaGuide[data-mobile-dialog='true'] h2 { position: relative; z-index: 5; }
   .ailaGuideMobileIdentity[data-state='thinking'] .ailaGuideMobileAvatar { animation: mobileAilaThinking 1.25s ease-in-out infinite; }
   .ailaGuideMobileIdentity[data-state='listening'] .ailaGuideMobileAvatar i { background: linear-gradient(#d8ffd8, #60c98a); }
   .ailaGuideMobileIdentity[data-state='speaking'] .ailaGuideMobileAvatar i { animation-duration: .48s; }
@@ -6473,8 +6491,8 @@
   .mobileAilaAboutDock {
     top: 44%;
     right: 1%;
-    width: clamp(10.75rem, 46vw, 12.75rem);
-    height: clamp(8.1rem, 34.5vw, 9.6rem);
+    width: clamp(14.25rem, 61vw, 17rem);
+    height: clamp(10.75rem, 46vw, 12.8rem);
   }
   .mobileAilaFinalDock {
     width: min(21rem, 88vw);
