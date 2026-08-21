@@ -822,12 +822,14 @@ export default function AilaGuide({
         </div>
       </header>
       {compactDialog && contactMode === 'idle' && (
-        <div className={styles.ailaGuideMobileIdentity}>
-          <img src="/pwa/icon-512.png" alt="AILA" />
-          <div>
-            <strong>AILA</strong>
-            <span>{lang === 'de' ? 'Deine digitale Systembegleiterin' : 'Your digital systems guide'}</span>
-          </div>
+        <div
+          className={styles.ailaGuideMobileIdentity}
+          data-state={liveStatus === 'speaking' ? 'speaking' : liveStatus === 'listening' ? 'listening' : busy ? 'thinking' : 'idle'}
+        >
+          <span className={styles.ailaGuideMobileAvatar}>
+            <img src="/cinematic/aila/aila-idle-v1-fallback-transparent.png" alt="AILA" />
+            <i /><i /><i /><i />
+          </span>
         </div>
       )}
       {contactMode === 'form' ? (

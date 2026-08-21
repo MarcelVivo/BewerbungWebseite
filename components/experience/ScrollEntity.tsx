@@ -141,7 +141,8 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
 
   const openGuideForSection = (sectionId?: string) => {
     const entity = entityRef.current;
-    if (!entity || (rootRef.current?.dataset.heroPhase ?? 'loading') !== 'revealed') return;
+    const compact = window.matchMedia('(max-width: 1100px)').matches;
+    if (!entity || (!compact && (rootRef.current?.dataset.heroPhase ?? 'loading') !== 'revealed')) return;
     setSolutionPreview(null);
     window.dispatchEvent(new Event('aila:prime-audio'));
     const rect = entity.getBoundingClientRect();
@@ -164,6 +165,13 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
     window.addEventListener('aila:open-sales-conversation', handleSalesConversation);
     return () => window.removeEventListener('aila:open-sales-conversation', handleSalesConversation);
   }, []);
+
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('aila:guide-open-change', { detail: { open: guide.open } }));
+    return () => {
+      window.dispatchEvent(new CustomEvent('aila:guide-open-change', { detail: { open: false } }));
+    };
+  }, [guide.open]);
 
   const closeGuide = () => {
     setGuide((current) => ({ ...current, open: false }));

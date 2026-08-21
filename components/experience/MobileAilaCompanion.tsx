@@ -1,0 +1,114 @@
+'use client';
+
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import type { ExperienceLang } from './content';
+import { trackWebsiteEvent } from '../../app/lib/analytics';
+import styles from './experience.module.css';
+
+type MobileAilaStage = 'hero' | 'nav' | 'final';
+
+const clamp = (value: number, minimum = 0, maximum = 1) => Math.min(maximum, Math.max(minimum, value));
+const mix = (from: number, to: number, progress: number) => from + (to - from) * progress;
+const ease = (progress: number) => 1 - Math.pow(1 - progress, 3);
+
+export default function MobileAilaCompanion({ lang }: { lang: ExperienceLang }) {
+  const companionRef = useRef<HTMLButtonElement | null>(null);
+  const [stage, setStage] = useState<MobileAilaStage>('hero');
+  const [guideOpen, setGuideOpen] = useState(false);
+
+  useEffect(() => {
+    let frame = 0;
+    const media = window.matchMedia('(max-width: 1100px)');
+
+    const sync = () => {
+      frame = 0;
+      const companion = companionRef.current;
+      if (!companion || !media.matches) return;
+
+      const hero = document.querySelector<HTMLElement>('[data-mobile-aila-anchor="hero"]');
+      const nav = document.querySelector<HTMLElement>('[data-mobile-aila-anchor="nav"]');
+      const final = document.querySelector<HTMLElement>('[data-mobile-aila-anchor="final"]');
+      if (!hero || !nav || !final) return;
+
+      const heroRect = hero.getBoundingClientRect();
+      const navRect = nav.getBoundingClientRect();
+      const finalRect = final.getBoundingClientRect();
+      const finalVisible = finalRect.top < window.innerHeight * .78 && finalRect.bottom > window.innerHeight * .12;
+      const travel = ease(clamp(window.scrollY / Math.max(150, window.innerHeight * .22)));
+
+      let nextStage: MobileAilaStage = 'nav';
+      let left = mix(heroRect.left, navRect.left, travel);
+      let top = mix(heroRect.top, navRect.top, travel);
+      let width = mix(heroRect.width, navRect.width, travel);
+      let height = mix(heroRect.height, navRect.height, travel);
+
+      if (finalVisible) {
+        nextStage = 'final';
+        left = finalRect.left;
+        top = finalRect.top;
+        width = finalRect.width;
+        height = finalRect.height;
+      } else if (travel < .96) {
+        nextStage = 'hero';
+      }
+
+      companion.style.setProperty('--mobile-aila-left', `${left}px`);
+      companion.style.setProperty('--mobile-aila-top', `${top}px`);
+      companion.style.setProperty('--mobile-aila-width', `${width}px`);
+      companion.style.setProperty('--mobile-aila-height', `${height}px`);
+      companion.dataset.measured = 'true';
+      setStage((current) => current === nextStage ? current : nextStage);
+    };
+
+    const requestSync = () => {
+      if (!frame) frame = window.requestAnimationFrame(sync);
+    };
+
+    sync();
+    window.addEventListener('scroll', requestSync, { passive: true });
+    window.addEventListener('resize', requestSync);
+    window.addEventListener('orientationchange', requestSync);
+    window.visualViewport?.addEventListener('resize', requestSync);
+    media.addEventListener('change', requestSync);
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', requestSync);
+      window.removeEventListener('resize', requestSync);
+      window.removeEventListener('orientationchange', requestSync);
+      window.visualViewport?.removeEventListener('resize', requestSync);
+      media.removeEventListener('change', requestSync);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleGuideOpen = (event: Event) => {
+      setGuideOpen(Boolean((event as CustomEvent<{ open?: boolean }>).detail?.open));
+    };
+    window.addEventListener('aila:guide-open-change', handleGuideOpen);
+    return () => window.removeEventListener('aila:guide-open-change', handleGuideOpen);
+  }, []);
+
+  const openAila = () => {
+    window.dispatchEvent(new Event('aila:prime-audio'));
+    window.dispatchEvent(new Event('aila:open-sales-conversation'));
+    trackWebsiteEvent('aila_opened', { station: stage === 'final' ? 'journey-contact' : 'journey-start', metadata: { source: `mobile_companion_${stage}` } });
+  };
+
+  return (
+    <button
+      ref={companionRef}
+      type="button"
+      className={styles.mobileAilaCompanion}
+      data-stage={stage}
+      data-guide-open={guideOpen ? 'true' : 'false'}
+      onClick={openAila}
+      aria-label={lang === 'de' ? 'Mit AILA sprechen' : 'Speak with AILA'}
+      style={{ '--mobile-aila-left': '50vw', '--mobile-aila-top': '8rem' } as CSSProperties}
+    >
+      <span className={styles.mobileAilaAura} aria-hidden="true" />
+      <img src="/cinematic/aila/aila-idle-v1-fallback-transparent.png" alt="" aria-hidden="true" draggable="false" />
+      <span className={styles.mobileAilaSignal} aria-hidden="true"><i /><i /><i /><i /></span>
+      <span className={styles.mobileAilaParticles} aria-hidden="true"><i /><i /><i /><i /><i /></span>
+    </button>
+  );
+}

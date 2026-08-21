@@ -630,6 +630,7 @@ export default function MarcelExperience() {
             <div className={styles.heroLayout}>
               <div className={styles.heroCopy}>
                 <p className={styles.eyebrow}><span />{c.heroEyebrow}</p>
+                <div className={styles.mobileAilaHeroDock} data-mobile-aila-anchor="hero" aria-hidden="true" />
                 <h1 className={styles.heroTitle}>
                   <span data-text={c.heroTitleA}>{c.heroTitleA}</span>
                   <em data-text={c.heroTitleB}>{c.heroTitleB}</em>
@@ -1004,7 +1005,9 @@ export default function MarcelExperience() {
                   <h2>{c.finalB}</h2>
                   <span>{c.finalText}</span>
                 </div>
-                <div className={styles.finalAilaSpace} aria-hidden="true" />
+                <div className={styles.finalAilaSpace} aria-hidden="true">
+                  <div className={styles.mobileAilaFinalDock} data-mobile-aila-anchor="final" />
+                </div>
                 <button
                   type="button"
                   className={styles.finalAilaLaunch}

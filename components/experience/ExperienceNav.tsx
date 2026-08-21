@@ -7,6 +7,7 @@ import { chapters } from './content';
 import { getResolvedFlightPath } from './flightPathStore';
 import { MIN_TRANSIT_VIEWPORTS } from './scrollPathController';
 import { trackWebsiteEvent } from '../../app/lib/analytics';
+import MobileAilaCompanion from './MobileAilaCompanion';
 import styles from './experience.module.css';
 
 // Fisheye/dock-style magnification: the list item nearest the pointer (or,
@@ -168,15 +169,13 @@ export default function ExperienceNav({ lang }: { lang: ExperienceLang }) {
           </span>
         </button>
         <div className={styles.mobileAppActions}>
-          <button type="button" className={styles.mobileAppAila} onClick={openAila} aria-label={lang === 'de' ? 'Eigenen AILA Gesprächsraum öffnen' : 'Open your AILA conversation space'}>
-            <img src="/cinematic/aila/aila-idle-v1-fallback-transparent.png" alt="" aria-hidden="true" />
-            <span>AILA</span>
-          </button>
+          <span className={styles.mobileAppAilaDock} data-mobile-aila-anchor="nav" aria-hidden="true" />
           <button type="button" className={styles.mobileAppMenuButton} onClick={() => setMenuOpen((current) => !current)} aria-expanded={menuOpen} aria-controls="mobile-experience-menu" aria-label={menuOpen ? (lang === 'de' ? 'Menü schliessen' : 'Close menu') : (lang === 'de' ? 'Menü öffnen' : 'Open menu')}>
             {menuOpen ? <X size={21} /> : <Menu size={21} />}
           </button>
         </div>
       </header>
+      <MobileAilaCompanion lang={lang} />
 
       <div id="mobile-experience-menu" className={`${styles.mobileMenu} ${menuOpen ? styles.mobileMenuOpen : ''}`} aria-hidden={!menuOpen}>
         <button type="button" className={styles.mobileMenuBackdrop} onClick={() => setMenuOpen(false)} aria-label={lang === 'de' ? 'Menü schliessen' : 'Close menu'} tabIndex={menuOpen ? 0 : -1} />
