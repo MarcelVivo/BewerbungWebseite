@@ -247,6 +247,8 @@ export function PerspectiveBusinessFlow({
 
     const compactQuery = window.matchMedia('(max-width: 699px)');
     let frame = 0;
+    let settleTimer = 0;
+    let centeredCardIndex = -1;
 
     const clearDrumStyles = () => {
       flowCardRefs.current.forEach((card) => {
@@ -266,16 +268,20 @@ export function PerspectiveBusinessFlow({
         return;
       }
 
-      const gridBounds = grid.getBoundingClientRect();
-      const gridCenter = gridBounds.left + gridBounds.width / 2;
+      const gridCenter = grid.scrollTop + grid.clientHeight / 2;
+      let nearestDistance = Number.POSITIVE_INFINITY;
 
-      flowCardRefs.current.forEach((card) => {
+      flowCardRefs.current.forEach((card, index) => {
         if (!card) return;
-        const cardBounds = card.getBoundingClientRect();
-        const cardCenter = cardBounds.left + cardBounds.width / 2;
-        const distance = (cardCenter - gridCenter) / Math.max(cardBounds.width, 1);
+        const cardCenter = card.offsetTop + card.offsetHeight / 2;
+        const distance = (cardCenter - gridCenter) / Math.max(card.offsetHeight, 1);
         const limitedDistance = Math.max(-1.55, Math.min(1.55, distance));
         const distanceMagnitude = Math.min(1, Math.abs(limitedDistance));
+
+        if (Math.abs(distance) < nearestDistance) {
+          nearestDistance = Math.abs(distance);
+          centeredCardIndex = index;
+        }
 
         card.style.setProperty('--flow-drum-angle', `${(-limitedDistance * 31).toFixed(2)}deg`);
         card.style.setProperty('--flow-drum-depth', `${(-distanceMagnitude * 82).toFixed(2)}px`);
@@ -290,20 +296,29 @@ export function PerspectiveBusinessFlow({
       frame = window.requestAnimationFrame(updateDrum);
     };
 
+    const handleDrumScroll = () => {
+      scheduleDrumUpdate();
+      window.clearTimeout(settleTimer);
+      settleTimer = window.setTimeout(() => {
+        if (centeredCardIndex >= 0) onSelect(centeredCardIndex);
+      }, 140);
+    };
+
     updateDrum();
-    grid.addEventListener('scroll', scheduleDrumUpdate, { passive: true });
+    grid.addEventListener('scroll', handleDrumScroll, { passive: true });
     compactQuery.addEventListener('change', scheduleDrumUpdate);
     const observer = new ResizeObserver(scheduleDrumUpdate);
     observer.observe(grid);
 
     return () => {
       if (frame) window.cancelAnimationFrame(frame);
-      grid.removeEventListener('scroll', scheduleDrumUpdate);
+      window.clearTimeout(settleTimer);
+      grid.removeEventListener('scroll', handleDrumScroll);
       compactQuery.removeEventListener('change', scheduleDrumUpdate);
       observer.disconnect();
       clearDrumStyles();
     };
-  }, [steps.length]);
+  }, [onSelect, steps.length]);
 
   const centerMobileFlowCard = (index: number) => {
     if (typeof window === 'undefined' || !window.matchMedia('(max-width: 699px)').matches) return;
@@ -312,7 +327,7 @@ export function PerspectiveBusinessFlow({
     if (!grid || !card) return;
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     grid.scrollTo({
-      left: card.offsetLeft - (grid.clientWidth - card.offsetWidth) / 2,
+      top: card.offsetTop - (grid.clientHeight - card.offsetHeight) / 2,
       behavior: reducedMotion ? 'auto' : 'smooth',
     });
   };
