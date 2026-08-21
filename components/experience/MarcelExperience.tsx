@@ -1039,7 +1039,7 @@ export default function MarcelExperience() {
               <footer className={styles.footer}>
                 <div><span className={styles.footerMark}>MS</span><p><strong>Marcel Spahr</strong><small>{c.footerLine}</small></p></div>
                 <div><a href="mailto:kontakt@marcelspahr.ch">kontakt@marcelspahr.ch</a><a href="tel:+41795110911">+41 79 511 09 11</a></div>
-                <div><a href="/datenschutz">{c.privacy}</a><a href="/impressum">{c.imprint}</a><span>© {new Date().getFullYear()}</span></div>
+                <div><a href="/blog">Insights</a><a href="/datenschutz">{c.privacy}</a><a href="/impressum">{c.imprint}</a><span>© {new Date().getFullYear()}</span></div>
               </footer>
             </div>
           </div>

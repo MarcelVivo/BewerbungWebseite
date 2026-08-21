@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { SERVICES } from './leistungen/data';
 import { PROJECTS } from './portfolio/data';
+import { BLOG_POSTS } from './blog/data';
 
 const BASE = 'https://www.marcelspahr.ch';
 
@@ -24,6 +25,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: 'monthly' as const,
       priority: 0.75,
+    })),
+    {
+      url: `${BASE}/blog`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    },
+    ...BLOG_POSTS.map(post => ({
+      url: `${BASE}/blog/${post.slug}`,
+      lastModified: new Date(post.date),
+      changeFrequency: 'yearly' as const,
+      priority: 0.6,
     })),
   ];
 }

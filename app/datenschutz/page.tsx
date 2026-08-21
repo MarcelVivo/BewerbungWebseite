@@ -40,6 +40,7 @@ const C: Record<'de' | 'en', { title: string; subtitle: string; back: string; up
         heading: '3.1 Kontaktformular',
         paragraphs: [
           'Wenn Sie die Beratungsanfrage, Projektanfrage oder den KI-Check nutzen, werden die von Ihnen eingegebenen Kontakt-, Projekt- und Unternehmensangaben erhoben. Diese werden ausschliesslich zur Bearbeitung Ihrer Anfrage beziehungsweise zur Erstellung Ihrer persönlichen Auswertung verwendet und gelöscht, sobald sie für diesen Zweck nicht mehr erforderlich sind und keine gesetzliche Aufbewahrungspflicht besteht.',
+          'Erhalten Sie innerhalb weniger Tage keine persönliche Antwort, sendet das System einmalig eine automatische Erinnerungs-E-Mail zu Ihrer bestehenden Anfrage. Es handelt sich dabei nicht um Werbung, sondern um eine einmalige Nachfrage zur selben Anfrage; es findet keine fortlaufende Serie automatischer E-Mails statt.',
           'Zur technischen Abwicklung werden folgende Auftragsverarbeiter eingesetzt:',
         ],
         list: [
@@ -153,6 +154,7 @@ const C: Record<'de' | 'en', { title: string; subtitle: string; back: string; up
         heading: '3.1 Contact Form',
         paragraphs: [
           'When you use the consultation request, project inquiry or AI check, the contact, project and company information you enter is collected. It is used solely to handle your inquiry or prepare your personal assessment and is deleted once it is no longer required for that purpose, unless a statutory retention obligation applies.',
+          'If you do not receive a personal reply within a few days, the system sends a single automatic reminder email about your existing inquiry. This is not advertising but a one-time follow-up on the same inquiry; there is no ongoing series of automated emails.',
           'The following processors handle the technical transmission:',
         ],
         list: [
