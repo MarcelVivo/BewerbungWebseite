@@ -8,7 +8,7 @@ import {
   FolderKanban, Timer, Receipt, FileText, Calendar,
   Bot, FolderOpen, BarChart3, Settings,
   ChevronLeft, ChevronRight, LogOut, Briefcase,
-  Search, Command, MessageSquare, ClipboardList,
+  Search, Command, MessageSquare, ClipboardList, Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
@@ -19,7 +19,10 @@ type NavGroup = { label: string; items: NavItem[] };
 const NAV_GROUPS: NavGroup[] = [
   {
     label: 'ÜBERSICHT',
-    items: [{ label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard }],
+    items: [
+      { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+      { label: 'AILA', href: '/dashboard/aila', icon: Sparkles },
+    ],
   },
   {
     label: 'BUSINESS',
