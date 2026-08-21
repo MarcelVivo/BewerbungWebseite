@@ -28,12 +28,16 @@ export default function MobileAilaCompanion({ lang }: { lang: ExperienceLang }) 
 
       const hero = document.querySelector<HTMLElement>('[data-mobile-aila-anchor="hero"]');
       const nav = document.querySelector<HTMLElement>('[data-mobile-aila-anchor="nav"]');
+      const brand = document.querySelector<HTMLElement>('[data-mobile-aila-boundary="brand"]');
+      const menu = document.querySelector<HTMLElement>('[data-mobile-aila-boundary="menu"]');
       const about = document.querySelector<HTMLElement>('[data-mobile-aila-anchor="about"]');
       const final = document.querySelector<HTMLElement>('[data-mobile-aila-anchor="final"]');
       if (!hero || !nav || !about || !final) return;
 
       const heroRect = hero.getBoundingClientRect();
       const navRect = nav.getBoundingClientRect();
+      const brandRect = brand?.getBoundingClientRect();
+      const menuRect = menu?.getBoundingClientRect();
       const aboutRect = about.getBoundingClientRect();
       const finalRect = final.getBoundingClientRect();
       const aboutSection = document.getElementById('journey-about');
@@ -47,7 +51,10 @@ export default function MobileAilaCompanion({ lang }: { lang: ExperienceLang }) 
 
       const navWidth = clamp(window.innerWidth * .27, 102, 132);
       const navHeight = navWidth * .79;
-      const navLeft = (window.innerWidth - navWidth) / 2;
+      const freeSpaceLeft = brandRect?.right ?? 0;
+      const freeSpaceRight = menuRect?.left ?? window.innerWidth;
+      const freeSpaceCenter = freeSpaceLeft + Math.max(0, freeSpaceRight - freeSpaceLeft) / 2;
+      const navLeft = freeSpaceCenter - navWidth / 2;
       const navTop = navRect.top + navRect.height / 2 - navHeight * .38;
 
       if (aboutVisible || (aboutSection && window.scrollY >= aboutSection.offsetTop)) reachedAboutRef.current = true;

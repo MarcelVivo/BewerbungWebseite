@@ -161,7 +161,7 @@ export default function ExperienceNav({ lang }: { lang: ExperienceLang }) {
     <>
       <div className={styles.topProgress} aria-hidden="true"><span style={{ transform: `scaleX(${progress})` }} /></div>
       <header className={styles.mobileAppBar}>
-        <button type="button" className={styles.mobileAppBrand} onClick={() => navigate(chapters[0].id, 0)} aria-label={lang === 'de' ? 'Zum Seitenanfang' : 'Back to top'}>
+        <button type="button" className={styles.mobileAppBrand} data-mobile-aila-boundary="brand" onClick={() => navigate(chapters[0].id, 0)} aria-label={lang === 'de' ? 'Zum Seitenanfang' : 'Back to top'}>
           <span>MS</span>
           <span>
             <strong>Marcel Spahr</strong>
@@ -170,7 +170,7 @@ export default function ExperienceNav({ lang }: { lang: ExperienceLang }) {
         </button>
         <div className={styles.mobileAppActions}>
           <span className={styles.mobileAppAilaDock} data-mobile-aila-anchor="nav" aria-hidden="true" />
-          <button type="button" className={styles.mobileAppMenuButton} onClick={() => setMenuOpen((current) => !current)} aria-expanded={menuOpen} aria-controls="mobile-experience-menu" aria-label={menuOpen ? (lang === 'de' ? 'Menü schliessen' : 'Close menu') : (lang === 'de' ? 'Menü öffnen' : 'Open menu')}>
+          <button type="button" className={styles.mobileAppMenuButton} data-mobile-aila-boundary="menu" onClick={() => setMenuOpen((current) => !current)} aria-expanded={menuOpen} aria-controls="mobile-experience-menu" aria-label={menuOpen ? (lang === 'de' ? 'Menü schliessen' : 'Close menu') : (lang === 'de' ? 'Menü öffnen' : 'Open menu')}>
             {menuOpen ? <X size={21} /> : <Menu size={21} />}
           </button>
         </div>
