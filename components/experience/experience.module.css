@@ -6293,16 +6293,14 @@
   .mobileAilaCompanion[data-measured='true'] { opacity: 1; }
   .mobileAilaCompanion[data-guide-open='true'] { opacity: 0; pointer-events: none; }
   .mobileAilaCompanion:focus-visible { outline: 1px solid rgba(255,226,139,.9); outline-offset: .2rem; }
-  .mobileAilaCompanion > img {
+  .mobileAilaCompanion > .ailaAvatarMedia {
     position: absolute;
     z-index: 3;
     inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: contain;
     filter: drop-shadow(0 .75rem 1.15rem rgba(0,0,0,.6)) drop-shadow(0 0 .72rem rgba(218,157,47,.22));
-    animation: mobileAilaFloat 4.6s ease-in-out infinite;
-    will-change: transform;
+    will-change: opacity;
   }
 
   .mobileAilaAura {
@@ -6367,17 +6365,14 @@
     filter: drop-shadow(0 0 .22rem rgba(255,173,58,.55));
   }
   .mobileAilaCompanion[data-stage='nav'] .mobileAilaParticles { opacity: .3; }
-  .mobileAilaCompanion[data-stage='nav'] > img {
+  .mobileAilaCompanion[data-stage='nav'] > .ailaAvatarMedia {
     filter: drop-shadow(0 .3rem .45rem rgba(0,0,0,.55)) drop-shadow(0 0 .3rem rgba(218,157,47,.24));
-    animation-duration: 3.4s;
   }
   .mobileAilaCompanion[data-stage='about'] .mobileAilaSignal,
   .mobileAilaCompanion[data-stage='about'] .mobileAilaParticles { opacity: .8; }
-  .mobileAilaCompanion[data-stage='about'] > img { animation-duration: 4.1s; }
   .mobileAilaCompanion[data-stage='transit'] .mobileAilaSignal { opacity: .68; }
   .mobileAilaCompanion[data-stage='transit'] .mobileAilaParticles { opacity: .48; }
-  .mobileAilaCompanion[data-stage='transit'] > img {
-    animation-duration: 3.6s;
+  .mobileAilaCompanion[data-stage='transit'] > .ailaAvatarMedia {
     filter: drop-shadow(0 .55rem .85rem rgba(0,0,0,.58)) drop-shadow(0 0 .48rem rgba(218,157,47,.2));
   }
   .mobileAilaCompanion[data-stage='final'] .mobileAilaSignal { opacity: 1; animation: mobileAilaInvite 2.2s ease-in-out infinite; }
@@ -6399,7 +6394,6 @@
     width: 11.6rem;
     height: 10.8rem;
     display: block;
-    animation: mobileAilaFloat 3.8s ease-in-out infinite;
   }
   .ailaGuideMobileAvatar img,
   .ailaGuideMobileAvatar canvas {
@@ -6419,19 +6413,26 @@
     position: absolute;
     z-index: 2;
     inset: 0;
+    width: 100%;
+    height: 100%;
     display: block;
+    overflow: visible;
   }
   .ailaAvatarFallback,
-  .ailaAvatarSpeakingCanvas {
+  .ailaAvatarVideoCanvas {
     position: absolute !important;
     inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
     transition: opacity .14s ease;
   }
   .ailaAvatarFallback { opacity: 1; }
-  .ailaAvatarSpeakingCanvas { opacity: 0; pointer-events: none; }
-  .ailaAvatarMedia[data-speaking='true'][data-video-ready='true'] .ailaAvatarFallback { opacity: 0; }
-  .ailaAvatarMedia[data-speaking='true'][data-video-ready='true'] .ailaAvatarSpeakingCanvas { opacity: 1; }
-  .ailaAvatarSpeakingSource { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+  .ailaAvatarVideoCanvas { opacity: 0; pointer-events: none; }
+  .ailaAvatarMedia[data-video-ready='true'] .ailaAvatarFallback { opacity: 0; }
+  .ailaAvatarMedia[data-video-ready='true'] .ailaAvatarVideoCanvas { opacity: 1; }
+  .ailaAvatarVideoSource { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
   .ailaGuideMobileAvatar i {
     position: absolute;
     z-index: 3;
@@ -6449,7 +6450,6 @@
   .ailaGuideMobileAvatar i:nth-of-type(3) { --guide-signal-x: 1.24rem; height: .9rem; animation-delay: -.8s; }
   .ailaGuideMobileAvatar i:nth-of-type(4) { --guide-signal-x: 1.86rem; height: .62rem; animation-delay: -.2s; }
   .ailaGuide[data-mobile-dialog='true'] h2 { position: relative; z-index: 5; }
-  .ailaGuideMobileIdentity[data-state='thinking'] .ailaGuideMobileAvatar { animation: mobileAilaThinking 1.25s ease-in-out infinite; }
   .ailaGuideMobileIdentity[data-state='listening'] .ailaGuideMobileAvatar i { background: linear-gradient(#d8ffd8, #60c98a); }
   .ailaGuideMobileIdentity[data-state='speaking'] .ailaGuideMobileAvatar i { animation-duration: .48s; }
 
@@ -6467,7 +6467,6 @@
     50% { opacity: .9; transform: translate3d(.18rem, -.4rem, 0) scale(1); }
   }
   @keyframes mobileAilaInvite { 0%, 100% { transform: translateX(-50%) scale(.9); } 50% { transform: translateX(-50%) scale(1.12); } }
-  @keyframes mobileAilaThinking { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(.35rem); } }
 }
 
 @media (max-width: 699px) {
@@ -6631,14 +6630,14 @@
 
 @media (prefers-reduced-motion: reduce) {
   .mobileAilaCompanion,
-  .mobileAilaCompanion > img,
+  .mobileAilaCompanion > .ailaAvatarMedia,
   .mobileAilaAura,
   .mobileAilaSignal i,
   .mobileAilaParticles i,
   .ailaGuideMobileAvatar,
   .ailaGuideMobileAvatar img,
   .ailaAvatarMedia,
-  .ailaAvatarSpeakingCanvas,
+  .ailaAvatarVideoCanvas,
   .ailaGuideMobileAvatar i,
   .primaryButton::before,
   .textButton::before,

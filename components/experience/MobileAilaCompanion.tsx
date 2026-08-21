@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import type { ExperienceLang } from './content';
 import { trackWebsiteEvent } from '../../app/lib/analytics';
+import AilaVideoAvatar, { type AilaVideoMode } from './AilaVideoAvatar';
 import styles from './experience.module.css';
 
 type MobileAilaStage = 'hero' | 'nav' | 'about' | 'transit' | 'final';
@@ -131,6 +132,12 @@ export default function MobileAilaCompanion({ lang }: { lang: ExperienceLang }) 
     trackWebsiteEvent('aila_opened', { station: stage === 'final' ? 'journey-contact' : stage === 'about' || stage === 'transit' ? 'journey-about' : 'journey-start', metadata: { source: `mobile_companion_${stage}` } });
   };
 
+  const videoMode: AilaVideoMode = stage === 'nav'
+    ? 'idle'
+    : stage === 'final'
+      ? 'cta'
+      : 'attention';
+
   return (
     <button
       ref={companionRef}
@@ -143,7 +150,7 @@ export default function MobileAilaCompanion({ lang }: { lang: ExperienceLang }) 
       style={{ '--mobile-aila-left': '50vw', '--mobile-aila-top': '8rem' } as CSSProperties}
     >
       <span className={styles.mobileAilaAura} aria-hidden="true" />
-      <img src="/cinematic/aila/aila-idle-v1-fallback-transparent.png" alt="" aria-hidden="true" draggable="false" />
+      <AilaVideoAvatar mode={videoMode} alt="" />
       <span className={styles.mobileAilaSignal} aria-hidden="true"><i /><i /><i /><i /></span>
       <span className={styles.mobileAilaParticles} aria-hidden="true"><i /><i /><i /><i /><i /></span>
     </button>

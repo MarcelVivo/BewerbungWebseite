@@ -13,7 +13,7 @@ import type {
 } from '@/app/lib/aila/types';
 import type { ExperienceLang } from './content';
 import AilaContactCapture from './AilaContactCapture';
-import AilaSpeakingAvatar from './AilaSpeakingAvatar';
+import AilaVideoAvatar from './AilaVideoAvatar';
 import styles from './experience.module.css';
 
 type GuideEntry = {
@@ -837,7 +837,7 @@ export default function AilaGuide({
           data-state={liveStatus === 'speaking' || localSpeaking ? 'speaking' : liveStatus === 'listening' ? 'listening' : busy ? 'thinking' : 'idle'}
         >
           <span className={styles.ailaGuideMobileAvatar}>
-            <AilaSpeakingAvatar speaking={liveStatus === 'speaking' || localSpeaking} />
+            <AilaVideoAvatar mode={liveStatus === 'speaking' || localSpeaking ? 'speaking' : liveStatus === 'listening' ? 'attention' : busy ? 'thinking' : 'idle'} />
             <i /><i /><i /><i />
           </span>
         </div>

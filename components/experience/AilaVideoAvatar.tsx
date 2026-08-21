@@ -3,7 +3,16 @@
 import { useEffect, useRef, useState } from 'react';
 import styles from './experience.module.css';
 
-const SPEAKING_VIDEO = '/cinematic/aila/aila-speaking-v1-greenscreen.mp4';
+export type AilaVideoMode = 'idle' | 'attention' | 'thinking' | 'speaking' | 'cta';
+
+const VIDEO_BY_MODE: Record<AilaVideoMode, string> = {
+  idle: '/cinematic/aila/aila-idle-v1-pingpong-greenscreen.mp4',
+  attention: '/cinematic/aila/aila-attention-v2-greenscreen.mp4',
+  thinking: '/cinematic/aila/aila-thinking-v1-pingpong-greenscreen.mp4',
+  speaking: '/cinematic/aila/aila-speaking-v1-greenscreen.mp4',
+  cta: '/cinematic/aila/aila-cta-v1-greenscreen.mp4',
+};
+
 const FALLBACK_IMAGE = '/cinematic/aila/aila-idle-v1-fallback-transparent.png';
 
 const smoothstep = (edge0: number, edge1: number, value: number) => {
@@ -11,7 +20,7 @@ const smoothstep = (edge0: number, edge1: number, value: number) => {
   return progress * progress * (3 - 2 * progress);
 };
 
-export default function AilaSpeakingAvatar({ speaking }: { speaking: boolean }) {
+export default function AilaVideoAvatar({ mode, alt = 'AILA' }: { mode: AilaVideoMode; alt?: string }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [videoReady, setVideoReady] = useState(false);
@@ -21,18 +30,17 @@ export default function AilaSpeakingAvatar({ speaking }: { speaking: boolean }) 
     const canvas = canvasRef.current;
     if (!video || !canvas) return;
 
-    if (!speaking) {
+    setVideoReady(false);
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       video.pause();
-      video.currentTime = 0;
-      setVideoReady(false);
       return;
     }
 
     const context = canvas.getContext('2d', { alpha: true, willReadFrequently: true });
     if (!context) return;
 
-    canvas.width = 480;
-    canvas.height = 270;
+    canvas.width = 384;
+    canvas.height = 216;
     context.imageSmoothingEnabled = true;
     context.imageSmoothingQuality = 'high';
 
@@ -44,7 +52,7 @@ export default function AilaSpeakingAvatar({ speaking }: { speaking: boolean }) 
 
     const renderFrame = (timestamp = performance.now()) => {
       if (stopped || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) return;
-      if (timestamp - lastRenderedAt < 30) return;
+      if (timestamp - lastRenderedAt < 42) return;
       lastRenderedAt = timestamp;
 
       context.clearRect(0, 0, canvas.width, canvas.height);
@@ -58,12 +66,9 @@ export default function AilaSpeakingAvatar({ speaking }: { speaking: boolean }) 
         const blue = pixels[index + 2];
         const strongestNonGreen = Math.max(red, blue);
         const greenDominance = green - strongestNonGreen;
-        const keyed = smoothstep(38, 122, greenDominance);
-        const alpha = 1 - keyed;
+        const alpha = 1 - smoothstep(38, 122, greenDominance);
 
-        if (greenDominance > 8) {
-          pixels[index + 1] = Math.min(green, strongestNonGreen * 1.1 + 7);
-        }
+        if (greenDominance > 8) pixels[index + 1] = Math.min(green, strongestNonGreen * 1.1 + 7);
         pixels[index + 3] = Math.round(pixels[index + 3] * alpha);
       }
 
@@ -90,7 +95,8 @@ export default function AilaSpeakingAvatar({ speaking }: { speaking: boolean }) 
       animationFrame = window.requestAnimationFrame(renderLoop);
     };
 
-    video.currentTime = 0;
+    video.src = VIDEO_BY_MODE[mode];
+    video.load();
     void video.play().then(scheduleVideoFrame).catch(() => setVideoReady(false));
 
     return () => {
@@ -99,13 +105,13 @@ export default function AilaSpeakingAvatar({ speaking }: { speaking: boolean }) 
       if (videoFrame && typeof video.cancelVideoFrameCallback === 'function') video.cancelVideoFrameCallback(videoFrame);
       video.pause();
     };
-  }, [speaking]);
+  }, [mode]);
 
   return (
-    <span className={styles.ailaAvatarMedia} data-speaking={speaking ? 'true' : 'false'} data-video-ready={videoReady ? 'true' : 'false'}>
-      <img className={styles.ailaAvatarFallback} src={FALLBACK_IMAGE} alt="AILA" />
-      <canvas ref={canvasRef} className={styles.ailaAvatarSpeakingCanvas} aria-hidden="true" />
-      <video ref={videoRef} className={styles.ailaAvatarSpeakingSource} src={SPEAKING_VIDEO} muted loop playsInline preload="metadata" aria-hidden="true" />
+    <span className={styles.ailaAvatarMedia} data-mode={mode} data-video-ready={videoReady ? 'true' : 'false'}>
+      <img className={styles.ailaAvatarFallback} src={FALLBACK_IMAGE} alt={alt} />
+      <canvas ref={canvasRef} className={styles.ailaAvatarVideoCanvas} aria-hidden="true" />
+      <video ref={videoRef} className={styles.ailaAvatarVideoSource} muted loop playsInline preload="metadata" aria-hidden="true" />
     </span>
   );
 }
