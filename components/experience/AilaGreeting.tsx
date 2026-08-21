@@ -14,24 +14,6 @@ const MAX_WORD_MS = 1750;
 const SENTENCE_PAUSE_MS = 320;
 const REEL_ROW_REM = 2.1;
 
-const sessionKey = (lang: ExperienceLang) => `ms-aila-greeting-${lang}`;
-
-const alreadyShown = (lang: ExperienceLang) => {
-  try {
-    return window.sessionStorage.getItem(sessionKey(lang)) === '1';
-  } catch {
-    return false;
-  }
-};
-
-const markShown = (lang: ExperienceLang) => {
-  try {
-    window.sessionStorage.setItem(sessionKey(lang), '1');
-  } catch {
-    // ignore
-  }
-};
-
 const buildWords = (lines: readonly string[]) => lines.flatMap((line) => line.split(' ').filter(Boolean));
 
 // Trailing punctuation reads oddly on an isolated floating word, so it is
@@ -57,7 +39,7 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
   const dismissRef = useRef<() => void>(() => undefined);
 
   useEffect(() => {
-    if (startedRef.current || heroPhase !== 'revealed' || alreadyShown(lang)) return;
+    if (startedRef.current || heroPhase !== 'revealed') return;
     startedRef.current = true;
 
     const words = buildWords(heroGreeting[lang]);
@@ -95,7 +77,6 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
       dispatchGuideState('idle');
       setVisible(false);
       setActiveIndex(-1);
-      markShown(lang);
     };
     dismissRef.current = finish;
 
