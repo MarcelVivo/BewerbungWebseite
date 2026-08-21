@@ -101,10 +101,10 @@
 .ailaDustPrompt {
   position: absolute;
   left: 50%;
-  top: -.7rem;
+  top: 25%;
   width: 235%;
   height: 6rem;
-  transform: translate(-50%, -100%);
+  transform: translate(-50%, -50%);
   pointer-events: none;
 }
 
@@ -120,27 +120,6 @@
   transform: translate3d(-50%, -45%, 0) scale(.68);
   pointer-events: none;
   transition: opacity .42s ease, filter .52s ease, transform .52s cubic-bezier(.18,.82,.18,1);
-}
-
-.ailaResonanceField::before,
-.ailaResonanceField::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  bottom: .12rem;
-  border-top: 1.4px solid rgba(226,124,51,.72);
-  border-radius: 50%;
-  transform: translateX(-50%) scaleX(.72);
-  box-shadow: 0 -.22rem .9rem rgba(207,91,40,.18), inset 0 .16rem .5rem rgba(111,25,39,.12);
-}
-
-.ailaResonanceField::before { width: 8.4rem; height: 2.55rem; }
-.ailaResonanceField::after {
-  width: 6.15rem;
-  height: 1.85rem;
-  opacity: .78;
-  border-color: rgba(139,42,45,.64);
-  box-shadow: 0 -.15rem .8rem rgba(191,73,39,.2);
 }
 
 .ailaResonanceWave {
@@ -260,11 +239,6 @@
   animation: ailaResonanceBar .95s ease-in-out infinite alternate;
 }
 
-.scrollEntityGrabSurface:hover .ailaResonanceField::before,
-.scrollEntityGrabSurface:focus-visible .ailaResonanceField::before {
-  animation: ailaResonanceArc 2.4s ease-in-out infinite;
-}
-
 .scrollEntityGrabSurface:hover .ailaDustCloud i,
 .scrollEntityGrabSurface:focus-visible .ailaDustCloud i {
   animation: ailaDustParticleResonance 3.4s ease-in-out var(--dust-delay) infinite;
@@ -291,11 +265,6 @@
 @keyframes ailaResonanceBar {
   0% { opacity: .62; transform: scaleY(.22); }
   100% { opacity: 1; transform: scaleY(1); }
-}
-
-@keyframes ailaResonanceArc {
-  0%, 100% { opacity: .48; transform: translateX(-50%) scaleX(.76); }
-  50% { opacity: .92; transform: translateX(-50%) scaleX(1.04); }
 }
 
 @keyframes ailaResonanceOpen {
