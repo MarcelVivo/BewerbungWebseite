@@ -423,7 +423,6 @@ export function PerspectiveBusinessFlow({
       <div className={styles.perspectiveFlowStage}>
         <div
           className={styles.perspectiveFlowDrumShell}
-          style={{ '--flow-drum-roll': `${mobileDrumIndex * 9}px` } as CSSProperties}
           onWheel={handleDrumWheel}
           onPointerDown={handleDrumPointerDown}
           onPointerUp={finishDrumPointer}
@@ -435,7 +434,7 @@ export function PerspectiveBusinessFlow({
             rotateMobileDrum(event.key === 'ArrowDown' ? 1 : -1);
           }}
           tabIndex={0}
-          aria-label={lang === 'de' ? 'Prozessschritte als drehbare Auswahl' : 'Process steps as a rotating selector'}
+          aria-label={lang === 'de' ? 'Kompakte Prozessauswahl' : 'Compact process selector'}
         >
           <div
             className={`${styles.perspectiveFlowCardGrid} ${selectedFlow !== null ? styles.perspectiveFlowCardGridOpen : ''}`}
@@ -454,7 +453,7 @@ export function PerspectiveBusinessFlow({
                   style={{
                     '--flow-index': index,
                     '--flow-sequence-delay': `${index * .2}s`,
-                    '--flow-drum-slot': mobileDrumSlot,
+                    '--flow-picker-offset': `${mobileDrumSlot * 2.8}rem`,
                   } as CSSProperties}
                   aria-current={active === index ? 'step' : undefined}
                   aria-expanded={selected}
