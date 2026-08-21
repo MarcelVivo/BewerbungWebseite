@@ -99,6 +99,96 @@ export function BusinessFlow({ steps, active, onSelect }: { steps: readonly stri
   );
 }
 
+export function MobilePrecisionPicker({
+  items,
+  activeIndex,
+  onSelect,
+  ariaLabel,
+}: {
+  items: ReadonlyArray<{ label: string; meta?: string }>;
+  activeIndex: number;
+  onSelect: (index: number) => void;
+  ariaLabel: string;
+}) {
+  const pointerRef = useRef<{ id: number; y: number } | null>(null);
+  const wheelLockRef = useRef(0);
+  const suppressClickRef = useRef(false);
+
+  const changeBy = (direction: -1 | 1) => {
+    const next = (activeIndex + direction + items.length) % items.length;
+    onSelect(next);
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) navigator.vibrate(7);
+  };
+
+  const slotFor = (index: number) => {
+    let slot = index - activeIndex;
+    const half = items.length / 2;
+    if (slot > half) slot -= items.length;
+    if (slot < -half) slot += items.length;
+    return slot;
+  };
+
+  return (
+    <div
+      className={styles.mobilePrecisionPicker}
+      role="tablist"
+      aria-label={ariaLabel}
+      tabIndex={0}
+      onWheel={(event) => {
+        if (Math.abs(event.deltaY) < 8 || Date.now() < wheelLockRef.current) return;
+        event.preventDefault();
+        wheelLockRef.current = Date.now() + 280;
+        changeBy(event.deltaY > 0 ? 1 : -1);
+      }}
+      onPointerDown={(event) => {
+        pointerRef.current = { id: event.pointerId, y: event.clientY };
+        event.currentTarget.setPointerCapture(event.pointerId);
+      }}
+      onPointerUp={(event) => {
+        const gesture = pointerRef.current;
+        if (!gesture || gesture.id !== event.pointerId) return;
+        pointerRef.current = null;
+        const distance = gesture.y - event.clientY;
+        if (Math.abs(distance) >= 18) {
+          suppressClickRef.current = true;
+          changeBy(distance > 0 ? 1 : -1);
+          window.setTimeout(() => { suppressClickRef.current = false; }, 0);
+        }
+      }}
+      onPointerCancel={() => { pointerRef.current = null; }}
+      onKeyDown={(event) => {
+        if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+        event.preventDefault();
+        changeBy(event.key === 'ArrowDown' ? 1 : -1);
+      }}
+    >
+      {items.map((item, index) => {
+        const slot = slotFor(index);
+        const position = slot === 0 ? 'front' : Math.abs(slot) === 1 ? 'near' : 'back';
+        return (
+          <button
+            key={`${item.label}-${index}`}
+            type="button"
+            role="tab"
+            aria-selected={index === activeIndex}
+            data-picker-position={position}
+            style={{ '--mobile-picker-offset': `${slot * 2.8}rem` } as CSSProperties}
+            onClick={() => {
+              if (suppressClickRef.current) return;
+              onSelect(index);
+            }}
+          >
+            <span>{String(index + 1).padStart(2, '0')}</span>
+            <strong>{item.label}</strong>
+            {item.meta && <small>{item.meta}</small>}
+            <i aria-hidden="true"><ArrowRight size={15} /></i>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export function PerspectiveBusinessFlow({
   steps,
   details,
@@ -365,12 +455,11 @@ export function PerspectiveBusinessFlow({
   };
 
   const rotateMobileDrum = (direction: -1 | 1) => {
-    setMobileDrumIndex((current) => {
-      const next = (current + direction + steps.length) % steps.length;
-      onSelect(next);
-      if ('vibrate' in navigator) navigator.vibrate(7);
-      return next;
-    });
+    const next = (mobileDrumIndex + direction + steps.length) % steps.length;
+    setMobileDrumIndex(next);
+    onSelect(next);
+    setSelectedFlow(next);
+    if ('vibrate' in navigator) navigator.vibrate(7);
   };
 
   const handleDrumWheel = (event: ReactWheelEvent<HTMLDivElement>) => {
@@ -688,7 +777,14 @@ export function MarketingEngine({ lang }: { lang: 'de' | 'en' }) {
         ))}
       </div>
 
-      <div ref={detailRef} className={styles.marketingEngineBody}>
+      <MobilePrecisionPicker
+        items={channels.map((channel) => ({ label: channel.label }))}
+        activeIndex={activeChannel}
+        onSelect={setActiveChannel}
+        ariaLabel={lang === 'de' ? 'Marketingkanal auswählen' : 'Select a marketing channel'}
+      />
+
+      <div key={activeChannel} ref={detailRef} className={styles.marketingEngineBody}>
         <article
           id="marketing-channel-detail"
           role="tabpanel"
@@ -828,6 +924,12 @@ export function DashboardMockup({ lang }: { lang: 'de' | 'en' }) {
               </li>
             })}
           </ol>
+          <MobilePrecisionPicker
+            items={stages.map((stage) => ({ label: stage.label, meta: stage.value }))}
+            activeIndex={activeStage ?? 0}
+            onSelect={setActiveStage}
+            ariaLabel={lang === 'de' ? 'Verkaufsstufe auswählen' : 'Select a sales stage'}
+          />
           <div className={styles.dashboardLower}>
             {selectedStage ? (
               <section ref={detailRef} id="dashboard-stage-detail" className={styles.dashboardStageDetail} aria-live="polite">
@@ -942,7 +1044,13 @@ export function ArchitectureStack({ lang }: { lang: 'de' | 'en' }) {
           );
         })}
       </ol>
-      <section ref={detailRef} id="architecture-layer-detail" className={styles.architectureLayerDetailPanel} role="tabpanel" aria-live="polite">
+      <MobilePrecisionPicker
+        items={layers.map((layer) => ({ label: layer.title, meta: layer.tech }))}
+        activeIndex={activeLayer}
+        onSelect={setActiveLayer}
+        ariaLabel={lang === 'de' ? 'Architekturebene auswählen' : 'Select an architecture layer'}
+      />
+      <section key={activeLayer} ref={detailRef} id="architecture-layer-detail" className={styles.architectureLayerDetailPanel} role="tabpanel" aria-live="polite">
         <header><span><SelectedIcon size={21} /></span><small>{lang === 'de' ? 'AKTIVE EBENE' : 'ACTIVE LAYER'} · {selectedLayer.number}</small></header>
         <div><h3>{selectedLayer.title}</h3><p>{selectedLayer.detail}</p></div>
         <footer><small>{lang === 'de' ? 'MEHRWERT' : 'VALUE'}</small><strong>{selectedLayer.value}</strong></footer>

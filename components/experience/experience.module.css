@@ -3804,6 +3804,7 @@
 .channelFan button svg { color: var(--gold-light); }
 .channelFan button span { font: 680 .54rem/1 var(--font-chakra-petch), monospace; letter-spacing: .045em; text-transform: uppercase; }
 .channelFan button i { position: absolute; top: .38rem; right: .42rem; color: rgba(231,197,106,.34); font: 650 .39rem/1 var(--font-chakra-petch), monospace; font-style: normal; }
+.mobilePrecisionPicker { display: none; }
 .marketingEngineBody { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(0, 1.16fr) minmax(180px, .84fr); gap: .7rem; }
 .marketingChannelDetail,
 .marketingOutcome { min-width: 0; padding: clamp(.9rem, 1.25vw, 1.2rem); border: 1px solid rgba(255,255,255,.075); background: rgba(5,7,6,.62); }
@@ -6274,6 +6275,135 @@
     text-shadow: 0 .2rem .55rem rgba(0,0,0,.65);
   }
   .perspectiveFlowCardGrid .perspectiveFlowNode[data-drum-position='back'] { pointer-events: none; }
+
+  .mobilePrecisionPicker {
+    position: relative;
+    height: 4.5rem;
+    display: block;
+    overflow: hidden;
+    border: 1px solid rgba(231,197,106,.3);
+    border-radius: .5rem;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.018), transparent 35%),
+      #080a08;
+    box-shadow:
+      inset 0 1px rgba(255,245,205,.06),
+      inset 0 -1px rgba(0,0,0,.78),
+      0 .45rem 1.2rem rgba(0,0,0,.3);
+    isolation: isolate;
+    touch-action: none;
+    cursor: ns-resize;
+  }
+  .mobilePrecisionPicker:focus-visible {
+    outline: 1px solid rgba(255,220,126,.9);
+    outline-offset: 3px;
+  }
+  .mobilePrecisionPicker::before,
+  .mobilePrecisionPicker::after {
+    content: '';
+    position: absolute;
+    z-index: 7;
+    pointer-events: none;
+  }
+  .mobilePrecisionPicker::before {
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(5,7,6,.98), rgba(5,7,6,.64) 23%, transparent 42%, transparent 58%, rgba(5,7,6,.68) 78%, rgba(5,7,6,.99)),
+      linear-gradient(90deg, rgba(0,0,0,.4), transparent 12%, transparent 88%, rgba(0,0,0,.4));
+  }
+  .mobilePrecisionPicker::after {
+    top: 50%;
+    left: .5rem;
+    right: .5rem;
+    height: 3rem;
+    transform: translateY(-50%);
+    border-top: 1px solid rgba(231,197,106,.24);
+    border-bottom: 1px solid rgba(231,197,106,.18);
+    background: linear-gradient(90deg, transparent, rgba(231,197,106,.045) 18%, rgba(231,197,106,.065) 50%, rgba(231,197,106,.045) 82%, transparent);
+    box-shadow: 0 -.45rem .8rem rgba(0,0,0,.22), 0 .45rem .8rem rgba(0,0,0,.28);
+  }
+  .mobilePrecisionPicker > button {
+    position: absolute;
+    z-index: 1;
+    top: 50%;
+    left: 50%;
+    width: calc(100% - 1rem);
+    height: 3rem;
+    min-height: 3rem;
+    display: grid;
+    grid-template-columns: 2.1rem minmax(0, 1fr) auto 1.8rem;
+    align-items: center;
+    gap: .65rem;
+    padding: .5rem .85rem;
+    border: 0;
+    border-radius: .25rem;
+    background: transparent;
+    color: var(--faint);
+    text-align: left;
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + var(--mobile-picker-offset, 0rem))) scale(.94);
+    transition: background .36s ease, box-shadow .36s ease, opacity .34s ease, transform .44s cubic-bezier(.2,.78,.18,1);
+    will-change: transform, opacity;
+  }
+  .mobilePrecisionPicker > button::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(90deg, transparent, rgba(255,246,210,.025) 22%, rgba(255,246,210,.04) 50%, rgba(255,246,210,.025) 78%, transparent);
+  }
+  .mobilePrecisionPicker > button[data-picker-position='front'] {
+    z-index: 6;
+    opacity: 1;
+    background: linear-gradient(90deg, transparent, rgba(231,197,106,.045) 18%, rgba(231,197,106,.075) 50%, rgba(231,197,106,.045) 82%, transparent);
+    box-shadow: inset 2px 0 rgba(231,197,106,.72), inset -1px 0 rgba(231,197,106,.12);
+    color: #f3f0e6;
+    transform: translate(-50%, calc(-50% + var(--mobile-picker-offset, 0rem))) scale(1);
+  }
+  .mobilePrecisionPicker > button[data-picker-position='near'] {
+    z-index: 3;
+    opacity: .22;
+    filter: brightness(.66);
+  }
+  .mobilePrecisionPicker > button[data-picker-position='back'] { pointer-events: none; }
+  .mobilePrecisionPicker > button > span {
+    color: var(--gold-deep);
+    font: 700 .7rem/1 var(--font-chakra-petch), monospace;
+  }
+  .mobilePrecisionPicker > button > strong {
+    overflow: hidden;
+    color: inherit;
+    font-size: .98rem;
+    font-weight: 640;
+    line-height: 1.1;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .mobilePrecisionPicker > button > small {
+    max-width: 32vw;
+    overflow: hidden;
+    color: var(--faint);
+    font: 600 .48rem/1 var(--font-chakra-petch), monospace;
+    letter-spacing: .035em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .mobilePrecisionPicker > button > i {
+    width: 1.8rem;
+    height: 1.8rem;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(231,197,106,.2);
+    border-radius: 50%;
+    color: var(--gold-light);
+  }
+
+  .moduleTabs,
+  .channelFan,
+  .operatingModuleRail,
+  .dashboardPipeline,
+  .osDashboardStage .dashboardPipeline,
+  .architectureLayers { display: none !important; }
 
   .channelFan > button { min-height: 4.6rem; }
   .channelFan button:last-child { grid-column: auto; }

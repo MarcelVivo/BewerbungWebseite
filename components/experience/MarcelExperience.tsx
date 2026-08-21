@@ -13,7 +13,7 @@ import ScrollEntity from './ScrollEntity';
 import SectionDockingStation from './SectionDockingStation';
 import SystemDockingStation from './SystemDockingStation';
 import WebsiteDockingStation from './WebsiteDockingStation';
-import { ArchitectureStack, DashboardMockup, MarketingEngine, PerspectiveBusinessFlow } from './Visuals';
+import { ArchitectureStack, DashboardMockup, MarketingEngine, MobilePrecisionPicker, PerspectiveBusinessFlow } from './Visuals';
 import { copy, flowStepDetails, flowStepInsights, flowSteps, systemNodes } from './content';
 import styles from './experience.module.css';
 
@@ -717,7 +717,13 @@ export default function MarcelExperience() {
                     </button>
                   ))}
                 </div>
-                <div ref={moduleDetailRef} className={styles.moduleDetail} role="tabpanel" aria-live="polite">
+                <MobilePrecisionPicker
+                  items={MODULES[lang].map((module) => ({ label: module.title, meta: module.number }))}
+                  activeIndex={activeModule}
+                  onSelect={setActiveModule}
+                  ariaLabel={lang === 'de' ? 'Systembereich auswählen' : 'Select a system area'}
+                />
+                <div key={activeModule} ref={moduleDetailRef} className={styles.moduleDetail} role="tabpanel" aria-live="polite">
                   <header>
                     <span>{activeModuleData.number}<small>/ 04</small></span>
                     <div><i><ActiveModuleIcon size={20} /></i><strong>{activeModuleData.title}</strong></div>
@@ -872,7 +878,13 @@ export default function MarcelExperience() {
                       );
                     })}
                   </div>
-                  <section ref={operatingModuleDetailRef} id="operating-module-detail" className={styles.operatingModuleDetailPanel} aria-live="polite">
+                  <MobilePrecisionPicker
+                    items={OPERATING_MODULES[lang].map((module) => ({ label: module.title, meta: module.summary }))}
+                    activeIndex={activeOperatingModule}
+                    onSelect={setActiveOperatingModule}
+                    ariaLabel={lang === 'de' ? 'Unternehmensmodul auswählen' : 'Select a business module'}
+                  />
+                  <section key={activeOperatingModule} ref={operatingModuleDetailRef} id="operating-module-detail" className={styles.operatingModuleDetailPanel} aria-live="polite">
                     <header><small>0{activeOperatingModule + 1} · {lang === 'de' ? 'AUSGEWÄHLTES MODUL' : 'SELECTED MODULE'}</small><strong>{selectedOperatingModule.title}</strong></header>
                     <p>{selectedOperatingModule.detail}</p>
                     <ul>{selectedOperatingModule.features.map((feature) => <li key={feature}><Check size={12} />{feature}</li>)}</ul>
