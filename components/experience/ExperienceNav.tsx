@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { AudioLines, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { ExperienceLang } from './content';
 import { chapters } from './content';
 import { getResolvedFlightPath } from './flightPathStore';
@@ -117,6 +117,12 @@ export default function ExperienceNav({ lang }: { lang: ExperienceLang }) {
     trackWebsiteEvent('journey_navigation', { station: id, metadata: { station_index: index + 1 } });
   }
 
+  function openAila() {
+    window.dispatchEvent(new Event('aila:prime-audio'));
+    window.dispatchEvent(new Event('aila:open-sales-conversation'));
+    trackWebsiteEvent('aila_opened', { station: chapters[active].id, metadata: { source: 'mobile_navigation' } });
+  }
+
   return (
     <>
       <div className={styles.topProgress} aria-hidden="true"><span style={{ transform: `scaleX(${progress})` }} /></div>
@@ -149,6 +155,15 @@ export default function ExperienceNav({ lang }: { lang: ExperienceLang }) {
         >
           <small>{String(active + 1).padStart(2, '0')} / {String(chapters.length).padStart(2, '0')}</small>
           <strong>{chapters[active].label[lang]}</strong>
+        </button>
+        <button
+          type="button"
+          className={styles.mobileNavigatorAila}
+          onClick={openAila}
+          aria-label={lang === 'de' ? 'Mit AILA sprechen' : 'Speak with AILA'}
+        >
+          <AudioLines size={19} />
+          <small>AILA</small>
         </button>
         <button
           type="button"

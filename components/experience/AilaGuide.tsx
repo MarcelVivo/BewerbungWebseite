@@ -61,6 +61,7 @@ const COMMON = {
     micSecure: 'Die Spracheingabe funktioniert nur über eine sichere HTTPS-Verbindung.',
     micUnsupported: 'Dieser Browser unterstützt die Spracheingabe leider nicht. Du kannst deine Frage weiterhin eintippen.',
     micError: 'Das Live-Gespräch konnte nicht gestartet werden. Prüfe den Mikrofonzugriff und versuche es erneut.',
+    offline: 'Du bist gerade offline. Ich behalte unseren bisherigen Gesprächskontext in dieser Browser-Sitzung und wir können weitermachen, sobald die Verbindung wieder da ist.',
     next: 'Nächstes Kapitel', contact: 'Mit Marcel sprechen', close: 'AILA schliessen',
     handoverKicker: 'PERSÖNLICH WEITER', handoverTitle: 'Kontakt mit Marcel aufnehmen',
     handoverText: 'Dein Gesprächskontext wird sicher übernommen. Du musst nichts nochmals erklären.',
@@ -78,6 +79,7 @@ const COMMON = {
     micSecure: 'Voice input requires a secure HTTPS connection.',
     micUnsupported: 'This browser does not support voice input. You can still type your question.',
     micError: 'The live conversation could not be started. Check microphone access and try again.',
+    offline: 'You are currently offline. I will keep our existing context in this browser session and we can continue as soon as the connection returns.',
     next: 'Next chapter', contact: 'Talk to Marcel', close: 'Close AILA',
     handoverKicker: 'CONTINUE PERSONALLY', handoverTitle: 'Contact Marcel',
     handoverText: 'Your conversation context is transferred securely. You will not need to explain everything again.',
@@ -98,6 +100,13 @@ type RealtimeEvent = {
   response?: {
     output?: Array<{ id?: string; content?: Array<{ transcript?: string; text?: string }> }>;
   };
+};
+
+type StoredAilaSession = {
+  messages: ChatMessage[];
+  lastAnswer: string;
+  quickReplies: string[];
+  context: Partial<AilaSalesContext>;
 };
 
 const messageId = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -135,6 +144,7 @@ export default function AilaGuide({
   const [lastRecommendation, setLastRecommendation] = useState<AilaRecommendation | undefined>();
   const [contactMode, setContactMode] = useState<'idle' | 'form' | 'success'>('idle');
   const [compactDialog, setCompactDialog] = useState(false);
+  const [sessionReady, setSessionReady] = useState(false);
   const hasWelcomedRef = useRef(false);
   const hasSpokenWelcomeRef = useRef(false);
   const wasOpenRef = useRef(false);
@@ -152,6 +162,62 @@ export default function AilaGuide({
   const requestRef = useRef<AbortController | null>(null);
   const hasConversationContext = messages.some((message) => message.role === 'user' && message.content.trim())
     || Boolean(salesContext.conversationSummary.trim());
+
+  useEffect(() => {
+    setSessionReady(false);
+    hasWelcomedRef.current = false;
+    hasSpokenWelcomeRef.current = false;
+    try {
+      const raw = sessionStorage.getItem(`ms-aila-session-${lang}`);
+      if (raw) {
+        const stored = JSON.parse(raw) as StoredAilaSession;
+        const restoredMessages = Array.isArray(stored.messages)
+          ? stored.messages.filter((message) => message && (message.role === 'user' || message.role === 'assistant') && typeof message.content === 'string').slice(-16)
+          : [];
+        if (restoredMessages.length) {
+          setMessages(restoredMessages);
+          setLastAnswer(typeof stored.lastAnswer === 'string' ? stored.lastAnswer : restoredMessages.at(-1)?.content || '');
+          setQuickReplies(Array.isArray(stored.quickReplies) ? stored.quickReplies.filter((reply): reply is string => typeof reply === 'string').slice(0, 4) : []);
+          setSalesContext(sanitizeAilaSalesContext(stored.context, createInitialAilaSalesContext()));
+          hasWelcomedRef.current = true;
+          hasSpokenWelcomeRef.current = true;
+        } else {
+          setMessages([]);
+          setSalesContext(createInitialAilaSalesContext());
+          setQuickReplies([...common.prompts]);
+        }
+      } else {
+        setMessages([]);
+        setSalesContext(createInitialAilaSalesContext());
+        setQuickReplies([...common.prompts]);
+      }
+    } catch {
+      setMessages([]);
+      setSalesContext(createInitialAilaSalesContext());
+      setQuickReplies([...common.prompts]);
+    }
+    setSessionReady(true);
+  }, [lang, common.prompts]);
+
+  useEffect(() => {
+    if (!sessionReady || !messages.some((message) => message.role === 'user')) return;
+    const {
+      name: _name,
+      company: _company,
+      email: _email,
+      phone: _phone,
+      website: _website,
+      consentToContact: _consentToContact,
+      ...sessionContext
+    } = salesContext;
+    const stored: StoredAilaSession = {
+      messages: messages.slice(-16),
+      lastAnswer,
+      quickReplies: quickReplies.slice(0, 4),
+      context: sessionContext,
+    };
+    try { sessionStorage.setItem(`ms-aila-session-${lang}`, JSON.stringify(stored)); } catch {}
+  }, [lang, lastAnswer, messages, quickReplies, salesContext, sessionReady]);
 
   const stopAudio = (announceIdle = true) => {
     speechRequestRef.current?.abort();
@@ -205,13 +271,13 @@ export default function AilaGuide({
   }, [open, sectionId]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || !sessionReady) return;
     const query = window.matchMedia('(max-width: 700px), (max-width: 960px) and (hover: none) and (pointer: coarse)');
     const update = () => setCompactDialog(query.matches);
     update();
     query.addEventListener('change', update);
     return () => query.removeEventListener('change', update);
-  }, [open]);
+  }, [open, sessionReady]);
 
   useEffect(() => {
     if (!open || !compactDialog) return;
@@ -265,7 +331,7 @@ export default function AilaGuide({
   }, [open, compactDialog]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || !sessionReady) return;
     if (!hasWelcomedRef.current) {
       hasWelcomedRef.current = true;
       setMessages([{ id: messageId(), role: 'assistant', content: common.welcome }]);
@@ -275,7 +341,7 @@ export default function AilaGuide({
     setInput('');
     setBusy(false);
     setVoiceEnabled(true);
-  }, [open, sectionId, lang, common.welcome]);
+  }, [open, sectionId, lang, common.welcome, sessionReady]);
 
   useEffect(() => {
     const openContact = () => {
@@ -520,6 +586,10 @@ export default function AilaGuide({
 
   const startLiveConversation = async () => {
     if (liveStatus !== 'off' && liveStatus !== 'error') return;
+    if (!navigator.onLine) {
+      setMessages((current) => [...current, { id: messageId(), role: 'assistant', content: common.offline }]);
+      return;
+    }
     if (!window.isSecureContext) {
       setMessages((current) => [...current, { id: messageId(), role: 'assistant', content: common.micSecure }]);
       return;
@@ -615,6 +685,17 @@ export default function AilaGuide({
   const ask = async (rawQuestion: string, inputMode: AilaInputMode = 'text') => {
     const question = rawQuestion.trim();
     if (!question || (busy && liveStatus === 'off')) return;
+    if (!navigator.onLine) {
+      setMessages((current) => [
+        ...current.filter((message) => message.content !== common.welcome),
+        { id: messageId(), role: 'user', content: question },
+        { id: messageId(), role: 'assistant', content: common.offline },
+      ]);
+      setInput('');
+      setLastAnswer(common.offline);
+      setQuickReplies([]);
+      return;
+    }
     if (liveStatus !== 'off' && dataChannelRef.current?.readyState === 'open') {
       const userMessage: ChatMessage = { id: messageId(), role: 'user', content: question };
       setMessages((current) => [...current, userMessage]);

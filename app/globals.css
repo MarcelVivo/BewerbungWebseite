@@ -99,6 +99,25 @@ body {
     var(--background-primary);
 }
 
+html[data-display-mode="standalone"],
+html[data-display-mode="standalone"] body {
+  min-height: 100%;
+  overscroll-behavior-y: none;
+}
+
+html[data-display-mode="standalone"] body {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html[data-display-mode="standalone"] input,
+html[data-display-mode="standalone"] textarea,
+html[data-display-mode="standalone"] [contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
 button,
 input,
 textarea,

@@ -1,0 +1,115 @@
+.tabletAilaDock,
+.connection,
+.update,
+.installCard { font-family: var(--font-site); }
+
+.tabletAilaDock { display: none; }
+
+.connection {
+  position: fixed;
+  z-index: 390;
+  top: max(.75rem, env(safe-area-inset-top));
+  left: 50%;
+  min-height: 2.75rem;
+  padding: .65rem .9rem;
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  border: 1px solid rgba(231, 197, 106, .3);
+  background: rgba(18, 15, 9, .96);
+  color: #f6e3a1;
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, .48);
+  transform: translateX(-50%);
+  font-size: .76rem;
+  white-space: nowrap;
+}
+
+.connectionOnline { border-color: rgba(126, 213, 157, .32); color: #a8e3bb; }
+
+.update {
+  position: fixed;
+  z-index: 380;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: max(5rem, calc(4rem + env(safe-area-inset-bottom)));
+  padding: .75rem .85rem .75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  border: 1px solid rgba(231, 197, 106, .26);
+  background: rgba(9, 11, 9, .96);
+  color: #dedfd8;
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, .5);
+  font-size: .76rem;
+}
+
+.update button {
+  min-height: 2.5rem;
+  padding: 0 .75rem;
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  border: 1px solid rgba(231, 197, 106, .35);
+  background: rgba(200, 154, 61, .12);
+  color: #f6e3a1;
+}
+
+.installCard {
+  position: fixed;
+  z-index: 370;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: max(5.15rem, calc(4rem + env(safe-area-inset-bottom)));
+  width: min(25rem, calc(100vw - 2rem));
+  padding: 1rem;
+  display: grid;
+  grid-template-columns: 2.75rem 1fr;
+  gap: .75rem;
+  border: 1px solid rgba(231, 197, 106, .28);
+  background: rgba(9, 11, 9, .97);
+  color: #f1f0e9;
+  box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, .58);
+  backdrop-filter: blur(18px);
+}
+
+.installIcon {
+  width: 2.75rem;
+  height: 2.75rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(231, 197, 106, .3);
+  color: #e7c56a;
+}
+
+.installCard strong { display: block; padding-right: 1.5rem; font-size: .95rem; }
+.installCard p { margin: .3rem 0 0; color: #9fa49d; font-size: .76rem; line-height: 1.5; }
+.dismiss { position: absolute; top: .55rem; right: .55rem; width: 2.4rem; height: 2.4rem; display: grid; place-items: center; border: 0; background: transparent; color: #9fa49d; }
+.installAction { grid-column: 1 / -1; min-height: 2.9rem; display: flex; align-items: center; justify-content: center; gap: .5rem; border: 1px solid rgba(231, 197, 106, .45); background: linear-gradient(135deg, #e7c56a, #9b6d1f); color: #090a08; font-weight: 760; }
+
+@media (min-width: 700px) and (max-width: 1180px) and (pointer: coarse) {
+  .tabletAilaDock {
+    position: fixed;
+    z-index: 225;
+    right: max(1rem, env(safe-area-inset-right));
+    bottom: max(1rem, env(safe-area-inset-bottom));
+    min-height: 3.5rem;
+    padding: 0 1rem;
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    border: 1px solid rgba(231, 197, 106, .32);
+    background: rgba(8, 10, 8, .92);
+    color: #f6e3a1;
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, .5);
+    backdrop-filter: blur(18px);
+    font-size: .78rem;
+    font-weight: 700;
+  }
+}
+
+@media (max-width: 699px) {
+  .installCard { left: max(.75rem, env(safe-area-inset-left)); right: max(.75rem, env(safe-area-inset-right)); bottom: max(5.35rem, calc(4.25rem + env(safe-area-inset-bottom))); width: auto; }
+  .update { left: max(.75rem, env(safe-area-inset-left)); right: max(.75rem, env(safe-area-inset-right)); bottom: max(5.35rem, calc(4.25rem + env(safe-area-inset-bottom))); justify-content: space-between; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .connection, .installCard, .update { scroll-behavior: auto; }
+}

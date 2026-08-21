@@ -3,6 +3,7 @@ import { LanguageProvider } from './LanguageContext';
 import CustomCursor from './CustomCursor';
 import WebsiteAnalytics from './WebsiteAnalytics';
 import AuthRecoveryRedirect from './AuthRecoveryRedirect';
+import PwaRuntime from '../components/pwa/PwaRuntime';
 
 export const metadata = {
   title: {
@@ -55,6 +56,21 @@ export const metadata = {
   },
   alternates: { canonical: 'https://www.marcelspahr.ch' },
   category: 'business',
+  applicationName: 'Marcel Spahr',
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Marcel Spahr',
+  },
+  icons: {
+    icon: [
+      { url: '/pwa/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/pwa/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [{ url: '/pwa/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+  },
+  formatDetection: { telephone: false },
 };
 
 export const viewport = {
@@ -62,6 +78,7 @@ export const viewport = {
   initialScale: 1,
   viewportFit: 'cover',
   themeColor: '#020303',
+  colorScheme: 'dark',
 };
 
 const jsonLd = {
@@ -167,6 +184,7 @@ export default function RootLayout({ children }) {
         <LanguageProvider>
           <WebsiteAnalytics />
           <AuthRecoveryRedirect />
+          <PwaRuntime />
           {children}
         </LanguageProvider>
       </body>

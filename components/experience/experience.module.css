@@ -4757,7 +4757,7 @@
     bottom: max(.65rem, env(safe-area-inset-bottom));
     min-height: 3.5rem;
     display: grid;
-    grid-template-columns: 3rem minmax(0, 1fr) 3rem;
+    grid-template-columns: 3rem minmax(0, 1fr) 3.8rem 3rem;
     align-items: stretch;
     border: 1px solid rgba(231,197,106,.24);
     border-radius: 1rem;
@@ -4785,6 +4785,8 @@
   .mobileNavigator .mobileNavigatorCurrent { min-width: 0; padding: .62rem .75rem; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: .2rem; text-align: left; }
   .mobileNavigatorCurrent small { color: var(--gold-light); font: 650 .45rem/1 var(--font-chakra-petch), monospace; letter-spacing: .12em; }
   .mobileNavigatorCurrent strong { width: 100%; overflow: hidden; color: #ecece5; font-size: .73rem; font-weight: 620; line-height: 1.1; text-overflow: ellipsis; white-space: nowrap; }
+  .mobileNavigator .mobileNavigatorAila { display: flex; flex-direction: column; gap: .15rem; border-left: 1px solid var(--line); color: var(--gold-light); }
+  .mobileNavigatorAila small { font: 720 .43rem/1 var(--font-chakra-petch), monospace; letter-spacing: .12em; }
 
   .hero {
     min-height: max(720px, 138svh);

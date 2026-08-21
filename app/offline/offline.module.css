@@ -1,0 +1,63 @@
+.page {
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: max(1.25rem, env(safe-area-inset-top)) max(1.25rem, env(safe-area-inset-right)) max(1.25rem, env(safe-area-inset-bottom)) max(1.25rem, env(safe-area-inset-left));
+  background:
+    radial-gradient(circle at 50% 35%, rgba(200, 154, 61, .13), transparent 38%),
+    #070807;
+  color: #f2f0e8;
+}
+
+.card {
+  width: min(38rem, 100%);
+  padding: clamp(1.5rem, 6vw, 3.5rem);
+  border: 1px solid rgba(231, 197, 106, .28);
+  background: rgba(12, 14, 12, .94);
+  box-shadow: 0 2rem 6rem rgba(0, 0, 0, .5);
+}
+
+.eyebrow {
+  margin: 0 0 1.2rem;
+  color: #e7c56a;
+  font: 700 .72rem/1.2 var(--font-site);
+  letter-spacing: .18em;
+}
+
+.card h1 {
+  margin: 0;
+  font-size: clamp(2.25rem, 11vw, 4.6rem);
+  line-height: .94;
+  letter-spacing: -.055em;
+}
+
+.card > p:not(.eyebrow) {
+  margin: 1.5rem 0 0;
+  color: #b7bbb4;
+  font-size: clamp(1rem, 3.7vw, 1.2rem);
+  line-height: 1.62;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .75rem;
+  margin-top: 2rem;
+}
+
+.actions a {
+  min-height: 3.25rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(231, 197, 106, .28);
+  color: #f6e3a1;
+  text-align: center;
+  text-decoration: none;
+}
+
+.actions a:first-child { background: linear-gradient(135deg, #e7c56a, #9b6d1f); color: #090a08; font-weight: 750; }
+.card small { display: block; margin-top: 1.25rem; color: #737973; line-height: 1.5; }
+
+@media (max-width: 480px) {
+  .actions { grid-template-columns: 1fr; }
+}
