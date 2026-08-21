@@ -32,17 +32,29 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
 
   const serviceJsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'Service',
-    name: s.de.title,
-    description: s.de.metaDesc,
-    url: `https://www.marcelspahr.ch/leistungen/${s.slug}`,
-    provider: {
-      '@type': 'Person',
-      name: 'Marcel Spahr',
-      url: 'https://www.marcelspahr.ch',
-      address: { '@type': 'PostalAddress', addressLocality: 'Bern', addressCountry: 'CH' },
-    },
-    areaServed: { '@type': 'Country', name: 'Schweiz' },
+    '@graph': [
+      {
+        '@type': 'Service',
+        name: s.de.title,
+        description: s.de.metaDesc,
+        url: `https://www.marcelspahr.ch/leistungen/${s.slug}`,
+        provider: {
+          '@type': 'Person',
+          name: 'Marcel Spahr',
+          url: 'https://www.marcelspahr.ch',
+          address: { '@type': 'PostalAddress', addressLocality: 'Bern', addressCountry: 'CH' },
+        },
+        areaServed: { '@type': 'Country', name: 'Schweiz' },
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Marcel Spahr', item: 'https://www.marcelspahr.ch' },
+          { '@type': 'ListItem', position: 2, name: 'Leistungen', item: 'https://www.marcelspahr.ch/#journey-solutions' },
+          { '@type': 'ListItem', position: 3, name: s.de.title, item: `https://www.marcelspahr.ch/leistungen/${s.slug}` },
+        ],
+      },
+    ],
   };
 
   return (

@@ -165,6 +165,21 @@ const jsonLd = {
         name: 'Wie beginnt ein Projekt?',
         acceptedAnswer: { '@type': 'Answer', text: 'Mit einer Analyse von Unternehmen, Zielen, Mitarbeitenden, Engpässen, Daten und bestehenden Systemen. Danach wird nur gebaut, was tatsächlich benötigt wird.' },
       },
+      {
+        '@type': 'Question',
+        name: 'Welche Leistungen bietet Marcel Spahr an?',
+        acceptedAnswer: { '@type': 'Answer', text: 'Corporate Design und Markenauftritt, moderne 2D- und 3D-Websites, CRM-Lösungen, ERP und Geschäftsprozesse, Datenbanken und Schnittstellen, KI-Automation und KI-Unterstützung, Analyse und Konzept sowie Umsetzung, Wartung und Weiterentwicklung – einzeln oder als verbundenes System.' },
+      },
+      {
+        '@type': 'Question',
+        name: 'Gibt es eine kostenlose erste Einschätzung?',
+        acceptedAnswer: { '@type': 'Answer', text: 'Ja. Der KI-Check ist ein kostenloser, unverbindlicher Kurz-Check zur KI-Bereitschaft eines Unternehmens. Er dauert rund drei Minuten und liefert eine persönliche Einschätzung von Marcel Spahr per E-Mail, ohne Verkaufsgespräch.' },
+      },
+      {
+        '@type': 'Question',
+        name: 'In welcher Region ist Marcel Spahr tätig?',
+        acceptedAnswer: { '@type': 'Answer', text: 'Marcel Spahr ist in Bern ansässig und betreut Unternehmen in der ganzen Schweiz, wahlweise vor Ort, hybrid oder vollständig remote.' },
+      },
     ],
   },
   ],
