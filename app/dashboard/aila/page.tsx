@@ -24,6 +24,7 @@ const TOOL_LABELS: Record<string, string> = {
   kunde_notiz_hinzufuegen: 'Notiz hinzugefügt',
   kunde_status_aendern: 'Kundenstatus geändert',
   termin_erstellen: 'Termin erstellt',
+  outreach_erfassen: 'Outreach protokolliert',
 };
 
 export default function AilaInternalPage() {

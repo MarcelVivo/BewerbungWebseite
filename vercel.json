@@ -4,6 +4,8 @@
   "outputDirectory": ".next",
   "regions": ["fra1"],
   "crons": [
-    { "path": "/api/cron/lead-followup", "schedule": "0 8 * * *" }
+    { "path": "/api/cron/lead-followup", "schedule": "0 8 * * *" },
+    { "path": "/api/cron/mahnwesen", "schedule": "0 7 * * *" },
+    { "path": "/api/cron/wochenbericht", "schedule": "0 6 * * 5" }
   ]
 }

@@ -122,6 +122,23 @@ export const INTERNAL_TOOL_DEFINITIONS = [
   },
   {
     type: 'function',
+    name: 'outreach_erfassen',
+    description: 'Einen Outreach-Versuch (Kontaktaufnahme) bei einem Kunden/Lead protokollieren. Nutze dies nach jedem LinkedIn-, E-Mail- oder Telefonkontakt, um den Überblick zu behalten.',
+    parameters: {
+      type: 'object',
+      properties: {
+        kunden_id: { type: 'string', description: 'UUID des Kunden/Leads. Vorher mit list_kunden ermitteln.' },
+        kanal: { type: 'string', enum: ['linkedin', 'email', 'telefon', 'event'] },
+        kontakt_typ: { type: 'string', enum: ['erstkontakt', 'follow_up', 'angebot', 'abschluss'] },
+        notiz: { type: 'string', description: 'Kurze Notiz, was gesendet/besprochen wurde.' },
+        naechste_aktion: { type: 'string', description: 'Datum YYYY-MM-DD für den nächsten Schritt, falls sinnvoll.' },
+      },
+      required: ['kunden_id', 'kanal', 'kontakt_typ'],
+      additionalProperties: false,
+    },
+  },
+  {
+    type: 'function',
     name: 'termin_erstellen',
     description: 'Einen neuen Termin im Kalender anlegen.',
     parameters: {
@@ -255,6 +272,18 @@ export async function runInternalTool(
       const { error } = await supabase.from('kunden').update({ status }).eq('id', kundenId);
       if (error) throw error;
       return { aktualisiert: true, status };
+    }
+    case 'outreach_erfassen': {
+      const kundenId = String(rawArgs.kunden_id || '');
+      const kanal = String(rawArgs.kanal || '');
+      const kontaktTyp = String(rawArgs.kontakt_typ || '');
+      if (!kundenId || !kanal || !kontaktTyp) throw new Error('kunden_id, kanal und kontakt_typ sind erforderlich.');
+      const insert: Record<string, unknown> = { kunden_id: kundenId, kanal, kontakt_typ: kontaktTyp };
+      if (typeof rawArgs.notiz === 'string') insert.notiz = rawArgs.notiz.slice(0, 1000);
+      if (typeof rawArgs.naechste_aktion === 'string' && rawArgs.naechste_aktion) insert.naechste_aktion = rawArgs.naechste_aktion;
+      const { data, error } = await supabase.from('outreach').insert(insert).select('id').single();
+      if (error) throw error;
+      return { erfasst: true, outreach: data };
     }
     case 'termin_erstellen': {
       const titel = String(rawArgs.titel || '').trim().slice(0, 200);
