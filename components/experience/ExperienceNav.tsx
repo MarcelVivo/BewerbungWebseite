@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
-import { AudioLines, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, AudioLines, ChevronLeft, ChevronRight, Menu, X } from 'lucide-react';
 import type { ExperienceLang } from './content';
 import { chapters } from './content';
 import { getResolvedFlightPath } from './flightPathStore';
@@ -50,6 +50,7 @@ function scrollToChapterDockingRest(sectionId: string, behavior: ScrollBehavior)
 export default function ExperienceNav({ lang }: { lang: ExperienceLang }) {
   const [active, setActive] = useState(0);
   const [progress, setProgress] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
   const listRef = useRef<HTMLOListElement | null>(null);
   const hoverYRef = useRef<number | null>(null);
   const magnifyFrameRef = useRef(0);
@@ -93,6 +94,20 @@ export default function ExperienceNav({ lang }: { lang: ExperienceLang }) {
 
   useEffect(() => { applyMagnify(active); }, [active]);
 
+  useEffect(() => {
+    if (!menuOpen) return;
+    const previousOverflow = document.documentElement.style.overflow;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMenuOpen(false);
+    };
+    document.documentElement.style.overflow = 'hidden';
+    window.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.documentElement.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [menuOpen]);
+
   const handlePointerMove = (event: ReactPointerEvent<HTMLOListElement>) => {
     hoverYRef.current = event.clientY;
     if (magnifyFrameRef.current) return;
@@ -109,8 +124,9 @@ export default function ExperienceNav({ lang }: { lang: ExperienceLang }) {
 
   function navigate(id: string, index: number) {
     setActive(index);
+    setMenuOpen(false);
     const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
-    const isMobile = window.matchMedia('(max-width: 699px)').matches;
+    const isMobile = window.matchMedia('(max-width: 960px)').matches;
     const landedOnDock = !isMobile && scrollToChapterDockingRest(id, behavior);
     if (!landedOnDock) document.getElementById(id)?.scrollIntoView({ behavior, block: 'start' });
     window.history.replaceState(null, '', `#${id}`);
@@ -118,6 +134,7 @@ export default function ExperienceNav({ lang }: { lang: ExperienceLang }) {
   }
 
   function openAila() {
+    setMenuOpen(false);
     window.dispatchEvent(new Event('aila:prime-audio'));
     window.dispatchEvent(new Event('aila:open-sales-conversation'));
     trackWebsiteEvent('aila_opened', { station: chapters[active].id, metadata: { source: 'mobile_navigation' } });
@@ -126,6 +143,59 @@ export default function ExperienceNav({ lang }: { lang: ExperienceLang }) {
   return (
     <>
       <div className={styles.topProgress} aria-hidden="true"><span style={{ transform: `scaleX(${progress})` }} /></div>
+      <header className={styles.mobileAppBar}>
+        <button type="button" className={styles.mobileAppBrand} onClick={() => navigate(chapters[0].id, 0)} aria-label={lang === 'de' ? 'Zum Seitenanfang' : 'Back to top'}>
+          <span>MS</span>
+          <span>
+            <strong>Marcel Spahr</strong>
+            <small>{chapters[active].label[lang]}</small>
+          </span>
+        </button>
+        <div className={styles.mobileAppActions}>
+          <button type="button" className={styles.mobileAppAila} onClick={openAila} aria-label={lang === 'de' ? 'Eigenen AILA Gesprächsraum öffnen' : 'Open your AILA conversation space'}>
+            <AudioLines size={18} />
+            <span>AILA</span>
+          </button>
+          <button type="button" className={styles.mobileAppMenuButton} onClick={() => setMenuOpen((current) => !current)} aria-expanded={menuOpen} aria-controls="mobile-experience-menu" aria-label={menuOpen ? (lang === 'de' ? 'Menü schliessen' : 'Close menu') : (lang === 'de' ? 'Menü öffnen' : 'Open menu')}>
+            {menuOpen ? <X size={21} /> : <Menu size={21} />}
+          </button>
+        </div>
+      </header>
+
+      <div id="mobile-experience-menu" className={`${styles.mobileMenu} ${menuOpen ? styles.mobileMenuOpen : ''}`} aria-hidden={!menuOpen}>
+        <button type="button" className={styles.mobileMenuBackdrop} onClick={() => setMenuOpen(false)} aria-label={lang === 'de' ? 'Menü schliessen' : 'Close menu'} tabIndex={menuOpen ? 0 : -1} />
+        <nav className={styles.mobileMenuPanel} aria-label={lang === 'de' ? 'Hauptnavigation' : 'Main navigation'}>
+          <header>
+            <div>
+              <span>{lang === 'de' ? 'DEINE REISE' : 'YOUR JOURNEY'}</span>
+              <strong>{lang === 'de' ? 'Ein Unternehmen. Ein System.' : 'One business. One system.'}</strong>
+            </div>
+            <button type="button" onClick={() => setMenuOpen(false)} aria-label={lang === 'de' ? 'Menü schliessen' : 'Close menu'}><X size={20} /></button>
+          </header>
+          <div className={styles.mobileMenuProgress} aria-hidden="true"><span style={{ transform: `scaleX(${progress})` }} /></div>
+          <ol>
+            {chapters.map((chapter, index) => (
+              <li key={chapter.id}>
+                <button type="button" className={active === index ? styles.mobileChapterActive : ''} onClick={() => navigate(chapter.id, index)} aria-current={active === index ? 'location' : undefined} tabIndex={menuOpen ? 0 : -1}>
+                  <span>{String(index + 1).padStart(2, '0')}</span>
+                  <strong>{chapter.label[lang]}</strong>
+                  <small>{chapter.short}</small>
+                </button>
+              </li>
+            ))}
+          </ol>
+          <footer>
+            <button type="button" className={styles.mobileMenuAila} onClick={openAila} tabIndex={menuOpen ? 0 : -1}>
+              <AudioLines size={20} />
+              <span><strong>{lang === 'de' ? 'Mit AILA sprechen' : 'Speak with AILA'}</strong><small>{lang === 'de' ? 'Eigener Gesprächsraum' : 'Dedicated conversation space'}</small></span>
+              <ArrowRight size={19} />
+            </button>
+            <button type="button" className={styles.mobileMenuProject} onClick={() => navigate('journey-contact', chapters.length - 1)} tabIndex={menuOpen ? 0 : -1}>
+              {lang === 'de' ? 'Projekt starten' : 'Start a project'} <ArrowRight size={18} />
+            </button>
+          </footer>
+        </nav>
+      </div>
       <nav className={styles.chapterRail} aria-label="Seitenposition">
         <span className={styles.railLine}><i style={{ height: `${progress * 100}%` }} /></span>
         <ol ref={listRef} onPointerMove={handlePointerMove} onPointerLeave={handlePointerLeave}>
@@ -155,15 +225,6 @@ export default function ExperienceNav({ lang }: { lang: ExperienceLang }) {
         >
           <small>{String(active + 1).padStart(2, '0')} / {String(chapters.length).padStart(2, '0')}</small>
           <strong>{chapters[active].label[lang]}</strong>
-        </button>
-        <button
-          type="button"
-          className={styles.mobileNavigatorAila}
-          onClick={openAila}
-          aria-label={lang === 'de' ? 'Mit AILA sprechen' : 'Speak with AILA'}
-        >
-          <AudioLines size={19} />
-          <small>AILA</small>
         </button>
         <button
           type="button"

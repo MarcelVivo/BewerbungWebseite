@@ -1,6 +1,6 @@
 'use client';
 
-import { AudioLines, Download, RefreshCw, Share2, WifiOff, X } from 'lucide-react';
+import { Download, RefreshCw, Share2, WifiOff, X } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useLanguage } from '@/app/LanguageContext';
@@ -18,7 +18,7 @@ const COPY = {
     iosText: 'In Safari auf Teilen und danach „Zum Home-Bildschirm“ tippen.',
     later: 'Später', update: 'Neue Version verfügbar', refresh: 'Aktualisieren',
     offline: 'Offline – AILA wartet auf die Verbindung', online: 'Wieder online',
-    aila: 'Mit AILA sprechen', close: 'Hinweis schliessen',
+    close: 'Hinweis schliessen',
   },
   en: {
     install: 'Install app', appTitle: 'Marcel Spahr as an app',
@@ -26,7 +26,7 @@ const COPY = {
     iosText: 'In Safari, tap Share and then “Add to Home Screen”.',
     later: 'Later', update: 'A new version is available', refresh: 'Update',
     offline: 'Offline – AILA is waiting for the connection', online: 'Back online',
-    aila: 'Speak with AILA', close: 'Close notice',
+    close: 'Close notice',
   },
 } as const;
 
@@ -38,7 +38,6 @@ export default function PwaRuntime() {
     || pathname.startsWith('/recruiter')
     || pathname.startsWith('/auth')
     || pathname === '/login';
-  const hasAila = pathname === '/';
   const [installPrompt, setInstallPrompt] = useState<InstallPromptEvent | null>(null);
   const [showInstall, setShowInstall] = useState(false);
   const [showIosHelp, setShowIosHelp] = useState(false);
@@ -142,20 +141,8 @@ export default function PwaRuntime() {
     try { sessionStorage.setItem('ms-pwa-install-seen', '1'); } catch {}
   };
 
-  const openAila = () => {
-    window.dispatchEvent(new Event('aila:prime-audio'));
-    window.dispatchEvent(new Event('aila:open-sales-conversation'));
-  };
-
   return (
     <>
-      {hasAila && (
-        <button className={styles.tabletAilaDock} type="button" onClick={openAila} aria-label={c.aila}>
-          <AudioLines size={22} />
-          <span>{c.aila}</span>
-        </button>
-      )}
-
       {connectionNotice && (
         <div className={`${styles.connection} ${online ? styles.connectionOnline : ''}`} role="status">
           {online ? <RefreshCw size={17} /> : <WifiOff size={17} />}

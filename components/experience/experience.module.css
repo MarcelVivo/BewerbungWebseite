@@ -432,6 +432,7 @@
 .ailaGuide > header button { width: 1.8rem; height: 1.8rem; display: grid; place-items: center; padding: 0; border: 1px solid rgba(255,255,255,.1); background: transparent; color: #a8aca5; cursor: pointer; }
 .ailaGuide > header button:hover { color: var(--gold-pale); border-color: rgba(231,197,106,.35); }
 .ailaGuideControls { display: flex; align-items: center; gap: .35rem !important; }
+.ailaGuideMobileIdentity { display: none; }
 .ailaGuide h2 { margin: .85rem 0 0; color: #efefe8; font-size: clamp(1.25rem, 1.6vw, 1.55rem); font-weight: 590; line-height: 1.12; letter-spacing: -.035em; text-align: left; text-shadow: none; filter: none; transform: none; }
 .ailaGuide > p { margin: .65rem 0 0; color: #aeb2aa; font-size: .76rem; line-height: 1.55; }
 
@@ -2054,22 +2055,37 @@
 .chapterRail button:focus-visible > b { color: var(--gold-pale); opacity: 1; }
 .chapterLabelShort { display: none; }
 
-.mobileNavigator { display: none; }
+.mobileNavigator,
+.mobileAppBar { display: none; }
 
-.mobileMenu { position: fixed; z-index: 190; inset: 0; visibility: hidden; pointer-events: none; }
+.mobileMenu { position: fixed; z-index: 290; inset: 0; visibility: hidden; pointer-events: none; }
 .mobileMenuOpen { visibility: visible; pointer-events: auto; }
-.mobileMenuBackdrop { position: absolute; inset: 0; background: rgba(0,0,0,.68); opacity: 0; backdrop-filter: blur(7px); transition: opacity .3s ease; }
+.mobileMenuBackdrop { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; border: 0; background: rgba(0,0,0,.72); opacity: 0; backdrop-filter: blur(9px); transition: opacity .3s ease; cursor: default; }
 .mobileMenuOpen .mobileMenuBackdrop { opacity: 1; }
-.mobileMenuPanel { position: absolute; top: 0; right: 0; width: min(420px, 92vw); height: 100%; padding: 6rem 1.5rem 2rem; border-left: 1px solid var(--line); background: rgba(10,12,10,.97); transform: translateX(100%); transition: transform .42s cubic-bezier(.2,.8,.2,1); overflow: auto; }
+.mobileMenuPanel { position: absolute; top: 0; right: 0; width: min(31rem, 100vw); height: 100%; padding: max(1rem, env(safe-area-inset-top)) 1.25rem max(1.25rem, env(safe-area-inset-bottom)); display: flex; flex-direction: column; border-left: 1px solid rgba(231,197,106,.2); background: radial-gradient(circle at 100% 0, rgba(200,154,61,.1), transparent 30%), rgba(7,9,7,.985); box-shadow: -2rem 0 5rem rgba(0,0,0,.56); transform: translateX(100%); transition: transform .42s cubic-bezier(.2,.8,.2,1); overflow: auto; }
 .mobileMenuOpen .mobileMenuPanel { transform: translateX(0); }
-.mobileMenuPanel > p { margin: 0 0 1rem; font: 600 .64rem/1 var(--font-chakra-petch), monospace; letter-spacing: .18em; color: var(--gold-light); text-transform: uppercase; }
+.mobileMenuPanel > header { min-height: 4.25rem; display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.mobileMenuPanel > header > div { display: grid; gap: .35rem; }
+.mobileMenuPanel > header span { color: var(--gold-light); font: 680 .55rem/1 var(--font-chakra-petch), monospace; letter-spacing: .17em; }
+.mobileMenuPanel > header strong { color: #f0f0e8; font-size: 1.08rem; font-weight: 610; }
+.mobileMenuPanel > header button { width: 2.75rem; height: 2.75rem; display: grid; place-items: center; border: 1px solid rgba(255,255,255,.11); background: rgba(255,255,255,.02); color: #d2d4cc; }
+.mobileMenuProgress { height: 1px; margin-bottom: .7rem; overflow: hidden; background: rgba(255,255,255,.08); }
+.mobileMenuProgress span { display: block; width: 100%; height: 100%; transform-origin: left; background: var(--gold-gradient); }
 .mobileMenuPanel ol { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
 .mobileMenuPanel li { border-bottom: 1px solid var(--line); }
-.mobileMenuPanel button { width: 100%; padding: 1rem 0; display: grid; grid-template-columns: 2rem 1fr auto; gap: .75rem; align-items: baseline; border: 0; background: none; text-align: left; cursor: pointer; }
-.mobileMenuPanel button span { font: 500 .58rem/1 var(--font-chakra-petch), monospace; color: var(--faint); }
-.mobileMenuPanel button strong { font-size: 1rem; font-weight: 550; }
-.mobileMenuPanel button small { font-size: .55rem; letter-spacing: .1em; color: var(--faint); text-transform: uppercase; }
+.mobileMenuPanel li > button { width: 100%; min-height: 3.5rem; padding: .7rem .2rem; display: grid; grid-template-columns: 2.25rem 1fr auto; gap: .75rem; align-items: center; border: 0; background: none; text-align: left; cursor: pointer; }
+.mobileMenuPanel li > button span { font: 620 .57rem/1 var(--font-chakra-petch), monospace; color: var(--faint); }
+.mobileMenuPanel li > button strong { font-size: 1rem; font-weight: 570; }
+.mobileMenuPanel li > button small { font-size: .52rem; letter-spacing: .1em; color: var(--faint); text-transform: uppercase; }
 .mobileMenuPanel .mobileChapterActive strong, .mobileMenuPanel .mobileChapterActive span { color: var(--gold-light); }
+.mobileMenuPanel .mobileChapterActive { background: linear-gradient(90deg, rgba(200,154,61,.1), transparent 72%); }
+.mobileMenuPanel > footer { margin-top: auto; padding-top: 1rem; display: grid; gap: .55rem; }
+.mobileMenuAila { min-height: 4.3rem; padding: .7rem .8rem; display: grid; grid-template-columns: 2.7rem minmax(0,1fr) auto; align-items: center; gap: .75rem; border: 1px solid rgba(231,197,106,.45); background: linear-gradient(110deg, rgba(200,154,61,.18), rgba(200,154,61,.04)); color: var(--gold-pale); text-align: left; }
+.mobileMenuAila > svg:first-child { width: 2.7rem; height: 2.7rem; padding: .65rem; border: 1px solid rgba(231,197,106,.3); }
+.mobileMenuAila > span { display: grid; gap: .2rem; }
+.mobileMenuAila strong { color: #fff5cb; font-size: .9rem; }
+.mobileMenuAila small { color: #969b94; font-size: .65rem; }
+.mobileMenuProject { min-height: 3.25rem; padding: 0 .9rem; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.02); color: #d9dbd4; font-size: .8rem; font-weight: 620; }
 
 .hero { --pointer-x: 0; --pointer-y: 0; --hero-dock-engaged: 0; --hero-dock-charge: 0; position: relative; min-height: max(1160px, 175svh); border-bottom: 1px solid rgba(255,255,255,.055); }
 .heroSticky { position: sticky; top: 0; min-height: max(760px, 100svh); height: 100svh; display: grid; align-items: center; overflow: hidden; }
@@ -4702,7 +4718,7 @@
 /* Mobile is a dedicated reading experience rather than a compressed desktop
    stage. It keeps the visual language, while removing the fixed rail,
    projective layouts and full-screen overlays that cost usable width. */
-@media (max-width: 699px) {
+@media (max-width: 960px) {
   .experience {
     --rail-safe: 0rem;
     --container: calc(100vw - 2rem);
@@ -4743,7 +4759,7 @@
   .scrollEntity {
     display: block !important;
     z-index: var(--layer-object);
-    width: clamp(10.5rem, 46vw, 12.5rem);
+    width: clamp(15rem, 58vw, 20rem);
     filter:
       drop-shadow(0 .8rem 1.4rem rgba(0, 0, 0, .56))
       drop-shadow(0 0 .75rem rgba(231, 197, 106, .1));
@@ -4757,7 +4773,7 @@
     bottom: max(.65rem, env(safe-area-inset-bottom));
     min-height: 3.5rem;
     display: grid;
-    grid-template-columns: 3rem minmax(0, 1fr) 3.8rem 3rem;
+    grid-template-columns: 3rem minmax(0, 1fr) 3rem;
     align-items: stretch;
     border: 1px solid rgba(231,197,106,.24);
     border-radius: 1rem;
@@ -4785,9 +4801,6 @@
   .mobileNavigator .mobileNavigatorCurrent { min-width: 0; padding: .62rem .75rem; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: .2rem; text-align: left; }
   .mobileNavigatorCurrent small { color: var(--gold-light); font: 650 .45rem/1 var(--font-chakra-petch), monospace; letter-spacing: .12em; }
   .mobileNavigatorCurrent strong { width: 100%; overflow: hidden; color: #ecece5; font-size: .73rem; font-weight: 620; line-height: 1.1; text-overflow: ellipsis; white-space: nowrap; }
-  .mobileNavigator .mobileNavigatorAila { display: flex; flex-direction: column; gap: .15rem; border-left: 1px solid var(--line); color: var(--gold-light); }
-  .mobileNavigatorAila small { font: 720 .43rem/1 var(--font-chakra-petch), monospace; letter-spacing: .12em; }
-
   .hero {
     min-height: max(720px, 138svh);
     overflow: clip;
@@ -5742,6 +5755,197 @@
   .aboutCredentials > div + div,
   .aboutCredentials > div:nth-child(3) { padding: .75rem 0; border-left: 0; border-top: 1px solid rgba(255,255,255,.08); }
   .aboutCredentials > div:first-child { border-top: 0; }
+}
+
+/* ── MOBILE + TABLET APP SHELL ───────────────────────────────────────────
+   One persistent navigation layer replaces the desktop chapter rail. The
+   assistant opens as a dedicated conversation surface instead of floating
+   above content, while the editorial page keeps comfortable reading widths. */
+@media (max-width: 1100px) {
+  .mobileAppBar {
+    position: fixed;
+    z-index: 275;
+    top: 0;
+    left: 0;
+    right: 0;
+    min-height: calc(4rem + env(safe-area-inset-top));
+    padding: env(safe-area-inset-top) max(.75rem, env(safe-area-inset-right)) 0 max(.75rem, env(safe-area-inset-left));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    border-bottom: 1px solid rgba(231,197,106,.14);
+    background: linear-gradient(180deg, rgba(5,7,5,.97), rgba(5,7,5,.89));
+    box-shadow: 0 .75rem 2rem rgba(0,0,0,.25);
+    backdrop-filter: blur(20px) saturate(1.1);
+    -webkit-backdrop-filter: blur(20px) saturate(1.1);
+  }
+
+  .mobileAppBrand {
+    min-width: 0;
+    min-height: 3.4rem;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    border: 0;
+    background: transparent;
+    color: #ecece5;
+    text-align: left;
+  }
+
+  .mobileAppBrand > span:first-child {
+    flex: 0 0 2.15rem;
+    width: 2.15rem;
+    height: 2.15rem;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(231,197,106,.34);
+    border-radius: 50%;
+    color: var(--gold-pale);
+    font: 720 .55rem/1 var(--font-chakra-petch), monospace;
+    letter-spacing: .08em;
+  }
+
+  .mobileAppBrand > span:last-child { min-width: 0; display: grid; gap: .2rem; }
+  .mobileAppBrand strong { overflow: hidden; font-size: .78rem; font-weight: 650; line-height: 1; text-overflow: ellipsis; white-space: nowrap; }
+  .mobileAppBrand small { overflow: hidden; color: #858a83; font: 620 .48rem/1 var(--font-chakra-petch), monospace; letter-spacing: .11em; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
+  .mobileAppActions { display: flex; align-items: center; gap: .45rem; }
+  .mobileAppAila,
+  .mobileAppMenuButton { min-height: 2.75rem; border: 1px solid rgba(255,255,255,.11); background: rgba(255,255,255,.025); }
+  .mobileAppAila { padding: 0 .78rem; display: flex; align-items: center; gap: .48rem; border-color: rgba(231,197,106,.36); color: var(--gold-pale); }
+  .mobileAppAila span { font: 720 .54rem/1 var(--font-chakra-petch), monospace; letter-spacing: .13em; }
+  .mobileAppMenuButton { width: 2.75rem; padding: 0; display: grid; place-items: center; color: #d7d8d1; }
+
+  .chapterRail { display: none !important; }
+  .experience { scroll-padding-top: calc(4.5rem + env(safe-area-inset-top)); }
+  .experience section { scroll-margin-top: calc(4rem + env(safe-area-inset-top)); }
+
+  .experience button,
+  .experience a,
+  .mobileAppBar button,
+  .mobileMenu button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+}
+
+@media (min-width: 700px) and (max-width: 1100px) {
+  .mobileAppBar { padding-inline: max(1.25rem, env(safe-area-inset-left)); }
+  .mobileMenuPanel { width: min(32rem, 72vw); padding-inline: 1.5rem; }
+  .mobileMenuPanel li > button { min-height: 3.75rem; }
+  .mobileNavigator { display: none !important; }
+}
+
+@media (max-width: 699px) {
+  .mobileAppBrand strong { font-size: .74rem; }
+  .mobileAppBrand small { max-width: 8.5rem; }
+  .mobileMenuPanel { width: 100%; border-left: 0; }
+  .mobileMenuPanel li > button { min-height: 3.35rem; }
+  .mobileMenuPanel > footer { padding-bottom: .25rem; }
+  .scrollEntity { width: clamp(15.5rem, 66vw, 19rem); }
+
+  .eyebrow { font-size: .58rem; line-height: 1.45; }
+  .moduleDetailLead,
+  .moduleDetailBody li,
+  .moduleOutcome p,
+  .marketingChannelDetail > p,
+  .marketingChannelDetail li,
+  .dashboardStageDetail > p,
+  .dashboardStageDetail li,
+  .architectureLayerDetail > p,
+  .architectureLayerDetail footer strong,
+  .machineReadable dd,
+  .caseBody > div,
+  .caseBody > small { font-size: max(.8rem, 13px); line-height: 1.55; }
+
+  .moduleTabs button,
+  .channelFan button,
+  .operatingModuleToggle,
+  .architectureLayerToggle,
+  .choiceGrid button,
+  .caseBody footer a { min-height: 3.25rem; }
+
+  .ailaGuide[data-mobile-dialog='true'] .ailaContactFields { grid-template-columns: 1fr; }
+  .ailaGuide[data-mobile-dialog='true'] .ailaContactActions { flex-direction: column-reverse; }
+  .ailaGuide[data-mobile-dialog='true'] .ailaContactActions button { width: 100%; }
+}
+
+/* Compact devices get a true AILA room: full viewport, large identity,
+   readable dialogue and controls that remain above the keyboard/safe area. */
+.ailaGuide[data-mobile-dialog='true'] {
+  z-index: 340;
+  left: 0 !important;
+  top: var(--aila-mobile-top, 0px) !important;
+  width: 100vw;
+  height: var(--aila-mobile-height, 100dvh);
+  max-height: none;
+  padding: max(.9rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(.85rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+  border: 0;
+  border-radius: 0;
+  background:
+    radial-gradient(circle at 50% 4%, rgba(200,154,61,.13), transparent 25%),
+    linear-gradient(160deg, rgba(15,17,14,.995), rgba(5,7,5,.998));
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.ailaGuide[data-mobile-dialog='true']::before { border-left: 0; border-top: 1px solid rgba(231,197,106,.62); }
+.ailaGuide[data-mobile-dialog='true'] > header { min-height: 2.8rem; flex: 0 0 auto; align-items: center; }
+.ailaGuide[data-mobile-dialog='true'] > header span { font-size: .62rem; }
+.ailaGuide[data-mobile-dialog='true'] > header i { font-size: .52rem; }
+.ailaGuide[data-mobile-dialog='true'] > header button { width: 2.75rem; height: 2.75rem; }
+
+.ailaGuide[data-mobile-dialog='true'] .ailaGuideMobileIdentity {
+  flex: 0 0 auto;
+  min-height: 7.4rem;
+  margin: .3rem 0 .25rem;
+  display: grid;
+  grid-template-columns: 7rem minmax(0,1fr);
+  align-items: center;
+  gap: .9rem;
+  border-block: 1px solid rgba(231,197,106,.12);
+  background: radial-gradient(circle at 3.5rem 50%, rgba(200,154,61,.1), transparent 36%);
+}
+
+.ailaGuideMobileIdentity img { width: 7rem; height: 7rem; display: block; object-fit: contain; filter: drop-shadow(0 .7rem 1.2rem rgba(0,0,0,.5)) drop-shadow(0 0 .7rem rgba(231,197,106,.13)); }
+.ailaGuideMobileIdentity > div { min-width: 0; display: grid; gap: .32rem; }
+.ailaGuideMobileIdentity strong { color: #fff3c6; font: 720 1.25rem/1 var(--font-chakra-petch), monospace; letter-spacing: .1em; }
+.ailaGuideMobileIdentity span { color: #9da29a; font-size: .78rem; line-height: 1.4; }
+
+.ailaGuide[data-mobile-dialog='true'] h2 { flex: 0 0 auto; margin-top: .65rem; font-size: clamp(1.65rem, 7.2vw, 2.35rem); line-height: 1.04; }
+.ailaGuide[data-mobile-dialog='true'] > p { flex: 0 0 auto; margin-top: .5rem; font-size: .94rem; line-height: 1.55; }
+.ailaGuide[data-mobile-dialog='true'] .ailaGuideConversation { flex: 1 1 auto; min-height: 7rem; max-height: none; margin-top: .75rem; gap: .7rem; }
+.ailaGuide[data-mobile-dialog='true'] .ailaGuideMessage { max-width: 94%; padding: .85rem .9rem; }
+.ailaGuide[data-mobile-dialog='true'] .ailaGuideMessage > span { font-size: .52rem; }
+.ailaGuide[data-mobile-dialog='true'] .ailaGuideMessage p { margin-top: .48rem; padding-right: 1.2rem; font-size: 1rem; line-height: 1.55; }
+.ailaGuide[data-mobile-dialog='true'] .ailaGuidePrompts { flex: 0 0 auto; margin-top: .65rem; gap: .45rem; overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; }
+.ailaGuide[data-mobile-dialog='true'] .ailaGuidePrompts::-webkit-scrollbar { display: none; }
+.ailaGuide[data-mobile-dialog='true'] .ailaGuidePrompts button { min-height: 2.75rem; padding: .6rem .75rem; flex: 0 0 auto; font-size: .72rem; }
+.ailaGuide[data-mobile-dialog='true'] .ailaLiveConversation { flex: 0 0 auto; min-height: 3.4rem; margin-top: .6rem; }
+.ailaGuide[data-mobile-dialog='true'] .ailaLiveConversation strong { font-size: .74rem; }
+.ailaGuide[data-mobile-dialog='true'] .ailaGuideComposer { flex: 0 0 auto; grid-template-columns: minmax(0,1fr) 3.25rem; gap: .45rem; }
+.ailaGuide[data-mobile-dialog='true'] .ailaGuideComposer textarea { min-height: 3.35rem; max-height: 7rem; padding: .8rem; font-size: 16px; }
+.ailaGuide[data-mobile-dialog='true'] .ailaGuideComposer > button { width: 3.25rem; min-height: 3.35rem; }
+.ailaGuide[data-mobile-dialog='true'] .ailaGuideHandoverCta { flex: 0 0 auto; min-height: 4.15rem; }
+.ailaGuide[data-mobile-dialog='true'] .ailaGuideHandoverCta > strong { font-size: .84rem; }
+.ailaGuide[data-mobile-dialog='true'] .ailaGuideHandoverCta > small { font-size: .68rem; }
+.ailaGuide[data-mobile-dialog='true'] > footer { flex: 0 0 auto; margin-top: .55rem; }
+.ailaGuide[data-mobile-dialog='true'] > footer button { min-height: 2.75rem; font-size: .72rem; }
+.ailaGuide[data-mobile-dialog='true'] .ailaContactCapture { flex: 1 1 auto; margin-top: .65rem; }
+.ailaGuide[data-mobile-dialog='true'] .ailaContactCapture > h3 { font-size: 1.65rem; }
+.ailaGuide[data-mobile-dialog='true'] .ailaContactCapture > p,
+.ailaGuide[data-mobile-dialog='true'] .ailaContactContext textarea,
+.ailaGuide[data-mobile-dialog='true'] .ailaContactFields input { font-size: 16px; }
+.ailaGuide[data-mobile-dialog='true'] .ailaContactFields input { height: 3rem; }
+.ailaGuide[data-mobile-dialog='true'] .ailaContactFields label > span,
+.ailaGuide[data-mobile-dialog='true'] .ailaContactContext > span { font-size: .72rem; }
+.ailaGuide[data-mobile-dialog='true'] .ailaContactConsent { font-size: .68rem; }
+.ailaGuide[data-mobile-dialog='true'] .ailaContactConsent input { width: 1.25rem; height: 1.25rem; }
+.ailaGuide[data-mobile-dialog='true'] .ailaContactActions button { min-height: 3rem; font-size: .72rem; }
+
+@media (max-height: 720px) and (max-width: 960px) {
+  .ailaGuide[data-mobile-dialog='true'] .ailaGuideMobileIdentity { min-height: 5.4rem; grid-template-columns: 5.1rem minmax(0,1fr); }
+  .ailaGuide[data-mobile-dialog='true'] .ailaGuideMobileIdentity img { width: 5.1rem; height: 5.1rem; }
+  .ailaGuide[data-mobile-dialog='true'] h2 { font-size: clamp(1.45rem, 6.3vw, 1.9rem); }
+  .ailaGuide[data-mobile-dialog='true'] > p { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

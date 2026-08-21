@@ -821,6 +821,15 @@ export default function AilaGuide({
           <button type="button" onClick={close} aria-label={common.close}><X size={16} /></button>
         </div>
       </header>
+      {compactDialog && contactMode === 'idle' && (
+        <div className={styles.ailaGuideMobileIdentity}>
+          <img src="/pwa/icon-512.png" alt="AILA" />
+          <div>
+            <strong>AILA</strong>
+            <span>{lang === 'de' ? 'Deine digitale Systembegleiterin' : 'Your digital systems guide'}</span>
+          </div>
+        </div>
+      )}
       {contactMode === 'form' ? (
         <AilaContactCapture
           lang={lang}

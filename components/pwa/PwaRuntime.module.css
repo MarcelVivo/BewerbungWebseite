@@ -1,9 +1,6 @@
-.tabletAilaDock,
 .connection,
 .update,
 .installCard { font-family: var(--font-site); }
-
-.tabletAilaDock { display: none; }
 
 .connection {
   position: fixed;
@@ -83,27 +80,6 @@
 .installCard p { margin: .3rem 0 0; color: #9fa49d; font-size: .76rem; line-height: 1.5; }
 .dismiss { position: absolute; top: .55rem; right: .55rem; width: 2.4rem; height: 2.4rem; display: grid; place-items: center; border: 0; background: transparent; color: #9fa49d; }
 .installAction { grid-column: 1 / -1; min-height: 2.9rem; display: flex; align-items: center; justify-content: center; gap: .5rem; border: 1px solid rgba(231, 197, 106, .45); background: linear-gradient(135deg, #e7c56a, #9b6d1f); color: #090a08; font-weight: 760; }
-
-@media (min-width: 700px) and (max-width: 1180px) and (pointer: coarse) {
-  .tabletAilaDock {
-    position: fixed;
-    z-index: 225;
-    right: max(1rem, env(safe-area-inset-right));
-    bottom: max(1rem, env(safe-area-inset-bottom));
-    min-height: 3.5rem;
-    padding: 0 1rem;
-    display: flex;
-    align-items: center;
-    gap: .65rem;
-    border: 1px solid rgba(231, 197, 106, .32);
-    background: rgba(8, 10, 8, .92);
-    color: #f6e3a1;
-    box-shadow: 0 1rem 3rem rgba(0, 0, 0, .5);
-    backdrop-filter: blur(18px);
-    font-size: .78rem;
-    font-weight: 700;
-  }
-}
 
 @media (max-width: 699px) {
   .installCard { left: max(.75rem, env(safe-area-inset-left)); right: max(.75rem, env(safe-area-inset-right)); bottom: max(5.35rem, calc(4.25rem + env(safe-area-inset-bottom))); width: auto; }
