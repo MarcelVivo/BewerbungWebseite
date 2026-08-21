@@ -13,6 +13,7 @@ const ease = (progress: number) => 1 - Math.pow(1 - progress, 3);
 
 export default function MobileAilaCompanion({ lang }: { lang: ExperienceLang }) {
   const companionRef = useRef<HTMLButtonElement | null>(null);
+  const reachedAboutRef = useRef(false);
   const [stage, setStage] = useState<MobileAilaStage>('hero');
   const [guideOpen, setGuideOpen] = useState(false);
 
@@ -42,13 +43,16 @@ export default function MobileAilaCompanion({ lang }: { lang: ExperienceLang }) 
       const transitStart = aboutSection ? aboutSection.offsetTop + aboutSection.offsetHeight * .58 : Number.POSITIVE_INFINITY;
       const transitEnd = finalSection ? Math.max(transitStart + 1, finalSection.offsetTop - window.innerHeight * .18) : transitStart + 1;
       const transitProgress = ease(clamp((window.scrollY - transitStart) / (transitEnd - transitStart)));
-      const inDownwardTransit = window.scrollY >= transitStart && Boolean(finalSection && window.scrollY < finalSection.offsetTop);
       const travel = ease(clamp(window.scrollY / Math.max(150, window.innerHeight * .22)));
 
       const navWidth = clamp(window.innerWidth * .27, 102, 132);
       const navHeight = navWidth * .79;
-      const navLeft = navRect.left + navRect.width / 2 - navWidth * .52;
+      const navLeft = (window.innerWidth - navWidth) / 2;
       const navTop = navRect.top + navRect.height / 2 - navHeight * .38;
+
+      if (aboutVisible || (aboutSection && window.scrollY >= aboutSection.offsetTop)) reachedAboutRef.current = true;
+      if (aboutSection && window.scrollY < Math.max(0, aboutSection.offsetTop - window.innerHeight * .7)) reachedAboutRef.current = false;
+      const hasReachedAbout = reachedAboutRef.current;
 
       let nextStage: MobileAilaStage = 'nav';
       let left = mix(heroRect.left, navLeft, travel);
@@ -68,7 +72,7 @@ export default function MobileAilaCompanion({ lang }: { lang: ExperienceLang }) 
         top = aboutRect.top;
         width = aboutRect.width;
         height = aboutRect.height;
-      } else if (inDownwardTransit) {
+      } else if (hasReachedAbout && Boolean(finalSection && window.scrollY < finalSection.offsetTop)) {
         nextStage = 'transit';
         width = clamp(window.innerWidth * .29, 108, 136);
         height = width * .76;
@@ -132,9 +136,6 @@ export default function MobileAilaCompanion({ lang }: { lang: ExperienceLang }) 
       style={{ '--mobile-aila-left': '50vw', '--mobile-aila-top': '8rem' } as CSSProperties}
     >
       <span className={styles.mobileAilaAura} aria-hidden="true" />
-      <span className={styles.mobileAilaNavPrompt} aria-hidden="true">
-        <span>{lang === 'de' ? 'Gespräch mit AILA beginnen' : 'Start a conversation with AILA'}</span>
-      </span>
       <img src="/cinematic/aila/aila-idle-v1-fallback-transparent.png" alt="" aria-hidden="true" draggable="false" />
       <span className={styles.mobileAilaSignal} aria-hidden="true"><i /><i /><i /><i /></span>
       <span className={styles.mobileAilaParticles} aria-hidden="true"><i /><i /><i /><i /><i /></span>

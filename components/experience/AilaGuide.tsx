@@ -137,6 +137,7 @@ export default function AilaGuide({
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
   const [liveStatus, setLiveStatus] = useState<LiveStatus>('off');
+  const [localSpeaking, setLocalSpeaking] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [lastAnswer, setLastAnswer] = useState('');
   const [salesContext, setSalesContext] = useState<AilaSalesContext>(() => createInitialAilaSalesContext());
@@ -220,6 +221,7 @@ export default function AilaGuide({
   }, [lang, lastAnswer, messages, quickReplies, salesContext, sessionReady]);
 
   const stopAudio = (announceIdle = true) => {
+    setLocalSpeaking(false);
     speechRequestRef.current?.abort();
     speechRequestRef.current = null;
     const audio = audioRef.current;
@@ -413,6 +415,7 @@ export default function AilaGuide({
       audio.onended = () => stopAudio(true);
       audio.onerror = () => stopAudio(true);
       await audio.play();
+      setLocalSpeaking(true);
       onStateChange('speaking');
     } catch {
       stopAudio(true);
@@ -824,10 +827,13 @@ export default function AilaGuide({
       {compactDialog && contactMode === 'idle' && (
         <div
           className={styles.ailaGuideMobileIdentity}
-          data-state={liveStatus === 'speaking' ? 'speaking' : liveStatus === 'listening' ? 'listening' : busy ? 'thinking' : 'idle'}
+          data-state={liveStatus === 'speaking' || localSpeaking ? 'speaking' : liveStatus === 'listening' ? 'listening' : busy ? 'thinking' : 'idle'}
         >
           <span className={styles.ailaGuideMobileAvatar}>
             <img src="/cinematic/aila/aila-idle-v1-fallback-transparent.png" alt="AILA" />
+            <span className={styles.ailaGuideMobileMouth} aria-hidden="true">
+              <img src="/cinematic/aila/aila-idle-v1-fallback-transparent.png" alt="" />
+            </span>
             <i /><i /><i /><i />
           </span>
         </div>
