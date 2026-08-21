@@ -848,27 +848,29 @@ export default function MarcelExperience() {
               </div>
               <div className={styles.osLayout}>
                 <div className={styles.operatingModules} data-reveal="left">
-                  {OPERATING_MODULES[lang].map((module, index) => {
-                    const isSelected = activeOperatingModule === index;
-                    return (
-                      <article key={module.title} className={`${styles.operatingModule} ${isSelected ? styles.operatingModuleOpen : ''}`}>
-                        <button
-                          type="button"
-                          className={styles.operatingModuleToggle}
-                          aria-pressed={isSelected}
-                          aria-controls="operating-module-detail"
-                          onClick={() => {
-                            setActiveOperatingModule(index);
-                            revealCompactTarget(operatingModuleDetailRef.current);
-                          }}
-                        >
-                          <span>0{index + 1}</span>
-                          <span><strong>{module.title}</strong><small>{module.summary}</small></span>
-                          <i aria-hidden="true"><ArrowRight size={15} /></i>
-                        </button>
-                      </article>
-                    );
-                  })}
+                  <div className={styles.operatingModuleRail} role="group" aria-label={lang === 'de' ? 'Unternehmensmodul wählen' : 'Choose business module'}>
+                    {OPERATING_MODULES[lang].map((module, index) => {
+                      const isSelected = activeOperatingModule === index;
+                      return (
+                        <article key={module.title} className={`${styles.operatingModule} ${isSelected ? styles.operatingModuleOpen : ''}`}>
+                          <button
+                            type="button"
+                            className={styles.operatingModuleToggle}
+                            aria-pressed={isSelected}
+                            aria-controls="operating-module-detail"
+                            onClick={() => {
+                              setActiveOperatingModule(index);
+                              revealCompactTarget(operatingModuleDetailRef.current);
+                            }}
+                          >
+                            <span>0{index + 1}</span>
+                            <span><strong>{module.title}</strong><small>{module.summary}</small></span>
+                            <i aria-hidden="true"><ArrowRight size={15} /></i>
+                          </button>
+                        </article>
+                      );
+                    })}
+                  </div>
                   <section ref={operatingModuleDetailRef} id="operating-module-detail" className={styles.operatingModuleDetailPanel} aria-live="polite">
                     <header><small>0{activeOperatingModule + 1} · {lang === 'de' ? 'AUSGEWÄHLTES MODUL' : 'SELECTED MODULE'}</small><strong>{selectedOperatingModule.title}</strong></header>
                     <p>{selectedOperatingModule.detail}</p>

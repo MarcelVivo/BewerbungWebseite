@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
-import { ArrowRight, AudioLines, ChevronLeft, ChevronRight, Menu, X } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight, Menu, X } from 'lucide-react';
 import type { ExperienceLang } from './content';
 import { chapters } from './content';
 import { getResolvedFlightPath } from './flightPathStore';
@@ -169,7 +169,7 @@ export default function ExperienceNav({ lang }: { lang: ExperienceLang }) {
         </button>
         <div className={styles.mobileAppActions}>
           <button type="button" className={styles.mobileAppAila} onClick={openAila} aria-label={lang === 'de' ? 'Eigenen AILA Gesprächsraum öffnen' : 'Open your AILA conversation space'}>
-            <AudioLines size={18} />
+            <img src="/cinematic/aila/aila-idle-v1-fallback-transparent.png" alt="" aria-hidden="true" />
             <span>AILA</span>
           </button>
           <button type="button" className={styles.mobileAppMenuButton} onClick={() => setMenuOpen((current) => !current)} aria-expanded={menuOpen} aria-controls="mobile-experience-menu" aria-label={menuOpen ? (lang === 'de' ? 'Menü schliessen' : 'Close menu') : (lang === 'de' ? 'Menü öffnen' : 'Open menu')}>
@@ -202,7 +202,7 @@ export default function ExperienceNav({ lang }: { lang: ExperienceLang }) {
           </ol>
           <footer>
             <button type="button" className={styles.mobileMenuAila} onClick={openAila} tabIndex={menuOpen ? 0 : -1}>
-              <AudioLines size={20} />
+              <img src="/cinematic/aila/aila-idle-v1-fallback-transparent.png" alt="" aria-hidden="true" />
               <span><strong>{lang === 'de' ? 'Mit AILA sprechen' : 'Speak with AILA'}</strong><small>{lang === 'de' ? 'Eigener Gesprächsraum' : 'Dedicated conversation space'}</small></span>
               <ArrowRight size={19} />
             </button>

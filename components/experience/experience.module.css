@@ -3960,7 +3960,8 @@
   margin: 0;
   z-index: 1;
 }
-.operatingModules { align-self: stretch; min-height: 0; height: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(64px, auto)) minmax(0, 1fr); border: 1px solid var(--line); background: rgba(7,9,7,.48); box-shadow: 0 28px 80px rgba(0,0,0,.22); overflow: hidden; }
+.operatingModules { align-self: stretch; min-height: 0; height: 100%; display: flex; flex-direction: column; border: 1px solid var(--line); background: rgba(7,9,7,.48); box-shadow: 0 28px 80px rgba(0,0,0,.22); overflow: hidden; }
+.operatingModuleRail { flex: 0 0 auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(64px, auto)); }
 .operatingModule { position: relative; min-width: 0; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); background: rgba(255,255,255,.012); overflow: hidden; transition: background .3s ease, border-color .3s ease; }
 .operatingModule:nth-child(even) { border-right: 0; }
 .operatingModule::before { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(200,154,61,.09), transparent 75%); opacity: 0; transform: translateX(-20%); transition: opacity .35s ease, transform .35s ease; pointer-events: none; }
@@ -3975,7 +3976,7 @@
 .operatingModuleToggle small { overflow: hidden; color: var(--faint); font-size: clamp(.52rem, .57vw, .62rem); line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
 .operatingModuleToggle > i { width: 29px; height: 29px; display: grid; place-items: center; border: 1px solid rgba(119,184,139,.24); border-radius: 50%; color: #86d39f; background: rgba(119,184,139,.055); box-shadow: 0 0 16px rgba(119,184,139,.09); transition: color .25s ease, border-color .25s ease, background .25s ease, transform .35s ease; }
 .operatingModuleOpen .operatingModuleToggle > i { color: var(--gold-pale); border-color: rgba(231,197,106,.48); background: rgba(200,154,61,.1); transform: translateX(2px); }
-.operatingModuleDetailPanel { grid-column: 1 / -1; min-width: 0; min-height: clamp(190px, 28vh, 260px); padding: clamp(.95rem, 1.35vw, 1.2rem); display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; align-content: stretch; gap: clamp(.65rem, 1vh, .85rem); overflow: hidden; background: radial-gradient(circle at 100% 0, rgba(200,154,61,.09), transparent 36%), rgba(255,255,255,.012); }
+.operatingModuleDetailPanel { flex: 1 1 auto; min-width: 0; min-height: clamp(190px, 28vh, 260px); padding: clamp(.95rem, 1.35vw, 1.2rem); display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; align-content: stretch; gap: clamp(.65rem, 1vh, .85rem); overflow: hidden; background: radial-gradient(circle at 100% 0, rgba(200,154,61,.09), transparent 36%), rgba(255,255,255,.012); }
 .operatingModuleDetailPanel header { display: flex; align-items: baseline; justify-content: space-between; gap: .75rem; }
 .operatingModuleDetailPanel header small { color: var(--gold-light); font: 650 clamp(.44rem, .48vw, .51rem)/1 var(--font-chakra-petch), monospace; letter-spacing: .11em; }
 .operatingModuleDetailPanel header strong { color: #ecece5; font-size: clamp(1rem, 1.15vw, 1.22rem); font-weight: 580; }
@@ -5993,4 +5994,225 @@
   .scrollEntityGrabSurface:hover .ailaResonanceField,
   .scrollEntityGrabSurface:focus-visible .ailaResonanceField { opacity: .96; transform: translate3d(-50%, -50%, 0) scale(1); }
   .scrollEntityGrabSurface[data-guide-open='true'] .ailaResonanceField { opacity: 0; }
+}
+
+/* ── IPHONE / TOUCH-FIRST EXPERIENCE ─────────────────────────────────────
+   Phone layouts use compact swipe rails with the selected explanation
+   immediately below. This avoids the old desktop-stack behaviour where a
+   tap appeared to open content outside the visible viewport. */
+@media (max-width: 1100px) {
+  .experience { padding-bottom: 0; }
+  .mobileNavigator { display: none !important; }
+
+  /* AILA remains permanently present in the app bar and opens in her own
+     full-screen room. The roaming desktop object cannot cover touch UI. */
+  .scrollEntity,
+  .ailaBay,
+  .dataAilaBay { display: none !important; }
+
+  .mobileAppAila {
+    min-width: 5.65rem;
+    padding: 0 .72rem 0 .3rem;
+    border-radius: 999px;
+    background: radial-gradient(circle at 1.45rem 50%, rgba(231,197,106,.15), transparent 46%), rgba(255,255,255,.025);
+  }
+  .mobileAppAila img {
+    width: 2.25rem;
+    height: 2.25rem;
+    flex: 0 0 2.25rem;
+    object-fit: contain;
+    filter: drop-shadow(0 .35rem .55rem rgba(0,0,0,.5)) drop-shadow(0 0 .35rem rgba(231,197,106,.18));
+  }
+  .mobileMenuAila img {
+    width: 3rem;
+    height: 3rem;
+    object-fit: contain;
+    filter: drop-shadow(0 .45rem .7rem rgba(0,0,0,.48)) drop-shadow(0 0 .4rem rgba(231,197,106,.16));
+  }
+
+  .operatingModules { height: auto; display: flex; flex-direction: column; overflow: visible; }
+  .operatingModuleRail { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: none; }
+  .operatingModuleDetailPanel { flex: 0 0 auto; }
+}
+
+@media (max-width: 699px) {
+  .experience {
+    --container: calc(100vw - 1.5rem);
+    --container-left: .75rem;
+    scroll-padding-top: calc(4.4rem + env(safe-area-inset-top));
+  }
+
+  .mobileAppBar {
+    min-height: calc(3.85rem + env(safe-area-inset-top));
+    padding-inline: max(.65rem, env(safe-area-inset-left));
+  }
+  .mobileAppBrand > span:first-child { width: 2rem; height: 2rem; flex-basis: 2rem; }
+  .mobileAppBrand small { max-width: 6.4rem; }
+  .mobileAppActions { gap: .35rem; }
+  .mobileAppAila { min-width: 5.35rem; min-height: 2.65rem; }
+  .mobileAppAila img { width: 2.1rem; height: 2.1rem; flex-basis: 2.1rem; }
+  .mobileAppMenuButton { width: 2.65rem; min-height: 2.65rem; }
+
+  /* The first screen is complete on its own; no artificial 138vh runway. */
+  .hero { min-height: 100svh; }
+  .heroSticky { position: relative; top: auto; height: auto; min-height: 100svh; }
+  .heroLayout { min-height: 100svh; padding: calc(4.8rem + env(safe-area-inset-top)) 0 2.25rem; align-content: center; }
+  .hero h1 { font-size: clamp(2.45rem, 11.8vw, 3.35rem); line-height: .94; }
+
+  .problemSection,
+  .flowSection,
+  .marketingSection { min-height: 0; }
+  .problemSticky,
+  .salesSticky,
+  .marketingSticky { position: relative; top: auto; height: auto; min-height: 0; }
+  .problemSequenceStatus { margin-top: 2rem; }
+  .section,
+  .pauseSticky,
+  .dataViewport { padding-top: calc(4.75rem + env(safe-area-inset-top)); }
+
+  /* Reusable native-feeling horizontal selector. */
+  .moduleTabs,
+  .perspectiveFlowCardGrid,
+  .channelFan,
+  .operatingModuleRail,
+  .dashboardPipeline,
+  .osDashboardStage .dashboardPipeline,
+  .architectureLayers {
+    width: 100%;
+    display: flex !important;
+    grid-template-columns: none !important;
+    grid-template-rows: none !important;
+    gap: .65rem;
+    padding: 0 .05rem .7rem;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: .05rem;
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y;
+    scrollbar-width: none;
+  }
+  .moduleTabs::-webkit-scrollbar,
+  .perspectiveFlowCardGrid::-webkit-scrollbar,
+  .channelFan::-webkit-scrollbar,
+  .operatingModuleRail::-webkit-scrollbar,
+  .dashboardPipeline::-webkit-scrollbar,
+  .architectureLayers::-webkit-scrollbar { display: none; }
+
+  .moduleTabs > button,
+  .perspectiveFlowCardGrid .perspectiveFlowNode,
+  .perspectiveFlowCardGrid .perspectiveFlowNode:hover,
+  .perspectiveFlowCardGrid .perspectiveFlowNode:focus-visible,
+  .perspectiveFlowCardGrid .perspectiveFlowNode[aria-current='step'],
+  .channelFan > button,
+  .operatingModuleRail > article,
+  .dashboardPipeline > li,
+  .architectureLayers > li {
+    position: relative !important;
+    inset: auto !important;
+    width: auto !important;
+    min-width: 0;
+    flex: 0 0 min(78vw, 21rem);
+    scroll-snap-align: start;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+
+  .moduleTabs > button { min-height: 4.35rem; }
+  .moduleTabs button > strong { font-size: .82rem; }
+  .perspectiveFlowCardGrid { height: auto !important; }
+  .perspectiveFlowCardGrid::before,
+  .perspectiveFlowCardGrid::after { display: none; }
+  .perspectiveFlowCardGrid .perspectiveFlowNode,
+  .perspectiveFlowCardGrid .perspectiveFlowNode.perspectiveFlowSelected { min-height: 4rem; overflow: hidden; }
+  .perspectiveFlowCardHead,
+  .perspectiveFlowCardGrid .perspectiveFlowSelected .perspectiveFlowCardHead { min-height: 4rem; padding: .85rem; }
+  .perspectiveFlowCardDetail { display: none; }
+  .perspectiveFlowDetailPanel { margin-top: .3rem; }
+
+  .channelFan > button { min-height: 4.6rem; }
+  .channelFan button:last-child { grid-column: auto; }
+  .channelFan button span { font-size: .64rem; }
+
+  .operatingModuleRail { border-bottom: 1px solid var(--line); }
+  .operatingModuleRail > article { border: 1px solid var(--line); }
+  .operatingModuleToggle { min-height: 5rem; }
+  .operatingModuleDetailPanel { margin-top: 0; border-top: 0; }
+
+  .dashboardPipeline { margin: 0; }
+  .dashboardPipeline > li { min-height: 0; }
+  .dashboardPipelineToggle,
+  .osDashboardStage .dashboardPipelineToggle { min-height: 8.4rem; }
+  .dashboardStageDetail { margin-top: 0; }
+
+  .architectureStack { margin-top: 0; }
+  .architectureLayers { border-bottom: 1px solid rgba(231,197,106,.13); }
+  .architectureLayers > li,
+  .architectureLayers > li:nth-child(even),
+  .architectureLayers > li:nth-child(n + 3),
+  .architectureLayers > li:last-child { border: 1px solid rgba(231,197,106,.1); }
+  .architectureLayerToggle { min-height: 5rem; }
+
+  .moduleDetail,
+  .perspectiveFlowDetailPanel,
+  .marketingEngineBody,
+  .operatingModuleDetailPanel,
+  .dashboardLower,
+  .architectureLayerDetailPanel,
+  .funnelStage { scroll-margin-top: calc(4.5rem + env(safe-area-inset-top)); }
+
+  .moduleDetailLead,
+  .moduleDetailBody li,
+  .moduleOutcome p,
+  .marketingChannelDetail > p,
+  .marketingChannelDetail li,
+  .operatingModuleDetailPanel > p,
+  .operatingModuleDetailPanel li,
+  .dashboardStageDetail > p,
+  .dashboardStageDetail li,
+  .architectureLayerDetailPanel > div p,
+  .architectureLayerDetailPanel > footer strong,
+  .dataAssurance .dataAssuranceCard > div,
+  .caseBody > div { font-size: .9rem; line-height: 1.58; }
+
+  .osHeaderMetrics,
+  .dataHeaderMetrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .osHeaderMetrics span,
+  .osHeaderMetrics span + span,
+  .dataHeaderMetrics span,
+  .dataHeaderMetrics span + span {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: start;
+    padding: .7rem .45rem;
+    border-top: 0;
+    border-bottom: 0;
+    border-left: 1px solid rgba(231,197,106,.1);
+  }
+  .osHeaderMetrics span:first-child,
+  .dataHeaderMetrics span:first-child { border-left: 0; }
+  .osHeaderMetrics small,
+  .dataHeaderMetrics small { font-size: .46rem; line-height: 1.35; }
+
+  .dataWorkspace { gap: .75rem; }
+  .dataAssurance.trustCards { grid-template-columns: 1fr; }
+  .aboutAilaBay { display: none; }
+  .aboutVisualStage { min-height: min(118vw, 470px); }
+
+  .footer { padding-bottom: calc(1.75rem + env(safe-area-inset-bottom)); }
+}
+
+@media (max-width: 380px) {
+  .mobileAppBrand small { display: none; }
+  .mobileAppAila { min-width: 4.75rem; padding-right: .55rem; }
+  .mobileAppAila span { font-size: .49rem; }
+  .mobileAppMenuButton { width: 2.55rem; }
+  .moduleTabs > button,
+  .perspectiveFlowCardGrid .perspectiveFlowNode,
+  .channelFan > button,
+  .operatingModuleRail > article,
+  .dashboardPipeline > li,
+  .architectureLayers > li { flex-basis: 84vw; }
 }
