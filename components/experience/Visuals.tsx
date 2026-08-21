@@ -255,8 +255,10 @@ export function PerspectiveBusinessFlow({
         if (!card) return;
         card.style.removeProperty('--flow-drum-angle');
         card.style.removeProperty('--flow-drum-depth');
+        card.style.removeProperty('--flow-drum-shift');
         card.style.removeProperty('--flow-drum-scale');
         card.style.removeProperty('--flow-drum-opacity');
+        card.style.removeProperty('--flow-drum-brightness');
         delete card.dataset.drumPosition;
       });
     };
@@ -275,18 +277,26 @@ export function PerspectiveBusinessFlow({
         if (!card) return;
         const cardCenter = card.offsetTop + card.offsetHeight / 2;
         const distance = (cardCenter - gridCenter) / Math.max(card.offsetHeight, 1);
-        const limitedDistance = Math.max(-1.55, Math.min(1.55, distance));
+        const limitedDistance = Math.max(-1.42, Math.min(1.42, distance));
         const distanceMagnitude = Math.min(1, Math.abs(limitedDistance));
+        const angleRadians = limitedDistance * .98;
+        const radius = Math.max(card.offsetHeight * 1.34, 105);
+        const naturalOffset = cardCenter - gridCenter;
+        const curvedOffset = Math.sin(angleRadians) * radius;
+        const depth = (Math.cos(angleRadians) - 1) * radius;
+        const surfaceLight = Math.max(0, Math.cos(angleRadians));
 
         if (Math.abs(distance) < nearestDistance) {
           nearestDistance = Math.abs(distance);
           centeredCardIndex = index;
         }
 
-        card.style.setProperty('--flow-drum-angle', `${(-limitedDistance * 31).toFixed(2)}deg`);
-        card.style.setProperty('--flow-drum-depth', `${(-distanceMagnitude * 82).toFixed(2)}px`);
-        card.style.setProperty('--flow-drum-scale', (1 - distanceMagnitude * .105).toFixed(3));
-        card.style.setProperty('--flow-drum-opacity', (1 - distanceMagnitude * .32).toFixed(3));
+        card.style.setProperty('--flow-drum-angle', `${(-angleRadians * 180 / Math.PI).toFixed(2)}deg`);
+        card.style.setProperty('--flow-drum-depth', `${depth.toFixed(2)}px`);
+        card.style.setProperty('--flow-drum-shift', `${(curvedOffset - naturalOffset).toFixed(2)}px`);
+        card.style.setProperty('--flow-drum-scale', (.97 + surfaceLight * .03).toFixed(3));
+        card.style.setProperty('--flow-drum-opacity', (.24 + surfaceLight * .76).toFixed(3));
+        card.style.setProperty('--flow-drum-brightness', (.52 + surfaceLight * .48).toFixed(3));
         card.dataset.drumPosition = distanceMagnitude < .34 ? 'front' : 'side';
       });
     };
@@ -460,41 +470,43 @@ export function PerspectiveBusinessFlow({
       if (event.key === 'Escape') closeFlow();
     }}>
       <div className={styles.perspectiveFlowStage}>
-        <div
-          ref={flowGridRef}
-          className={`${styles.perspectiveFlowCardGrid} ${selectedFlow !== null ? styles.perspectiveFlowCardGridOpen : ''}`}
-          style={gridStyle}
-          data-interaction-hint={lang === 'de' ? 'KARTE WÄHLEN · DETAILS ÖFFNEN' : 'SELECT CARD · OPEN DETAILS'}
-        >
-          {steps.map((step, index) => {
-            const selected = selectedFlow === index;
-            return (
-              <button
-                key={step}
-                ref={(element) => { flowCardRefs.current[index] = element; }}
-                type="button"
-                className={`${styles.perspectiveFlowNode} ${index <= active ? styles.perspectiveFlowReached : ''} ${selected ? styles.perspectiveFlowSelected : ''}`}
-                style={{
-                  '--flow-index': index,
-                  '--flow-sequence-delay': `${index * .2}s`,
-                } as CSSProperties}
-                aria-current={active === index ? 'step' : undefined}
-                aria-expanded={selected}
-                aria-controls="perspective-flow-detail-panel"
-                aria-label={`${String(index + 1).padStart(2, '0')} · ${step}`}
-                data-flow-index={index}
-                data-aila-touch-target={index === 0 ? 'website-card-01' : undefined}
-                data-aila-touch-active={ailaTouchedFlow === index ? 'true' : undefined}
-                onClick={() => selectFlow(index)}
-              >
-                <span className={styles.perspectiveFlowCardHead}>
-                  <b>{String(index + 1).padStart(2, '0')}</b>
-                  <strong>{step}</strong>
-                  <i aria-hidden="true"><MousePointerClick size={13} /></i>
-                </span>
-              </button>
-            );
-          })}
+        <div className={styles.perspectiveFlowDrumShell}>
+          <div
+            ref={flowGridRef}
+            className={`${styles.perspectiveFlowCardGrid} ${selectedFlow !== null ? styles.perspectiveFlowCardGridOpen : ''}`}
+            style={gridStyle}
+            data-interaction-hint={lang === 'de' ? 'KARTE WÄHLEN · DETAILS ÖFFNEN' : 'SELECT CARD · OPEN DETAILS'}
+          >
+            {steps.map((step, index) => {
+              const selected = selectedFlow === index;
+              return (
+                <button
+                  key={step}
+                  ref={(element) => { flowCardRefs.current[index] = element; }}
+                  type="button"
+                  className={`${styles.perspectiveFlowNode} ${index <= active ? styles.perspectiveFlowReached : ''} ${selected ? styles.perspectiveFlowSelected : ''}`}
+                  style={{
+                    '--flow-index': index,
+                    '--flow-sequence-delay': `${index * .2}s`,
+                  } as CSSProperties}
+                  aria-current={active === index ? 'step' : undefined}
+                  aria-expanded={selected}
+                  aria-controls="perspective-flow-detail-panel"
+                  aria-label={`${String(index + 1).padStart(2, '0')} · ${step}`}
+                  data-flow-index={index}
+                  data-aila-touch-target={index === 0 ? 'website-card-01' : undefined}
+                  data-aila-touch-active={ailaTouchedFlow === index ? 'true' : undefined}
+                  onClick={() => selectFlow(index)}
+                >
+                  <span className={styles.perspectiveFlowCardHead}>
+                    <b>{String(index + 1).padStart(2, '0')}</b>
+                    <strong>{step}</strong>
+                    <i aria-hidden="true"><MousePointerClick size={13} /></i>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
