@@ -8,11 +8,11 @@ import styles from './experience.module.css';
 
 type HeroPhase = 'loading' | 'ignition' | 'revealed';
 
-const WORDS_PER_MINUTE = 145;
-const MIN_WORD_MS = 560;
-const MAX_WORD_MS = 1600;
-const SENTENCE_PAUSE_MS = 260;
-const REEL_ROW_REM = 1.7;
+const WORDS_PER_MINUTE = 128;
+const MIN_WORD_MS = 760;
+const MAX_WORD_MS = 1750;
+const SENTENCE_PAUSE_MS = 320;
+const REEL_ROW_REM = 2.1;
 
 const sessionKey = (lang: ExperienceLang) => `ms-aila-greeting-${lang}`;
 
