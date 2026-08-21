@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Bot, Send, Loader2, Wrench, Sparkles } from 'lucide-react';
+import { Bot, Send, Loader2, Wrench, Sparkles, CircleDollarSign } from 'lucide-react';
 
 type Role = 'user' | 'assistant';
 type Message = { role: Role; content: string; actions?: string[] };
@@ -27,16 +27,26 @@ const TOOL_LABELS: Record<string, string> = {
   outreach_erfassen: 'Outreach protokolliert',
 };
 
+type Usage = { totalUsd: number; periodDays: number } | { error: string } | null;
+
 export default function AilaInternalPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [usage, setUsage] = useState<Usage>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages, loading]);
+
+  useEffect(() => {
+    fetch('/api/dashboard/usage')
+      .then((res) => res.json().then((data) => ({ ok: res.ok, data })))
+      .then(({ ok, data }) => setUsage(ok ? data : { error: data?.error || 'Nicht verfügbar.' }))
+      .catch(() => setUsage({ error: 'Nicht verfügbar.' }));
+  }, []);
 
   async function send(text: string) {
     const trimmed = text.trim();
@@ -79,10 +89,26 @@ export default function AilaInternalPage() {
         <div className="w-10 h-10 rounded-xl bg-[#6366f1]/20 border border-[#6366f1]/30 flex items-center justify-center flex-shrink-0">
           <Bot size={20} className="text-[#6366f1]" />
         </div>
-        <div>
+        <div className="flex-1 min-w-0">
           <h2 className="text-lg font-bold text-white">AILA – Dein Assistent</h2>
           <p className="text-xs text-slate-400">Fragt live deine Daten ab und kann Aufgaben, Notizen und Termine direkt anlegen.</p>
         </div>
+        {usage && (
+          <div
+            className="flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl border border-[#2d3144] bg-[#1a1d27]"
+            title={'error' in usage ? usage.error : `Gesamte OpenAI-Kosten der letzten ${usage.periodDays} Tage (alle KI-Funktionen, nicht nur AILA)`}
+          >
+            <CircleDollarSign size={15} className={'error' in usage ? 'text-slate-600' : 'text-amber-400'} />
+            {'error' in usage ? (
+              <span className="text-xs text-slate-500">Kosten n. v.</span>
+            ) : (
+              <div className="leading-tight">
+                <div className="text-sm font-bold text-white">${usage.totalUsd.toFixed(2)}</div>
+                <div className="text-[10px] text-slate-500">OpenAI · {usage.periodDays} Tage</div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto rounded-2xl border border-[#2d3144] bg-[#1a1d27] p-5 space-y-4">
