@@ -113,10 +113,12 @@
   z-index: 2;
   left: 50%;
   top: 50%;
-  width: 8.8rem;
-  height: 4.7rem;
+  width: 10.5rem;
+  height: 5.4rem;
   opacity: 0;
-  filter: blur(7px) drop-shadow(0 0 14px rgba(201,91,39,.28));
+  border-radius: 48%;
+  background: radial-gradient(ellipse at 50% 34%, rgba(255,210,121,.24), rgba(218,105,47,.1) 30%, transparent 68%);
+  filter: blur(7px) drop-shadow(0 0 18px rgba(230,126,49,.36));
   transform: translate3d(-50%, -45%, 0) scale(.68);
   pointer-events: none;
   transition: opacity .42s ease, filter .52s ease, transform .52s cubic-bezier(.18,.82,.18,1);
@@ -126,21 +128,21 @@
   position: absolute;
   z-index: 1;
   left: 50%;
-  top: .32rem;
-  height: 2.15rem;
+  top: .22rem;
+  height: 2.85rem;
   display: flex;
   align-items: center;
-  gap: .34rem;
+  gap: .42rem;
   transform: translateX(-50%);
 }
 
 .ailaResonanceWave i {
-  width: 2px;
+  width: 3px;
   height: 72%;
   display: block;
   border-radius: 999px;
-  background: linear-gradient(to bottom, rgba(255,197,103,.32), #f0a249 42%, #c55c31 72%, rgba(115,27,43,.58));
-  box-shadow: 0 0 .46rem rgba(226,111,48,.68);
+  background: linear-gradient(to bottom, #fff0b8, #ffc866 32%, #ec873b 68%, #a9343e);
+  box-shadow: 0 0 2px rgba(255,244,194,.96), 0 0 .72rem rgba(238,135,53,.9);
   transform: scaleY(.16);
   transform-origin: center;
 }
@@ -219,9 +221,9 @@
 
 .scrollEntityGrabSurface:hover .ailaResonanceField,
 .scrollEntityGrabSurface:focus-visible .ailaResonanceField {
-  opacity: .98;
-  filter: blur(0) drop-shadow(0 0 18px rgba(210,89,39,.54));
-  transform: translate3d(-50%, -50%, 0) scale(1);
+  opacity: 1;
+  filter: blur(0) drop-shadow(0 0 26px rgba(238,135,53,.76));
+  transform: translate3d(-50%, -50%, 0) scale(1.08);
 }
 
 .scrollEntityGrabSurface:hover .ailaDustCloud::before,
@@ -263,7 +265,7 @@
 }
 
 @keyframes ailaResonanceBar {
-  0% { opacity: .62; transform: scaleY(.22); }
+  0% { opacity: .76; transform: scaleY(.28); }
   100% { opacity: 1; transform: scaleY(1); }
 }
 
@@ -308,7 +310,7 @@
 
 @keyframes ailaTouchResonance {
   0%, 54%, 100% { opacity: 0; filter: blur(7px); transform: translate3d(-50%, -45%, 0) scale(.68); }
-  64%, 78% { opacity: .92; filter: blur(0) drop-shadow(0 0 17px rgba(210,89,39,.5)); transform: translate3d(-50%, -50%, 0) scale(.96); }
+  64%, 78% { opacity: 1; filter: blur(0) drop-shadow(0 0 25px rgba(238,135,53,.72)); transform: translate3d(-50%, -50%, 0) scale(1.06); }
   88% { opacity: 0; filter: blur(6px); transform: translate3d(-50%, -52%, 0) scale(1.08); }
 }
 
