@@ -6401,7 +6401,8 @@
     display: block;
     animation: mobileAilaFloat 3.8s ease-in-out infinite;
   }
-  .ailaGuideMobileAvatar img {
+  .ailaGuideMobileAvatar img,
+  .ailaGuideMobileAvatar canvas {
     position: relative;
     z-index: 2;
     width: 100%;
@@ -6414,6 +6415,23 @@
     width: 100%;
     height: 100%;
   }
+  .ailaAvatarMedia {
+    position: absolute;
+    z-index: 2;
+    inset: 0;
+    display: block;
+  }
+  .ailaAvatarFallback,
+  .ailaAvatarSpeakingCanvas {
+    position: absolute !important;
+    inset: 0;
+    transition: opacity .14s ease;
+  }
+  .ailaAvatarFallback { opacity: 1; }
+  .ailaAvatarSpeakingCanvas { opacity: 0; pointer-events: none; }
+  .ailaAvatarMedia[data-speaking='true'][data-video-ready='true'] .ailaAvatarFallback { opacity: 0; }
+  .ailaAvatarMedia[data-speaking='true'][data-video-ready='true'] .ailaAvatarSpeakingCanvas { opacity: 1; }
+  .ailaAvatarSpeakingSource { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
   .ailaGuideMobileAvatar i {
     position: absolute;
     z-index: 3;
@@ -6430,31 +6448,10 @@
   .ailaGuideMobileAvatar i:nth-of-type(2) { --guide-signal-x: .62rem; height: 1.18rem; animation-delay: -.5s; }
   .ailaGuideMobileAvatar i:nth-of-type(3) { --guide-signal-x: 1.24rem; height: .9rem; animation-delay: -.8s; }
   .ailaGuideMobileAvatar i:nth-of-type(4) { --guide-signal-x: 1.86rem; height: .62rem; animation-delay: -.2s; }
-  .ailaGuideMobileMouth {
-    position: absolute;
-    z-index: 4;
-    inset: 0;
-    display: block;
-    opacity: 0;
-    clip-path: inset(64% 28% 7% 28%);
-    transform-origin: 50% 76%;
-    pointer-events: none;
-  }
-  .ailaGuideMobileMouth img {
-    width: 100%;
-    height: 100%;
-    display: block;
-    object-fit: contain;
-    filter: saturate(1.18) brightness(1.08) drop-shadow(0 0 .28rem rgba(255,145,45,.58));
-  }
   .ailaGuide[data-mobile-dialog='true'] h2 { position: relative; z-index: 5; }
   .ailaGuideMobileIdentity[data-state='thinking'] .ailaGuideMobileAvatar { animation: mobileAilaThinking 1.25s ease-in-out infinite; }
   .ailaGuideMobileIdentity[data-state='listening'] .ailaGuideMobileAvatar i { background: linear-gradient(#d8ffd8, #60c98a); }
   .ailaGuideMobileIdentity[data-state='speaking'] .ailaGuideMobileAvatar i { animation-duration: .48s; }
-  .ailaGuideMobileIdentity[data-state='speaking'] .ailaGuideMobileMouth {
-    opacity: 1;
-    animation: mobileAilaMouth .42s ease-in-out infinite alternate;
-  }
 
   @keyframes mobileAilaFloat {
     0%, 100% { transform: translate3d(0, 0, 0) rotate(-.7deg); }
@@ -6471,10 +6468,6 @@
   }
   @keyframes mobileAilaInvite { 0%, 100% { transform: translateX(-50%) scale(.9); } 50% { transform: translateX(-50%) scale(1.12); } }
   @keyframes mobileAilaThinking { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(.35rem); } }
-  @keyframes mobileAilaMouth {
-    from { transform: scaleY(.72) translateY(.05rem); filter: brightness(.92); }
-    to { transform: scaleY(1.2) translateY(-.08rem); filter: brightness(1.22); }
-  }
 }
 
 @media (max-width: 699px) {
@@ -6644,7 +6637,8 @@
   .mobileAilaParticles i,
   .ailaGuideMobileAvatar,
   .ailaGuideMobileAvatar img,
-  .ailaGuideMobileMouth,
+  .ailaAvatarMedia,
+  .ailaAvatarSpeakingCanvas,
   .ailaGuideMobileAvatar i,
   .primaryButton::before,
   .textButton::before,

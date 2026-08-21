@@ -13,6 +13,7 @@ import type {
 } from '@/app/lib/aila/types';
 import type { ExperienceLang } from './content';
 import AilaContactCapture from './AilaContactCapture';
+import AilaSpeakingAvatar from './AilaSpeakingAvatar';
 import styles from './experience.module.css';
 
 type GuideEntry = {
@@ -538,6 +539,12 @@ export default function AilaGuide({
       });
       return;
     }
+    if (type === 'response.output_audio.delta' || type === 'response.audio.delta') {
+      setLiveStatus('speaking');
+      setBusy(false);
+      onStateChange('speaking');
+      return;
+    }
     if (type === 'response.output_audio_transcript.delta' || type === 'response.audio_transcript.delta') {
       const delta = payload.delta || '';
       if (!delta) return;
@@ -830,10 +837,7 @@ export default function AilaGuide({
           data-state={liveStatus === 'speaking' || localSpeaking ? 'speaking' : liveStatus === 'listening' ? 'listening' : busy ? 'thinking' : 'idle'}
         >
           <span className={styles.ailaGuideMobileAvatar}>
-            <img src="/cinematic/aila/aila-idle-v1-fallback-transparent.png" alt="AILA" />
-            <span className={styles.ailaGuideMobileMouth} aria-hidden="true">
-              <img src="/cinematic/aila/aila-idle-v1-fallback-transparent.png" alt="" />
-            </span>
+            <AilaSpeakingAvatar speaking={liveStatus === 'speaking' || localSpeaking} />
             <i /><i /><i /><i />
           </span>
         </div>
