@@ -186,7 +186,7 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
     const openedAt = window.scrollY;
     const handleKey = (event: KeyboardEvent) => { if (event.key === 'Escape') closeGuide(); };
     const handleScroll = () => {
-      const compactDialog = window.matchMedia('(max-width: 700px), (max-width: 960px) and (hover: none) and (pointer: coarse)').matches;
+      const compactDialog = window.matchMedia('(max-width: 1100px)').matches;
       if (!compactDialog && Math.abs(window.scrollY - openedAt) > 24) closeGuide();
     };
     window.addEventListener('keydown', handleKey);
@@ -251,7 +251,7 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
     const debugOutput = debugRef.current;
     if (!root || !entity || !canvas || !video || !interaction || !coreCanvas || !fallback || !debugOutput) return;
 
-    const mobileViewport = window.matchMedia('(max-width: 960px), (hover: none) and (pointer: coarse)').matches;
+    const mobileViewport = window.matchMedia('(max-width: 1100px)').matches;
 
     // Mobile keeps AILA alive as a compact companion. A smaller render target
     // preserves the keyed animation without making a phone upload the same
@@ -1427,7 +1427,7 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
           disablePictureInPicture
           preload="metadata"
         >
-          <source media="(min-width: 961px)" src={AILA_IDLE_VIDEO} type="video/mp4" />
+          <source media="(min-width: 1101px)" src={AILA_IDLE_VIDEO} type="video/mp4" />
         </video>
         <img
           ref={fallbackRef}

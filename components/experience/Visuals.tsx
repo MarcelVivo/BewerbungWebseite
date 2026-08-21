@@ -24,6 +24,18 @@ const DEFAULT_SALES_PERSPECTIVE: SalesPerspectiveQuad = [
 ];
 const DEFAULT_DETAIL_CARD_CONFIG = savedDetailCardConfig as DetailCardConfig;
 
+function isCompactExperience() {
+  return typeof window !== 'undefined' && window.matchMedia('(max-width: 1100px)').matches;
+}
+
+function revealCompactTarget(target: HTMLElement | null) {
+  if (!target || !isCompactExperience()) return;
+  const behavior: ScrollBehavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => target.scrollIntoView({ behavior, block: 'start' }));
+  });
+}
+
 function createPerspectiveMatrix(
   points: SalesPerspectiveQuad,
   width: number,
@@ -231,6 +243,8 @@ export function PerspectiveBusinessFlow({
   useEffect(() => {
     if (selectedFlow === null) return;
 
+    if (isCompactExperience()) return;
+
     const routeClickToCard = (event: MouseEvent) => {
       if (event.button !== 0) return;
       const cardIndex = flowCardRefs.current.findIndex((card) => {
@@ -256,6 +270,8 @@ export function PerspectiveBusinessFlow({
   useEffect(() => {
     const panel = detailPanelRef.current;
     if (selectedFlow === null || !panel || detailCardEditorEnabled) return;
+
+    if (isCompactExperience()) return;
 
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     if (reducedMotion.matches) return;
@@ -297,6 +313,11 @@ export function PerspectiveBusinessFlow({
     };
   }, [detailCardConfig.float, detailCardEditorEnabled, selectedFlow]);
 
+  useEffect(() => {
+    if (selectedFlow === null) return;
+    revealCompactTarget(detailPanelRef.current);
+  }, [selectedFlow]);
+
   const planeTransform = createPerspectiveMatrix(perspectiveConfig, sectionSize.width, sectionSize.height);
   const detailPlaneTransform = createPerspectiveMatrix(
     detailCardConfig.points,
@@ -324,6 +345,12 @@ export function PerspectiveBusinessFlow({
     setSelectedFlow(index);
   };
 
+  const closeFlow = () => {
+    const selectedCard = selectedFlow === null ? null : flowCardRefs.current[selectedFlow];
+    setSelectedFlow(null);
+    revealCompactTarget(selectedCard);
+  };
+
   const startDetailCornerDrag = (index: number, event: ReactPointerEvent<HTMLButtonElement>) => {
     event.preventDefault();
     event.stopPropagation();
@@ -336,7 +363,7 @@ export function PerspectiveBusinessFlow({
 
   return (
     <section ref={perspectiveSectionRef} className={`${styles.perspectiveFlow} ${selectedFlow !== null ? styles.perspectiveFlowOpen : ''}`} aria-label={lang === 'de' ? 'Interaktiver Verkaufsprozess mit zehn Schritten' : 'Interactive ten-step sales process'} onKeyDown={(event) => {
-      if (event.key === 'Escape') setSelectedFlow(null);
+      if (event.key === 'Escape') closeFlow();
     }}>
       <div className={styles.perspectiveFlowStage}>
         <div
@@ -390,7 +417,7 @@ export function PerspectiveBusinessFlow({
         >
           <header>
             <span><i />{detailLabel}</span>
-            <button type="button" onClick={() => setSelectedFlow(null)} aria-label={closeLabel}>
+            <button type="button" onClick={closeFlow} aria-label={closeLabel}>
               <X size={20} aria-hidden="true" />
             </button>
           </header>
@@ -463,6 +490,7 @@ export function PerspectiveBusinessFlow({
 
 export function MarketingEngine({ lang }: { lang: 'de' | 'en' }) {
   const [activeChannel, setActiveChannel] = useState(0);
+  const detailRef = useRef<HTMLDivElement | null>(null);
   const channels = lang === 'de'
     ? [
       {
@@ -571,7 +599,10 @@ export function MarketingEngine({ lang }: { lang: 'de' | 'en' }) {
             aria-selected={activeChannel === index}
             aria-controls="marketing-channel-detail"
             data-active={activeChannel === index ? 'true' : 'false'}
-            onClick={() => setActiveChannel(index)}
+            onClick={() => {
+              setActiveChannel(index);
+              revealCompactTarget(detailRef.current);
+            }}
           >
             <Icon size={18} />
             <span>{label}</span>
@@ -580,7 +611,7 @@ export function MarketingEngine({ lang }: { lang: 'de' | 'en' }) {
         ))}
       </div>
 
-      <div className={styles.marketingEngineBody}>
+      <div ref={detailRef} className={styles.marketingEngineBody}>
         <article
           id="marketing-channel-detail"
           role="tabpanel"
@@ -617,6 +648,8 @@ export function MarketingEngine({ lang }: { lang: 'de' | 'en' }) {
 
 export function DashboardMockup({ lang }: { lang: 'de' | 'en' }) {
   const [activeStage, setActiveStage] = useState<number | null>(null);
+  const detailRef = useRef<HTMLElement | null>(null);
+  const stageRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const stages = lang === 'de'
     ? [
       {
@@ -702,7 +735,11 @@ export function DashboardMockup({ lang }: { lang: 'de' | 'en' }) {
             {stages.map((stage, index) => {
               const isOpen = activeStage === index;
               return <li key={stage.label} className={isOpen ? styles.dashboardPipelineOpen : ''}>
-                <button type="button" className={styles.dashboardPipelineToggle} aria-expanded={isOpen} aria-controls="dashboard-stage-detail" onClick={() => setActiveStage((current) => current === index ? null : index)}>
+                <button ref={(element) => { stageRefs.current[index] = element; }} type="button" className={styles.dashboardPipelineToggle} aria-expanded={isOpen} aria-controls="dashboard-stage-detail" onClick={() => {
+                  const opensDetail = activeStage !== index;
+                  setActiveStage(opensDetail ? index : null);
+                  if (opensDetail) revealCompactTarget(detailRef.current);
+                }}>
                   <div><small>0{index + 1}</small><span>{stage.conversion}</span></div>
                   <strong>{stage.value}</strong>
                   <h4>{stage.label}</h4>
@@ -716,10 +753,14 @@ export function DashboardMockup({ lang }: { lang: 'de' | 'en' }) {
           </ol>
           <div className={styles.dashboardLower}>
             {selectedStage ? (
-              <section id="dashboard-stage-detail" className={styles.dashboardStageDetail} aria-live="polite">
+              <section ref={detailRef} id="dashboard-stage-detail" className={styles.dashboardStageDetail} aria-live="polite">
                 <header>
                   <small>{lang === 'de' ? 'STUFENDETAIL' : 'STAGE DETAIL'} · 0{activeStage! + 1}</small>
-                  <button type="button" onClick={() => setActiveStage(null)} aria-label={lang === 'de' ? 'Detail schliessen' : 'Close detail'}><X size={13} /></button>
+                  <button type="button" onClick={() => {
+                    const selectedCard = activeStage === null ? null : stageRefs.current[activeStage];
+                    setActiveStage(null);
+                    revealCompactTarget(selectedCard);
+                  }} aria-label={lang === 'de' ? 'Detail schliessen' : 'Close detail'}><X size={16} /></button>
                 </header>
                 <h4>{selectedStage.label} · {selectedStage.value}</h4>
                 <p>{selectedStage.detail}</p>
@@ -727,7 +768,7 @@ export function DashboardMockup({ lang }: { lang: 'de' | 'en' }) {
                 <footer><small>{lang === 'de' ? 'EINORDNUNG' : 'INSIGHT'}</small><strong>{selectedStage.insight}</strong></footer>
               </section>
             ) : (
-              <section className={styles.forecastPanel}>
+              <section ref={detailRef} className={styles.forecastPanel}>
                 <header><small>{lang === 'de' ? 'GEWICHTETER FORECAST' : 'WEIGHTED FORECAST'}</small><span>{lang === 'de' ? '79% DES MONATSZIELS' : '79% OF MONTHLY TARGET'}</span></header>
                 <strong>CHF 31’600</strong>
                 <div className={styles.forecastProgress}><i /></div>
@@ -751,6 +792,7 @@ export function DashboardMockup({ lang }: { lang: 'de' | 'en' }) {
 
 export function ArchitectureStack({ lang }: { lang: 'de' | 'en' }) {
   const [activeLayer, setActiveLayer] = useState(0);
+  const detailRef = useRef<HTMLElement | null>(null);
   const layers = lang === 'de'
     ? [
       {
@@ -810,7 +852,10 @@ export function ArchitectureStack({ lang }: { lang: 'de' | 'en' }) {
           const isOpen = activeLayer === index;
           return (
             <li key={number} className={isOpen ? styles.architectureLayerOpen : ''}>
-              <button type="button" role="tab" className={styles.architectureLayerToggle} aria-selected={isOpen} aria-controls="architecture-layer-detail" onClick={() => setActiveLayer(index)}>
+              <button type="button" role="tab" className={styles.architectureLayerToggle} aria-selected={isOpen} aria-controls="architecture-layer-detail" onClick={() => {
+                setActiveLayer(index);
+                revealCompactTarget(detailRef.current);
+              }}>
                 <span>{number}</span>
                 <i><Icon size={17} /></i>
                 <span><strong>{title}</strong><small>{tech}</small></span>
@@ -820,7 +865,7 @@ export function ArchitectureStack({ lang }: { lang: 'de' | 'en' }) {
           );
         })}
       </ol>
-      <section id="architecture-layer-detail" className={styles.architectureLayerDetailPanel} role="tabpanel" aria-live="polite">
+      <section ref={detailRef} id="architecture-layer-detail" className={styles.architectureLayerDetailPanel} role="tabpanel" aria-live="polite">
         <header><span><SelectedIcon size={21} /></span><small>{lang === 'de' ? 'AKTIVE EBENE' : 'ACTIVE LAYER'} · {selectedLayer.number}</small></header>
         <div><h3>{selectedLayer.title}</h3><p>{selectedLayer.detail}</p></div>
         <footer><small>{lang === 'de' ? 'MEHRWERT' : 'VALUE'}</small><strong>{selectedLayer.value}</strong></footer>

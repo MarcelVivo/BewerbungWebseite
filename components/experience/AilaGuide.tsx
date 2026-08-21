@@ -272,7 +272,7 @@ export default function AilaGuide({
 
   useEffect(() => {
     if (!open || !sessionReady) return;
-    const query = window.matchMedia('(max-width: 700px), (max-width: 960px) and (hover: none) and (pointer: coarse)');
+    const query = window.matchMedia('(max-width: 1100px)');
     const update = () => setCompactDialog(query.matches);
     update();
     query.addEventListener('change', update);

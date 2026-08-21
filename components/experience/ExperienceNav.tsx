@@ -96,14 +96,30 @@ export default function ExperienceNav({ lang }: { lang: ExperienceLang }) {
 
   useEffect(() => {
     if (!menuOpen) return;
-    const previousOverflow = document.documentElement.style.overflow;
+    const scrollY = window.scrollY;
+    const html = document.documentElement;
+    const body = document.body;
+    const previousHtmlOverflow = html.style.overflow;
+    const previousBodyOverflow = body.style.overflow;
+    const previousBodyPosition = body.style.position;
+    const previousBodyTop = body.style.top;
+    const previousBodyWidth = body.style.width;
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setMenuOpen(false);
     };
-    document.documentElement.style.overflow = 'hidden';
+    html.style.overflow = 'hidden';
+    body.style.overflow = 'hidden';
+    body.style.position = 'fixed';
+    body.style.top = `-${scrollY}px`;
+    body.style.width = '100%';
     window.addEventListener('keydown', closeOnEscape);
     return () => {
-      document.documentElement.style.overflow = previousOverflow;
+      html.style.overflow = previousHtmlOverflow;
+      body.style.overflow = previousBodyOverflow;
+      body.style.position = previousBodyPosition;
+      body.style.top = previousBodyTop;
+      body.style.width = previousBodyWidth;
+      window.scrollTo({ top: scrollY, behavior: 'auto' });
       window.removeEventListener('keydown', closeOnEscape);
     };
   }, [menuOpen]);
@@ -126,7 +142,7 @@ export default function ExperienceNav({ lang }: { lang: ExperienceLang }) {
     setActive(index);
     setMenuOpen(false);
     const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
-    const isMobile = window.matchMedia('(max-width: 960px)').matches;
+    const isMobile = window.matchMedia('(max-width: 1100px)').matches;
     const landedOnDock = !isMobile && scrollToChapterDockingRest(id, behavior);
     if (!landedOnDock) document.getElementById(id)?.scrollIntoView({ behavior, block: 'start' });
     window.history.replaceState(null, '', `#${id}`);
@@ -164,13 +180,13 @@ export default function ExperienceNav({ lang }: { lang: ExperienceLang }) {
 
       <div id="mobile-experience-menu" className={`${styles.mobileMenu} ${menuOpen ? styles.mobileMenuOpen : ''}`} aria-hidden={!menuOpen}>
         <button type="button" className={styles.mobileMenuBackdrop} onClick={() => setMenuOpen(false)} aria-label={lang === 'de' ? 'Menü schliessen' : 'Close menu'} tabIndex={menuOpen ? 0 : -1} />
-        <nav className={styles.mobileMenuPanel} aria-label={lang === 'de' ? 'Hauptnavigation' : 'Main navigation'}>
+        <nav className={styles.mobileMenuPanel} role="dialog" aria-modal="true" aria-label={lang === 'de' ? 'Hauptnavigation' : 'Main navigation'}>
           <header>
             <div>
               <span>{lang === 'de' ? 'DEINE REISE' : 'YOUR JOURNEY'}</span>
               <strong>{lang === 'de' ? 'Ein Unternehmen. Ein System.' : 'One business. One system.'}</strong>
             </div>
-            <button type="button" onClick={() => setMenuOpen(false)} aria-label={lang === 'de' ? 'Menü schliessen' : 'Close menu'}><X size={20} /></button>
+            <button type="button" onClick={() => setMenuOpen(false)} aria-label={lang === 'de' ? 'Menü schliessen' : 'Close menu'} tabIndex={menuOpen ? 0 : -1}><X size={20} /></button>
           </header>
           <div className={styles.mobileMenuProgress} aria-hidden="true"><span style={{ transform: `scaleX(${progress})` }} /></div>
           <ol>

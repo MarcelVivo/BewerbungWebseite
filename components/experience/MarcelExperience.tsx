@@ -19,6 +19,14 @@ import styles from './experience.module.css';
 
 type HeroPhase = 'loading' | 'ignition' | 'revealed';
 
+function revealCompactTarget(target: HTMLElement | null) {
+  if (!target || typeof window === 'undefined' || !window.matchMedia('(max-width: 1100px)').matches) return;
+  const behavior: ScrollBehavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => target.scrollIntoView({ behavior, block: 'start' }));
+  });
+}
+
 const MODULES = {
   de: [
     {
@@ -188,6 +196,8 @@ export default function MarcelExperience() {
   const salesVideoRef = useRef<HTMLVideoElement | null>(null);
   const marketingSectionRef = useRef<HTMLElement | null>(null);
   const marketingVideoRef = useRef<HTMLVideoElement | null>(null);
+  const moduleDetailRef = useRef<HTMLDivElement | null>(null);
+  const operatingModuleDetailRef = useRef<HTMLElement | null>(null);
   const [activeModule, setActiveModule] = useState(0);
   const [activeFlow, setActiveFlow] = useState(0);
   const [activeOperatingModule, setActiveOperatingModule] = useState(0);
@@ -267,7 +277,7 @@ export default function MarcelExperience() {
   useEffect(() => {
     const flightEditorActive = new URLSearchParams(window.location.search).get('flight-editor') === '1';
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const compactExperience = window.matchMedia('(max-width: 960px), (hover: none) and (pointer: coarse)').matches;
+    const compactExperience = window.matchMedia('(max-width: 1100px)').matches;
     if (flightEditorActive || reducedMotion || compactExperience || window.scrollY > 12) {
       setHeroLoadProgress(100);
       setHeroPhase('revealed');
@@ -601,7 +611,7 @@ export default function MarcelExperience() {
                 playsInline
                 preload="metadata"
               >
-                <source media="(min-width: 961px)" src="/cinematic/hero-swiss-precision/swiss-precision-awakening.mp4" type="video/mp4" />
+                <source media="(min-width: 1101px)" src="/cinematic/hero-swiss-precision/swiss-precision-awakening.mp4" type="video/mp4" />
               </video>
               <img
                 className={`${styles.heroAlpineFrame} ${styles.heroAlpineDormant}`}
@@ -647,7 +657,7 @@ export default function MarcelExperience() {
                 playsInline
                 preload="metadata"
               >
-                <source media="(min-width: 961px)" src="/cinematic/02-connected-system-scroll.mp4" type="video/mp4" />
+                <source media="(min-width: 1101px)" src="/cinematic/02-connected-system-scroll.mp4" type="video/mp4" />
               </video>
             </div>
             <ProblemDockingStation />
@@ -676,7 +686,7 @@ export default function MarcelExperience() {
                   src="/cinematic/system/connected-system-architecture.png"
                   alt=""
                   fill
-                  sizes="(min-width: 961px) 86vw, 94vw"
+                  sizes="(min-width: 1101px) 86vw, 94vw"
                 />
                 <video
                   ref={systemVideoRef}
@@ -686,7 +696,7 @@ export default function MarcelExperience() {
                   playsInline
                   preload="metadata"
                 >
-                  <source media="(min-width: 961px)" src="/cinematic/system/connected-system-architecture-scroll.mp4" type="video/mp4" />
+                  <source media="(min-width: 1101px)" src="/cinematic/system/connected-system-architecture-scroll.mp4" type="video/mp4" />
                 </video>
                 <span className={styles.systemArchitectureHalo} />
               </div>
@@ -698,12 +708,15 @@ export default function MarcelExperience() {
                 </div>
                 <div className={styles.moduleTabs} role="tablist" aria-label={lang === 'de' ? 'Systembereich wählen' : 'Choose system area'}>
                   {MODULES[lang].map(({ number, title, Icon }, index) => (
-                    <button key={number} type="button" role="tab" aria-selected={activeModule === index} className={activeModule === index ? styles.moduleActive : ''} onClick={() => setActiveModule(index)}>
+                    <button key={number} type="button" role="tab" aria-selected={activeModule === index} className={activeModule === index ? styles.moduleActive : ''} onClick={() => {
+                      setActiveModule(index);
+                      revealCompactTarget(moduleDetailRef.current);
+                    }}>
                       <i><Icon size={16} /></i><strong>{title}</strong><span>{number}</span>
                     </button>
                   ))}
                 </div>
-                <div className={styles.moduleDetail} role="tabpanel" aria-live="polite">
+                <div ref={moduleDetailRef} className={styles.moduleDetail} role="tabpanel" aria-live="polite">
                   <header>
                     <span>{activeModuleData.number}<small>/ 04</small></span>
                     <div><i><ActiveModuleIcon size={20} /></i><strong>{activeModuleData.title}</strong></div>
@@ -760,7 +773,7 @@ export default function MarcelExperience() {
                 playsInline
                 preload="metadata"
               >
-                <source media="(min-width: 961px)" src="/cinematic/03-sales-system-scroll.mp4" type="video/mp4" />
+                <source media="(min-width: 1101px)" src="/cinematic/03-sales-system-scroll.mp4" type="video/mp4" />
               </video>
             </div>
             <WebsiteDockingStation />
@@ -793,7 +806,7 @@ export default function MarcelExperience() {
                 playsInline
                 preload="metadata"
               >
-                <source media="(min-width: 961px)" src="/cinematic/04-marketing-engine-scroll.mp4" type="video/mp4" />
+                <source media="(min-width: 1101px)" src="/cinematic/04-marketing-engine-scroll.mp4" type="video/mp4" />
               </video>
             </div>
             <MarketingDockingStation />
@@ -844,7 +857,10 @@ export default function MarcelExperience() {
                           className={styles.operatingModuleToggle}
                           aria-pressed={isSelected}
                           aria-controls="operating-module-detail"
-                          onClick={() => setActiveOperatingModule(index)}
+                          onClick={() => {
+                            setActiveOperatingModule(index);
+                            revealCompactTarget(operatingModuleDetailRef.current);
+                          }}
                         >
                           <span>0{index + 1}</span>
                           <span><strong>{module.title}</strong><small>{module.summary}</small></span>
@@ -853,7 +869,7 @@ export default function MarcelExperience() {
                       </article>
                     );
                   })}
-                  <section id="operating-module-detail" className={styles.operatingModuleDetailPanel} aria-live="polite">
+                  <section ref={operatingModuleDetailRef} id="operating-module-detail" className={styles.operatingModuleDetailPanel} aria-live="polite">
                     <header><small>0{activeOperatingModule + 1} · {lang === 'de' ? 'AUSGEWÄHLTES MODUL' : 'SELECTED MODULE'}</small><strong>{selectedOperatingModule.title}</strong></header>
                     <p>{selectedOperatingModule.detail}</p>
                     <ul>{selectedOperatingModule.features.map((feature) => <li key={feature}><Check size={12} />{feature}</li>)}</ul>

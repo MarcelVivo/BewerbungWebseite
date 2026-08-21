@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { ArrowLeft, ArrowRight, Check, LoaderCircle, RotateCcw } from 'lucide-react';
 import { trackWebsiteEvent } from '../../app/lib/analytics';
 import styles from './experience.module.css';
@@ -40,6 +40,8 @@ export default function LeadFunnel({ lang }: { lang: 'de' | 'en' }) {
   const c = OPTIONS[lang];
   const openedAt = useRef(Date.now());
   const started = useRef(false);
+  const previousStep = useRef(0);
+  const stageRef = useRef<HTMLDivElement | null>(null);
   const [step, setStep] = useState(0);
   const [focus, setFocus] = useState('');
   const [size, setSize] = useState('');
@@ -52,6 +54,14 @@ export default function LeadFunnel({ lang }: { lang: 'de' | 'en' }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (previousStep.current === step) return;
+    previousStep.current = step;
+    if (!window.matchMedia('(max-width: 1100px)').matches) return;
+    const behavior: ScrollBehavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+    window.requestAnimationFrame(() => stageRef.current?.scrollIntoView({ behavior, block: 'start' }));
+  }, [step]);
 
   function advance() {
     if ((step === 0 && !focus) || (step === 1 && !size)) {
@@ -124,7 +134,7 @@ export default function LeadFunnel({ lang }: { lang: 'de' | 'en' }) {
         ))}
       </div>
 
-      <div className={styles.funnelStage}>
+      <div ref={stageRef} className={styles.funnelStage}>
         {step === 0 && (
           <fieldset>
             <legend>{c.firstQuestion}</legend>
