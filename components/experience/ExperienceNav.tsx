@@ -7,6 +7,7 @@ import { chapters } from './content';
 import { getResolvedFlightPath } from './flightPathStore';
 import { MIN_TRANSIT_VIEWPORTS } from './scrollPathController';
 import { trackWebsiteEvent } from '../../app/lib/analytics';
+import { useLanguage } from '../../app/LanguageContext';
 import MobileAilaCompanion from './MobileAilaCompanion';
 import styles from './experience.module.css';
 
@@ -48,7 +49,36 @@ function scrollToChapterDockingRest(sectionId: string, behavior: ScrollBehavior)
   return true;
 }
 
+function LanguageSwitch({ lang, setLang, variant }: { lang: ExperienceLang; setLang: (l: ExperienceLang) => void; variant: 'desktop' | 'mobile' }) {
+  return (
+    <div
+      className={variant === 'desktop' ? styles.languageSwitchDesktop : styles.languageSwitchMobile}
+      role="group"
+      aria-label={lang === 'de' ? 'Sprache wählen' : 'Choose language'}
+    >
+      <button
+        type="button"
+        className={lang === 'de' ? styles.languageActive : ''}
+        aria-pressed={lang === 'de'}
+        onClick={() => setLang('de')}
+      >
+        DE
+      </button>
+      <span aria-hidden="true">/</span>
+      <button
+        type="button"
+        className={lang === 'en' ? styles.languageActive : ''}
+        aria-pressed={lang === 'en'}
+        onClick={() => setLang('en')}
+      >
+        EN
+      </button>
+    </div>
+  );
+}
+
 export default function ExperienceNav({ lang }: { lang: ExperienceLang }) {
+  const { setLang } = useLanguage();
   const [active, setActive] = useState(0);
   const [progress, setProgress] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -169,6 +199,7 @@ export default function ExperienceNav({ lang }: { lang: ExperienceLang }) {
           </span>
         </button>
         <div className={styles.mobileAppActions}>
+          <LanguageSwitch lang={lang} setLang={setLang} variant="mobile" />
           <span className={styles.mobileAppAilaDock} data-mobile-aila-anchor="nav" aria-hidden="true" />
           <button type="button" className={styles.mobileAppMenuButton} data-mobile-aila-boundary="menu" onClick={() => setMenuOpen((current) => !current)} aria-expanded={menuOpen} aria-controls="mobile-experience-menu" aria-label={menuOpen ? (lang === 'de' ? 'Menü schliessen' : 'Close menu') : (lang === 'de' ? 'Menü öffnen' : 'Open menu')}>
             {menuOpen ? <X size={21} /> : <Menu size={21} />}
@@ -211,7 +242,8 @@ export default function ExperienceNav({ lang }: { lang: ExperienceLang }) {
           </footer>
         </nav>
       </div>
-      <nav className={styles.chapterRail} aria-label="Seitenposition">
+      <LanguageSwitch lang={lang} setLang={setLang} variant="desktop" />
+      <nav className={styles.chapterRail} aria-label={lang === 'de' ? 'Seitenposition' : 'Page position'}>
         <span className={styles.railLine}><i style={{ height: `${progress * 100}%` }} /></span>
         <ol ref={listRef} onPointerMove={handlePointerMove} onPointerLeave={handlePointerLeave}>
           {chapters.map((chapter, index) => (

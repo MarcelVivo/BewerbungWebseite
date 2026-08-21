@@ -2056,6 +2056,41 @@
 .chapterRail button:focus-visible > b { color: var(--gold-pale); opacity: 1; }
 .chapterLabelShort { display: none; }
 
+.languageSwitchDesktop {
+  position: fixed;
+  z-index: 190;
+  top: clamp(1.1rem, 2.4vw, 2rem);
+  right: clamp(.9rem, 1.7vw, 1.8rem);
+  display: flex;
+  align-items: center;
+  gap: .22rem;
+  padding: .4rem .65rem;
+  border: 1px solid rgba(231,197,106,.28);
+  border-radius: 999px;
+  background: rgba(5,7,5,.55);
+  backdrop-filter: blur(14px) saturate(1.1);
+  -webkit-backdrop-filter: blur(14px) saturate(1.1);
+}
+.languageSwitchMobile { display: flex; align-items: center; gap: .18rem; }
+.languageSwitchDesktop button,
+.languageSwitchMobile button {
+  padding: .1rem .3rem;
+  font: 720 .62rem/1 var(--font-chakra-petch), monospace;
+  letter-spacing: .1em;
+  color: rgba(216,204,179,.55);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: color .18s ease, text-shadow .18s ease;
+}
+.languageSwitchDesktop span,
+.languageSwitchMobile span { color: rgba(216,204,179,.28); font-size: .58rem; }
+.languageSwitchDesktop button:hover,
+.languageSwitchDesktop button:focus-visible,
+.languageSwitchMobile button:hover,
+.languageSwitchMobile button:focus-visible { color: #d4c4a8; }
+.languageActive { color: #f6e3a1 !important; text-shadow: 0 0 10px rgba(231,197,106,.5); }
+
 .mobileNavigator,
 .mobileAppBar { display: none; }
 
@@ -5834,6 +5869,7 @@
   .mobileAppMenuButton { width: 2.75rem; padding: 0; display: grid; place-items: center; color: #d7d8d1; }
 
   .chapterRail { display: none !important; }
+  .languageSwitchDesktop { display: none !important; }
   .experience { scroll-padding-top: calc(4.5rem + env(safe-area-inset-top)); }
   .experience section { scroll-margin-top: calc(4rem + env(safe-area-inset-top)); }
   .moduleDetail,
