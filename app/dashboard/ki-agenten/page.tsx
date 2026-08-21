@@ -56,13 +56,15 @@ function AgentModal({ agent, onClose, onSaved }: {
     e.preventDefault();
     if (!form.name?.trim()) return;
     setSaving(true);
+    const instructions = (form.konfiguration as { instructions?: string } | undefined)?.instructions?.trim();
     const payload = {
-      name:         form.name,
-      beschreibung: form.beschreibung || null,
-      typ:          form.typ ?? 'analyse',
-      status:       form.status ?? 'aktiv',
-      webhook_url:  form.webhook_url || null,
-      avatar_emoji: form.avatar_emoji || '🤖',
+      name:          form.name,
+      beschreibung:  form.beschreibung || null,
+      typ:           form.typ ?? 'analyse',
+      status:        form.status ?? 'aktiv',
+      webhook_url:   form.webhook_url || null,
+      avatar_emoji:  form.avatar_emoji || '🤖',
+      konfiguration: instructions ? { instructions } : null,
     };
     const sb = createClient();
     const { error } = isEdit
@@ -123,9 +125,19 @@ function AgentModal({ agent, onClose, onSaved }: {
               rows={2} className={inputCls + ' resize-none'} placeholder="Was macht dieser Agent?" />
           </div>
           <div>
-            <label className="block text-xs text-slate-500 mb-1">Webhook URL <span className="text-slate-600">(optional)</span></label>
+            <label className="block text-xs text-slate-500 mb-1">Zusätzliche Anweisungen <span className="text-slate-600">(optional)</span></label>
+            <textarea
+              value={(form.konfiguration as { instructions?: string } | undefined)?.instructions ?? ''}
+              onChange={e => set('konfiguration', { ...(form.konfiguration ?? {}), instructions: e.target.value })}
+              rows={2} className={inputCls + ' resize-none'}
+              placeholder="Z. B. Tonfall, bevorzugte Struktur, was der Agent nie tun soll." />
+            <p className="mt-1 text-[11px] text-slate-600">Ergänzt die eingebaute Persona des Agenten, ohne sie zu ersetzen.</p>
+          </div>
+          <div>
+            <label className="block text-xs text-slate-500 mb-1">Webhook URL <span className="text-slate-600">(optional, überschreibt AILA)</span></label>
             <input value={form.webhook_url ?? ''} onChange={e => set('webhook_url', e.target.value)}
-              className={inputCls} placeholder="Füge hier die vollständige Adresse ein." />
+              className={inputCls} placeholder="Nur nötig für eine eigene externe Automatisierung." />
+            <p className="mt-1 text-[11px] text-slate-600">Ohne Webhook antwortet der Agent direkt über AILA mit echtem Zugriff auf deine Daten.</p>
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-slate-400 hover:text-white border border-[#2d3144] transition-colors">Abbrechen</button>
@@ -141,7 +153,20 @@ function AgentModal({ agent, onClose, onSaved }: {
 
 // ── Chat Interface ────────────────────────────────────────
 
-interface ChatMessage { role: 'user' | 'assistant'; text: string; ts: Date; }
+interface ChatMessage { role: 'user' | 'assistant'; text: string; ts: Date; actions?: string[]; }
+
+const AGENT_TOOL_LABELS: Record<string, string> = {
+  list_kunden: 'Kunden durchsucht',
+  pipeline_uebersicht: 'Pipeline abgefragt',
+  offene_rechnungen: 'Rechnungen geprüft',
+  faellige_tasks: 'Aufgaben geprüft',
+  anstehende_termine: 'Termine geprüft',
+  neue_leads: 'Neue Leads geprüft',
+  task_erstellen: 'Aufgabe erstellt',
+  kunde_notiz_hinzufuegen: 'Notiz hinzugefügt',
+  kunde_status_aendern: 'Kundenstatus geändert',
+  termin_erstellen: 'Termin erstellt',
+};
 
 function AgentChat({ agent, onBack }: { agent: KiAgent; onBack: () => void }) {
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -157,10 +182,10 @@ function AgentChat({ agent, onBack }: { agent: KiAgent; onBack: () => void }) {
     const text = input.trim();
     if (!text) return;
     setInput('');
+    const history = messages.map(m => ({ role: m.role, content: m.text }));
     setMessages(m => [...m, { role: 'user', text, ts: new Date() }]);
     setLoading(true);
 
-    // If webhook configured, call it — otherwise use Claude API proxy pattern
     if (agent.webhook_url) {
       try {
         const res = await fetch(agent.webhook_url, {
@@ -171,55 +196,35 @@ function AgentChat({ agent, onBack }: { agent: KiAgent; onBack: () => void }) {
         const data = await res.json();
         const reply = data.response ?? data.message ?? JSON.stringify(data);
         setMessages(m => [...m, { role: 'assistant', text: reply, ts: new Date() }]);
+        await createClient().from('ki_agenten').update({
+          letzte_ausfuehrung:  new Date().toISOString(),
+          ausfuehrungen_total: (agent.ausfuehrungen_total ?? 0) + 1,
+        }).eq('id', agent.id);
       } catch {
         setMessages(m => [...m, { role: 'assistant', text: '⚠️ Webhook-Fehler. Bitte URL prüfen.', ts: new Date() }]);
       }
     } else {
-      // Demo response
-      await new Promise(r => setTimeout(r, 800 + Math.random() * 600));
-      const demo = getDemoReply(agent.typ, text);
-      setMessages(m => [...m, { role: 'assistant', text: demo, ts: new Date() }]);
+      try {
+        const res = await fetch('/api/aila/agents', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ agentId: agent.id, message: text, history }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setMessages(m => [...m, { role: 'assistant', text: `⚠️ ${data?.error || 'Etwas ist schiefgelaufen.'}`, ts: new Date() }]);
+        } else {
+          const actions: string[] = Array.isArray(data.actions)
+            ? Array.from(new Set<string>(data.actions.map((a: { tool: string }) => AGENT_TOOL_LABELS[a.tool] || a.tool)))
+            : [];
+          setMessages(m => [...m, { role: 'assistant', text: data.answer, ts: new Date(), actions }]);
+        }
+      } catch {
+        setMessages(m => [...m, { role: 'assistant', text: '⚠️ Verbindungsfehler. Bitte erneut versuchen.', ts: new Date() }]);
+      }
     }
 
-    // Update execution count
-    await createClient().from('ki_agenten').update({
-      letzte_ausfuehrung:  new Date().toISOString(),
-      ausfuehrungen_total: (agent.ausfuehrungen_total ?? 0) + 1,
-    }).eq('id', agent.id);
-
     setLoading(false);
-  }
-
-  function getDemoReply(typ?: string, msg?: string): string {
-    const responses: Record<string, string[]> = {
-      analyse: [
-        'Basierend auf den verfügbaren Daten empfehle ich folgende Schritte: 1) Zielgruppe analysieren, 2) KPIs definieren, 3) Massnahmen priorisieren.',
-        'Die Analyse zeigt klares Potenzial in diesem Bereich. Ich würde empfehlen, mit einem kleinen Pilotprojekt zu starten.',
-        'Ich habe die Anfrage analysiert. Die wichtigsten Erkenntnisse: Marktpotenzial vorhanden, Timing ist gut, Ressourcenbedarf überschaubar.',
-      ],
-      content: [
-        'Hier ist ein erster Entwurf.\n\n**Titel:** Wo KI Ihrem Unternehmen tatsächlich Arbeit abnehmen kann.\n\n**Einstieg:** Viele Schweizer KMU testen KI bereits. Entscheidend ist nicht das Werkzeug, sondern die konkrete Aufgabe, die damit einfacher wird.',
-        'Für den Beitrag schlage ich diesen Einstieg vor. Heute habe ich mit einem KMU geprüft, welche wiederkehrende Aufgabe sich sinnvoll automatisieren lässt. Erst nach der Messung wissen wir, wie viel Zeit wirklich eingespart wird.',
-        'Content-Idee: Eine Case-Study-Serie über erfolgreiche KI-Implementierungen bei Schweizer KMU. Format: kurze Videos + Blog-Artikel.',
-      ],
-      sales: [
-        'Für diesen Lead empfehle ich: Erstgespräch innerhalb von 48h, Fokus auf Schmerzpunkte, konkreten ROI aufzeigen.',
-        'Follow-up Strategie: 1. E-Mail mit Case Study (Tag 3), 2. LinkedIn Connect (Tag 5), 3. Anruf mit Agenda (Tag 10).',
-        'Das Angebot sollte drei nachvollziehbare Optionen enthalten. Eine günstige Variante deckt das Nötigste ab. Die mittlere Variante enthält den empfohlenen Umfang. Die umfangreiche Variante ergänzt zusätzliche Leistungen.',
-      ],
-      admin: [
-        'Ich habe die Aufgabe notiert. Priorität: mittel. Deadline: Ende der Woche. Soll ich einen Kalender-Eintrag erstellen?',
-        'Zusammenfassung erstellt. Nächste Schritte: 1) Review durch Marcel, 2) Freigabe, 3) Versand bis Freitag.',
-        'Erledigt! Die Informationen sind strukturiert und bereit für den nächsten Schritt.',
-      ],
-      support: [
-        'Ich habe die Anfrage bearbeitet. Die Lösung ist: Einstellungen → Erweitert → Cache leeren. Bei Fragen melde dich gerne!',
-        'Danke für deine Nachricht! Das Problem liegt wahrscheinlich an den Berechtigungen. Lösung: Admin-Rechte für den Nutzer aktivieren.',
-        'Ich habe ähnliche Fälle analysiert. Die schnellste Lösung ist ein Neustart des Services. Benötigst du eine Schritt-für-Schritt-Anleitung?',
-      ],
-    };
-    const list = responses[typ ?? 'analyse'] ?? responses.analyse;
-    return list[Math.floor(Math.random() * list.length)];
   }
 
   return (
@@ -250,6 +255,15 @@ function AgentChat({ agent, onBack }: { agent: KiAgent; onBack: () => void }) {
             <div className={`max-w-[75%] rounded-2xl px-4 py-3 text-sm whitespace-pre-wrap leading-relaxed ${
               m.role === 'assistant' ? 'bg-[#252836] text-slate-200 rounded-tl-sm' : 'bg-[#6366f1] text-white rounded-tr-sm'
             }`}>
+              {m.role === 'assistant' && m.actions && m.actions.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {m.actions.map((a, j) => (
+                    <span key={j} className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-[#6366f1]/15 text-[#a5adfb] border border-[#6366f1]/25">
+                      <Zap size={9} /> {a}
+                    </span>
+                  ))}
+                </div>
+              )}
               {m.text}
             </div>
           </div>
@@ -285,9 +299,9 @@ function AgentChat({ agent, onBack }: { agent: KiAgent; onBack: () => void }) {
             <Send size={16} />
           </button>
         </div>
-        {!agent.webhook_url && (
-          <p className="text-xs text-slate-600 mt-2">Demo-Modus · Kein Webhook konfiguriert</p>
-        )}
+        <p className="text-xs text-slate-600 mt-2">
+          {agent.webhook_url ? 'Verbunden über eigenen Webhook.' : 'Verbunden über AILA · echter Zugriff auf deine Daten.'}
+        </p>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { INTERNAL_TOOL_DEFINITIONS, runInternalTool } from '@/app/lib/aila/internalTools';
+import { runAilaToolLoop } from '@/app/lib/aila/internalEngine';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -31,25 +31,9 @@ async function assertDashboardUser() {
   return { supabase, error: null };
 }
 
-function extractFunctionCalls(output: any[]): Array<{ call_id: string; name: string; arguments: string }> {
-  return output.filter((item) => item?.type === 'function_call');
-}
-
-function extractOutputText(output: any[]): string {
-  return output
-    .filter((item) => item?.type === 'message')
-    .flatMap((item) => item?.content ?? [])
-    .map((content: any) => content?.text ?? '')
-    .join('\n')
-    .trim();
-}
-
 export async function POST(request: Request) {
   const { supabase, error } = await assertDashboardUser();
   if (error || !supabase) return error;
-
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) return NextResponse.json({ error: 'AILA ist noch nicht konfiguriert.' }, { status: 503 });
 
   let body: { message?: string; history?: ChatMessage[] };
   try {
@@ -67,67 +51,12 @@ export async function POST(request: Request) {
         .map((entry) => ({ role: entry.role, content: entry.content.slice(0, 2000) }))
     : [];
 
-  const input: any[] = [...history, { role: 'user', content: message }];
-  const actionsPerformed: Array<{ tool: string; args: Record<string, unknown> }> = [];
   const model = process.env.OPENAI_AILA_INTERNAL_MODEL || process.env.OPENAI_AILA_MODEL || 'gpt-5.6-terra';
 
   try {
-    for (let iteration = 0; iteration < 6; iteration += 1) {
-      const response = await fetch('https://api.openai.com/v1/responses', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model,
-          instructions: SYSTEM_PROMPT,
-          input,
-          tools: INTERNAL_TOOL_DEFINITIONS,
-          tool_choice: 'auto',
-          max_output_tokens: 1200,
-          store: false,
-        }),
-        cache: 'no-store',
-        signal: AbortSignal.timeout(30_000),
-      });
-
-      const payload = await response.json();
-      if (!response.ok) {
-        console.error('[aila:internal] OpenAI error', response.status, payload?.error?.type);
-        return NextResponse.json({ error: 'AILA ist gerade nicht erreichbar. Bitte später erneut versuchen.' }, { status: 502 });
-      }
-
-      const output = Array.isArray(payload.output) ? payload.output : [];
-      const functionCalls = extractFunctionCalls(output);
-
-      if (functionCalls.length === 0) {
-        const answer = extractOutputText(output) || 'Ich habe keine Antwort erhalten.';
-        return NextResponse.json({ answer, actions: actionsPerformed });
-      }
-
-      input.push(...output);
-
-      for (const call of functionCalls) {
-        let args: Record<string, unknown> = {};
-        try {
-          args = call.arguments ? JSON.parse(call.arguments) : {};
-        } catch {
-          args = {};
-        }
-        let outputPayload: unknown;
-        try {
-          outputPayload = await runInternalTool(supabase, call.name as any, args);
-          actionsPerformed.push({ tool: call.name, args });
-        } catch (toolError) {
-          outputPayload = { error: toolError instanceof Error ? toolError.message : 'Werkzeug fehlgeschlagen.' };
-        }
-        input.push({
-          type: 'function_call_output',
-          call_id: call.call_id,
-          output: JSON.stringify(outputPayload),
-        });
-      }
-    }
-
-    return NextResponse.json({ error: 'Zu viele Zwischenschritte. Bitte formuliere die Anfrage genauer.' }, { status: 500 });
+    const result = await runAilaToolLoop({ supabase, systemPrompt: SYSTEM_PROMPT, message, history, model });
+    if ('error' in result) return NextResponse.json({ error: result.error }, { status: result.status });
+    return NextResponse.json(result);
   } catch (err) {
     console.error('[aila:internal] failed', err instanceof Error ? err.message : 'unknown error');
     return NextResponse.json({ error: 'AILA ist vorübergehend nicht erreichbar.' }, { status: 500 });
