@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent, type WheelEvent as ReactWheelEvent } from 'react';
 import { Activity, ArrowLeft, ArrowRight, Bot, Check, ChevronDown, Database, FileText, Globe2, LockKeyhole, Mail, MousePointerClick, Search, ShieldCheck, Sparkles, Users, Workflow, X } from 'lucide-react';
 import savedDetailCardConfig from './detail-card-config.json';
 import styles from './experience.module.css';
@@ -119,6 +119,7 @@ export function PerspectiveBusinessFlow({
   lang: 'de' | 'en';
 }) {
   const [selectedFlow, setSelectedFlow] = useState<number | null>(null);
+  const [mobileDrumIndex, setMobileDrumIndex] = useState(active);
   const [ailaTouchedFlow, setAilaTouchedFlow] = useState<number | null>(null);
   const [detailCardConfig, setDetailCardConfig] = useState<DetailCardConfig>(DEFAULT_DETAIL_CARD_CONFIG);
   const [detailCardEditorEnabled, setDetailCardEditorEnabled] = useState(false);
@@ -126,10 +127,11 @@ export function PerspectiveBusinessFlow({
   const perspectiveConfig = DEFAULT_SALES_PERSPECTIVE;
   const [sectionSize, setSectionSize] = useState({ width: 0, height: 0 });
   const perspectiveSectionRef = useRef<HTMLElement | null>(null);
-  const flowDrumRef = useRef<HTMLDivElement | null>(null);
-  const flowGridRef = useRef<HTMLDivElement | null>(null);
   const detailPanelRef = useRef<HTMLElement | null>(null);
   const flowCardRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const drumPointerRef = useRef<{ id: number; y: number } | null>(null);
+  const drumWheelLockRef = useRef(0);
+  const suppressDrumClickRef = useRef(false);
   const detailCardConfigRef = useRef<DetailCardConfig>(DEFAULT_DETAIL_CARD_CONFIG);
   const draggingCornerRef = useRef<{ index: number; pointerId: number } | null>(null);
 
@@ -242,123 +244,11 @@ export function PerspectiveBusinessFlow({
     window.dispatchEvent(new CustomEvent('aila-touch-layout-change'));
   }, [sectionSize]);
 
-  useEffect(() => {
-    const grid = flowGridRef.current;
-    const drum = flowDrumRef.current;
-    if (!grid || !drum) return;
-
-    const compactQuery = window.matchMedia('(max-width: 699px)');
-    let frame = 0;
-    let settleTimer = 0;
-    let centeredCardIndex = -1;
-    let settledCardIndex = active;
-
-    const clearDrumStyles = () => {
-      flowCardRefs.current.forEach((card) => {
-        if (!card) return;
-        card.style.removeProperty('--flow-drum-angle');
-        card.style.removeProperty('--flow-drum-depth');
-        card.style.removeProperty('--flow-drum-shift');
-        card.style.removeProperty('--flow-drum-scale');
-        card.style.removeProperty('--flow-drum-opacity');
-        card.style.removeProperty('--flow-drum-brightness');
-        card.style.removeProperty('--flow-drum-blur');
-        delete card.dataset.drumPosition;
-      });
-      drum.style.removeProperty('--flow-drum-roll');
-    };
-
-    const updateDrum = () => {
-      frame = 0;
-      if (!compactQuery.matches) {
-        clearDrumStyles();
-        return;
-      }
-
-      const gridCenter = grid.scrollTop + grid.clientHeight / 2;
-      let nearestDistance = Number.POSITIVE_INFINITY;
-
-      flowCardRefs.current.forEach((card, index) => {
-        if (!card) return;
-        const cardCenter = card.offsetTop + card.offsetHeight / 2;
-        const distance = (cardCenter - gridCenter) / Math.max(card.offsetHeight, 1);
-        const limitedDistance = Math.max(-1.18, Math.min(1.18, distance));
-        const distanceMagnitude = Math.min(1, Math.abs(limitedDistance));
-        const angleRadians = limitedDistance * 1.04;
-        const radius = Math.max(card.offsetHeight * .98, 48);
-        const naturalOffset = cardCenter - gridCenter;
-        const curvedOffset = Math.sin(angleRadians) * radius;
-        const depth = (Math.cos(angleRadians) - 1) * radius;
-        const surfaceLight = Math.max(0, Math.cos(angleRadians));
-
-        if (Math.abs(distance) < nearestDistance) {
-          nearestDistance = Math.abs(distance);
-          centeredCardIndex = index;
-        }
-
-        card.style.setProperty('--flow-drum-angle', `${(-angleRadians * 180 / Math.PI).toFixed(2)}deg`);
-        card.style.setProperty('--flow-drum-depth', `${depth.toFixed(2)}px`);
-        card.style.setProperty('--flow-drum-shift', `${(curvedOffset - naturalOffset).toFixed(2)}px`);
-        card.style.setProperty('--flow-drum-scale', (.95 + surfaceLight * .05).toFixed(3));
-        card.style.setProperty('--flow-drum-opacity', (.18 + surfaceLight * .82).toFixed(3));
-        card.style.setProperty('--flow-drum-brightness', (.44 + surfaceLight * .56).toFixed(3));
-        card.style.setProperty('--flow-drum-blur', `${(distanceMagnitude * .72).toFixed(2)}px`);
-        card.dataset.drumPosition = distanceMagnitude < .34 ? 'front' : 'side';
-      });
-
-      const firstCard = flowCardRefs.current[0];
-      const secondCard = flowCardRefs.current[1];
-      const pitch = firstCard && secondCard
-        ? Math.max(secondCard.offsetTop - firstCard.offsetTop, firstCard.offsetHeight)
-        : Math.max(firstCard?.offsetHeight ?? 1, 1);
-      const roll = ((grid.scrollTop % pitch) + pitch) % pitch;
-      drum.style.setProperty('--flow-drum-roll', `${roll.toFixed(2)}px`);
-    };
-
-    const scheduleDrumUpdate = () => {
-      if (frame) return;
-      frame = window.requestAnimationFrame(updateDrum);
-    };
-
-    const handleDrumScroll = () => {
-      scheduleDrumUpdate();
-      window.clearTimeout(settleTimer);
-      settleTimer = window.setTimeout(() => {
-        if (centeredCardIndex < 0) return;
-        if (centeredCardIndex !== settledCardIndex) {
-          settledCardIndex = centeredCardIndex;
-          if ('vibrate' in navigator) navigator.vibrate(7);
-        }
-        onSelect(centeredCardIndex);
-      }, 140);
-    };
-
-    updateDrum();
-    grid.addEventListener('scroll', handleDrumScroll, { passive: true });
-    compactQuery.addEventListener('change', scheduleDrumUpdate);
-    const observer = new ResizeObserver(scheduleDrumUpdate);
-    observer.observe(grid);
-
-    return () => {
-      if (frame) window.cancelAnimationFrame(frame);
-      window.clearTimeout(settleTimer);
-      grid.removeEventListener('scroll', handleDrumScroll);
-      compactQuery.removeEventListener('change', scheduleDrumUpdate);
-      observer.disconnect();
-      clearDrumStyles();
-    };
-  }, [active, onSelect, steps.length]);
+  useEffect(() => setMobileDrumIndex(active), [active]);
 
   const centerMobileFlowCard = (index: number) => {
     if (typeof window === 'undefined' || !window.matchMedia('(max-width: 699px)').matches) return;
-    const grid = flowGridRef.current;
-    const card = flowCardRefs.current[index];
-    if (!grid || !card) return;
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    grid.scrollTo({
-      top: card.offsetTop - (grid.clientHeight - card.offsetHeight) / 2,
-      behavior: reducedMotion ? 'auto' : 'smooth',
-    });
+    setMobileDrumIndex(index);
   };
 
   useEffect(() => {
@@ -474,6 +364,48 @@ export function PerspectiveBusinessFlow({
     revealCompactTarget(selectedCard);
   };
 
+  const rotateMobileDrum = (direction: -1 | 1) => {
+    setMobileDrumIndex((current) => {
+      const next = (current + direction + steps.length) % steps.length;
+      onSelect(next);
+      if ('vibrate' in navigator) navigator.vibrate(7);
+      return next;
+    });
+  };
+
+  const handleDrumWheel = (event: ReactWheelEvent<HTMLDivElement>) => {
+    if (typeof window === 'undefined' || !window.matchMedia('(max-width: 699px)').matches) return;
+    if (Math.abs(event.deltaY) < 8 || Date.now() < drumWheelLockRef.current) return;
+    event.preventDefault();
+    drumWheelLockRef.current = Date.now() + 280;
+    rotateMobileDrum(event.deltaY > 0 ? 1 : -1);
+  };
+
+  const handleDrumPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (typeof window === 'undefined' || !window.matchMedia('(max-width: 699px)').matches) return;
+    drumPointerRef.current = { id: event.pointerId, y: event.clientY };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const finishDrumPointer = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const gesture = drumPointerRef.current;
+    if (!gesture || gesture.id !== event.pointerId) return;
+    drumPointerRef.current = null;
+    const distance = gesture.y - event.clientY;
+    if (Math.abs(distance) < 18) return;
+    suppressDrumClickRef.current = true;
+    rotateMobileDrum(distance > 0 ? 1 : -1);
+    window.setTimeout(() => { suppressDrumClickRef.current = false; }, 0);
+  };
+
+  const getMobileDrumSlot = (index: number) => {
+    let slot = index - mobileDrumIndex;
+    const half = steps.length / 2;
+    if (slot > half) slot -= steps.length;
+    if (slot < -half) slot += steps.length;
+    return slot;
+  };
+
   const startDetailCornerDrag = (index: number, event: ReactPointerEvent<HTMLButtonElement>) => {
     event.preventDefault();
     event.stopPropagation();
@@ -489,15 +421,30 @@ export function PerspectiveBusinessFlow({
       if (event.key === 'Escape') closeFlow();
     }}>
       <div className={styles.perspectiveFlowStage}>
-        <div ref={flowDrumRef} className={styles.perspectiveFlowDrumShell}>
+        <div
+          className={styles.perspectiveFlowDrumShell}
+          style={{ '--flow-drum-roll': `${mobileDrumIndex * 9}px` } as CSSProperties}
+          onWheel={handleDrumWheel}
+          onPointerDown={handleDrumPointerDown}
+          onPointerUp={finishDrumPointer}
+          onPointerCancel={() => { drumPointerRef.current = null; }}
+          onKeyDown={(event) => {
+            if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+            event.preventDefault();
+            event.stopPropagation();
+            rotateMobileDrum(event.key === 'ArrowDown' ? 1 : -1);
+          }}
+          tabIndex={0}
+          aria-label={lang === 'de' ? 'Prozessschritte als drehbare Auswahl' : 'Process steps as a rotating selector'}
+        >
           <div
-            ref={flowGridRef}
             className={`${styles.perspectiveFlowCardGrid} ${selectedFlow !== null ? styles.perspectiveFlowCardGridOpen : ''}`}
             style={gridStyle}
             data-interaction-hint={lang === 'de' ? 'KARTE WÄHLEN · DETAILS ÖFFNEN' : 'SELECT CARD · OPEN DETAILS'}
           >
             {steps.map((step, index) => {
               const selected = selectedFlow === index;
+              const mobileDrumSlot = getMobileDrumSlot(index);
               return (
                 <button
                   key={step}
@@ -507,15 +454,20 @@ export function PerspectiveBusinessFlow({
                   style={{
                     '--flow-index': index,
                     '--flow-sequence-delay': `${index * .2}s`,
+                    '--flow-drum-slot': mobileDrumSlot,
                   } as CSSProperties}
                   aria-current={active === index ? 'step' : undefined}
                   aria-expanded={selected}
                   aria-controls="perspective-flow-detail-panel"
                   aria-label={`${String(index + 1).padStart(2, '0')} · ${step}`}
                   data-flow-index={index}
+                  data-drum-position={mobileDrumSlot === 0 ? 'front' : Math.abs(mobileDrumSlot) === 1 ? 'near' : 'back'}
                   data-aila-touch-target={index === 0 ? 'website-card-01' : undefined}
                   data-aila-touch-active={ailaTouchedFlow === index ? 'true' : undefined}
-                  onClick={() => selectFlow(index)}
+                  onClick={() => {
+                    if (suppressDrumClickRef.current) return;
+                    selectFlow(index);
+                  }}
                 >
                   <span className={styles.perspectiveFlowCardHead}>
                     <b>{String(index + 1).padStart(2, '0')}</b>
