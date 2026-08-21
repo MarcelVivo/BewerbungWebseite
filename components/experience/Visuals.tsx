@@ -277,10 +277,10 @@ export function PerspectiveBusinessFlow({
         if (!card) return;
         const cardCenter = card.offsetTop + card.offsetHeight / 2;
         const distance = (cardCenter - gridCenter) / Math.max(card.offsetHeight, 1);
-        const limitedDistance = Math.max(-1.42, Math.min(1.42, distance));
+        const limitedDistance = Math.max(-1.18, Math.min(1.18, distance));
         const distanceMagnitude = Math.min(1, Math.abs(limitedDistance));
-        const angleRadians = limitedDistance * .98;
-        const radius = Math.max(card.offsetHeight * 1.34, 105);
+        const angleRadians = limitedDistance * 1.04;
+        const radius = Math.max(card.offsetHeight * .98, 48);
         const naturalOffset = cardCenter - gridCenter;
         const curvedOffset = Math.sin(angleRadians) * radius;
         const depth = (Math.cos(angleRadians) - 1) * radius;
@@ -294,9 +294,9 @@ export function PerspectiveBusinessFlow({
         card.style.setProperty('--flow-drum-angle', `${(-angleRadians * 180 / Math.PI).toFixed(2)}deg`);
         card.style.setProperty('--flow-drum-depth', `${depth.toFixed(2)}px`);
         card.style.setProperty('--flow-drum-shift', `${(curvedOffset - naturalOffset).toFixed(2)}px`);
-        card.style.setProperty('--flow-drum-scale', (.97 + surfaceLight * .03).toFixed(3));
-        card.style.setProperty('--flow-drum-opacity', (.24 + surfaceLight * .76).toFixed(3));
-        card.style.setProperty('--flow-drum-brightness', (.52 + surfaceLight * .48).toFixed(3));
+        card.style.setProperty('--flow-drum-scale', (.95 + surfaceLight * .05).toFixed(3));
+        card.style.setProperty('--flow-drum-opacity', (.18 + surfaceLight * .82).toFixed(3));
+        card.style.setProperty('--flow-drum-brightness', (.44 + surfaceLight * .56).toFixed(3));
         card.dataset.drumPosition = distanceMagnitude < .34 ? 'front' : 'side';
       });
     };

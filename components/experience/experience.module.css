@@ -6138,20 +6138,21 @@
   /* The ten process steps run around one horizontal, vertically rotating drum. */
   .perspectiveFlowDrumShell {
     position: relative;
-    height: 17.25rem;
+    height: 6rem;
     display: block;
     overflow: hidden;
-    border: 1px solid rgba(231,197,106,.4);
-    border-radius: 1.15rem;
+    border: 1px solid rgba(231,197,106,.48);
+    border-radius: 999px;
     background:
-      radial-gradient(ellipse 96% 54% at 50% 50%, rgba(51,48,36,.92) 0, rgba(17,19,16,.98) 55%, rgba(4,6,5,1) 100%),
+      radial-gradient(ellipse 94% 115% at 50% 50%, rgba(58,54,40,.96) 0, rgba(24,25,20,.98) 48%, rgba(5,7,6,1) 100%),
+      linear-gradient(90deg, rgba(5,7,6,1), rgba(29,29,23,.98) 12%, rgba(29,29,23,.98) 88%, rgba(5,7,6,1)),
       #080a08;
     box-shadow:
-      inset 1.15rem 0 1.8rem rgba(0,0,0,.54),
-      inset -1.15rem 0 1.8rem rgba(0,0,0,.54),
-      inset 0 1.1rem 2rem rgba(0,0,0,.72),
-      inset 0 -1.1rem 2rem rgba(0,0,0,.78),
-      0 1rem 2.5rem rgba(0,0,0,.34);
+      inset 1.3rem 0 1.3rem rgba(0,0,0,.7),
+      inset -1.3rem 0 1.3rem rgba(0,0,0,.7),
+      inset 0 .85rem 1.1rem rgba(0,0,0,.64),
+      inset 0 -.9rem 1.1rem rgba(0,0,0,.76),
+      0 .65rem 1.5rem rgba(0,0,0,.4);
     isolation: isolate;
   }
   .perspectiveFlowDrumShell::before,
@@ -6167,38 +6168,41 @@
     inset: 0;
     border-radius: inherit;
     background:
-      linear-gradient(180deg, rgba(2,3,3,.94) 0, rgba(3,4,3,.55) 16%, transparent 38%, transparent 62%, rgba(3,4,3,.58) 84%, rgba(2,3,3,.96) 100%),
-      linear-gradient(90deg, rgba(231,197,106,.1), transparent 13%, transparent 87%, rgba(231,197,106,.1));
+      radial-gradient(ellipse 1.4rem 68% at 0 50%, rgba(231,197,106,.24), rgba(40,36,25,.42) 46%, rgba(0,0,0,.78) 74%, transparent 76%),
+      radial-gradient(ellipse 1.4rem 68% at 100% 50%, rgba(231,197,106,.24), rgba(40,36,25,.42) 46%, rgba(0,0,0,.78) 74%, transparent 76%),
+      linear-gradient(180deg, rgba(2,3,3,.88) 0, rgba(3,4,3,.42) 19%, transparent 41%, transparent 59%, rgba(3,4,3,.48) 81%, rgba(2,3,3,.92) 100%),
+      linear-gradient(90deg, rgba(231,197,106,.12), transparent 11%, transparent 89%, rgba(231,197,106,.12));
     box-shadow:
-      inset 0 .14rem rgba(255,238,184,.09),
-      inset 0 -.14rem rgba(0,0,0,.9);
+      inset 0 .12rem rgba(255,238,184,.12),
+      inset 0 -.12rem rgba(0,0,0,.92);
   }
   .perspectiveFlowDrumShell::after {
     top: 50%;
-    height: 5.5rem;
+    height: 3.18rem;
     transform: translateY(-50%);
     border-top: 1px solid rgba(246,205,92,.48);
     border-bottom: 1px solid rgba(246,205,92,.48);
-    background: linear-gradient(90deg, rgba(231,197,106,.035), rgba(255,241,190,.075) 50%, rgba(231,197,106,.035));
+    background:
+      linear-gradient(90deg, rgba(0,0,0,.28), rgba(255,241,190,.07) 16%, rgba(255,241,190,.09) 50%, rgba(255,241,190,.07) 84%, rgba(0,0,0,.28));
     box-shadow:
-      0 -.65rem 1.4rem rgba(0,0,0,.24),
-      0 .65rem 1.4rem rgba(0,0,0,.3),
-      inset 0 0 1.25rem rgba(231,197,106,.055);
+      0 -.34rem .7rem rgba(0,0,0,.32),
+      0 .34rem .7rem rgba(0,0,0,.38),
+      inset 0 0 .8rem rgba(231,197,106,.08);
   }
   .perspectiveFlowCardGrid {
     z-index: 2;
     height: 100% !important;
     flex-direction: column;
     align-items: stretch;
-    gap: .12rem;
-    padding: 5.7rem .7rem !important;
+    gap: .06rem;
+    padding: 1.4rem .75rem !important;
     overflow-x: hidden !important;
     overflow-y: auto !important;
-    scroll-padding-block: 5.7rem;
+    scroll-padding-block: 1.4rem;
     scroll-snap-type: y mandatory;
     overscroll-behavior-block: contain;
     touch-action: pan-y;
-    perspective: 720px !important;
+    perspective: 460px !important;
     perspective-origin: center;
     background: transparent;
   }
@@ -6207,10 +6211,10 @@
   .perspectiveFlowCardGrid .perspectiveFlowNode:focus-visible,
   .perspectiveFlowCardGrid .perspectiveFlowNode[aria-current='step'],
   .perspectiveFlowCardGrid .perspectiveFlowNode.perspectiveFlowSelected {
-    width: calc(100% - .35rem) !important;
-    flex: 0 0 5.35rem;
+    width: calc(100% - 1.6rem) !important;
+    flex: 0 0 3.15rem;
     margin-inline: auto;
-    min-height: 5.35rem;
+    min-height: 3.15rem;
     scroll-snap-align: center;
     scroll-snap-stop: always;
     border: 0;
@@ -6222,13 +6226,12 @@
       radial-gradient(ellipse at 50% 0%, rgba(231,197,106,.11), transparent 62%),
       linear-gradient(100deg, rgba(7,9,8,.98), rgba(27,28,23,.98) 48%, rgba(6,8,7,.98));
     box-shadow:
-      inset 0 .2rem .28rem rgba(255,246,208,.08),
-      inset 0 -.35rem .48rem rgba(0,0,0,.5),
-      0 .8rem 1.45rem rgba(0,0,0,.36);
+      inset 0 .12rem .18rem rgba(255,246,208,.08),
+      inset 0 -.2rem .28rem rgba(0,0,0,.48);
     opacity: var(--flow-drum-opacity, .72) !important;
     filter: brightness(var(--flow-drum-brightness, .7)) !important;
     transform:
-      perspective(720px)
+      perspective(460px)
       translateY(var(--flow-drum-shift, 0px))
       translateZ(var(--flow-drum-depth, -50px))
       rotateX(var(--flow-drum-angle, 0deg))
@@ -6262,17 +6265,17 @@
     box-shadow:
       inset 0 .22rem .34rem rgba(255,246,208,.13),
       inset 0 -.38rem .55rem rgba(0,0,0,.48),
-      0 1rem 2rem rgba(0,0,0,.48),
-      0 0 1.3rem rgba(231,197,106,.1);
+      0 .25rem .7rem rgba(0,0,0,.42),
+      0 0 .8rem rgba(231,197,106,.1);
   }
   .perspectiveFlowCardGrid .perspectiveFlowCardHead,
   .perspectiveFlowCardGrid .perspectiveFlowSelected .perspectiveFlowCardHead {
-    min-height: 5.35rem;
-    padding: 1rem 1.05rem;
+    min-height: 3.15rem;
+    padding: .55rem 1.05rem;
   }
-  .perspectiveFlowCardGrid .perspectiveFlowCardHead > b { font-size: .9rem; }
-  .perspectiveFlowCardGrid .perspectiveFlowCardHead > strong { font-size: 1.18rem; }
-  .perspectiveFlowCardGrid .perspectiveFlowCardHead > i { width: 2.2rem; height: 2.2rem; }
+  .perspectiveFlowCardGrid .perspectiveFlowCardHead > b { font-size: .72rem; }
+  .perspectiveFlowCardGrid .perspectiveFlowCardHead > strong { font-size: 1rem; }
+  .perspectiveFlowCardGrid .perspectiveFlowCardHead > i { width: 1.9rem; height: 1.9rem; }
 
   .channelFan > button { min-height: 4.6rem; }
   .channelFan button:last-child { grid-column: auto; }
