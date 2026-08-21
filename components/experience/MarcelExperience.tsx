@@ -969,6 +969,8 @@ export default function MarcelExperience() {
                   <strong>{lang === 'de' ? 'Mehr Klarheit. Mehr Tempo. Eine Verantwortung.' : 'More clarity. More speed. One accountable partner.'}</strong>
                 </div>
 
+                <div className={styles.mobileAilaAboutDock} data-mobile-aila-anchor="about" aria-hidden="true" />
+
                 <div className={styles.aboutAilaBay} aria-hidden="true">
                   <SectionDockingStation station="about" />
                 </div>

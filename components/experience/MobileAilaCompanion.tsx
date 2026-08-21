@@ -5,7 +5,7 @@ import type { ExperienceLang } from './content';
 import { trackWebsiteEvent } from '../../app/lib/analytics';
 import styles from './experience.module.css';
 
-type MobileAilaStage = 'hero' | 'nav' | 'final';
+type MobileAilaStage = 'hero' | 'nav' | 'about' | 'final';
 
 const clamp = (value: number, minimum = 0, maximum = 1) => Math.min(maximum, Math.max(minimum, value));
 const mix = (from: number, to: number, progress: number) => from + (to - from) * progress;
@@ -27,20 +27,28 @@ export default function MobileAilaCompanion({ lang }: { lang: ExperienceLang }) 
 
       const hero = document.querySelector<HTMLElement>('[data-mobile-aila-anchor="hero"]');
       const nav = document.querySelector<HTMLElement>('[data-mobile-aila-anchor="nav"]');
+      const about = document.querySelector<HTMLElement>('[data-mobile-aila-anchor="about"]');
       const final = document.querySelector<HTMLElement>('[data-mobile-aila-anchor="final"]');
-      if (!hero || !nav || !final) return;
+      if (!hero || !nav || !about || !final) return;
 
       const heroRect = hero.getBoundingClientRect();
       const navRect = nav.getBoundingClientRect();
+      const aboutRect = about.getBoundingClientRect();
       const finalRect = final.getBoundingClientRect();
       const finalVisible = finalRect.top < window.innerHeight * .78 && finalRect.bottom > window.innerHeight * .12;
+      const aboutVisible = aboutRect.top < window.innerHeight * .76 && aboutRect.bottom > window.innerHeight * .18;
       const travel = ease(clamp(window.scrollY / Math.max(150, window.innerHeight * .22)));
 
+      const navWidth = clamp(window.innerWidth * .27, 102, 132);
+      const navHeight = navWidth * .79;
+      const navLeft = navRect.left + navRect.width / 2 - navWidth * .52;
+      const navTop = navRect.top + navRect.height / 2 - navHeight * .38;
+
       let nextStage: MobileAilaStage = 'nav';
-      let left = mix(heroRect.left, navRect.left, travel);
-      let top = mix(heroRect.top, navRect.top, travel);
-      let width = mix(heroRect.width, navRect.width, travel);
-      let height = mix(heroRect.height, navRect.height, travel);
+      let left = mix(heroRect.left, navLeft, travel);
+      let top = mix(heroRect.top, navTop, travel);
+      let width = mix(heroRect.width, navWidth, travel);
+      let height = mix(heroRect.height, navHeight, travel);
 
       if (finalVisible) {
         nextStage = 'final';
@@ -48,6 +56,12 @@ export default function MobileAilaCompanion({ lang }: { lang: ExperienceLang }) 
         top = finalRect.top;
         width = finalRect.width;
         height = finalRect.height;
+      } else if (aboutVisible) {
+        nextStage = 'about';
+        left = aboutRect.left;
+        top = aboutRect.top;
+        width = aboutRect.width;
+        height = aboutRect.height;
       } else if (travel < .96) {
         nextStage = 'hero';
       }
@@ -91,7 +105,7 @@ export default function MobileAilaCompanion({ lang }: { lang: ExperienceLang }) 
   const openAila = () => {
     window.dispatchEvent(new Event('aila:prime-audio'));
     window.dispatchEvent(new Event('aila:open-sales-conversation'));
-    trackWebsiteEvent('aila_opened', { station: stage === 'final' ? 'journey-contact' : 'journey-start', metadata: { source: `mobile_companion_${stage}` } });
+    trackWebsiteEvent('aila_opened', { station: stage === 'final' ? 'journey-contact' : stage === 'about' ? 'journey-about' : 'journey-start', metadata: { source: `mobile_companion_${stage}` } });
   };
 
   return (
@@ -106,6 +120,9 @@ export default function MobileAilaCompanion({ lang }: { lang: ExperienceLang }) 
       style={{ '--mobile-aila-left': '50vw', '--mobile-aila-top': '8rem' } as CSSProperties}
     >
       <span className={styles.mobileAilaAura} aria-hidden="true" />
+      <span className={styles.mobileAilaNavPrompt} aria-hidden="true">
+        <span>{lang === 'de' ? 'Gespräch mit AILA beginnen' : 'Start a conversation with AILA'}</span><b>→</b>
+      </span>
       <img src="/cinematic/aila/aila-idle-v1-fallback-transparent.png" alt="" aria-hidden="true" draggable="false" />
       <span className={styles.mobileAilaSignal} aria-hidden="true"><i /><i /><i /><i /></span>
       <span className={styles.mobileAilaParticles} aria-hidden="true"><i /><i /><i /><i /><i /></span>

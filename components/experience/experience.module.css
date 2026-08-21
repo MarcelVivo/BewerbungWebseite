@@ -6222,6 +6222,7 @@
    greeting, persistent navigation and the final conversation invitation. */
 .mobileAilaCompanion,
 .mobileAilaHeroDock,
+.mobileAilaAboutDock,
 .mobileAilaFinalDock,
 .mobileAppAilaDock { display: none; }
 
@@ -6241,10 +6242,20 @@
   }
 
   .mobileAilaFinalDock {
-    width: clamp(9.25rem, 24vw, 12rem);
-    height: clamp(7rem, 18vw, 9rem);
+    width: clamp(17rem, 46vw, 22rem);
+    height: clamp(12.75rem, 34vw, 16.5rem);
     margin: .6rem auto .15rem;
     display: block;
+  }
+  .mobileAilaAboutDock {
+    position: absolute;
+    z-index: 4;
+    top: 42%;
+    right: 2%;
+    width: clamp(10.5rem, 28vw, 14rem);
+    height: clamp(8rem, 21vw, 10.5rem);
+    display: block;
+    pointer-events: none;
   }
   .finalAilaSpace { display: grid; place-items: center; }
 
@@ -6304,6 +6315,36 @@
     animation: mobileAilaAura 3.8s ease-in-out infinite;
   }
 
+  .mobileAilaNavPrompt {
+    position: absolute;
+    z-index: 8;
+    top: 50%;
+    right: 87%;
+    width: clamp(7.2rem, 24vw, 9rem);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: .42rem;
+    color: #f2e5bd;
+    opacity: 0;
+    transform: translate3d(.55rem, -50%, 0);
+    transition: opacity .28s ease, transform .42s cubic-bezier(.16,.8,.2,1);
+    pointer-events: none;
+  }
+  .mobileAilaNavPrompt > span {
+    max-width: 6.4rem;
+    font: 680 clamp(.48rem, 1.65vw, .61rem)/1.28 var(--font-chakra-petch), monospace;
+    letter-spacing: .055em;
+    text-align: right;
+    text-wrap: balance;
+  }
+  .mobileAilaNavPrompt b {
+    color: #e7c56a;
+    font: 500 1.05rem/1 system-ui, sans-serif;
+    text-shadow: 0 0 .55rem rgba(231,197,106,.4);
+  }
+  .mobileAilaCompanion[data-stage='nav'] .mobileAilaNavPrompt { opacity: 1; transform: translate3d(0, -50%, 0); }
+
   .mobileAilaSignal {
     position: absolute;
     z-index: 5;
@@ -6354,6 +6395,9 @@
     filter: drop-shadow(0 .3rem .45rem rgba(0,0,0,.55)) drop-shadow(0 0 .3rem rgba(218,157,47,.24));
     animation-duration: 3.4s;
   }
+  .mobileAilaCompanion[data-stage='about'] .mobileAilaSignal,
+  .mobileAilaCompanion[data-stage='about'] .mobileAilaParticles { opacity: .8; }
+  .mobileAilaCompanion[data-stage='about'] > img { animation-duration: 4.1s; }
   .mobileAilaCompanion[data-stage='final'] .mobileAilaSignal { opacity: 1; animation: mobileAilaInvite 2.2s ease-in-out infinite; }
   .mobileAilaCompanion[data-stage='final'] .mobileAilaAura { animation-duration: 2.2s; }
 
@@ -6426,7 +6470,16 @@
     height: clamp(7.7rem, 33vw, 10rem);
     margin-top: .3rem;
   }
-  .mobileAilaFinalDock { width: 9.5rem; height: 7.25rem; }
+  .mobileAilaAboutDock {
+    top: 44%;
+    right: 1%;
+    width: clamp(10.75rem, 46vw, 12.75rem);
+    height: clamp(8.1rem, 34.5vw, 9.6rem);
+  }
+  .mobileAilaFinalDock {
+    width: min(21rem, 88vw);
+    height: min(15.75rem, 66vw);
+  }
   .mobileAppAilaDock { width: 2.75rem; height: 2.75rem; flex-basis: 2.75rem; }
   .finalAilaHeader { pointer-events: none; }
   .finalAilaHeader > span { margin-top: .35rem; }
