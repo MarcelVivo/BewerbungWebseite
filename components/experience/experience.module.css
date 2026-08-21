@@ -520,40 +520,34 @@
 .ailaGuide > footer button:last-child { color: var(--gold-pale); }
 .ailaGuide > footer button:hover { color: #fff9df; }
 
-.ailaGreeting {
+.ailaGreetingBubble {
   position: fixed;
   z-index: 285;
-  left: var(--aila-greeting-x, 50vw);
-  top: calc(var(--aila-greeting-y, 50vh) + 9rem);
-  transform: translate3d(-50%, 0, 0);
-  width: min(23rem, calc(100vw - 3rem));
+  left: calc(var(--aila-greeting-x, 50vw) + 7.5rem);
+  top: calc(var(--aila-greeting-y, 50vh) - 2.2rem);
+  width: 15rem;
+  height: 7rem;
   pointer-events: none;
-  text-align: center;
 }
 
-.ailaGreetingInner {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: .55rem;
-  pointer-events: auto;
-  animation: ailaGreetingFloat 5.5s ease-in-out infinite;
-}
-
-.ailaGreetingLine {
+.ailaGreetingWord {
+  position: absolute;
   margin: 0;
-  padding: .55rem 1rem;
+  transform: translate3d(-50%, -50%, 0) rotate(var(--word-rot, 0deg));
   color: var(--gold-pale, #f2dfa6);
-  font: 500 .92rem/1.42 'Inter', sans-serif;
+  font: 500 1.02rem/1.3 'Inter', sans-serif;
   letter-spacing: -.005em;
+  white-space: nowrap;
   text-shadow: 0 .1rem .6rem rgba(0,0,0,.7), 0 .02rem 0 rgba(255,255,255,.08);
-  animation: ailaGreetingLineIn .48s cubic-bezier(.16,.8,.2,1) both;
+  animation: ailaGreetingWordIn .42s cubic-bezier(.16,.8,.2,1) both;
 }
 
-.ailaGreetingLine[data-phase='exit'] { animation: ailaGreetingLineOut .38s cubic-bezier(.4,0,1,1) both; }
+.ailaGreetingWord[data-phase='exit'] { animation: ailaGreetingWordOut .3s cubic-bezier(.4,0,1,1) both; }
 
 .ailaGreetingDismiss {
-  flex: 0 0 auto;
+  position: absolute;
+  top: 0;
+  right: 0;
   width: 1.5rem;
   height: 1.5rem;
   display: grid;
@@ -564,34 +558,32 @@
   background: rgba(10,10,8,.55);
   color: rgba(242,223,166,.75);
   cursor: pointer;
-  opacity: .7;
+  opacity: .55;
+  pointer-events: auto;
   transition: opacity .2s ease, border-color .2s ease;
 }
 
 .ailaGreetingDismiss:hover { opacity: 1; border-color: rgba(231,197,106,.5); }
 
-@keyframes ailaGreetingLineIn {
-  from { opacity: 0; transform: translate3d(0, .55rem, 0) scale(.98); filter: blur(5px); }
-  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
+@keyframes ailaGreetingWordIn {
+  from { opacity: 0; filter: blur(7px); transform: translate3d(-50%, -50%, 0) rotate(var(--word-rot, 0deg)) scale(.92) translateY(.35rem); }
+  to { opacity: 1; filter: blur(0); transform: translate3d(-50%, -50%, 0) rotate(var(--word-rot, 0deg)) scale(1) translateY(0); }
 }
 
-@keyframes ailaGreetingLineOut {
-  from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
-  to { opacity: 0; transform: translate3d(0, -.4rem, 0) scale(1.01); filter: blur(5px); }
-}
-
-@keyframes ailaGreetingFloat {
-  0%, 100% { transform: translate3d(0, 0, 0); }
-  50% { transform: translate3d(0, -.3rem, 0); }
+@keyframes ailaGreetingWordOut {
+  from { opacity: 1; filter: blur(0); transform: translate3d(-50%, -50%, 0) rotate(var(--word-rot, 0deg)) scale(1) translateY(0); }
+  to { opacity: 0; filter: blur(7px); transform: translate3d(-50%, -50%, 0) rotate(var(--word-rot, 0deg)) scale(1.08) translateY(-.35rem); }
 }
 
 @media (max-width: 1100px) {
-  .ailaGreeting {
-    left: 50vw;
-    top: clamp(19.5rem, 47vw, 26rem);
-    width: min(21rem, calc(100vw - 2.4rem));
+  .ailaGreetingBubble {
+    left: 50%;
+    top: clamp(22rem, 51vw, 27.5rem);
+    transform: translateX(-50%);
+    width: min(15rem, calc(100vw - 4rem));
+    height: 4.5rem;
   }
-  .ailaGreetingLine { font-size: .85rem; padding: .5rem .85rem; }
+  .ailaGreetingWord { font-size: .92rem; }
 }
 
 .ailaContactCapture { min-height: 0; margin-top: .9rem; padding-right: .18rem; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(231,197,106,.28) transparent; }

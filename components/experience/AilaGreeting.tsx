@@ -1,17 +1,19 @@
 'use client';
 
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { X } from 'lucide-react';
 import { heroGreeting, type ExperienceLang } from './content';
 import { getFlightPathDraft } from './flightPathStore';
 import styles from './experience.module.css';
 
 type HeroPhase = 'loading' | 'ignition' | 'revealed';
-type LinePhase = 'enter' | 'exit';
+type WordPhase = 'enter' | 'exit';
 
 const WORDS_PER_MINUTE = 145;
-const LINE_EXIT_MS = 380;
-const MIN_LINE_MS = 1400;
+const WORD_EXIT_MS = 300;
+const MIN_WORD_MS = 420;
+const MAX_WORD_MS = 1500;
+const SENTENCE_PAUSE_MS = 260;
 
 const sessionKey = (lang: ExperienceLang) => `ms-aila-greeting-${lang}`;
 
@@ -31,20 +33,23 @@ const markShown = (lang: ExperienceLang) => {
   }
 };
 
-const distributeDurations = (lines: readonly string[], totalMs: number) => {
-  const totalChars = lines.reduce((sum, line) => sum + line.length, 0) || 1;
-  return lines.map((line) => Math.max(MIN_LINE_MS, (line.length / totalChars) * totalMs));
+const buildWords = (lines: readonly string[]) => lines.flatMap((line) => line.split(' ').filter(Boolean));
+
+const distributeDurations = (words: readonly string[], totalMs: number) => {
+  const totalChars = words.reduce((sum, word) => sum + word.length, 0) || 1;
+  return words.map((word) => {
+    const share = Math.min(MAX_WORD_MS, Math.max(MIN_WORD_MS, (word.length / totalChars) * totalMs));
+    return /[.!?—]$/.test(word) ? share + SENTENCE_PAUSE_MS : share;
+  });
 };
 
-const estimateSilentTotalMs = (lines: readonly string[]) => {
-  const wordCount = lines.join(' ').split(/\s+/).filter(Boolean).length;
-  return Math.max(lines.length * MIN_LINE_MS, (wordCount / WORDS_PER_MINUTE) * 60_000);
-};
+const estimateSilentTotalMs = (words: readonly string[]) =>
+  Math.max(words.length * MIN_WORD_MS, (words.length / WORDS_PER_MINUTE) * 60_000);
 
 export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang; heroPhase: HeroPhase }) {
   const [visible, setVisible] = useState(false);
-  const [lineIndex, setLineIndex] = useState(-1);
-  const [linePhase, setLinePhase] = useState<LinePhase>('enter');
+  const [wordIndex, setWordIndex] = useState(-1);
+  const [wordPhase, setWordPhase] = useState<WordPhase>('enter');
   const startedRef = useRef(false);
   const dismissRef = useRef<() => void>(() => undefined);
 
@@ -52,7 +57,7 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
     if (startedRef.current || heroPhase !== 'revealed' || alreadyShown(lang)) return;
     startedRef.current = true;
 
-    const lines = heroGreeting[lang];
+    const words = buildWords(heroGreeting[lang]);
     let mode: 'silent' | 'audio' | 'done' = 'silent';
     let holdTimer = 0;
     let exitTimer = 0;
@@ -88,7 +93,7 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
       cleanupAll();
       dispatchGuideState('idle');
       setVisible(false);
-      setLineIndex(-1);
+      setWordIndex(-1);
       markShown(lang);
     };
     dismissRef.current = finish;
@@ -96,13 +101,13 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
     const runSequence = (durations: number[], token: number) => {
       const advance = (index: number) => {
         if (token !== sequenceToken || mode === 'done') return;
-        if (index >= lines.length) { finish(); return; }
-        setLineIndex(index);
-        setLinePhase('enter');
+        if (index >= words.length) { finish(); return; }
+        setWordIndex(index);
+        setWordPhase('enter');
         holdTimer = window.setTimeout(() => {
           if (token !== sequenceToken || mode === 'done') return;
-          setLinePhase('exit');
-          exitTimer = window.setTimeout(() => advance(index + 1), LINE_EXIT_MS);
+          setWordPhase('exit');
+          exitTimer = window.setTimeout(() => advance(index + 1), WORD_EXIT_MS);
         }, durations[index]);
       };
       advance(0);
@@ -133,8 +138,8 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
         const applyRealTiming = () => {
           const totalMs = Number.isFinite(audio.duration) && audio.duration > 0
             ? audio.duration * 1000
-            : estimateSilentTotalMs(lines);
-          runSequence(distributeDurations(lines, totalMs), token);
+            : estimateSilentTotalMs(words);
+          runSequence(distributeDurations(words, totalMs), token);
         };
         if (Number.isFinite(audio.duration) && audio.duration > 0) {
           applyRealTiming();
@@ -151,7 +156,7 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
     window.addEventListener('keydown', handleGesture);
 
     setVisible(true);
-    runSequence(distributeDurations(lines, estimateSilentTotalMs(lines)), sequenceToken);
+    runSequence(distributeDurations(words, estimateSilentTotalMs(words)), sequenceToken);
 
     return () => {
       mode = 'done';
@@ -159,29 +164,41 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
     };
   }, [heroPhase, lang]);
 
-  if (!visible || lineIndex < 0) return null;
+  // Stable per-word floating jitter: recomputed only when the word itself changes,
+  // so it doesn't reshuffle on unrelated re-renders while the word is on screen.
+  const jitter = useMemo(() => ({
+    left: 14 + Math.random() * 60,
+    top: 12 + Math.random() * 58,
+    rot: (Math.random() - 0.5) * 7,
+  }), [wordIndex]);
+
+  if (!visible || wordIndex < 0) return null;
 
   const start = getFlightPathDraft().start;
+  const words = buildWords(heroGreeting[lang]);
 
   return (
     <div
-      className={styles.ailaGreeting}
+      className={styles.ailaGreetingBubble}
       style={{ '--aila-greeting-x': `${start.x}vw`, '--aila-greeting-y': `${start.y}vh` } as CSSProperties}
       aria-live="polite"
     >
-      <div className={styles.ailaGreetingInner}>
-        <p key={lineIndex} className={styles.ailaGreetingLine} data-phase={linePhase}>
-          {heroGreeting[lang][lineIndex]}
-        </p>
-        <button
-          type="button"
-          className={styles.ailaGreetingDismiss}
-          onClick={(event) => { event.stopPropagation(); dismissRef.current(); }}
-          aria-label={lang === 'de' ? 'Begrüssung schliessen' : 'Dismiss greeting'}
-        >
-          <X size={13} strokeWidth={2.2} />
-        </button>
-      </div>
+      <span
+        key={wordIndex}
+        className={styles.ailaGreetingWord}
+        data-phase={wordPhase}
+        style={{ left: `${jitter.left}%`, top: `${jitter.top}%`, '--word-rot': `${jitter.rot}deg` } as CSSProperties}
+      >
+        {words[wordIndex]}
+      </span>
+      <button
+        type="button"
+        className={styles.ailaGreetingDismiss}
+        onClick={(event) => { event.stopPropagation(); dismissRef.current(); }}
+        aria-label={lang === 'de' ? 'Begrüssung schliessen' : 'Dismiss greeting'}
+      >
+        <X size={13} strokeWidth={2.2} />
+      </button>
     </div>
   );
 }
