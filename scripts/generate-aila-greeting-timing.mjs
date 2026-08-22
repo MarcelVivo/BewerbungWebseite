@@ -54,5 +54,7 @@ async function transcribe(lang, fileBase) {
 for (const lang of ['de', 'en']) {
   await transcribe(lang, `greeting-${lang}`);
   await transcribe(lang, `greeting-return-${lang}`);
+  await transcribe(lang, `greeting-about-${lang}`);
+  await transcribe(lang, `greeting-contact-${lang}`);
 }
 console.log('Fertig.');

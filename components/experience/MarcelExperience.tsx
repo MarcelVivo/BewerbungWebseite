@@ -8,6 +8,7 @@ import { useLanguage } from '../../app/LanguageContext';
 import { trackWebsiteEvent } from '../../app/lib/analytics';
 import { PROJECTS } from '../../app/portfolio/data';
 import AilaGreeting from './AilaGreeting';
+import { dockingRestScrollY, dockingStopForSectionId } from './dockingRoute';
 import ExperienceNav from './ExperienceNav';
 import MarketingDockingStation from './MarketingDockingStation';
 import ProblemDockingStation from './ProblemDockingStation';
@@ -208,6 +209,8 @@ export default function MarcelExperience() {
   const [heroPhase, setHeroPhase] = useState<HeroPhase>('loading');
   const [heroLoadProgress, setHeroLoadProgress] = useState(0);
   const [ailaReturnTrigger, setAilaReturnTrigger] = useState(0);
+  const [ailaAboutTrigger, setAilaAboutTrigger] = useState(0);
+  const [ailaContactTrigger, setAilaContactTrigger] = useState(0);
   const selectedProjects = useMemo(() => [PROJECTS[0], PROJECTS[3], PROJECTS[1]].filter(Boolean), []);
   const activeModuleData = MODULES[lang][activeModule];
   const ActiveModuleIcon = activeModuleData.Icon;
@@ -381,15 +384,21 @@ export default function MarcelExperience() {
     };
   }, [heroPhase]);
 
-  // Replays AILA's short "need help?" nudge whenever a visitor scrolls well
-  // past the hero (into the following sections) and then scrolls back up to
-  // it - distinct from the one-time welcome, which only ever plays once.
+  // Drives AILA's scroll-triggered nudges beyond the one-time welcome:
+  // replays a short "need help?" hint whenever a visitor scrolls well past
+  // the hero and then back up to it, and plays two further one-time nudges
+  // the first time her scroll-docking settles her at the "about" and
+  // "contact" stations further down the page.
   useEffect(() => {
     const section = heroSectionRef.current;
     if (!section || heroPhase !== 'revealed') return;
 
     let frame = 0;
     let leftHero = false;
+    let aboutFired = false;
+    let contactFired = false;
+    const aboutStop = dockingStopForSectionId('journey-about');
+    const contactStop = dockingStopForSectionId('journey-contact');
 
     const check = () => {
       frame = 0;
@@ -402,6 +411,21 @@ export default function MarcelExperience() {
         leftHero = false;
         setAilaReturnTrigger((value) => value + 1);
       }
+
+      if (!aboutFired && aboutStop) {
+        const restY = dockingRestScrollY(aboutStop);
+        if (restY !== null && y >= restY) {
+          aboutFired = true;
+          setAilaAboutTrigger((value) => value + 1);
+        }
+      }
+      if (!contactFired && contactStop) {
+        const restY = dockingRestScrollY(contactStop);
+        if (restY !== null && y >= restY) {
+          contactFired = true;
+          setAilaContactTrigger((value) => value + 1);
+        }
+      }
     };
 
     const requestCheck = () => {
@@ -409,6 +433,7 @@ export default function MarcelExperience() {
     };
 
     window.addEventListener('scroll', requestCheck, { passive: true });
+    check();
     return () => {
       if (frame) window.cancelAnimationFrame(frame);
       window.removeEventListener('scroll', requestCheck);
@@ -622,7 +647,13 @@ export default function MarcelExperience() {
       <a className={styles.skipLink} href="#main-content">{c.skip}</a>
       <ExperienceNav lang={lang} />
       <ScrollEntity rootRef={rootRef} lang={lang} />
-      <AilaGreeting lang={lang} heroPhase={heroPhase} returnTrigger={ailaReturnTrigger} />
+      <AilaGreeting
+        lang={lang}
+        heroPhase={heroPhase}
+        returnTrigger={ailaReturnTrigger}
+        aboutTrigger={ailaAboutTrigger}
+        contactTrigger={ailaContactTrigger}
+      />
 
       <main id="main-content">
         <section ref={heroSectionRef} id="journey-start" className={styles.hero} onPointerMove={onHeroPointer}>

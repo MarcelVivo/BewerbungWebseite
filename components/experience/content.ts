@@ -41,6 +41,20 @@ export const heroGreetingReturn = {
   en: ['Need some help?', "Click on me, I'm happy to help."],
 } as const;
 
+// Replayed once, the first time a visitor's scroll settles AILA at the
+// "about" docking station (journey-about / Zusammenarbeit).
+export const heroGreetingAbout = {
+  de: ['Passt das zu deinem Unternehmen?', 'Frag mich, ich schätze es kurz ein.'],
+  en: ['Does this fit your business?', "Ask me, I'll take a quick look."],
+} as const;
+
+// Replayed once, the first time a visitor's scroll settles AILA at the
+// "contact" docking station (journey-contact / Projektstart).
+export const heroGreetingContact = {
+  de: ['Bereit für den nächsten Schritt?', 'Erzähl mir kurz, worum es geht.'],
+  en: ['Ready for the next step?', "Tell me briefly what it's about."],
+} as const;
+
 export const flowSteps = {
   de: ['Google-Suche', 'Website', 'Anfrage', 'CRM', 'Termin', 'Beratung', 'Offerte', 'Freigabe', 'Auftrag', 'Projekt'],
   en: ['Google search', 'Website', 'Enquiry', 'CRM', 'Meeting', 'Consultation', 'Quote', 'Approval', 'Order', 'Project'],

@@ -36,6 +36,19 @@ const HERO_GREETING_RETURN = {
   en: ['Need some help?', "Click on me, I'm happy to help."],
 };
 
+// Played once, the first time AILA's scroll-docking settles her at the
+// "about"/"contact" stations - kept in sync with heroGreetingAbout /
+// heroGreetingContact in components/experience/content.ts.
+const HERO_GREETING_ABOUT = {
+  de: ['Passt das zu deinem Unternehmen?', 'Frag mich, ich schätze es kurz ein.'],
+  en: ['Does this fit your business?', "Ask me, I'll take a quick look."],
+};
+
+const HERO_GREETING_CONTACT = {
+  de: ['Bereit für den nächsten Schritt?', 'Erzähl mir kurz, worum es geht.'],
+  en: ['Ready for the next step?', "Tell me briefly what it's about."],
+};
+
 const INSTRUCTIONS = {
   de: 'Sprich als AILA: warme, ruhige, souveraene deutsche Stimme. Natuerliches Hochdeutsch mit dezenter Schweizer Tonalitaet, klar und nicht werblich.',
   en: 'Speak as AILA with a warm, calm, assured voice. Clear, natural English, concise and never salesy.',
@@ -77,5 +90,7 @@ async function generate(lines, lang, fileName) {
 for (const lang of ['de', 'en']) {
   await generate(HERO_GREETING, lang, `greeting-${lang}.mp3`);
   await generate(HERO_GREETING_RETURN, lang, `greeting-return-${lang}.mp3`);
+  await generate(HERO_GREETING_ABOUT, lang, `greeting-about-${lang}.mp3`);
+  await generate(HERO_GREETING_CONTACT, lang, `greeting-contact-${lang}.mp3`);
 }
 console.log('Fertig.');

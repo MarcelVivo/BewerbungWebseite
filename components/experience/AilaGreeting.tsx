@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type CSSProperties, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
 import { Volume2, X } from 'lucide-react';
-import { heroGreeting, heroGreetingReturn, type ExperienceLang } from './content';
+import { heroGreeting, heroGreetingReturn, heroGreetingAbout, heroGreetingContact, type ExperienceLang } from './content';
 import styles from './experience.module.css';
 
 type HeroPhase = 'loading' | 'ignition' | 'revealed';
@@ -63,18 +63,27 @@ const buildRealDurations = (timing: WordTiming[], wordCount: number): { duration
   return { durations, leadInMs };
 };
 
-// Two distinct sequences share the same rendering/audio/timing pipeline: the
-// one-time welcome on page load, and a short nudge replayed whenever a
-// visitor scrolls well past the hero and then back up to it. Both audio and
-// timing assets are pre-generated per kind - see scripts/generate-aila-greeting-audio.mjs
+// Several distinct sequences share the same rendering/audio/timing pipeline:
+// the one-time welcome on page load, a short nudge replayed whenever a
+// visitor scrolls well past the hero and then back up to it, and two
+// one-time nudges played the first time AILA's scroll-docking settles her at
+// the "about" and "contact" stations. Both audio and timing assets are
+// pre-generated per kind - see scripts/generate-aila-greeting-audio.mjs
 // and scripts/generate-aila-greeting-timing.mjs.
-type GreetingKind = 'welcome' | 'return';
+type GreetingKind = 'welcome' | 'return' | 'about' | 'contact';
+
+const GREETING_FILE_BASE: Record<GreetingKind, string> = {
+  welcome: 'greeting',
+  return: 'greeting-return',
+  about: 'greeting-about',
+  contact: 'greeting-contact',
+};
 
 const greetingAudioSrc = (kind: GreetingKind, lang: ExperienceLang) =>
-  kind === 'welcome' ? `/cinematic/aila/greeting-${lang}.mp3` : `/cinematic/aila/greeting-return-${lang}.mp3`;
+  `/cinematic/aila/${GREETING_FILE_BASE[kind]}-${lang}.mp3`;
 
 const greetingTimingSrc = (kind: GreetingKind, lang: ExperienceLang) =>
-  kind === 'welcome' ? `/cinematic/aila/greeting-${lang}-timing.json` : `/cinematic/aila/greeting-return-${lang}-timing.json`;
+  `/cinematic/aila/${GREETING_FILE_BASE[kind]}-${lang}-timing.json`;
 
 // Sampled from AILA's own head - the bright gold rim/light-strand tips for
 // the regular tone, the warm copper wire-pattern/mouth-glow for her name.
@@ -101,14 +110,21 @@ type Anchor = {
   isMobile: boolean;
 };
 
-// On mobile the caption's left margin comes from the hero eyebrow line
-// ("... · BERN, SCHWEIZ") rather than the head, which sits centered in a
-// narrow viewport - its own left edge still isn't as far left as the
-// page's real content margin.
+// On mobile the caption's left margin comes from the current section's
+// eyebrow line (e.g. "... · BERN, SCHWEIZ" in the hero, "UEBER MICH" in the
+// about section) rather than the head, which sits centered in a narrow
+// viewport - its own left edge still isn't as far left as the page's real
+// content margin. Every section has its own .eyebrow element, so this picks
+// whichever one is actually on screen right now instead of always the
+// hero's (relevant once greetings can also play at the about/contact
+// docking stations, further down the page).
 const mobileEyebrowRect = (): DOMRect | null => {
-  const eyebrow = document.querySelector<HTMLElement>(`.${styles.eyebrow}`);
-  const rect = eyebrow?.getBoundingClientRect();
-  return rect && rect.width > 0 ? rect : null;
+  const eyebrows = document.querySelectorAll<HTMLElement>(`.${styles.eyebrow}`);
+  for (const eyebrow of eyebrows) {
+    const rect = eyebrow.getBoundingClientRect();
+    if (rect.width > 0 && rect.bottom > 0 && rect.top < window.innerHeight) return rect;
+  }
+  return null;
 };
 
 // The controls dock right under the app bar/nav instead of at the head
@@ -398,7 +414,19 @@ const startGreetingSequence = (
   };
 };
 
-export default function AilaGreeting({ lang, heroPhase, returnTrigger }: { lang: ExperienceLang; heroPhase: HeroPhase; returnTrigger: number }) {
+export default function AilaGreeting({
+  lang,
+  heroPhase,
+  returnTrigger,
+  aboutTrigger,
+  contactTrigger,
+}: {
+  lang: ExperienceLang;
+  heroPhase: HeroPhase;
+  returnTrigger: number;
+  aboutTrigger: number;
+  contactTrigger: number;
+}) {
   const [visible, setVisible] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [enteredIndices, setEnteredIndices] = useState<ReadonlySet<number>>(new Set());
@@ -411,9 +439,16 @@ export default function AilaGreeting({ lang, heroPhase, returnTrigger }: { lang:
   const stopSequenceRef = useRef<() => void>(() => undefined);
   const langRef = useRef(lang);
   const lastReturnTriggerRef = useRef(returnTrigger);
-  // Read inside the return-trigger effect instead of relying on
-  // audioUnlocked directly, so a mid-sequence unlock (audioUnlocked flipping
-  // true) never itself re-triggers that effect - only returnTrigger should.
+  const lastAboutTriggerRef = useRef(aboutTrigger);
+  const lastContactTriggerRef = useRef(contactTrigger);
+  // Which sequence is currently playing - the mobile stage-change dismissal
+  // below expects a different MobileAilaCompanion stage per kind (she's
+  // docked at a different station for each), so this can't just hard-code
+  // 'hero' like it used to when only the welcome/return kinds existed.
+  const activeKindRef = useRef<GreetingKind>('welcome');
+  // Read inside the trigger effects instead of relying on audioUnlocked
+  // directly, so a mid-sequence unlock (audioUnlocked flipping true) never
+  // itself re-triggers them - only the trigger props should.
   const audioUnlockedRef = useRef(audioUnlocked);
   langRef.current = lang;
   audioUnlockedRef.current = audioUnlocked;
@@ -437,14 +472,16 @@ export default function AilaGreeting({ lang, heroPhase, returnTrigger }: { lang:
     let frame = 0;
     const update = () => {
       frame = 0;
-      // On mobile, AILA leaving her large hero position for the tiny
-      // nav-bar dock (MobileAilaCompanion's own stage, read off its
-      // data-stage attribute) makes the hero-scaled caption look broken
-      // next to her now-icon-sized self - end the greeting right there
-      // instead of letting it keep following her into the nav bar.
+      // On mobile, AILA leaving the station this sequence was anchored to
+      // (MobileAilaCompanion's own stage, read off its data-stage attribute)
+      // makes the caption look broken next to wherever she's now docked
+      // instead - end the greeting right there instead of letting it keep
+      // following her elsewhere. Welcome/return only ever play while she's
+      // resting in the hero; about/contact expect her at their own station.
       if (window.matchMedia(MOBILE_QUERY).matches) {
         const stage = document.querySelector('[data-aila-entity="mobile"]')?.getAttribute('data-stage');
-        if (stage && stage !== 'hero') { dismissRef.current(); return; }
+        const expectedStage = activeKindRef.current === 'about' ? 'about' : activeKindRef.current === 'contact' ? 'final' : 'hero';
+        if (stage && stage !== expectedStage) { dismissRef.current(); return; }
       }
       setAnchor(measureAnchor());
     };
@@ -468,6 +505,7 @@ export default function AilaGreeting({ lang, heroPhase, returnTrigger }: { lang:
   useEffect(() => {
     if (startedRef.current || heroPhase !== 'revealed') return;
     startedRef.current = true;
+    activeKindRef.current = 'welcome';
     const words = buildWords(heroGreeting[langRef.current]);
     stopSequenceRef.current = startGreetingSequence(
       words,
@@ -488,6 +526,7 @@ export default function AilaGreeting({ lang, heroPhase, returnTrigger }: { lang:
     if (!startedRef.current) return;
     stopSequenceRef.current();
     window.dispatchEvent(new CustomEvent('aila:guide-state', { detail: { state: 'idle' } }));
+    activeKindRef.current = 'return';
     const words = buildWords(heroGreetingReturn[langRef.current]);
     stopSequenceRef.current = startGreetingSequence(
       words,
@@ -497,6 +536,46 @@ export default function AilaGreeting({ lang, heroPhase, returnTrigger }: { lang:
       audioUnlockedRef.current,
     );
   }, [returnTrigger]);
+
+  // One-time nudge played the first time AILA's scroll-docking settles her
+  // at the "about" station (journey-about) - signalled by aboutTrigger
+  // incrementing once from MarcelExperience.
+  useEffect(() => {
+    if (aboutTrigger === lastAboutTriggerRef.current) return;
+    lastAboutTriggerRef.current = aboutTrigger;
+    if (!startedRef.current) return;
+    stopSequenceRef.current();
+    window.dispatchEvent(new CustomEvent('aila:guide-state', { detail: { state: 'idle' } }));
+    activeKindRef.current = 'about';
+    const words = buildWords(heroGreetingAbout[langRef.current]);
+    stopSequenceRef.current = startGreetingSequence(
+      words,
+      greetingAudioSrc('about', langRef.current),
+      greetingTimingSrc('about', langRef.current),
+      { setVisible, setActiveIndex, setEnteredIndices, setAudioUnlocked, setActiveWords, dismissRef, unlockRef },
+      audioUnlockedRef.current,
+    );
+  }, [aboutTrigger]);
+
+  // One-time nudge played the first time AILA's scroll-docking settles her
+  // at the "contact" station (journey-contact) - signalled by contactTrigger
+  // incrementing once from MarcelExperience.
+  useEffect(() => {
+    if (contactTrigger === lastContactTriggerRef.current) return;
+    lastContactTriggerRef.current = contactTrigger;
+    if (!startedRef.current) return;
+    stopSequenceRef.current();
+    window.dispatchEvent(new CustomEvent('aila:guide-state', { detail: { state: 'idle' } }));
+    activeKindRef.current = 'contact';
+    const words = buildWords(heroGreetingContact[langRef.current]);
+    stopSequenceRef.current = startGreetingSequence(
+      words,
+      greetingAudioSrc('contact', langRef.current),
+      greetingTimingSrc('contact', langRef.current),
+      { setVisible, setActiveIndex, setEnteredIndices, setAudioUnlocked, setActiveWords, dismissRef, unlockRef },
+      audioUnlockedRef.current,
+    );
+  }, [contactTrigger]);
 
   useEffect(() => () => stopSequenceRef.current(), []);
 

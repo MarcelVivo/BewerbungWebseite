@@ -59,7 +59,7 @@ export const dockingStopForSectionId = (sectionId?: string) => DOCKING_STOPS.fin
  *  uses to resolve each dock's own "arrived" scrollY, so this always
  *  matches where the flying object visually settles, not just "the
  *  section is on screen". */
-function dockingRestScrollY(stop: DockingStop): number | null {
+export function dockingRestScrollY(stop: DockingStop): number | null {
   const section = document.getElementById(stop.sectionId);
   if (!section) return null;
   const rect = section.getBoundingClientRect();
