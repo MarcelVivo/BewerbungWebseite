@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
+import { access, chmod, constants as fsConstants, mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import ffmpegPath from 'ffmpeg-static';
@@ -45,21 +45,42 @@ async function twoPassLoudnorm(ffmpegBin: string, inputPath: string, outputPath:
   await run(ffmpegBin, ['-y', '-i', inputPath, '-af', filter, outputPath]);
 }
 
-async function applyVoiceFilter(buffer: ArrayBuffer): Promise<ArrayBuffer> {
-  if (!ffmpegPath) return buffer;
+// Next's output file tracing (see outputFileTracingIncludes in next.config.js)
+// copies the binary into this function's bundle, but doesn't reliably preserve
+// its execute bit in every deployment - a known rough edge with native
+// binaries in Next.js/Vercel serverless functions. Cheap to check every time;
+// only actually chmods when needed.
+async function ensureExecutable(binPath: string): Promise<void> {
+  try {
+    await access(binPath, fsConstants.X_OK);
+  } catch {
+    await chmod(binPath, 0o755);
+  }
+}
+
+// TEMPORARY: return value lets the route attach a diagnostic response header
+// while tracking down why this silently fell back to unprocessed audio in
+// production despite working locally - remove once confirmed fixed live.
+async function applyVoiceFilter(buffer: ArrayBuffer): Promise<{ audio: ArrayBuffer; status: string }> {
+  if (!ffmpegPath) return { audio: buffer, status: 'fallback:no-ffmpeg-path' };
   const dir = await mkdtemp(path.join(tmpdir(), 'aila-speech-'));
   const rawPath = path.join(dir, 'raw.mp3');
   const effectedPath = path.join(dir, 'fx.mp3');
   const outPath = path.join(dir, 'out.mp3');
   try {
+    await ensureExecutable(ffmpegPath);
     await writeFile(rawPath, Buffer.from(buffer));
     await run(ffmpegPath, ['-y', '-i', rawPath, '-af', VOICE_FILTER, effectedPath]);
     await twoPassLoudnorm(ffmpegPath, effectedPath, outPath);
     const processed = await readFile(outPath);
-    return processed.buffer.slice(processed.byteOffset, processed.byteOffset + processed.byteLength);
+    return {
+      audio: processed.buffer.slice(processed.byteOffset, processed.byteOffset + processed.byteLength),
+      status: 'ok',
+    };
   } catch (error) {
-    console.error('AILA voice filter failed, using unprocessed audio', error instanceof Error ? error.message : 'unknown error');
-    return buffer;
+    const message = error instanceof Error ? error.message : 'unknown error';
+    console.error('AILA voice filter failed, using unprocessed audio', message);
+    return { audio: buffer, status: `fallback:${message.slice(0, 180).replace(/[\r\n]+/g, ' ')}` };
   } finally {
     await rm(dir, { recursive: true, force: true }).catch(() => undefined);
   }
@@ -105,9 +126,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Sprachausgabe nicht verfuegbar.' }, { status: 502 });
     }
 
-    const processed = await applyVoiceFilter(await response.arrayBuffer());
-    return new NextResponse(processed, {
-      headers: { 'Content-Type': 'audio/mpeg', 'Cache-Control': 'no-store' },
+    const { audio, status } = await applyVoiceFilter(await response.arrayBuffer());
+    return new NextResponse(audio, {
+      headers: { 'Content-Type': 'audio/mpeg', 'Cache-Control': 'no-store', 'X-Aila-Voice-Filter': status },
     });
   } catch (error) {
     console.error('AILA speech failed', error instanceof Error ? error.message : 'unknown error');
