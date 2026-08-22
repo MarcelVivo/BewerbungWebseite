@@ -6793,33 +6793,6 @@
     animation: mobileAilaAura 3.8s ease-in-out infinite;
   }
 
-  .mobileAilaSignal {
-    position: absolute;
-    z-index: 5;
-    top: 24%;
-    left: 50%;
-    width: 18%;
-    height: 12%;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    gap: 8%;
-    transform: translateX(-50%);
-    opacity: .72;
-    pointer-events: none;
-  }
-  .mobileAilaSignal i {
-    width: 9%;
-    height: 42%;
-    border-radius: 999px;
-    background: linear-gradient(180deg, #ffe4a0, #dc792b 72%, transparent);
-    box-shadow: 0 0 .25rem rgba(255,176,68,.48);
-    animation: mobileAilaSignal 1.25s ease-in-out infinite alternate;
-  }
-  .mobileAilaSignal i:nth-child(2) { height: 82%; animation-delay: -.45s; }
-  .mobileAilaSignal i:nth-child(3) { height: 100%; animation-delay: -.8s; }
-  .mobileAilaSignal i:nth-child(4) { height: 65%; animation-delay: -.2s; }
-
   .mobileAilaParticles { position: absolute; z-index: 2; inset: 0; pointer-events: none; }
   .mobileAilaParticles i {
     position: absolute;
@@ -6837,25 +6810,15 @@
   .mobileAilaParticles i:nth-child(5) { left: 51%; top: 6%; animation-delay: -2.8s; }
 
   .mobileAilaCompanion[data-stage='nav'] .mobileAilaAura { inset: 6%; filter: blur(.25rem); }
-  .mobileAilaCompanion[data-stage='nav'] .mobileAilaSignal {
-    top: 20%;
-    width: 22%;
-    height: 16%;
-    opacity: 1;
-    filter: drop-shadow(0 0 .22rem rgba(255,173,58,.55));
-  }
   .mobileAilaCompanion[data-stage='nav'] .mobileAilaParticles { opacity: .3; }
   .mobileAilaCompanion[data-stage='nav'] > .ailaAvatarMedia {
     filter: drop-shadow(0 .3rem .45rem rgba(0,0,0,.55)) drop-shadow(0 0 .3rem rgba(218,157,47,.24));
   }
-  .mobileAilaCompanion[data-stage='about'] .mobileAilaSignal,
   .mobileAilaCompanion[data-stage='about'] .mobileAilaParticles { opacity: .8; }
-  .mobileAilaCompanion[data-stage='transit'] .mobileAilaSignal { opacity: .68; }
   .mobileAilaCompanion[data-stage='transit'] .mobileAilaParticles { opacity: .48; }
   .mobileAilaCompanion[data-stage='transit'] > .ailaAvatarMedia {
     filter: drop-shadow(0 .55rem .85rem rgba(0,0,0,.58)) drop-shadow(0 0 .48rem rgba(218,157,47,.2));
   }
-  .mobileAilaCompanion[data-stage='final'] .mobileAilaSignal { opacity: 1; animation: mobileAilaInvite 2.2s ease-in-out infinite; }
   .mobileAilaCompanion[data-stage='final'] .mobileAilaAura { animation-duration: 2.2s; }
 
   .ailaGuide[data-mobile-dialog='true'] .ailaGuideMobileIdentity {
@@ -6946,7 +6909,6 @@
     0%, 100% { opacity: .12; transform: translate3d(0, .35rem, 0) scale(.55); }
     50% { opacity: .9; transform: translate3d(.18rem, -.4rem, 0) scale(1); }
   }
-  @keyframes mobileAilaInvite { 0%, 100% { transform: translateX(-50%) scale(.9); } 50% { transform: translateX(-50%) scale(1.12); } }
 }
 
 @media (max-width: 699px) {
@@ -6975,7 +6937,6 @@
   .mobileAilaCompanion,
   .mobileAilaCompanion > .ailaAvatarMedia,
   .mobileAilaAura,
-  .mobileAilaSignal i,
   .mobileAilaParticles i,
   .ailaGuideMobileAvatar,
   .ailaGuideMobileAvatar img,

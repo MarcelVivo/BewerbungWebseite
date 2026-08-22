@@ -175,7 +175,6 @@ export default function MobileAilaCompanion({ lang }: { lang: ExperienceLang }) 
     >
       <span className={styles.mobileAilaAura} aria-hidden="true" />
       <AilaVideoAvatar mode={videoMode} alt="" />
-      <span className={styles.mobileAilaSignal} aria-hidden="true"><i /><i /><i /><i /></span>
       <span className={styles.mobileAilaParticles} aria-hidden="true"><i /><i /><i /><i /><i /></span>
     </button>
   );
