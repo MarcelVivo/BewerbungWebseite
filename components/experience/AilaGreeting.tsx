@@ -131,9 +131,12 @@ const wordStyle = (wordIndex: number, age: number, entered: boolean): CSSPropert
       zIndex: GENERATIONS,
     };
   }
-  const fadeByAge = [0, .6, .42, .26, .13, 0][age] ?? 0;
-  const blurByAge = [0, 1.2, 2.2, 3.4, 4.6, 6][age] ?? 6;
-  const scaleByAge = [1, .94, .88, .82, .76, .7][age] ?? .7;
+  // Stays legible through most of the staircase and only actually fades
+  // out in the last couple of steps (bottom-right), instead of dimming
+  // right from the first step after entering.
+  const fadeByAge = [0, .95, .85, .62, .3, 0][age] ?? 0;
+  const blurByAge = [0, .3, .7, 1.6, 3.4, 6.5][age] ?? 6.5;
+  const scaleByAge = [1, .97, .93, .87, .78, .68][age] ?? .68;
   // Each generation gets its own clearly separated staircase step down and
   // to the right (further right than down) instead of clustering close to
   // the current word - a staggered top-left-to-bottom-right descent through
