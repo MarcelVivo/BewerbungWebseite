@@ -56,19 +56,26 @@ const HERO_GREETING_CONTACT_VARIANTS = [
 ];
 
 const INSTRUCTIONS = {
-  de: 'Sprich als AILA: klar, freundlich und einladend, mit einer geschlechtsneutralen Stimme - weder eindeutig maennlich noch weiblich. Eine praezise, dezent futuristische KI-Persoenlichkeit. Natuerliches Hochdeutsch mit dezenter Schweizer Tonalitaet, warm aber nicht uebertrieben emotional, nicht werblich.',
-  en: 'Speak as AILA: clear, friendly and welcoming, with a gender-neutral voice - neither distinctly male nor female. A precise, subtly futuristic AI personality. Natural, warm English, never overly emotional or salesy.',
+  de: 'Sprich als AILA: eine erkennbar synthetische, maschinelle KI-Stimme - geschlechtsneutral, weder eindeutig maennlich noch weiblich. Ruhig, klar und praezise, mit einer leicht monotonen, gleichmaessigen Sprechweise statt menschlicher Emotionalitaet. Neutral, nicht werblich, aber freundlich im Tonfall.',
+  en: 'Speak as AILA: a distinctly synthetic, machine-like AI voice - gender-neutral, neither distinctly male nor female. Calm, clear and precise, with a slightly monotone, even delivery rather than human emotional inflection. Neutral, never salesy, but friendly in tone.',
 };
 
 // Approved after A/B testing directly on the live site (see conversation):
-// presence EQ for clarity, gentle compression, a subtle phaser for a touch
-// of AI/machine character, and a light echo-based "hall". Applied to every
-// generated clip as a post-processing pass over the raw TTS output.
+// presence EQ for clarity, compression, a tremolo acting as a mild ring
+// modulator for an audible synthetic buzz, a heavier phaser for a
+// synthetic warble, a short comb-filter echo for metallic ring, a light
+// echo-based "hall", and a final loudness boost with a limiter to guard
+// against clipping. Applied to every generated clip as a post-processing
+// pass over the raw TTS output.
 const VOICE_FILTER = [
   'equalizer=f=3200:width_type=o:width=1.0:g=2.5',
-  'acompressor=threshold=-18dB:ratio=2.5:attack=15:release=150:makeup=1.4',
-  'aphaser=in_gain=0.9:out_gain=0.85:delay=2.2:decay=0.28:speed=0.3',
+  'acompressor=threshold=-18dB:ratio=2.5:attack=15:release=150:makeup=1.9',
+  'tremolo=f=55:d=0.35',
+  'aphaser=in_gain=0.85:out_gain=0.8:delay=3.0:decay=0.4:speed=0.4',
+  'aecho=0.6:0.7:9:0.35',
   'aecho=0.75:0.6:40|70|110:0.22|0.16|0.09',
+  'volume=1.25',
+  'alimiter=limit=0.97',
 ].join(',');
 
 const apiKey = process.env.OPENAI_API_KEY;
