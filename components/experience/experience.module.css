@@ -538,51 +538,28 @@
   pointer-events: none;
 }
 
-.ailaGreetingReel {
-  position: relative;
-  height: 6.3rem;
-  overflow-y: hidden;
-  overflow-x: visible;
-  -webkit-mask-image: linear-gradient(180deg, transparent, rgba(0,0,0,.92) 22%, #000 42%, #000 58%, rgba(0,0,0,.92) 78%, transparent);
-  mask-image: linear-gradient(180deg, transparent, rgba(0,0,0,.92) 22%, #000 42%, #000 58%, rgba(0,0,0,.92) 78%, transparent);
+.ailaGreetingLines {
+  display: grid;
+  align-items: start;
 }
 
-.ailaGreetingReelTrack { transition: transform .45s cubic-bezier(.22,.61,.36,1); }
-
-.ailaGreetingReelRow {
-  height: 2.1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  white-space: nowrap;
+.ailaGreetingLine {
+  grid-area: 1 / 1;
+  margin: 0;
+  text-align: left;
   color: var(--gold-light, #e7c56a);
   font-family: 'Inter', sans-serif;
   font-weight: 500;
-  font-size: 1rem;
+  font-size: 1.15rem;
+  line-height: 1.45;
   letter-spacing: -.005em;
-  text-shadow: 0 .1rem .5rem rgba(0,0,0,.65);
+  text-shadow: 0 .15rem .6rem rgba(0,0,0,.6);
   opacity: 0;
-  filter: blur(3px);
-  transform: scale(.86);
-  transition: opacity .45s ease, filter .45s ease, transform .45s cubic-bezier(.22,.61,.36,1), color .45s ease, font-size .45s cubic-bezier(.22,.61,.36,1), font-weight .25s ease;
+  transform: translateY(5px);
+  transition: opacity .7s ease, transform .7s ease;
 }
 
-.ailaGreetingReelRow[data-dist='0'] {
-  opacity: 1;
-  filter: blur(0);
-  transform: scale(1);
-  font-weight: 680;
-  font-size: 1.6rem;
-  letter-spacing: -.01em;
-  color: transparent;
-  background: var(--gold-gradient);
-  -webkit-background-clip: text;
-  background-clip: text;
-  text-shadow: 0 1px 0 rgba(255,239,180,.44), 0 3px 0 rgba(105,66,11,.68), 0 13px 34px rgba(200,154,61,.24);
-}
-
-.ailaGreetingReelRow[data-dist='1'] { opacity: .55; filter: blur(.8px); transform: scale(.93); }
+.ailaGreetingLine[data-active='true'] { opacity: 1; transform: translateY(0); }
 
 .ailaGreetingDismiss {
   position: absolute;
@@ -612,7 +589,7 @@
     transform: translateX(-50%);
     width: min(18rem, calc(100vw - 2.5rem));
   }
-  .ailaGreetingReelRow[data-dist='0'] { font-size: 1.4rem; }
+  .ailaGreetingLine { font-size: 1.05rem; }
   .ailaGreetingDismiss { right: 0; top: -1.6rem; }
 }
 
