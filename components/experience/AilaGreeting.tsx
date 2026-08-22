@@ -88,13 +88,24 @@ type Anchor = {
   isMobile: boolean;
 };
 
-// On mobile both the caption's left margin and the controls dock off the
-// hero eyebrow line ("... · BERN, SCHWEIZ") rather than the head: the head
-// sits centered in a narrow viewport (too far right for a left margin) and
-// straight below AILA's chin (not a natural spot for the controls).
+// On mobile the caption's left margin comes from the hero eyebrow line
+// ("... · BERN, SCHWEIZ") rather than the head, which sits centered in a
+// narrow viewport - its own left edge still isn't as far left as the
+// page's real content margin.
 const mobileEyebrowRect = (): DOMRect | null => {
   const eyebrow = document.querySelector<HTMLElement>(`.${styles.eyebrow}`);
   const rect = eyebrow?.getBoundingClientRect();
+  return rect && rect.width > 0 ? rect : null;
+};
+
+// The controls dock right under the app bar/nav instead of at the head
+// (straight below her chin isn't a natural spot) or the eyebrow row (too
+// close to the head's own clickable area - a click there could pass
+// through to the AILA-companion button underneath and open the chat,
+// which isn't what tapping "sound on" should do).
+const mobileHeaderRect = (): DOMRect | null => {
+  const header = document.querySelector<HTMLElement>(`.${styles.mobileAppBar}`);
+  const rect = header?.getBoundingClientRect();
   return rect && rect.width > 0 ? rect : null;
 };
 
@@ -103,25 +114,26 @@ const measureAnchor = (): Anchor => {
   const el = document.querySelector<HTMLElement>(`[data-aila-entity="${isMobile ? 'mobile' : 'desktop'}"]`);
   const rect = el?.getBoundingClientRect();
   const eyebrowRect = isMobile ? mobileEyebrowRect() : null;
+  const headerRect = isMobile ? mobileHeaderRect() : null;
   if (!rect || rect.width <= 0 || rect.height <= 0) {
     // AILA's head element isn't measurable yet (still mounting) - a sane
     // guess near its usual start position beats not showing anything.
     const left = eyebrowRect?.left ?? window.innerWidth * .58;
     const top = window.innerHeight * .16;
-    return { left, top, controlsLeft: eyebrowRect?.right ?? left - 60, controlsTop: eyebrowRect?.top ?? top + 60, scale: 1, isMobile };
+    return { left, top, controlsLeft: headerRect?.right ?? left - 60, controlsTop: headerRect?.bottom ?? top + 60, scale: 1, isMobile };
   }
   const scale = Math.min(MAX_ANCHOR_SCALE, Math.max(MIN_ANCHOR_SCALE, rect.width / REFERENCE_HEAD_WIDTH));
-  // On mobile, both the caption's left margin and the controls dock off the
-  // eyebrow line instead of the head: the head sits centered in a narrow
+  // On mobile the caption's left margin comes from the eyebrow line, the
+  // controls from the app bar - the head sits centered in a narrow
   // viewport (its own left edge still isn't as far left as the page's real
-  // content margin), and straight below her chin isn't a natural spot for
-  // the controls either.
+  // content margin, and straight below her chin isn't a natural spot for
+  // the controls).
   const left = isMobile ? (eyebrowRect?.left ?? rect.left) : rect.right;
   return {
     left,
     top: rect.top,
-    controlsLeft: eyebrowRect?.right ?? rect.left,
-    controlsTop: eyebrowRect?.top ?? rect.bottom,
+    controlsLeft: headerRect?.right ?? rect.left,
+    controlsTop: (headerRect?.bottom ?? rect.bottom) + (headerRect ? 8 : 0),
     scale,
     isMobile,
   };
