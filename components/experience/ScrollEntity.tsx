@@ -445,6 +445,11 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
         return;
       }
       video.loop = mode === 'idle' || (guideControlled && (mode === 'thinking' || mode === 'speaking'));
+      // The idle clip's mouth-glow shimmer reads as talking when looped at
+      // full speed with nothing actually being said - slowed way down here
+      // so it settles into a calm ambient pulse instead, while every other
+      // mode (attention, thinking, speaking, cta) keeps its natural pace.
+      video.playbackRate = mode === 'idle' || mode === 'confirmation' ? 0.3 : 1;
       video.src = source;
       video.load();
       newVideoFrameAvailable = true;

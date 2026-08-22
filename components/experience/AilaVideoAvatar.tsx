@@ -97,6 +97,11 @@ export default function AilaVideoAvatar({ mode, alt = 'AILA' }: { mode: AilaVide
 
     video.src = VIDEO_BY_MODE[mode];
     video.load();
+    // The idle clip's mouth-glow shimmer reads as talking when looped at
+    // full speed with nothing actually being said - slowed way down here so
+    // it settles into a calm ambient pulse instead, while every other mode
+    // keeps its natural pace.
+    video.playbackRate = mode === 'idle' ? 0.3 : 1;
     void video.play().then(scheduleVideoFrame).catch(() => setVideoReady(false));
 
     return () => {
