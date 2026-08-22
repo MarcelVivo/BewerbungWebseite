@@ -577,17 +577,17 @@
   display: grid;
   place-items: center;
   padding: 0;
-  border: 1.5px solid var(--gold-light, #e7c56a);
+  border: 0;
   border-radius: 50%;
   background: rgba(10,10,8,.65);
-  color: var(--gold-light, #e7c56a);
+  color: #e7c56a;
   cursor: pointer;
   opacity: .85;
   pointer-events: auto;
-  transition: opacity .2s ease, border-color .2s ease;
+  transition: opacity .2s ease, color .2s ease;
 }
 
-.ailaGreetingDismiss:hover { opacity: 1; border-color: #fff2bd; }
+.ailaGreetingDismiss:hover { opacity: 1; color: #fff2bd; }
 
 .ailaGreetingSoundHint {
   margin-top: .3rem;

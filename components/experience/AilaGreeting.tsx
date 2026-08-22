@@ -287,7 +287,7 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
         onClick={(event) => { event.stopPropagation(); dismissRef.current(); }}
         aria-label={lang === 'de' ? 'Begrüssung schliessen' : 'Dismiss greeting'}
       >
-        <X size={13} strokeWidth={2.2} />
+        <X size={13} strokeWidth={2.2} color="#e7c56a" />
       </button>
     </div>
   );
