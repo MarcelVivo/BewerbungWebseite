@@ -18,13 +18,13 @@ const HERO_GREETING = {
     'Hallo, ich bin AILA.',
     'Ich zeige dir, wie hier alles zusammenhängt.',
     'Website, Prozesse, Daten – ein System, ein Blick.',
-    'Scroll einfach weiter. Ich bin da, wenn du Fragen hast.',
+    'Scroll einfach weiter. Klicke auf mich, wenn du Fragen hast.',
   ],
   en: [
     "Hello, I'm AILA.",
     "I'll show you how everything here connects.",
     'Website, processes, data — one system, one view.',
-    "Just keep scrolling. I'm here if you have questions.",
+    'Just keep scrolling. Click on me if you have questions.',
   ],
 };
 
