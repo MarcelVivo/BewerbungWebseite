@@ -614,7 +614,7 @@ export default function MarcelExperience() {
                 poster="/cinematic/hero-swiss-precision/swiss-alpine-organic-dormant-v2.png"
                 muted
                 playsInline
-                preload="metadata"
+                preload="auto"
               >
                 <source media="(min-width: 1101px)" src="/cinematic/hero-swiss-precision/swiss-precision-awakening.mp4" type="video/mp4" />
               </video>
@@ -661,7 +661,7 @@ export default function MarcelExperience() {
                 poster="/cinematic/02-fragmented-start.png"
                 muted
                 playsInline
-                preload="metadata"
+                preload="auto"
               >
                 <source media="(min-width: 1101px)" src="/cinematic/02-connected-system-scroll.mp4" type="video/mp4" />
               </video>
@@ -700,7 +700,7 @@ export default function MarcelExperience() {
                   poster="/cinematic/system/connected-system-architecture-scroll-poster.jpg"
                   muted
                   playsInline
-                  preload="metadata"
+                  preload="auto"
                 >
                   <source media="(min-width: 1101px)" src="/cinematic/system/connected-system-architecture-scroll.mp4" type="video/mp4" />
                 </video>
@@ -783,7 +783,7 @@ export default function MarcelExperience() {
                 poster="/cinematic/03-sales-system-start.png"
                 muted
                 playsInline
-                preload="metadata"
+                preload="auto"
               >
                 <source media="(min-width: 1101px)" src="/cinematic/03-sales-system-scroll.mp4" type="video/mp4" />
               </video>
@@ -816,7 +816,7 @@ export default function MarcelExperience() {
                 poster="/cinematic/04-marketing-engine-start.png"
                 muted
                 playsInline
-                preload="metadata"
+                preload="auto"
               >
                 <source media="(min-width: 1101px)" src="/cinematic/04-marketing-engine-scroll.mp4" type="video/mp4" />
               </video>
