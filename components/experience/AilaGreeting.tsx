@@ -137,16 +137,12 @@ const wordStyle = (wordIndex: number, age: number, entered: boolean): CSSPropert
   const fadeByAge = [0, .95, .85, .62, .3, 0][age] ?? 0;
   const blurByAge = [0, .3, .7, 1.6, 3.4, 6.5][age] ?? 6.5;
   const scaleByAge = [1, .97, .93, .87, .78, .68][age] ?? .68;
-  // Each generation gets its own clearly separated staircase step down and
-  // to the right (further right than down) instead of clustering close to
-  // the current word - a staggered top-left-to-bottom-right descent through
-  // the open space beside AILA. Real per-word audio timing can advance
-  // faster than this transition finishes, which is fine on purpose: the CSS
-  // transition just keeps redirecting toward whatever the newest target is,
-  // so several steps stay visibly mid-glide at once instead of one word
-  // snapping straight through every step.
-  const driftDownByAge = [0, 24, 50, 78, 108, 140][age] ?? 140;
-  const driftRightByAge = [0, 45, 95, 150, 210, 275][age] ?? 275;
+  // A gentle down-right staircase, close enough that consecutive steps can
+  // slightly overlap rather than being spaced far apart - wide gaps read as
+  // jerky jumps once real audio timing advances several steps within one
+  // transition's duration. Further right than down.
+  const driftDownByAge = [0, 9, 19, 31, 45, 62][age] ?? 62;
+  const driftRightByAge = [0, 18, 38, 62, 90, 125][age] ?? 125;
   return {
     opacity: fadeByAge,
     filter: `blur(${blurByAge}px)`,
