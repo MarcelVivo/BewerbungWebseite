@@ -570,16 +570,19 @@
 }
 
 /* AILA's own name additionally gets its tracking pulled open the whole way
-   down - "AILA" -> "A I L A" -> "A  I  L  A" - at a steady linear rate for
-   the full 4.5s (a separate animation so this one property can run linear
-   while the rest of the glide above keeps its own ease-out). */
+   down - "AILA" -> "A I L A" -> "A  I  L  A". Uses the *same* ease-out
+   curve as ailaWordDethrone (was linear, which meant it was still barely
+   spread while blur/fade - being ease-out - had already progressed most of
+   the way, so the widening was mostly happening after the word was already
+   too blurred/faded to read it) so the spread is visible in step with the
+   rest of the glide instead of trailing behind it. */
 .ailaGreetingWord[data-aila-name='true'][data-dethroned='true'] {
-  animation: ailaWordDethrone 4.5s ease-out forwards, ailaTrackingOpen 4.5s linear forwards;
+  animation: ailaWordDethrone 4.5s ease-out forwards, ailaTrackingOpen 4.5s ease-out forwards;
 }
 
 @keyframes ailaTrackingOpen {
   0% { letter-spacing: .08em; }
-  100% { letter-spacing: .95em; }
+  100% { letter-spacing: 1.2em; }
 }
 
 @keyframes ailaWordDethrone {
