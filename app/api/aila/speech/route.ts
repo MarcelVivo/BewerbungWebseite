@@ -45,6 +45,34 @@ async function twoPassLoudnorm(ffmpegBin: string, inputPath: string, outputPath:
   await run(ffmpegBin, ['-y', '-i', inputPath, '-af', filter, outputPath]);
 }
 
+// The echo/"hall" tail from VOICE_FILTER above doesn't reliably get enough
+// room to decay to silence within the clip's own natural length, so the
+// ending can sound abruptly cut off rather than trailing away naturally.
+// Pads on a little extra runway and fades out over the last half second,
+// guaranteeing a clean, click-free ending regardless of how much of the
+// reverb tail the source clip's own length happened to leave room for.
+const TAIL_PAD_S = .6;
+const TAIL_FADE_S = .5;
+
+// ffmpeg-static only bundles ffmpeg itself, not ffprobe - parses the
+// duration ffmpeg already prints to stderr while decoding rather than
+// adding a second native binary (and its own bundling/permissions risk,
+// see ensureExecutable above) just to read a timestamp.
+async function probeDurationSeconds(ffmpegBin: string, inputPath: string): Promise<number> {
+  const { stderr } = await run(ffmpegBin, ['-i', inputPath, '-f', 'null', '-'], { maxBuffer: 10 * 1024 * 1024 });
+  const match = stderr.match(/Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)/);
+  if (!match) return 0;
+  const [, hours, minutes, seconds] = match;
+  return Number(hours) * 3600 + Number(minutes) * 60 + Number(seconds);
+}
+
+async function finalizeTail(ffmpegBin: string, inputPath: string, outputPath: string): Promise<void> {
+  const duration = await probeDurationSeconds(ffmpegBin, inputPath);
+  const paddedDuration = duration + TAIL_PAD_S;
+  const fadeStart = Math.max(0, paddedDuration - TAIL_FADE_S);
+  await run(ffmpegBin, ['-y', '-i', inputPath, '-af', `apad=pad_dur=${TAIL_PAD_S},afade=t=out:st=${fadeStart}:d=${TAIL_FADE_S}`, outputPath]);
+}
+
 // Next's output file tracing (see outputFileTracingIncludes in next.config.js)
 // copies the binary into this function's bundle, but doesn't reliably preserve
 // its execute bit in every deployment - a known rough edge with native
@@ -63,12 +91,14 @@ async function applyVoiceFilter(buffer: ArrayBuffer): Promise<ArrayBuffer> {
   const dir = await mkdtemp(path.join(tmpdir(), 'aila-speech-'));
   const rawPath = path.join(dir, 'raw.mp3');
   const effectedPath = path.join(dir, 'fx.mp3');
+  const loudPath = path.join(dir, 'loud.mp3');
   const outPath = path.join(dir, 'out.mp3');
   try {
     await ensureExecutable(ffmpegPath);
     await writeFile(rawPath, Buffer.from(buffer));
     await run(ffmpegPath, ['-y', '-i', rawPath, '-af', VOICE_FILTER, effectedPath]);
-    await twoPassLoudnorm(ffmpegPath, effectedPath, outPath);
+    await twoPassLoudnorm(ffmpegPath, effectedPath, loudPath);
+    await finalizeTail(ffmpegPath, loudPath, outPath);
     const processed = await readFile(outPath);
     return processed.buffer.slice(processed.byteOffset, processed.byteOffset + processed.byteLength);
   } catch (error) {

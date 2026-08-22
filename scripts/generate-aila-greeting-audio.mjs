@@ -96,6 +96,22 @@ async function twoPassLoudnorm(inputPath, outputPath) {
   await run('ffmpeg', ['-y', '-i', inputPath, '-af', filter, outputPath]);
 }
 
+// The echo/"hall" tail from VOICE_FILTER above doesn't reliably get enough
+// room to decay to silence within the clip's own natural length, so the
+// ending can sound abruptly cut off rather than trailing away naturally.
+// Pads on a little extra runway and fades out over the last half second,
+// guaranteeing a clean, click-free ending regardless of how much of the
+// reverb tail the source clip's own length happened to leave room for.
+const TAIL_PAD_S = .6;
+const TAIL_FADE_S = .5;
+
+async function finalizeTail(inputPath, outputPath) {
+  const { stdout } = await run('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'default=noprint_wrappers=1:nokey=1', inputPath]);
+  const paddedDuration = parseFloat(stdout.trim()) + TAIL_PAD_S;
+  const fadeStart = Math.max(0, paddedDuration - TAIL_FADE_S);
+  await run('ffmpeg', ['-y', '-i', inputPath, '-af', `apad=pad_dur=${TAIL_PAD_S},afade=t=out:st=${fadeStart}:d=${TAIL_FADE_S}`, outputPath]);
+}
+
 const apiKey = process.env.OPENAI_API_KEY;
 if (!apiKey) {
   console.error('OPENAI_API_KEY ist nicht gesetzt.');
@@ -127,11 +143,14 @@ async function generate(lines, lang, fileName) {
   const outPath = path.join(outDir, fileName);
   const rawPath = path.join(outDir, `_raw-${fileName}`);
   const effectedPath = path.join(outDir, `_fx-${fileName}`);
+  const loudPath = path.join(outDir, `_loud-${fileName}`);
   await writeFile(rawPath, buffer);
   await run('ffmpeg', ['-y', '-i', rawPath, '-af', VOICE_FILTER, effectedPath]);
-  await twoPassLoudnorm(effectedPath, outPath);
+  await twoPassLoudnorm(effectedPath, loudPath);
+  await finalizeTail(loudPath, outPath);
   await unlink(rawPath);
   await unlink(effectedPath);
+  await unlink(loudPath);
   console.log(`✓ ${outPath}`);
 }
 
