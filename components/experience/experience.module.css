@@ -6880,25 +6880,7 @@
   .ailaAvatarMedia[data-video-ready='true'] .ailaAvatarFallback { opacity: 0; }
   .ailaAvatarMedia[data-video-ready='true'] .ailaAvatarVideoCanvas { opacity: 1; }
   .ailaAvatarVideoSource { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
-  .ailaGuideMobileAvatar i {
-    position: absolute;
-    z-index: 3;
-    top: 24%;
-    left: calc(44% + var(--guide-signal-x, 0px));
-    width: .2rem;
-    height: .74rem;
-    border-radius: 999px;
-    background: linear-gradient(#ffe39b, #d8762b);
-    box-shadow: 0 0 .3rem rgba(255,173,58,.58);
-    transform-origin: bottom;
-    animation: mobileAilaSignal 1.15s ease-in-out infinite alternate;
-  }
-  .ailaGuideMobileAvatar i:nth-of-type(2) { --guide-signal-x: .62rem; height: 1.18rem; animation-delay: -.5s; }
-  .ailaGuideMobileAvatar i:nth-of-type(3) { --guide-signal-x: 1.24rem; height: .9rem; animation-delay: -.8s; }
-  .ailaGuideMobileAvatar i:nth-of-type(4) { --guide-signal-x: 1.86rem; height: .62rem; animation-delay: -.2s; }
   .ailaGuide[data-mobile-dialog='true'] h2 { position: relative; z-index: 5; }
-  .ailaGuideMobileIdentity[data-state='listening'] .ailaGuideMobileAvatar i { background: linear-gradient(#d8ffd8, #60c98a); }
-  .ailaGuideMobileIdentity[data-state='speaking'] .ailaGuideMobileAvatar i { animation-duration: .48s; }
 
   @keyframes mobileAilaFloat {
     0%, 100% { transform: translate3d(0, 0, 0) rotate(-.7deg); }
@@ -6908,7 +6890,6 @@
     0%, 100% { opacity: .58; transform: scale(.92); }
     50% { opacity: .95; transform: scale(1.08); }
   }
-  @keyframes mobileAilaSignal { from { transform: scaleY(.45); opacity: .55; } to { transform: scaleY(1); opacity: 1; } }
   @keyframes mobileAilaParticle {
     0%, 100% { opacity: .12; transform: translate3d(0, .35rem, 0) scale(.55); }
     50% { opacity: .9; transform: translate3d(.18rem, -.4rem, 0) scale(1); }
@@ -6945,6 +6926,5 @@
   .ailaGuideMobileAvatar,
   .ailaGuideMobileAvatar img,
   .ailaAvatarMedia,
-  .ailaAvatarVideoCanvas,
-  .ailaGuideMobileAvatar i { animation: none !important; transition-duration: .01ms !important; }
+  .ailaAvatarVideoCanvas { animation: none !important; transition-duration: .01ms !important; }
 }

@@ -872,7 +872,6 @@ export default function AilaGuide({
         >
           <span className={styles.ailaGuideMobileAvatar}>
             <AilaVideoAvatar mode={liveStatus === 'speaking' || localSpeaking ? 'speaking' : liveStatus === 'listening' ? 'attention' : busy ? 'thinking' : 'idle'} />
-            <i /><i /><i /><i />
           </span>
         </div>
       )}
