@@ -141,12 +141,15 @@ const gradientTextStyle = (gradient: string, letterSpacing?: string): CSSPropert
   ...(letterSpacing ? { letterSpacing } : {}),
 });
 
-// Deterministic per-letter pseudo-random horizontal drift for AILA's own
+// Deterministic per-letter pseudo-random horizontal drift target for AILA's
 // name, spelled out as individual letters - a different seed than jitterPx
-// so it doesn't visually correlate with the word-level jitter.
+// so it doesn't visually correlate with the word-level jitter. This is the
+// *end* state only ("A I L A"): the letters sit tight ("AILA") while she's
+// current and only pull apart toward this offset during the dethrone
+// animation, via the ailaLetterSpread keyframe reading --letter-drift.
 const letterJitterPx = (letterIndex: number) => {
   const x = Math.sin(letterIndex * 78.233 + 4.7) * 12345.6789;
-  return ((x - Math.floor(x)) * 2 - 1) * 5;
+  return ((x - Math.floor(x)) * 2 - 1) * 14;
 };
 
 const wordStyle = (wordIndex: number, word: string, dethroned: boolean, entered: boolean): CSSProperties => {
@@ -364,7 +367,7 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
                       <span
                         key={letterIndex}
                         className={styles.ailaGreetingLetter}
-                        style={{ transform: `translateX(${letterJitterPx(letterIndex)}px)` }}
+                        style={{ '--letter-drift': `${letterJitterPx(letterIndex)}px` } as CSSProperties}
                       >
                         {letter}
                       </span>

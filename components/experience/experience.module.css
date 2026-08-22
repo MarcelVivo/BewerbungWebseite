@@ -562,6 +562,19 @@
   display: inline-block;
 }
 
+/* Runs in lockstep with ailaWordDethrone below (same duration/easing,
+   triggered by the same attribute flip) - AILA's letters sit tight
+   ("AILA") while she's current and only pull apart toward each letter's
+   own --letter-drift target ("A I L A") as the word glides out and down. */
+.ailaGreetingWord[data-dethroned='true'] .ailaGreetingLetter {
+  animation: ailaLetterSpread 4.5s ease-out forwards;
+}
+
+@keyframes ailaLetterSpread {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(var(--letter-drift, 0px)); }
+}
+
 .ailaGreetingWord[data-dethroned='true'] {
   /* Triggered exactly once, the instant a newer word takes over - runs to
      completion on its own fixed clock regardless of anything that happens
