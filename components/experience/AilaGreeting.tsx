@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type CSSProperties, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
 import { Volume2, X } from 'lucide-react';
-import { heroGreeting, heroGreetingReturn, heroGreetingAbout, heroGreetingContact, type ExperienceLang } from './content';
+import { heroGreeting, heroGreetingReturnVariants, heroGreetingAboutVariants, heroGreetingContactVariants, type ExperienceLang } from './content';
 import styles from './experience.module.css';
 
 type HeroPhase = 'loading' | 'ignition' | 'revealed';
@@ -64,12 +64,14 @@ const buildRealDurations = (timing: WordTiming[], wordCount: number): { duration
 };
 
 // Several distinct sequences share the same rendering/audio/timing pipeline:
-// the one-time welcome on page load, a short nudge replayed whenever a
-// visitor scrolls well past the hero and then back up to it, and two
-// one-time nudges played the first time AILA's scroll-docking settles her at
-// the "about" and "contact" stations. Both audio and timing assets are
-// pre-generated per kind - see scripts/generate-aila-greeting-audio.mjs
-// and scripts/generate-aila-greeting-timing.mjs.
+// the one-time welcome on page load, and short nudges replayed every time a
+// visitor's scroll settles AILA back at the hero, "about" or "contact"
+// stations. The latter three each cycle through several text variants (see
+// content.ts) so she doesn't repeat herself verbatim every time - variant 0
+// keeps the original unsuffixed filenames, further variants add a
+// "-2"/"-3"/... suffix. Both audio and timing assets are pre-generated per
+// kind+variant - see scripts/generate-aila-greeting-audio.mjs and
+// scripts/generate-aila-greeting-timing.mjs.
 type GreetingKind = 'welcome' | 'return' | 'about' | 'contact';
 
 const GREETING_FILE_BASE: Record<GreetingKind, string> = {
@@ -79,11 +81,13 @@ const GREETING_FILE_BASE: Record<GreetingKind, string> = {
   contact: 'greeting-contact',
 };
 
-const greetingAudioSrc = (kind: GreetingKind, lang: ExperienceLang) =>
-  `/cinematic/aila/${GREETING_FILE_BASE[kind]}-${lang}.mp3`;
+const variantSuffix = (variant: number) => (variant > 0 ? `-${variant + 1}` : '');
 
-const greetingTimingSrc = (kind: GreetingKind, lang: ExperienceLang) =>
-  `/cinematic/aila/${GREETING_FILE_BASE[kind]}-${lang}-timing.json`;
+const greetingAudioSrc = (kind: GreetingKind, lang: ExperienceLang, variant: number) =>
+  `/cinematic/aila/${GREETING_FILE_BASE[kind]}${variantSuffix(variant)}-${lang}.mp3`;
+
+const greetingTimingSrc = (kind: GreetingKind, lang: ExperienceLang, variant: number) =>
+  `/cinematic/aila/${GREETING_FILE_BASE[kind]}${variantSuffix(variant)}-${lang}-timing.json`;
 
 // Sampled from AILA's own head - the bright gold rim/light-strand tips for
 // the regular tone, the warm copper wire-pattern/mouth-glow for her name.
@@ -441,6 +445,12 @@ export default function AilaGreeting({
   const lastReturnTriggerRef = useRef(returnTrigger);
   const lastAboutTriggerRef = useRef(aboutTrigger);
   const lastContactTriggerRef = useRef(contactTrigger);
+  // Cycle through each station's text variants (see content.ts) instead of
+  // always playing the first one, so she doesn't repeat herself verbatim
+  // every time a visitor leaves and returns to the same station.
+  const returnVariantRef = useRef(0);
+  const aboutVariantRef = useRef(0);
+  const contactVariantRef = useRef(0);
   // Which sequence is currently playing - the mobile stage-change dismissal
   // below expects a different MobileAilaCompanion stage per kind (she's
   // docked at a different station for each), so this can't just hard-code
@@ -515,8 +525,8 @@ export default function AilaGreeting({
     const words = buildWords(heroGreeting[langRef.current]);
     stopSequenceRef.current = startGreetingSequence(
       words,
-      greetingAudioSrc('welcome', langRef.current),
-      greetingTimingSrc('welcome', langRef.current),
+      greetingAudioSrc('welcome', langRef.current, 0),
+      greetingTimingSrc('welcome', langRef.current, 0),
       { setVisible, setActiveIndex, setEnteredIndices, setAudioUnlocked, setActiveWords, dismissRef, unlockRef },
       false,
     );
@@ -533,11 +543,13 @@ export default function AilaGreeting({
     stopSequenceRef.current();
     window.dispatchEvent(new CustomEvent('aila:guide-state', { detail: { state: 'idle' } }));
     activeKindRef.current = 'return';
-    const words = buildWords(heroGreetingReturn[langRef.current]);
+    const variant = returnVariantRef.current % heroGreetingReturnVariants.length;
+    returnVariantRef.current += 1;
+    const words = buildWords(heroGreetingReturnVariants[variant][langRef.current]);
     stopSequenceRef.current = startGreetingSequence(
       words,
-      greetingAudioSrc('return', langRef.current),
-      greetingTimingSrc('return', langRef.current),
+      greetingAudioSrc('return', langRef.current, variant),
+      greetingTimingSrc('return', langRef.current, variant),
       { setVisible, setActiveIndex, setEnteredIndices, setAudioUnlocked, setActiveWords, dismissRef, unlockRef },
       audioUnlockedRef.current,
     );
@@ -553,11 +565,13 @@ export default function AilaGreeting({
     stopSequenceRef.current();
     window.dispatchEvent(new CustomEvent('aila:guide-state', { detail: { state: 'idle' } }));
     activeKindRef.current = 'about';
-    const words = buildWords(heroGreetingAbout[langRef.current]);
+    const variant = aboutVariantRef.current % heroGreetingAboutVariants.length;
+    aboutVariantRef.current += 1;
+    const words = buildWords(heroGreetingAboutVariants[variant][langRef.current]);
     stopSequenceRef.current = startGreetingSequence(
       words,
-      greetingAudioSrc('about', langRef.current),
-      greetingTimingSrc('about', langRef.current),
+      greetingAudioSrc('about', langRef.current, variant),
+      greetingTimingSrc('about', langRef.current, variant),
       { setVisible, setActiveIndex, setEnteredIndices, setAudioUnlocked, setActiveWords, dismissRef, unlockRef },
       audioUnlockedRef.current,
     );
@@ -573,11 +587,13 @@ export default function AilaGreeting({
     stopSequenceRef.current();
     window.dispatchEvent(new CustomEvent('aila:guide-state', { detail: { state: 'idle' } }));
     activeKindRef.current = 'contact';
-    const words = buildWords(heroGreetingContact[langRef.current]);
+    const variant = contactVariantRef.current % heroGreetingContactVariants.length;
+    contactVariantRef.current += 1;
+    const words = buildWords(heroGreetingContactVariants[variant][langRef.current]);
     stopSequenceRef.current = startGreetingSequence(
       words,
-      greetingAudioSrc('contact', langRef.current),
-      greetingTimingSrc('contact', langRef.current),
+      greetingAudioSrc('contact', langRef.current, variant),
+      greetingTimingSrc('contact', langRef.current, variant),
       { setVisible, setActiveIndex, setEnteredIndices, setAudioUnlocked, setActiveWords, dismissRef, unlockRef },
       audioUnlockedRef.current,
     );

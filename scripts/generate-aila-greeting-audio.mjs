@@ -28,26 +28,28 @@ const HERO_GREETING = {
   ],
 };
 
-// Replayed (not the one-time welcome above) whenever a visitor scrolls well
-// past the hero and then back up to it - kept in sync with
-// heroGreetingReturn in components/experience/content.ts.
-const HERO_GREETING_RETURN = {
-  de: ['Benötigst du Hilfe?', 'Klicke einfach auf mich, ich helfe dir gerne weiter.'],
-  en: ['Need some help?', "Click on me, I'm happy to help."],
-};
+// Replayed (not the one-time welcome above) every time a visitor's scroll
+// settles AILA back at the hero/about/contact stations, cycling through
+// variants so she doesn't repeat herself verbatim - kept in sync with
+// heroGreetingReturnVariants / heroGreetingAboutVariants /
+// heroGreetingContactVariants in components/experience/content.ts.
+const HERO_GREETING_RETURN_VARIANTS = [
+  { de: ['Benötigst du Hilfe?', 'Klicke einfach auf mich, ich helfe dir gerne weiter.'], en: ['Need some help?', "Click on me, I'm happy to help."] },
+  { de: ['Immer noch hier?', 'Ich bin nur einen Klick entfernt.'], en: ['Still here?', "I'm just one click away."] },
+  { de: ['Noch Fragen offen?', 'Sag einfach Bescheid, ich höre zu.'], en: ['Any questions left?', "Just let me know, I'm listening."] },
+];
 
-// Played once, the first time AILA's scroll-docking settles her at the
-// "about"/"contact" stations - kept in sync with heroGreetingAbout /
-// heroGreetingContact in components/experience/content.ts.
-const HERO_GREETING_ABOUT = {
-  de: ['Passt das zu deinem Unternehmen?', 'Frag mich, ich schätze es kurz ein.'],
-  en: ['Does this fit your business?', "Ask me, I'll take a quick look."],
-};
+const HERO_GREETING_ABOUT_VARIANTS = [
+  { de: ['Passt das zu deinem Unternehmen?', 'Frag mich, ich schätze es kurz ein.'], en: ['Does this fit your business?', "Ask me, I'll take a quick look."] },
+  { de: ['Neugierig, wie das bei dir aussehen würde?', 'Ich zeige es dir gerne.'], en: ['Curious how this would look for you?', "I'm happy to show you."] },
+  { de: ['Ich kenne Marcels Arbeitsweise gut.', 'Frag mich einfach danach.'], en: ['I know how Marcel works.', 'Just ask me about it.'] },
+];
 
-const HERO_GREETING_CONTACT = {
-  de: ['Bereit für den nächsten Schritt?', 'Erzähl mir kurz, worum es geht.'],
-  en: ['Ready for the next step?', "Tell me briefly what it's about."],
-};
+const HERO_GREETING_CONTACT_VARIANTS = [
+  { de: ['Bereit für den nächsten Schritt?', 'Erzähl mir kurz, worum es geht.'], en: ['Ready for the next step?', "Tell me briefly what it's about."] },
+  { de: ['Bereit, direkt zu starten?', 'Ich leite alles an Marcel weiter.'], en: ['Ready to get started?', "I'll pass everything on to Marcel."] },
+  { de: ['Noch unsicher?', 'Frag mich einfach, ganz unverbindlich.'], en: ['Still unsure?', 'Just ask me, no strings attached.'] },
+];
 
 const INSTRUCTIONS = {
   de: 'Sprich als AILA: warme, ruhige, souveraene deutsche Stimme. Natuerliches Hochdeutsch mit dezenter Schweizer Tonalitaet, klar und nicht werblich.',
@@ -87,10 +89,20 @@ async function generate(lines, lang, fileName) {
   console.log(`✓ ${outPath} (${(buffer.length / 1024).toFixed(1)} KB)`);
 }
 
+// Variant 0 keeps the original unsuffixed filename (already live); further
+// variants add a "-2", "-3", ... suffix - mirrors variantSuffix() in
+// AilaGreeting.tsx.
+async function generateVariants(base, variants, lang) {
+  for (const [index, lines] of variants.entries()) {
+    const suffix = index > 0 ? `-${index + 1}` : '';
+    await generate(lines, lang, `${base}${suffix}-${lang}.mp3`);
+  }
+}
+
 for (const lang of ['de', 'en']) {
   await generate(HERO_GREETING, lang, `greeting-${lang}.mp3`);
-  await generate(HERO_GREETING_RETURN, lang, `greeting-return-${lang}.mp3`);
-  await generate(HERO_GREETING_ABOUT, lang, `greeting-about-${lang}.mp3`);
-  await generate(HERO_GREETING_CONTACT, lang, `greeting-contact-${lang}.mp3`);
+  await generateVariants('greeting-return', HERO_GREETING_RETURN_VARIANTS, lang);
+  await generateVariants('greeting-about', HERO_GREETING_ABOUT_VARIANTS, lang);
+  await generateVariants('greeting-contact', HERO_GREETING_CONTACT_VARIANTS, lang);
 }
 console.log('Fertig.');

@@ -34,28 +34,60 @@ export const heroGreeting = {
 } as const;
 
 // Replayed when a visitor scrolls well past the hero and then back up to
-// it - a short nudge distinct from the one-time welcome above, rather than
-// repeating that almost verbatim.
-export const heroGreetingReturn = {
-  de: ['Benötigst du Hilfe?', 'Klicke einfach auf mich, ich helfe dir gerne weiter.'],
-  en: ['Need some help?', "Click on me, I'm happy to help."],
-} as const;
+// it - short nudges distinct from the one-time welcome above, rather than
+// repeating that almost verbatim. Three variants cycled in sequence (see
+// AilaGreeting.tsx) so she doesn't say the exact same thing every time a
+// visitor leaves and returns to the hero.
+export const heroGreetingReturnVariants = [
+  {
+    de: ['Benötigst du Hilfe?', 'Klicke einfach auf mich, ich helfe dir gerne weiter.'],
+    en: ['Need some help?', "Click on me, I'm happy to help."],
+  },
+  {
+    de: ['Immer noch hier?', 'Ich bin nur einen Klick entfernt.'],
+    en: ['Still here?', "I'm just one click away."],
+  },
+  {
+    de: ['Noch Fragen offen?', 'Sag einfach Bescheid, ich höre zu.'],
+    en: ['Any questions left?', "Just let me know, I'm listening."],
+  },
+] as const;
 
 // Replayed every time a visitor's scroll settles AILA at the "about"
 // docking station (journey-about / Zusammenarbeit) again, after having
-// scrolled away from it.
-export const heroGreetingAbout = {
-  de: ['Passt das zu deinem Unternehmen?', 'Frag mich, ich schätze es kurz ein.'],
-  en: ['Does this fit your business?', "Ask me, I'll take a quick look."],
-} as const;
+// scrolled away from it. Three variants, cycled the same way.
+export const heroGreetingAboutVariants = [
+  {
+    de: ['Passt das zu deinem Unternehmen?', 'Frag mich, ich schätze es kurz ein.'],
+    en: ['Does this fit your business?', "Ask me, I'll take a quick look."],
+  },
+  {
+    de: ['Neugierig, wie das bei dir aussehen würde?', 'Ich zeige es dir gerne.'],
+    en: ['Curious how this would look for you?', "I'm happy to show you."],
+  },
+  {
+    de: ['Ich kenne Marcels Arbeitsweise gut.', 'Frag mich einfach danach.'],
+    en: ['I know how Marcel works.', 'Just ask me about it.'],
+  },
+] as const;
 
 // Replayed every time a visitor's scroll settles AILA at the "contact"
 // docking station (journey-contact / Projektstart) again, after having
-// scrolled away from it.
-export const heroGreetingContact = {
-  de: ['Bereit für den nächsten Schritt?', 'Erzähl mir kurz, worum es geht.'],
-  en: ['Ready for the next step?', "Tell me briefly what it's about."],
-} as const;
+// scrolled away from it. Three variants, cycled the same way.
+export const heroGreetingContactVariants = [
+  {
+    de: ['Bereit für den nächsten Schritt?', 'Erzähl mir kurz, worum es geht.'],
+    en: ['Ready for the next step?', "Tell me briefly what it's about."],
+  },
+  {
+    de: ['Bereit, direkt zu starten?', 'Ich leite alles an Marcel weiter.'],
+    en: ['Ready to get started?', "I'll pass everything on to Marcel."],
+  },
+  {
+    de: ['Noch unsicher?', 'Frag mich einfach, ganz unverbindlich.'],
+    en: ['Still unsure?', 'Just ask me, no strings attached.'],
+  },
+] as const;
 
 export const flowSteps = {
   de: ['Google-Suche', 'Website', 'Anfrage', 'CRM', 'Termin', 'Beratung', 'Offerte', 'Freigabe', 'Auftrag', 'Projekt'],

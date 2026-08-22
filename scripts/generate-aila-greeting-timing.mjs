@@ -51,10 +51,17 @@ async function transcribe(lang, fileBase) {
   console.log(`✓ ${outPath} (${words.length} Wörter): ${words.map((w) => w.word).join(' | ')}`);
 }
 
+// Three variants each for return/about/contact - variant 0 keeps the
+// original unsuffixed filename, further variants add a "-2"/"-3" suffix.
+const VARIANT_COUNT = 3;
+
 for (const lang of ['de', 'en']) {
   await transcribe(lang, `greeting-${lang}`);
-  await transcribe(lang, `greeting-return-${lang}`);
-  await transcribe(lang, `greeting-about-${lang}`);
-  await transcribe(lang, `greeting-contact-${lang}`);
+  for (const base of ['greeting-return', 'greeting-about', 'greeting-contact']) {
+    for (let index = 0; index < VARIANT_COUNT; index += 1) {
+      const suffix = index > 0 ? `-${index + 1}` : '';
+      await transcribe(lang, `${base}${suffix}-${lang}`);
+    }
+  }
 }
 console.log('Fertig.');
