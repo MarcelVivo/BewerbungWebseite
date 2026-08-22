@@ -544,8 +544,8 @@
   bottom: 0;
   margin: 0;
   white-space: nowrap;
-  font-family: 'Iowan Old Style', 'Baskerville', 'Palatino Linotype', Georgia, serif;
-  font-weight: 700;
+  font-family: var(--font-chakra-petch), 'Chakra Petch', sans-serif;
+  font-weight: 600;
   line-height: 1.1;
   letter-spacing: -.005em;
   text-shadow: 0 1px 0 rgba(255,239,180,.35), 0 3px 0 rgba(105,66,11,.5), 0 13px 30px rgba(200,154,61,.2);

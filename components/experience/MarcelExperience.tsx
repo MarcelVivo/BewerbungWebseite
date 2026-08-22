@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { Chakra_Petch } from 'next/font/google';
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { ArrowDown, ArrowRight, ArrowUpRight, Bot, Check, Database, ExternalLink, Search, ShieldCheck, Users, Workflow } from 'lucide-react';
 import { useLanguage } from '../../app/LanguageContext';
@@ -19,6 +20,8 @@ import { copy, flowStepDetails, flowStepInsights, flowSteps, systemNodes } from 
 import styles from './experience.module.css';
 
 type HeroPhase = 'loading' | 'ignition' | 'revealed';
+
+const chakraPetch = Chakra_Petch({ subsets: ['latin'], weight: ['500', '600', '700'], variable: '--font-chakra-petch', display: 'swap' });
 
 function revealCompactTarget(target: HTMLElement | null) {
   if (!target || typeof window === 'undefined' || !window.matchMedia('(max-width: 1100px)').matches) return;
@@ -580,7 +583,7 @@ export default function MarcelExperience() {
   }
 
   return (
-    <div ref={rootRef} className={`${styles.experience} experience-root`} data-hero-phase={heroPhase}>
+    <div ref={rootRef} className={`${styles.experience} experience-root ${chakraPetch.variable}`} data-hero-phase={heroPhase}>
       <a className={styles.skipLink} href="#main-content">{c.skip}</a>
       <ExperienceNav lang={lang} />
       <ScrollEntity rootRef={rootRef} lang={lang} />
