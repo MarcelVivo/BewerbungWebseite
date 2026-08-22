@@ -292,6 +292,22 @@ type SequenceHandles = {
 // returns a stop function. Shared by both the one-time welcome sequence and
 // the "return to hero" nudge - the two only differ in which words/audio/timing
 // assets they use, everything else about how a greeting plays is identical.
+
+// The video AILA switches to for the 'speaking' mode (see AilaVideoAvatar.tsx
+// and ScrollEntity.tsx) only starts loading once that mode switch actually
+// happens - right as her audio starts - so on a fresh page load the browser
+// is still fetching/decoding it for a moment while the audio is already
+// playing, and her mouth-glow only starts once that catches up partway
+// through the first sentence. Warmed into the HTTP cache the instant any
+// sequence begins (well before the audio itself is unlocked/started) so
+// it's normally already there by the time the mode switch needs it.
+let speakingVideoWarmed = false;
+const warmSpeakingVideo = () => {
+  if (speakingVideoWarmed) return;
+  speakingVideoWarmed = true;
+  fetch('/cinematic/aila/aila-idle-v1-pingpong-greenscreen.mp4', { cache: 'force-cache' }).catch(() => undefined);
+};
+
 const startGreetingSequence = (
   words: string[],
   audioSrc: string,
@@ -304,6 +320,7 @@ const startGreetingSequence = (
   // proven its own audio works yet, so the "Ton an" hint should be able to
   // reappear for it if needed (see setAudioUnlocked's doc comment above).
   setAudioUnlocked(false);
+  warmSpeakingVideo();
   let mode: 'silent' | 'audio' | 'done' = 'silent';
   let holdTimer = 0;
   let sequenceToken = 0;
