@@ -524,7 +524,11 @@ export default function AilaGreeting({ lang, heroPhase, returnTrigger }: { lang:
             // bubbling to the window-level listener that normally does it -
             // stopPropagation here guarantees nothing else on the page
             // (e.g. AILA's own avatar button, if it happens to sit
-            // underneath) can also react to this same click.
+            // underneath) can also react to this same click. Also stopped on
+            // touchstart itself (not just the later click) since that is
+            // what actually reaches the window-level gesture listener first
+            // on touch devices.
+            onTouchStart={(event) => event.stopPropagation()}
             onClick={(event) => { event.stopPropagation(); unlockRef.current(); }}
             aria-label={lang === 'de' ? 'Ton einschalten' : 'Turn sound on'}
           >
@@ -535,6 +539,7 @@ export default function AilaGreeting({ lang, heroPhase, returnTrigger }: { lang:
         <button
           type="button"
           className={styles.ailaGreetingDismiss}
+          onTouchStart={(event) => event.stopPropagation()}
           onClick={(event) => { event.stopPropagation(); dismissRef.current(); }}
           aria-label={lang === 'de' ? 'Begrüssung schliessen' : 'Dismiss greeting'}
         >

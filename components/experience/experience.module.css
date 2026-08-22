@@ -631,7 +631,11 @@
      head itself visually separates the controls from the moving text,
      rather than the two sharing one box with just a rem of padding. */
   position: fixed;
-  z-index: 285;
+  /* Well above AILA's own clickable button (z-index 282 on mobile, see
+     .mobileAilaCompanion) - a comfortable margin rather than a near-tie, so
+     there's no ambiguity about which element wins hit-testing where the two
+     boxes come close to each other. */
+  z-index: 600;
   /* controlsLeft/controlsTop are the head's bottom-left corner; shifting the
      whole row left by its own width tucks it just outside that corner
      instead of growing rightward back under the head. */
