@@ -6,10 +6,12 @@ import styles from './experience.module.css';
 export type AilaVideoMode = 'idle' | 'attention' | 'thinking' | 'speaking' | 'cta';
 
 const VIDEO_BY_MODE: Record<AilaVideoMode, string> = {
-  // Uses the attention clip's file for idle/resting too - despite its name,
-  // its posture fits AILA floating and resting better than the dedicated
-  // idle clip does.
-  idle: '/cinematic/aila/aila-attention-v2-greenscreen.mp4',
+  // The attention clip's posture fits AILA floating/resting better than the
+  // dedicated idle clip does, but looped as-is it repeats identically every
+  // ~6s - this is that same clip at 2x speed followed by the same clip at
+  // 1x speed reversed (ends back where the 2x pass started, so it still
+  // loops seamlessly), for more variation across a loop.
+  idle: '/cinematic/aila/aila-idle-attention-loop-v1-greenscreen.mp4',
   attention: '/cinematic/aila/aila-attention-v2-greenscreen.mp4',
   thinking: '/cinematic/aila/aila-thinking-v1-pingpong-greenscreen.mp4',
   // The idle clip's mouth-glow shimmer (a problem while merely resting, see
