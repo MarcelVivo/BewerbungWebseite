@@ -41,11 +41,13 @@
    "proximity" (not "mandatory") only snaps when a scroll that's already
    ending lands close to a section's start, so it never fights the
    scroll-scrubbed video/docking animations mid-section. Scoped to pages
-   that render this experience (via the data-hero-phase attribute the root
-   div always carries) rather than globally, so it doesn't affect
+   that render this experience (:has() checking for the root .experience
+   class, which is a local/scoped class reference so CSS Modules accepts
+   the selector - a purely-:global() selector with no local class in it is
+   rejected at build time) rather than globally, so it doesn't affect
    /dashboard, /blog, etc. */
 @media (max-width: 1100px) {
-  :global(html:has([data-hero-phase])) { scroll-snap-type: y proximity; }
+  :global(html):has(.experience) { scroll-snap-type: y proximity; }
   .hero, .section { scroll-snap-align: start; }
 }
 
