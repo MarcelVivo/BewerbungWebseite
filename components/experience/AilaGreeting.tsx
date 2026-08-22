@@ -460,8 +460,45 @@ export default function AilaGreeting({
   // directly, so a mid-sequence unlock (audioUnlocked flipping true) never
   // itself re-triggers them - only the trigger props should.
   const audioUnlockedRef = useRef(audioUnlocked);
+  // Mirrors `visible` in a ref so the trigger effects can check "is she
+  // still mid-sentence right now" without a stale closure. If a visitor
+  // floats from one station into the next while she's still finishing the
+  // previous one, the new station's request waits here instead of cutting
+  // her off - only the most recent request while something is playing
+  // survives, so a lingering wait doesn't cause a pile-up of stale nudges.
+  const isPlayingRef = useRef(false);
+  const pendingRef = useRef<{ kind: GreetingKind; words: string[]; audioSrc: string; timingSrc: string } | null>(null);
   langRef.current = lang;
   audioUnlockedRef.current = audioUnlocked;
+
+  const handles = { setVisible, setActiveIndex, setEnteredIndices, setAudioUnlocked, setActiveWords, dismissRef, unlockRef };
+
+  const playSequence = (kind: GreetingKind, words: string[], audioSrc: string, timingSrc: string) => {
+    stopSequenceRef.current();
+    window.dispatchEvent(new CustomEvent('aila:guide-state', { detail: { state: 'idle' } }));
+    activeKindRef.current = kind;
+    stopSequenceRef.current = startGreetingSequence(words, audioSrc, timingSrc, handles, audioUnlockedRef.current);
+  };
+
+  const requestSequence = (kind: GreetingKind, words: string[], audioSrc: string, timingSrc: string) => {
+    if (isPlayingRef.current) {
+      pendingRef.current = { kind, words, audioSrc, timingSrc };
+      return;
+    }
+    playSequence(kind, words, audioSrc, timingSrc);
+  };
+
+  // Drains a queued request the instant she finishes (or is dismissed from)
+  // whatever she was saying - runs the queued one immediately rather than
+  // waiting for its own station to be re-entered.
+  useEffect(() => {
+    isPlayingRef.current = visible;
+    if (visible) return;
+    const pending = pendingRef.current;
+    if (!pending) return;
+    pendingRef.current = null;
+    playSequence(pending.kind, pending.words, pending.audioSrc, pending.timingSrc);
+  }, [visible]);
 
   useEffect(() => {
     if (activeIndex < 0) return;
@@ -521,15 +558,8 @@ export default function AilaGreeting({
   useEffect(() => {
     if (startedRef.current || heroPhase !== 'revealed') return;
     startedRef.current = true;
-    activeKindRef.current = 'welcome';
     const words = buildWords(heroGreeting[langRef.current]);
-    stopSequenceRef.current = startGreetingSequence(
-      words,
-      greetingAudioSrc('welcome', langRef.current, 0),
-      greetingTimingSrc('welcome', langRef.current, 0),
-      { setVisible, setActiveIndex, setEnteredIndices, setAudioUnlocked, setActiveWords, dismissRef, unlockRef },
-      false,
-    );
+    playSequence('welcome', words, greetingAudioSrc('welcome', langRef.current, 0), greetingTimingSrc('welcome', langRef.current, 0));
   }, [heroPhase]);
 
   // Short "need help?" nudge, replayed every time MarcelExperience detects
@@ -540,19 +570,10 @@ export default function AilaGreeting({
     if (returnTrigger === lastReturnTriggerRef.current) return;
     lastReturnTriggerRef.current = returnTrigger;
     if (!startedRef.current) return;
-    stopSequenceRef.current();
-    window.dispatchEvent(new CustomEvent('aila:guide-state', { detail: { state: 'idle' } }));
-    activeKindRef.current = 'return';
     const variant = returnVariantRef.current % heroGreetingReturnVariants.length;
     returnVariantRef.current += 1;
     const words = buildWords(heroGreetingReturnVariants[variant][langRef.current]);
-    stopSequenceRef.current = startGreetingSequence(
-      words,
-      greetingAudioSrc('return', langRef.current, variant),
-      greetingTimingSrc('return', langRef.current, variant),
-      { setVisible, setActiveIndex, setEnteredIndices, setAudioUnlocked, setActiveWords, dismissRef, unlockRef },
-      audioUnlockedRef.current,
-    );
+    requestSequence('return', words, greetingAudioSrc('return', langRef.current, variant), greetingTimingSrc('return', langRef.current, variant));
   }, [returnTrigger]);
 
   // Nudge replayed every time AILA's scroll-docking settles her at the
@@ -562,19 +583,10 @@ export default function AilaGreeting({
     if (aboutTrigger === lastAboutTriggerRef.current) return;
     lastAboutTriggerRef.current = aboutTrigger;
     if (!startedRef.current) return;
-    stopSequenceRef.current();
-    window.dispatchEvent(new CustomEvent('aila:guide-state', { detail: { state: 'idle' } }));
-    activeKindRef.current = 'about';
     const variant = aboutVariantRef.current % heroGreetingAboutVariants.length;
     aboutVariantRef.current += 1;
     const words = buildWords(heroGreetingAboutVariants[variant][langRef.current]);
-    stopSequenceRef.current = startGreetingSequence(
-      words,
-      greetingAudioSrc('about', langRef.current, variant),
-      greetingTimingSrc('about', langRef.current, variant),
-      { setVisible, setActiveIndex, setEnteredIndices, setAudioUnlocked, setActiveWords, dismissRef, unlockRef },
-      audioUnlockedRef.current,
-    );
+    requestSequence('about', words, greetingAudioSrc('about', langRef.current, variant), greetingTimingSrc('about', langRef.current, variant));
   }, [aboutTrigger]);
 
   // Nudge replayed every time AILA's scroll-docking settles her at the
@@ -584,19 +596,10 @@ export default function AilaGreeting({
     if (contactTrigger === lastContactTriggerRef.current) return;
     lastContactTriggerRef.current = contactTrigger;
     if (!startedRef.current) return;
-    stopSequenceRef.current();
-    window.dispatchEvent(new CustomEvent('aila:guide-state', { detail: { state: 'idle' } }));
-    activeKindRef.current = 'contact';
     const variant = contactVariantRef.current % heroGreetingContactVariants.length;
     contactVariantRef.current += 1;
     const words = buildWords(heroGreetingContactVariants[variant][langRef.current]);
-    stopSequenceRef.current = startGreetingSequence(
-      words,
-      greetingAudioSrc('contact', langRef.current, variant),
-      greetingTimingSrc('contact', langRef.current, variant),
-      { setVisible, setActiveIndex, setEnteredIndices, setAudioUnlocked, setActiveWords, dismissRef, unlockRef },
-      audioUnlockedRef.current,
-    );
+    requestSequence('contact', words, greetingAudioSrc('contact', langRef.current, variant), greetingTimingSrc('contact', langRef.current, variant));
   }, [contactTrigger]);
 
   useEffect(() => () => stopSequenceRef.current(), []);
