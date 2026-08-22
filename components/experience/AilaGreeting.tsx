@@ -305,7 +305,7 @@ let speakingVideoWarmed = false;
 const warmSpeakingVideo = () => {
   if (speakingVideoWarmed) return;
   speakingVideoWarmed = true;
-  fetch('/cinematic/aila/aila-idle-v1-pingpong-greenscreen.mp4', { cache: 'force-cache' }).catch(() => undefined);
+  fetch('/cinematic/aila/aila-speaking-v1-greenscreen.mp4', { cache: 'force-cache' }).catch(() => undefined);
 };
 
 const startGreetingSequence = (
