@@ -155,6 +155,7 @@ export default function MobileAilaCompanion({ lang }: { lang: ExperienceLang }) 
       ref={companionRef}
       type="button"
       className={styles.mobileAilaCompanion}
+      data-aila-entity="mobile"
       data-stage={stage}
       data-guide-open={guideOpen ? 'true' : 'false'}
       onClick={openAila}

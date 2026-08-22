@@ -523,10 +523,9 @@
 .ailaGreetingBubble {
   position: fixed;
   z-index: 285;
-  left: calc(var(--aila-greeting-x, 50vw) + 7.5rem);
-  top: calc(var(--aila-greeting-y, 50vh) - 3.15rem);
-  width: 20rem;
   pointer-events: none;
+  perspective: 640px;
+  perspective-origin: 88% 45%;
 }
 
 .ailaGreetingBubble::before {
@@ -541,6 +540,11 @@
 .ailaGreetingWords {
   position: relative;
   min-height: 3.1rem;
+  /* Right edge (closest to AILA's head) stays put as the hinge; the left,
+     earlier part of each word sweeps back into depth so the block reads as
+     a tilted plane in space rather than flat text floating next to her. */
+  transform: scale(var(--aila-greeting-scale, 1)) rotateY(-15deg);
+  transform-origin: 100% 50%;
 }
 
 .ailaGreetingWord {
@@ -563,8 +567,11 @@
 
 .ailaGreetingDismiss {
   position: absolute;
-  top: 0;
-  right: -1.6rem;
+  /* Text now grows rightward by an unknown amount per word, so the button
+     anchors off the stable left/top origin instead of a (no longer fixed)
+     bubble width. */
+  left: -1.4rem;
+  top: -.3rem;
   width: 1.5rem;
   height: 1.5rem;
   display: grid;
@@ -581,17 +588,6 @@
 }
 
 .ailaGreetingDismiss:hover { opacity: 1; border-color: rgba(231,197,106,.5); }
-
-@media (max-width: 1100px) {
-  .ailaGreetingBubble {
-    left: 50%;
-    top: clamp(22.2rem, 51vw, 27.8rem);
-    transform: translateX(-50%);
-    width: min(18rem, calc(100vw - 2.5rem));
-  }
-  .ailaGreetingWords { transform: scale(.8); transform-origin: left bottom; }
-  .ailaGreetingDismiss { right: 0; top: -1.6rem; }
-}
 
 .ailaContactCapture { min-height: 0; margin-top: .9rem; padding-right: .18rem; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(231,197,106,.28) transparent; }
 .ailaContactKicker { color: var(--gold-light); font: 650 .48rem/1 var(--font-chakra-petch), monospace; letter-spacing: .14em; }

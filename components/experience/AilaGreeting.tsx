@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { X } from 'lucide-react';
 import { heroGreeting, type ExperienceLang } from './content';
-import { getFlightPathDraft } from './flightPathStore';
 import styles from './experience.module.css';
 
 type HeroPhase = 'loading' | 'ignition' | 'revealed';
@@ -34,6 +33,28 @@ const estimateSilentTotalMs = (words: readonly string[]) =>
 const GENERATIONS = 3;
 const GOLD = '#eecb7a';
 const FADE_GREY = '#dcdcd4';
+
+const MOBILE_QUERY = '(max-width: 1100px)';
+// The desktop grab-surface's width at its default (non-hovered, non-scaled) resting size -
+// the 1x baseline every other rendered head size is compared against.
+const REFERENCE_HEAD_WIDTH = 168;
+const MIN_ANCHOR_SCALE = .58;
+const MAX_ANCHOR_SCALE = 1.5;
+
+type Anchor = { left: number; top: number; scale: number };
+
+const measureAnchor = (): Anchor => {
+  const isMobile = window.matchMedia(MOBILE_QUERY).matches;
+  const el = document.querySelector<HTMLElement>(`[data-aila-entity="${isMobile ? 'mobile' : 'desktop'}"]`);
+  const rect = el?.getBoundingClientRect();
+  if (!rect || rect.width <= 0 || rect.height <= 0) {
+    // AILA's head element isn't measurable yet (still mounting) - a sane
+    // guess near its usual start position beats not showing anything.
+    return { left: window.innerWidth * .58, top: window.innerHeight * .16, scale: 1 };
+  }
+  const scale = Math.min(MAX_ANCHOR_SCALE, Math.max(MIN_ANCHOR_SCALE, rect.width / REFERENCE_HEAD_WIDTH));
+  return { left: rect.right, top: rect.top, scale };
+};
 
 // Deterministic per-word pseudo-random so a word's sideways drift stays put
 // across re-renders instead of jittering every tick.
@@ -84,6 +105,7 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
   const [visible, setVisible] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [enteredIndices, setEnteredIndices] = useState<ReadonlySet<number>>(new Set());
+  const [anchor, setAnchor] = useState<Anchor | null>(null);
   const startedRef = useRef(false);
   const dismissRef = useRef<() => void>(() => undefined);
 
@@ -94,6 +116,24 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
     });
     return () => cancelAnimationFrame(frame);
   }, [activeIndex]);
+
+  // Anchored to AILA's actual rendered head element (desktop entity or mobile
+  // companion, whichever is live at the current breakpoint) rather than a
+  // fixed offset, so the greeting stays glued to the head's top-right corner
+  // and scales with it across mobile/tablet/desktop.
+  useEffect(() => {
+    if (!visible) return;
+    const update = () => setAnchor(measureAnchor());
+    update();
+    const frame = requestAnimationFrame(update);
+    window.addEventListener('resize', update);
+    window.addEventListener('orientationchange', update);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('resize', update);
+      window.removeEventListener('orientationchange', update);
+    };
+  }, [visible]);
 
   useEffect(() => {
     if (startedRef.current || heroPhase !== 'revealed') return;
@@ -198,16 +238,21 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
     };
   }, [heroPhase, lang]);
 
-  if (!visible || activeIndex < 0) return null;
+  if (!visible || activeIndex < 0 || !anchor) return null;
 
-  const start = getFlightPathDraft().start;
   const words = buildWords(heroGreeting[lang]);
   const generations = Array.from({ length: GENERATIONS }, (_, age) => activeIndex - age).filter((i) => i >= 0);
+  const gap = 12 * anchor.scale;
+  const lift = 20 * anchor.scale;
 
   return (
     <div
       className={styles.ailaGreetingBubble}
-      style={{ '--aila-greeting-x': `${start.x}vw`, '--aila-greeting-y': `${start.y}vh` } as CSSProperties}
+      style={{
+        left: `${anchor.left + gap}px`,
+        top: `${anchor.top - lift}px`,
+        '--aila-greeting-scale': anchor.scale,
+      } as CSSProperties}
       aria-live="polite"
     >
       <div className={styles.ailaGreetingWords}>

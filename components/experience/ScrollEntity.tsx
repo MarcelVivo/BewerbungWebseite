@@ -1407,6 +1407,7 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
           ref={interactionRef}
           type="button"
           className={styles.scrollEntityGrabSurface}
+          data-aila-entity="desktop"
           aria-label={lang === 'de' ? 'AILA öffnen' : 'Open AILA'}
           aria-pressed="false"
           aria-expanded={guide.open}
