@@ -6,7 +6,10 @@ import styles from './experience.module.css';
 export type AilaVideoMode = 'idle' | 'attention' | 'thinking' | 'speaking' | 'cta';
 
 const VIDEO_BY_MODE: Record<AilaVideoMode, string> = {
-  idle: '/cinematic/aila/aila-idle-v1-pingpong-greenscreen.mp4',
+  // Uses the attention clip's file for idle/resting too - despite its name,
+  // its posture fits AILA floating and resting better than the dedicated
+  // idle clip does.
+  idle: '/cinematic/aila/aila-attention-v2-greenscreen.mp4',
   attention: '/cinematic/aila/aila-attention-v2-greenscreen.mp4',
   thinking: '/cinematic/aila/aila-thinking-v1-pingpong-greenscreen.mp4',
   speaking: '/cinematic/aila/aila-speaking-v1-greenscreen.mp4',

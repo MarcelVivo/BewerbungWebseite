@@ -83,7 +83,10 @@ const MIN_HOLD_VIEWPORTS = 0.4;
 // flying. Kept small ("leicht") so straight vertical motion reads as upright
 // and diagonal motion only leans, never rolls onto its side.
 const HEADING_TILT_MAX_DEGREES = 8;
-const AILA_IDLE_VIDEO = '/cinematic/aila/aila-idle-v1-pingpong-greenscreen.mp4';
+// Uses the attention clip's file for the idle/resting state too - despite
+// its name, its posture fits AILA floating and resting better than the
+// dedicated idle clip does.
+const AILA_IDLE_VIDEO = '/cinematic/aila/aila-attention-v2-greenscreen.mp4';
 const AILA_ATTENTION_VIDEO = '/cinematic/aila/aila-attention-v2-greenscreen.mp4';
 const AILA_THINKING_VIDEO = '/cinematic/aila/aila-thinking-v1-pingpong-greenscreen.mp4';
 const AILA_SPEAKING_VIDEO = '/cinematic/aila/aila-speaking-v1-greenscreen.mp4';
