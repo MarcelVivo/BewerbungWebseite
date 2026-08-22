@@ -383,18 +383,19 @@ export default function MarcelExperience() {
     };
   }, [heroPhase]);
 
-  // Drives AILA's scroll-triggered nudges beyond the one-time welcome:
-  // replays a short "need help?" hint whenever a visitor scrolls well past
-  // the hero and then back up to it, and replays two further nudges every
-  // time her scroll-docking settles her at the "about" and "contact"
-  // stations further down the page again - not just the first time, so a
-  // visitor can hear them again by scrolling away and back.
+  // Drives AILA's scroll-triggered nudges beyond the one-time welcome: all
+  // three stations (hero, about, contact) replay their own short nudge every
+  // time a visitor's scroll settles her there again, having genuinely left
+  // first - not on every small scroll wobble near a station's edge.
   useEffect(() => {
     const section = heroSectionRef.current;
     if (!section || heroPhase !== 'revealed') return;
 
     let frame = 0;
-    let leftHero = false;
+    // Starts true (the visitor is obviously at the hero on page load) so the
+    // very first arrival doesn't itself fire the return nudge - only a
+    // genuine leave-then-come-back does, same as about/contact below.
+    let nearHero = true;
     let nearAbout = false;
     let nearContact = false;
 
@@ -410,14 +411,13 @@ export default function MarcelExperience() {
 
     const check = () => {
       frame = 0;
-      const top = section.offsetTop;
-      const height = section.offsetHeight;
-      const y = window.scrollY;
-      if (!leftHero && y > top + height * 1.4) {
-        leftHero = true;
-      } else if (leftHero && y < top + height * .6) {
-        leftHero = false;
+
+      const heroRect = section.getBoundingClientRect();
+      if (!nearHero && isSubstantiallyVisible(heroRect)) {
+        nearHero = true;
         setAilaReturnTrigger((value) => value + 1);
+      } else if (nearHero && isFullyOutOfView(heroRect)) {
+        nearHero = false;
       }
 
       const aboutRect = document.getElementById('journey-about')?.getBoundingClientRect();
