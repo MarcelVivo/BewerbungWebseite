@@ -127,9 +127,11 @@ export async function POST(request: NextRequest) {
     }
 
     const { audio, status } = await applyVoiceFilter(await response.arrayBuffer());
-    return new NextResponse(audio, {
-      headers: { 'Content-Type': 'audio/mpeg', 'Cache-Control': 'no-store', 'X-Aila-Voice-Filter': status },
+    const speechResponse = new NextResponse(audio, {
+      headers: { 'Content-Type': 'audio/mpeg', 'Cache-Control': 'no-store' },
     });
+    speechResponse.headers.set('X-Aila-Voice-Filter', status);
+    return speechResponse;
   } catch (error) {
     console.error('AILA speech failed', error instanceof Error ? error.message : 'unknown error');
     return NextResponse.json({ error: 'Sprachausgabe nicht verfuegbar.' }, { status: 500 });
