@@ -486,13 +486,15 @@ export default function AilaGreeting({
   // which read as AILA randomly staying silent with no visible cause.
   const everUnlockedRef = useRef(false);
   // Mirrors `visible` in a ref so the trigger effects can check "is she
-  // still mid-sentence right now" without a stale closure. If a visitor
+  // still mid-sentence right now" without a stale closure - if a visitor
   // floats from one station into the next while she's still finishing the
-  // previous one, the new station's request waits here instead of cutting
-  // her off - only the most recent request while something is playing
-  // survives, so a lingering wait doesn't cause a pile-up of stale nudges.
+  // previous one, the new station's request is simply dropped instead of
+  // cutting her off. Deliberately not queued for later either: a visitor
+  // scrolling quickly through several stations while she's still busy would
+  // otherwise pile all of them up to play back-to-back once she's free,
+  // long after the visitor has scrolled elsewhere - a disconnected,
+  // non-stop monologue completely unrelated to where they actually are.
   const isPlayingRef = useRef(false);
-  const pendingRef = useRef<{ words: string[]; audioSrc: string; timingSrc: string } | null>(null);
   langRef.current = lang;
 
   const handles = {
@@ -513,23 +515,12 @@ export default function AilaGreeting({
   };
 
   const requestSequence = (words: string[], audioSrc: string, timingSrc: string) => {
-    if (isPlayingRef.current) {
-      pendingRef.current = { words, audioSrc, timingSrc };
-      return;
-    }
+    if (isPlayingRef.current) return;
     playSequence(words, audioSrc, timingSrc);
   };
 
-  // Drains a queued request the instant she finishes (or is dismissed from)
-  // whatever she was saying - runs the queued one immediately rather than
-  // waiting for its own station to be re-entered.
   useEffect(() => {
     isPlayingRef.current = visible;
-    if (visible) return;
-    const pending = pendingRef.current;
-    if (!pending) return;
-    pendingRef.current = null;
-    playSequence(pending.words, pending.audioSrc, pending.timingSrc);
   }, [visible]);
 
   useEffect(() => {
