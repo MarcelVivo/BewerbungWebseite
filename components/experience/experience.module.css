@@ -674,14 +674,14 @@
   font-weight: 600;
   letter-spacing: .01em;
   white-space: nowrap;
-  /* Auto, not none: this sits over live page content (nav bar, AILA's own
-     button on mobile) and a pointer-events:none hint lets clicks fall
-     through to whatever's underneath - e.g. opening the chat instead of
-     just unlocking sound. Making it the actual hit target (with no click
-     handler of its own, so the click still bubbles to the window-level
-     listener that unlocks audio) stops that passthrough entirely. */
+  /* Now a real <button> with its own onClick (see AilaGreeting.tsx) rather
+     than a pointer-events:none decorative hint - that let clicks fall
+     through to whatever page content sat underneath (e.g. AILA's own
+     button on mobile, opening the chat) instead of just unlocking sound. */
+  -webkit-appearance: none;
+  appearance: none;
   pointer-events: auto;
-  cursor: default;
+  cursor: pointer;
   animation: ailaSoundHintPulse 2.2s ease-in-out infinite;
 }
 

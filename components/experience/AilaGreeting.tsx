@@ -228,6 +228,7 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
   const [audioUnlocked, setAudioUnlocked] = useState(false);
   const startedRef = useRef(false);
   const dismissRef = useRef<() => void>(() => undefined);
+  const unlockRef = useRef<() => void>(() => undefined);
 
   useEffect(() => {
     if (activeIndex < 0) return;
@@ -369,6 +370,7 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
         }
       }).catch(() => undefined);
     };
+    unlockRef.current = handleGesture;
 
     window.addEventListener('aila:guide-open-change', handleGuideOpen);
     window.addEventListener('click', handleGesture);
@@ -431,10 +433,20 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
         }
       >
         {!audioUnlocked && (
-          <div className={styles.ailaGreetingSoundHint}>
+          <button
+            type="button"
+            className={styles.ailaGreetingSoundHint}
+            // Handles the unlock directly instead of relying on the click
+            // bubbling to the window-level listener that normally does it -
+            // stopPropagation here guarantees nothing else on the page
+            // (e.g. AILA's own avatar button, if it happens to sit
+            // underneath) can also react to this same click.
+            onClick={(event) => { event.stopPropagation(); unlockRef.current(); }}
+            aria-label={lang === 'de' ? 'Ton einschalten' : 'Turn sound on'}
+          >
             <Volume2 size={11} strokeWidth={2.4} />
             <span>{lang === 'de' ? 'Ton' : 'Sound'}</span>
-          </div>
+          </button>
         )}
         <button
           type="button"
