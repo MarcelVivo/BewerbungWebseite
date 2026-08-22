@@ -565,13 +565,19 @@
   will-change: transform, opacity, filter;
 }
 
-.ailaGreetingDismiss {
+.ailaGreetingControls {
+  /* Docked well clear of the word stack below (which jitters and tilts in
+     3D) instead of hugging its moving edge - a calm, separate UI strip
+     anchored near AILA's head rather than reading as part of the caption. */
   position: absolute;
-  /* Text now grows rightward by an unknown amount per word, so the button
-     anchors off the stable left/top origin instead of a (no longer fixed)
-     bubble width. */
-  left: -1.4rem;
-  top: -.3rem;
+  left: 0;
+  top: -1.9rem;
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+}
+
+.ailaGreetingDismiss {
   width: 1.5rem;
   height: 1.5rem;
   display: grid;
@@ -590,17 +596,16 @@
 .ailaGreetingDismiss:hover { opacity: 1; color: #fff2bd; }
 
 .ailaGreetingSoundHint {
-  margin-top: .3rem;
   display: inline-flex;
   align-items: center;
-  gap: .35rem;
-  padding: .3rem .55rem;
+  gap: .3rem;
+  padding: .28rem .5rem;
   border: 1px solid rgba(231,197,106,.45);
   border-radius: 999px;
   background: rgba(10,10,8,.5);
   color: var(--gold-light, #e7c56a);
   font-family: 'Inter', sans-serif;
-  font-size: .62rem;
+  font-size: .58rem;
   font-weight: 600;
   letter-spacing: .01em;
   white-space: nowrap;

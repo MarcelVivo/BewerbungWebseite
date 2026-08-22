@@ -275,20 +275,22 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
           );
         })}
       </div>
-      {!audioUnlocked && (
-        <div className={styles.ailaGreetingSoundHint}>
-          <Volume2 size={12} strokeWidth={2.4} />
-          <span>{lang === 'de' ? 'Klicken für Ton' : 'Tap for sound'}</span>
-        </div>
-      )}
-      <button
-        type="button"
-        className={styles.ailaGreetingDismiss}
-        onClick={(event) => { event.stopPropagation(); dismissRef.current(); }}
-        aria-label={lang === 'de' ? 'Begrüssung schliessen' : 'Dismiss greeting'}
-      >
-        <X size={13} strokeWidth={2.2} color="#e7c56a" />
-      </button>
+      <div className={styles.ailaGreetingControls}>
+        {!audioUnlocked && (
+          <div className={styles.ailaGreetingSoundHint}>
+            <Volume2 size={11} strokeWidth={2.4} />
+            <span>{lang === 'de' ? 'Ton' : 'Sound'}</span>
+          </div>
+        )}
+        <button
+          type="button"
+          className={styles.ailaGreetingDismiss}
+          onClick={(event) => { event.stopPropagation(); dismissRef.current(); }}
+          aria-label={lang === 'de' ? 'Begrüssung schliessen' : 'Dismiss greeting'}
+        >
+          <X size={12} strokeWidth={2.2} color="#e7c56a" />
+        </button>
+      </div>
     </div>
   );
 }
