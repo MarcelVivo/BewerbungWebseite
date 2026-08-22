@@ -528,15 +528,6 @@
   perspective-origin: 88% 45%;
 }
 
-.ailaGreetingBubble::before {
-  content: '';
-  position: absolute;
-  z-index: -1;
-  inset: -1.1rem -2rem;
-  background: radial-gradient(ellipse 62% 60% at 50% 50%, rgba(180,112,46,.44) 0%, rgba(148,90,38,.24) 48%, transparent 76%);
-  pointer-events: none;
-}
-
 .ailaGreetingWords {
   position: relative;
   min-height: 3.1rem;
