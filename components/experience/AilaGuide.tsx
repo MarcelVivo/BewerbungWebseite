@@ -148,8 +148,18 @@ export default function AilaGuide({
   const [compactDialog, setCompactDialog] = useState(false);
   const [sessionReady, setSessionReady] = useState(false);
   const hasWelcomedRef = useRef(false);
-  const hasSpokenWelcomeRef = useRef(false);
   const wasOpenRef = useRef(false);
+  // Tracks fresh open->true transitions for the spoken welcome specifically
+  // (see the speak-welcome effect below) - a separate ref from wasOpenRef
+  // above (used for open analytics) since both effects independently read
+  // and write "was open last render", and sharing one would make their
+  // execution order matter.
+  const wasOpenForWelcomeRef = useRef(false);
+  // Whether AILA's hero/station scroll greeting (a separate component,
+  // AilaGreeting.tsx) currently has real audio playing - used to delay the
+  // chat's own spoken welcome until that finishes instead of talking over
+  // it (see the speak-welcome effect below).
+  const greetingSpeakingRef = useRef(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const primedAudioRef = useRef<HTMLAudioElement | null>(null);
   const audioUrlRef = useRef('');
@@ -168,7 +178,6 @@ export default function AilaGuide({
   useEffect(() => {
     setSessionReady(false);
     hasWelcomedRef.current = false;
-    hasSpokenWelcomeRef.current = false;
     try {
       const raw = sessionStorage.getItem(`ms-aila-session-${lang}`);
       if (raw) {
@@ -182,7 +191,6 @@ export default function AilaGuide({
           setQuickReplies(Array.isArray(stored.quickReplies) ? stored.quickReplies.filter((reply): reply is string => typeof reply === 'string').slice(0, 4) : []);
           setSalesContext(sanitizeAilaSalesContext(stored.context, createInitialAilaSalesContext()));
           hasWelcomedRef.current = true;
-          hasSpokenWelcomeRef.current = true;
         } else {
           setMessages([]);
           setSalesContext(createInitialAilaSalesContext());
@@ -426,12 +434,38 @@ export default function AilaGuide({
   };
 
   useEffect(() => {
-    if (!open) return;
-    if (hasSpokenWelcomeRef.current) return;
-    hasSpokenWelcomeRef.current = true;
-    const timer = window.setTimeout(() => void speak(common.welcome, true), 90);
+    const handleGreetingState = (event: Event) => {
+      greetingSpeakingRef.current = (event as CustomEvent<{ state?: string }>).detail?.state === 'speaking';
+    };
+    window.addEventListener('aila:guide-state', handleGreetingState);
+    return () => window.removeEventListener('aila:guide-state', handleGreetingState);
+  }, []);
+
+  // Speaks the welcome on every fresh open (not once ever - re-opening AILA
+  // later in the same page load should greet again) as long as there isn't
+  // already a real conversation to resume. If the hero/station scroll
+  // greeting is still actually talking, waits for it to finish first rather
+  // than talking over it.
+  useEffect(() => {
+    const justOpened = open && !wasOpenForWelcomeRef.current;
+    wasOpenForWelcomeRef.current = open;
+    if (!justOpened || hasConversationContext) return;
+
+    const speakWelcome = () => void speak(common.welcome, true);
+
+    if (greetingSpeakingRef.current) {
+      const handleGreetingIdle = (event: Event) => {
+        if ((event as CustomEvent<{ state?: string }>).detail?.state !== 'idle') return;
+        window.removeEventListener('aila:guide-state', handleGreetingIdle);
+        speakWelcome();
+      };
+      window.addEventListener('aila:guide-state', handleGreetingIdle);
+      return () => window.removeEventListener('aila:guide-state', handleGreetingIdle);
+    }
+
+    const timer = window.setTimeout(speakWelcome, 90);
     return () => window.clearTimeout(timer);
-  }, [open, sectionId, lang, common.welcome]);
+  }, [open, hasConversationContext]);
 
   if (!open) return null;
 

@@ -342,6 +342,18 @@ const startGreetingSequence = (
   };
   dismissRef.current = finish;
 
+  // Opening the chat while this sequence is only silently pacing (no real
+  // gesture has unlocked its audio yet) cuts it off immediately - the same
+  // click that opened the chat would otherwise also satisfy this
+  // sequence's own gesture listener below, unlocking its audio at the same
+  // moment the chat starts speaking its own welcome. Once real audio is
+  // actually playing (mode === 'audio'), that race can't happen - let her
+  // finish that sentence uninterrupted instead; AilaGuide.tsx waits for the
+  // resulting 'idle' aila:guide-state before speaking its own welcome.
+  const handleGuideOpen = (event: Event) => {
+    if ((event as CustomEvent<{ open?: boolean }>).detail?.open && mode !== 'audio') finish();
+  };
+
   const runSequence = (durations: number[], token: number, leadInMs = 0) => {
     const advance = (index: number) => {
       if (token !== sequenceToken || mode === 'done') return;
@@ -351,10 +363,6 @@ const startGreetingSequence = (
     };
     if (leadInMs > 0) holdTimer = window.setTimeout(() => advance(0), leadInMs);
     else advance(0);
-  };
-
-  const handleGuideOpen = (event: Event) => {
-    if ((event as CustomEvent<{ open?: boolean }>).detail?.open) finish();
   };
 
   // Shared by both the real-gesture path (handleGesture below) and the
