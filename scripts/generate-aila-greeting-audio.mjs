@@ -35,20 +35,20 @@ const HERO_GREETING = {
 // heroGreetingContactVariants in components/experience/content.ts.
 const HERO_GREETING_RETURN_VARIANTS = [
   { de: ['Benötigst du Hilfe?', 'Klicke einfach auf mich, ich helfe dir gerne weiter.'], en: ['Need some help?', "Click on me, I'm happy to help."] },
-  { de: ['Immer noch hier?', 'Ich bin nur einen Klick entfernt.'], en: ['Still here?', "I'm just one click away."] },
-  { de: ['Noch Fragen offen?', 'Sag einfach Bescheid, ich höre zu.'], en: ['Any questions left?', "Just let me know, I'm listening."] },
+  { de: ['Bist du noch da?', 'Ich bin nur einen Klick entfernt, falls du mich brauchst.'], en: ['Still here?', "I'm just one click away if you need me."] },
+  { de: ['Falls noch Fragen offen sind,', 'sag einfach Bescheid, ich höre dir gerne zu.'], en: ['If you still have questions,', "just let me know, I'm listening."] },
 ];
 
 const HERO_GREETING_ABOUT_VARIANTS = [
   { de: ['Passt das zu deinem Unternehmen?', 'Frag mich, ich schätze es kurz ein.'], en: ['Does this fit your business?', "Ask me, I'll take a quick look."] },
-  { de: ['Neugierig, wie das bei dir aussehen würde?', 'Ich zeige es dir gerne.'], en: ['Curious how this would look for you?', "I'm happy to show you."] },
-  { de: ['Ich kenne Marcels Arbeitsweise gut.', 'Frag mich einfach danach.'], en: ['I know how Marcel works.', 'Just ask me about it.'] },
+  { de: ['Wenn du neugierig bist, wie das bei dir aussehen würde,', 'zeige ich es dir gerne.'], en: ["If you're curious how this would look for you,", "I'm happy to show you."] },
+  { de: ['Ich kenne Marcels Arbeitsweise gut,', 'also frag mich einfach danach.'], en: ["I know Marcel's approach well,", 'so just ask me about it.'] },
 ];
 
 const HERO_GREETING_CONTACT_VARIANTS = [
   { de: ['Bereit für den nächsten Schritt?', 'Erzähl mir kurz, worum es geht.'], en: ['Ready for the next step?', "Tell me briefly what it's about."] },
-  { de: ['Bereit, direkt zu starten?', 'Ich leite alles an Marcel weiter.'], en: ['Ready to get started?', "I'll pass everything on to Marcel."] },
-  { de: ['Noch unsicher?', 'Frag mich einfach, ganz unverbindlich.'], en: ['Still unsure?', 'Just ask me, no strings attached.'] },
+  { de: ['Wenn du startklar bist,', 'leite ich alles direkt an Marcel weiter.'], en: ["If you're ready to get started,", "I'll pass everything on to Marcel."] },
+  { de: ['Falls du noch unsicher bist,', 'frag mich einfach, ganz unverbindlich.'], en: ["If you're still unsure,", 'just ask me, no strings attached.'] },
 ];
 
 const INSTRUCTIONS = {
