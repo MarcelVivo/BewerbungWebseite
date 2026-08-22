@@ -385,32 +385,28 @@ export default function MarcelExperience() {
 
   // Drives AILA's scroll-triggered nudges beyond the one-time welcome:
   // replays a short "need help?" hint whenever a visitor scrolls well past
-  // the hero and then back up to it, and plays two further one-time nudges
-  // the first time her scroll-docking settles her at the "about" and
-  // "contact" stations further down the page.
+  // the hero and then back up to it, and replays two further nudges every
+  // time her scroll-docking settles her at the "about" and "contact"
+  // stations further down the page again - not just the first time, so a
+  // visitor can hear them again by scrolling away and back.
   useEffect(() => {
     const section = heroSectionRef.current;
     if (!section || heroPhase !== 'revealed') return;
 
     let frame = 0;
     let leftHero = false;
-    let aboutFired = false;
-    let contactFired = false;
+    let nearAbout = false;
+    let nearContact = false;
 
-    // Whether a section is substantially in view right now - used for the
-    // about/contact stations instead of dockingRestScrollY (that formula
-    // reserves extra scroll travel past a station's own top so short
-    // sections still get a meaningful "rest" fraction, which works for the
-    // docking ring but assumes there's room to keep scrolling past it. The
-    // "contact" station is the very last thing on the page and only one
-    // viewport tall, so that reserved travel lands past the page's actual
-    // maximum scroll position and could never be reached).
-    const isSubstantiallyVisible = (sectionId: string) => {
-      const el = document.getElementById(sectionId);
-      const rect = el?.getBoundingClientRect();
-      if (!rect) return false;
-      return rect.top < window.innerHeight * .7 && rect.bottom > window.innerHeight * .3;
-    };
+    // "Substantially in view" (enter) vs. "fully out of view" (exit, before
+    // it re-arms) are deliberately different bands - a visitor idly
+    // scrolling a little within a station shouldn't retrigger it on every
+    // small wobble near the edge of the enter band; she has to actually
+    // leave the station before coming back to it counts as arriving again.
+    const isSubstantiallyVisible = (rect: DOMRect) =>
+      rect.top < window.innerHeight * .7 && rect.bottom > window.innerHeight * .3;
+    const isFullyOutOfView = (rect: DOMRect) =>
+      rect.bottom <= 0 || rect.top >= window.innerHeight;
 
     const check = () => {
       frame = 0;
@@ -424,13 +420,24 @@ export default function MarcelExperience() {
         setAilaReturnTrigger((value) => value + 1);
       }
 
-      if (!aboutFired && isSubstantiallyVisible('journey-about')) {
-        aboutFired = true;
-        setAilaAboutTrigger((value) => value + 1);
+      const aboutRect = document.getElementById('journey-about')?.getBoundingClientRect();
+      if (aboutRect) {
+        if (!nearAbout && isSubstantiallyVisible(aboutRect)) {
+          nearAbout = true;
+          setAilaAboutTrigger((value) => value + 1);
+        } else if (nearAbout && isFullyOutOfView(aboutRect)) {
+          nearAbout = false;
+        }
       }
-      if (!contactFired && isSubstantiallyVisible('journey-contact')) {
-        contactFired = true;
-        setAilaContactTrigger((value) => value + 1);
+
+      const contactRect = document.getElementById('journey-contact')?.getBoundingClientRect();
+      if (contactRect) {
+        if (!nearContact && isSubstantiallyVisible(contactRect)) {
+          nearContact = true;
+          setAilaContactTrigger((value) => value + 1);
+        } else if (nearContact && isFullyOutOfView(contactRect)) {
+          nearContact = false;
+        }
       }
     };
 

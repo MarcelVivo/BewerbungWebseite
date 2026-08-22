@@ -543,9 +543,9 @@ export default function AilaGreeting({
     );
   }, [returnTrigger]);
 
-  // One-time nudge played the first time AILA's scroll-docking settles her
-  // at the "about" station (journey-about) - signalled by aboutTrigger
-  // incrementing once from MarcelExperience.
+  // Nudge replayed every time AILA's scroll-docking settles her at the
+  // "about" station (journey-about) again, after having left it -
+  // signalled by aboutTrigger incrementing from MarcelExperience.
   useEffect(() => {
     if (aboutTrigger === lastAboutTriggerRef.current) return;
     lastAboutTriggerRef.current = aboutTrigger;
@@ -563,9 +563,9 @@ export default function AilaGreeting({
     );
   }, [aboutTrigger]);
 
-  // One-time nudge played the first time AILA's scroll-docking settles her
-  // at the "contact" station (journey-contact) - signalled by contactTrigger
-  // incrementing once from MarcelExperience.
+  // Nudge replayed every time AILA's scroll-docking settles her at the
+  // "contact" station (journey-contact) again, after having left it -
+  // signalled by contactTrigger incrementing from MarcelExperience.
   useEffect(() => {
     if (contactTrigger === lastContactTriggerRef.current) return;
     lastContactTriggerRef.current = contactTrigger;
