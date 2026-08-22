@@ -583,7 +583,12 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
       // that tracks the voice. Updated before every early return below so
       // it keeps pulsing smoothly even on frames the shader itself skips
       // redrawing.
-      coreCanvas.style.filter = videoMode === 'speaking' ? `brightness(${1 + readAilaAudioLevel() * .4})` : '';
+      if (videoMode === 'speaking') {
+        const level = readAilaAudioLevel();
+        coreCanvas.style.filter = `brightness(${1 + level * .7}) saturate(${1 + level * .5})`;
+      } else {
+        coreCanvas.style.filter = '';
+      }
       if (!coreRendererAvailable || !gl || !texture || !switchOffLocation || reducedMotion.matches) {
         coreCanvas.style.opacity = '0';
         fallback.style.opacity = '1';

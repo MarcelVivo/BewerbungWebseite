@@ -56,6 +56,31 @@ export function attachAilaAudioLevel(audio: HTMLAudioElement): () => void {
   }
 }
 
+// For the "Live" microphone conversation (WebRTC audio streamed straight
+// from OpenAI, not a plain <audio src>) - a MediaStreamAudioSourceNode taps
+// the stream without redirecting it, unlike createMediaElementSource above,
+// so there's no destination reconnect needed and no risk of muting the
+// element's own native playback.
+export function attachAilaAudioLevelFromStream(stream: MediaStream): () => void {
+  const ctx = getAudioContext();
+  if (!ctx) return () => undefined;
+  try {
+    if (ctx.state === 'suspended') void ctx.resume();
+    const source = ctx.createMediaStreamSource(stream);
+    const analyser = ctx.createAnalyser();
+    analyser.fftSize = 256;
+    analyser.smoothingTimeConstant = 0.55;
+    source.connect(analyser);
+    activeAnalyser = analyser;
+    return () => {
+      if (activeAnalyser === analyser) { activeAnalyser = null; smoothedLevel = 0; }
+      try { source.disconnect(); analyser.disconnect(); } catch { /* already torn down */ }
+    };
+  } catch {
+    return () => undefined;
+  }
+}
+
 // 0..1, exponentially smoothed so the glow eases rather than flickers.
 // Decays toward 0 on its own once nothing is attached (or between words),
 // rather than holding the last loud moment's brightness.
@@ -71,7 +96,7 @@ export function readAilaAudioLevel(): number {
     sumSquares += normalized * normalized;
   }
   const rms = Math.sqrt(sumSquares / sampleBuffer.length);
-  const target = Math.min(1, rms * 4.5);
-  smoothedLevel = smoothedLevel * 0.65 + target * 0.35;
+  const target = Math.min(1, rms * 7);
+  smoothedLevel = smoothedLevel * 0.6 + target * 0.4;
   return smoothedLevel;
 }

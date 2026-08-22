@@ -12,7 +12,7 @@ import type {
   AilaUiAction,
 } from '@/app/lib/aila/types';
 import type { ExperienceLang } from './content';
-import { attachAilaAudioLevel } from './ailaAudioLevel';
+import { attachAilaAudioLevel, attachAilaAudioLevelFromStream } from './ailaAudioLevel';
 import AilaContactCapture from './AilaContactCapture';
 import AilaVideoAvatar from './AilaVideoAvatar';
 import styles from './experience.module.css';
@@ -266,6 +266,8 @@ export default function AilaGuide({
     peerConnectionRef.current = null;
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
+    audioLevelDetachRef.current();
+    audioLevelDetachRef.current = () => undefined;
     if (remoteAudioRef.current) {
       remoteAudioRef.current.pause();
       remoteAudioRef.current.srcObject = null;
@@ -670,6 +672,8 @@ export default function AilaGuide({
       peerConnection.ontrack = (trackEvent) => {
         remoteAudio.srcObject = trackEvent.streams[0];
         void remoteAudio.play().catch(() => undefined);
+        audioLevelDetachRef.current();
+        audioLevelDetachRef.current = attachAilaAudioLevelFromStream(trackEvent.streams[0]);
       };
       stream.getAudioTracks().forEach((track) => peerConnection.addTrack(track, stream));
 

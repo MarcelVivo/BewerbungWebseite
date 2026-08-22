@@ -92,7 +92,12 @@ export default function AilaVideoAvatar({ mode, alt = 'AILA' }: { mode: AilaVide
       // switch between), but a brightness pulse that tracks the voice. A
       // cheap CSS filter on the whole canvas rather than more per-pixel
       // work in the already-expensive loop above.
-      canvas.style.filter = mode === 'speaking' ? `brightness(${1 + readAilaAudioLevel() * .4})` : '';
+      if (mode === 'speaking') {
+        const level = readAilaAudioLevel();
+        canvas.style.filter = `brightness(${1 + level * .7}) saturate(${1 + level * .5})`;
+      } else {
+        canvas.style.filter = '';
+      }
       if (firstFrame) {
         firstFrame = false;
         setVideoReady(true);
