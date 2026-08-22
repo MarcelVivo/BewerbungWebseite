@@ -22,12 +22,12 @@ if (!apiKey) {
 
 const dir = path.resolve(process.cwd(), 'public/cinematic/aila');
 
-async function transcribe(lang) {
-  const mp3Path = path.join(dir, `greeting-${lang}.mp3`);
+async function transcribe(lang, fileBase) {
+  const mp3Path = path.join(dir, `${fileBase}.mp3`);
   const buffer = await readFile(mp3Path);
 
   const form = new FormData();
-  form.append('file', new Blob([buffer], { type: 'audio/mpeg' }), `greeting-${lang}.mp3`);
+  form.append('file', new Blob([buffer], { type: 'audio/mpeg' }), `${fileBase}.mp3`);
   form.append('model', 'whisper-1');
   form.append('response_format', 'verbose_json');
   form.append('timestamp_granularities[]', 'word');
@@ -41,17 +41,18 @@ async function transcribe(lang) {
 
   if (!response.ok) {
     const body = await response.text().catch(() => '');
-    throw new Error(`Whisper-Transkription fehlgeschlagen (${lang}): ${response.status} ${body}`);
+    throw new Error(`Whisper-Transkription fehlgeschlagen (${fileBase}): ${response.status} ${body}`);
   }
 
   const data = await response.json();
   const words = (data.words ?? []).map((entry) => ({ word: entry.word, start: entry.start, end: entry.end }));
-  const outPath = path.join(dir, `greeting-${lang}-timing.json`);
+  const outPath = path.join(dir, `${fileBase}-timing.json`);
   await writeFile(outPath, JSON.stringify({ words }, null, 2));
   console.log(`✓ ${outPath} (${words.length} Wörter): ${words.map((w) => w.word).join(' | ')}`);
 }
 
 for (const lang of ['de', 'en']) {
-  await transcribe(lang);
+  await transcribe(lang, `greeting-${lang}`);
+  await transcribe(lang, `greeting-return-${lang}`);
 }
 console.log('Fertig.');

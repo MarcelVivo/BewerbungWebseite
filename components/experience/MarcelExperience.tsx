@@ -207,6 +207,7 @@ export default function MarcelExperience() {
   const [activeOperatingModule, setActiveOperatingModule] = useState(0);
   const [heroPhase, setHeroPhase] = useState<HeroPhase>('loading');
   const [heroLoadProgress, setHeroLoadProgress] = useState(0);
+  const [ailaReturnTrigger, setAilaReturnTrigger] = useState(0);
   const selectedProjects = useMemo(() => [PROJECTS[0], PROJECTS[3], PROJECTS[1]].filter(Boolean), []);
   const activeModuleData = MODULES[lang][activeModule];
   const ActiveModuleIcon = activeModuleData.Icon;
@@ -377,6 +378,40 @@ export default function MarcelExperience() {
       window.removeEventListener('scroll', requestSync);
       window.removeEventListener('resize', requestSync);
       reducedMotion.removeEventListener('change', handleMotionPreference);
+    };
+  }, [heroPhase]);
+
+  // Replays AILA's short "need help?" nudge whenever a visitor scrolls well
+  // past the hero (into the following sections) and then scrolls back up to
+  // it - distinct from the one-time welcome, which only ever plays once.
+  useEffect(() => {
+    const section = heroSectionRef.current;
+    if (!section || heroPhase !== 'revealed') return;
+
+    let frame = 0;
+    let leftHero = false;
+
+    const check = () => {
+      frame = 0;
+      const top = section.offsetTop;
+      const height = section.offsetHeight;
+      const y = window.scrollY;
+      if (!leftHero && y > top + height * 1.4) {
+        leftHero = true;
+      } else if (leftHero && y < top + height * .25) {
+        leftHero = false;
+        setAilaReturnTrigger((value) => value + 1);
+      }
+    };
+
+    const requestCheck = () => {
+      if (!frame) frame = window.requestAnimationFrame(check);
+    };
+
+    window.addEventListener('scroll', requestCheck, { passive: true });
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', requestCheck);
     };
   }, [heroPhase]);
 
@@ -587,7 +622,7 @@ export default function MarcelExperience() {
       <a className={styles.skipLink} href="#main-content">{c.skip}</a>
       <ExperienceNav lang={lang} />
       <ScrollEntity rootRef={rootRef} lang={lang} />
-      <AilaGreeting lang={lang} heroPhase={heroPhase} />
+      <AilaGreeting lang={lang} heroPhase={heroPhase} returnTrigger={ailaReturnTrigger} />
 
       <main id="main-content">
         <section ref={heroSectionRef} id="journey-start" className={styles.hero} onPointerMove={onHeroPointer}>

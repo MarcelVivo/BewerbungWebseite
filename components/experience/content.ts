@@ -33,6 +33,14 @@ export const heroGreeting = {
   ],
 } as const;
 
+// Replayed when a visitor scrolls well past the hero and then back up to
+// it - a short nudge distinct from the one-time welcome above, rather than
+// repeating that almost verbatim.
+export const heroGreetingReturn = {
+  de: ['Benötigst du Hilfe?', 'Klicke einfach auf mich, ich helfe dir gerne weiter.'],
+  en: ['Need some help?', "Click on me, I'm happy to help."],
+} as const;
+
 export const flowSteps = {
   de: ['Google-Suche', 'Website', 'Anfrage', 'CRM', 'Termin', 'Beratung', 'Offerte', 'Freigabe', 'Auftrag', 'Projekt'],
   en: ['Google search', 'Website', 'Enquiry', 'CRM', 'Meeting', 'Consultation', 'Quote', 'Approval', 'Order', 'Project'],

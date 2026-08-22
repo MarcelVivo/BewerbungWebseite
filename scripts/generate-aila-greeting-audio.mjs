@@ -28,6 +28,14 @@ const HERO_GREETING = {
   ],
 };
 
+// Replayed (not the one-time welcome above) whenever a visitor scrolls well
+// past the hero and then back up to it - kept in sync with
+// heroGreetingReturn in components/experience/content.ts.
+const HERO_GREETING_RETURN = {
+  de: ['Benötigst du Hilfe?', 'Klicke einfach auf mich, ich helfe dir gerne weiter.'],
+  en: ['Need some help?', "Click on me, I'm happy to help."],
+};
+
 const INSTRUCTIONS = {
   de: 'Sprich als AILA: warme, ruhige, souveraene deutsche Stimme. Natuerliches Hochdeutsch mit dezenter Schweizer Tonalitaet, klar und nicht werblich.',
   en: 'Speak as AILA with a warm, calm, assured voice. Clear, natural English, concise and never salesy.',
@@ -41,8 +49,8 @@ if (!apiKey) {
 
 const outDir = path.resolve(process.cwd(), 'public/cinematic/aila');
 
-async function generate(lang) {
-  const text = HERO_GREETING[lang].join(' ');
+async function generate(lines, lang, fileName) {
+  const text = lines[lang].join(' ');
   const response = await fetch('https://api.openai.com/v1/audio/speech', {
     method: 'POST',
     headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
@@ -61,12 +69,13 @@ async function generate(lang) {
   }
 
   const buffer = Buffer.from(await response.arrayBuffer());
-  const outPath = path.join(outDir, `greeting-${lang}.mp3`);
+  const outPath = path.join(outDir, fileName);
   await writeFile(outPath, buffer);
   console.log(`✓ ${outPath} (${(buffer.length / 1024).toFixed(1)} KB)`);
 }
 
 for (const lang of ['de', 'en']) {
-  await generate(lang);
+  await generate(HERO_GREETING, lang, `greeting-${lang}.mp3`);
+  await generate(HERO_GREETING_RETURN, lang, `greeting-return-${lang}.mp3`);
 }
 console.log('Fertig.');

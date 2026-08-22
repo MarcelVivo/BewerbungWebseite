@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
 import { Volume2, X } from 'lucide-react';
-import { heroGreeting, type ExperienceLang } from './content';
+import { heroGreeting, heroGreetingReturn, type ExperienceLang } from './content';
 import styles from './experience.module.css';
 
 type HeroPhase = 'loading' | 'ignition' | 'revealed';
@@ -44,8 +44,8 @@ type WordTiming = { word: string; start: number; end: number };
 
 const MIN_REAL_WORD_MS = 90;
 
-const loadGreetingTiming = (lang: ExperienceLang): Promise<WordTiming[] | null> =>
-  fetch(`/cinematic/aila/greeting-${lang}-timing.json`)
+const loadGreetingTiming = (url: string): Promise<WordTiming[] | null> =>
+  fetch(url)
     .then((response) => (response.ok ? response.json() : null))
     .then((data: unknown) => {
       const words = (data as { words?: unknown } | null)?.words;
@@ -62,6 +62,19 @@ const buildRealDurations = (timing: WordTiming[], wordCount: number): { duration
   });
   return { durations, leadInMs };
 };
+
+// Two distinct sequences share the same rendering/audio/timing pipeline: the
+// one-time welcome on page load, and a short nudge replayed whenever a
+// visitor scrolls well past the hero and then back up to it. Both audio and
+// timing assets are pre-generated per kind - see scripts/generate-aila-greeting-audio.mjs
+// and scripts/generate-aila-greeting-timing.mjs.
+type GreetingKind = 'welcome' | 'return';
+
+const greetingAudioSrc = (kind: GreetingKind, lang: ExperienceLang) =>
+  kind === 'welcome' ? `/cinematic/aila/greeting-${lang}.mp3` : `/cinematic/aila/greeting-return-${lang}.mp3`;
+
+const greetingTimingSrc = (kind: GreetingKind, lang: ExperienceLang) =>
+  kind === 'welcome' ? `/cinematic/aila/greeting-${lang}-timing.json` : `/cinematic/aila/greeting-return-${lang}-timing.json`;
 
 // Sampled from AILA's own head - the bright gold rim/light-strand tips for
 // the regular tone, the warm copper wire-pattern/mouth-glow for her name.
@@ -232,15 +245,150 @@ const wordStyle = (wordIndex: number, word: string, dethroned: boolean, entered:
   };
 };
 
-export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang; heroPhase: HeroPhase }) {
+type SequenceHandles = {
+  setVisible: (value: boolean) => void;
+  setActiveIndex: (value: number) => void;
+  setEnteredIndices: Dispatch<SetStateAction<ReadonlySet<number>>>;
+  setAudioUnlocked: (value: boolean) => void;
+  setActiveWords: (value: string[]) => void;
+  dismissRef: MutableRefObject<() => void>;
+  unlockRef: MutableRefObject<() => void>;
+};
+
+// Runs one full greeting sequence (silent char-paced captions until a real
+// gesture unlocks audio, then real Whisper-timed captions synced to it) and
+// returns a stop function. Shared by both the one-time welcome sequence and
+// the "return to hero" nudge - the two only differ in which words/audio/timing
+// assets they use, everything else about how a greeting plays is identical.
+const startGreetingSequence = (
+  words: string[],
+  audioSrc: string,
+  timingUrl: string,
+  handles: SequenceHandles,
+): (() => void) => {
+  const { setVisible, setActiveIndex, setEnteredIndices, setAudioUnlocked, setActiveWords, dismissRef, unlockRef } = handles;
+  let mode: 'silent' | 'audio' | 'done' = 'silent';
+  let holdTimer = 0;
+  let sequenceToken = 0;
+
+  const audio = new Audio(audioSrc);
+  audio.preload = 'auto';
+  audio.setAttribute('playsinline', '');
+  // Fetched now (not on gesture) so it's ready the instant audio unlocks,
+  // instead of adding fetch latency to the click-to-speaking response.
+  const timingPromise = loadGreetingTiming(timingUrl);
+
+  const clearTimers = () => {
+    if (holdTimer) { window.clearTimeout(holdTimer); holdTimer = 0; }
+  };
+
+  const dispatchGuideState = (state: 'speaking' | 'idle') => {
+    window.dispatchEvent(new CustomEvent('aila:guide-state', { detail: { state } }));
+  };
+
+  const cleanupAll = () => {
+    clearTimers();
+    window.removeEventListener('aila:guide-open-change', handleGuideOpen);
+    window.removeEventListener('click', handleGesture);
+    window.removeEventListener('touchstart', handleGesture);
+    window.removeEventListener('keydown', handleGesture);
+    audio.pause();
+    audio.removeAttribute('src');
+  };
+
+  const finish = () => {
+    if (mode === 'done') return;
+    mode = 'done';
+    cleanupAll();
+    dispatchGuideState('idle');
+    setVisible(false);
+    setActiveIndex(-1);
+  };
+  dismissRef.current = finish;
+
+  const runSequence = (durations: number[], token: number, leadInMs = 0) => {
+    const advance = (index: number) => {
+      if (token !== sequenceToken || mode === 'done') return;
+      if (index >= words.length) { finish(); return; }
+      setActiveIndex(index);
+      holdTimer = window.setTimeout(() => advance(index + 1), durations[index]);
+    };
+    if (leadInMs > 0) holdTimer = window.setTimeout(() => advance(0), leadInMs);
+    else advance(0);
+  };
+
+  const handleGuideOpen = (event: Event) => {
+    if ((event as CustomEvent<{ open?: boolean }>).detail?.open) finish();
+  };
+
+  const handleGesture = () => {
+    window.removeEventListener('click', handleGesture);
+    window.removeEventListener('touchstart', handleGesture);
+    window.removeEventListener('keydown', handleGesture);
+    if (mode !== 'silent') return;
+    window.dispatchEvent(new Event('aila:prime-audio'));
+    audio.play().then(() => {
+      if (mode !== 'silent') { audio.pause(); return; }
+      mode = 'audio';
+      setAudioUnlocked(true);
+      sequenceToken += 1;
+      const token = sequenceToken;
+      clearTimers();
+      dispatchGuideState('speaking');
+      audio.addEventListener('ended', finish, { once: true });
+      const applyRealTiming = () => {
+        timingPromise.then((timing) => {
+          if (token !== sequenceToken || mode === 'done') return;
+          const real = timing && buildRealDurations(timing, words.length);
+          if (real) {
+            runSequence(real.durations, token, real.leadInMs);
+            return;
+          }
+          const totalMs = Number.isFinite(audio.duration) && audio.duration > 0
+            ? audio.duration * 1000
+            : estimateSilentTotalMs(words);
+          runSequence(distributeDurations(words, totalMs), token);
+        });
+      };
+      if (Number.isFinite(audio.duration) && audio.duration > 0) {
+        applyRealTiming();
+      } else {
+        audio.addEventListener('loadedmetadata', applyRealTiming, { once: true });
+      }
+    }).catch(() => undefined);
+  };
+  unlockRef.current = handleGesture;
+
+  window.addEventListener('aila:guide-open-change', handleGuideOpen);
+  window.addEventListener('click', handleGesture);
+  window.addEventListener('touchstart', handleGesture);
+  window.addEventListener('keydown', handleGesture);
+
+  setActiveWords(words);
+  setEnteredIndices(new Set());
+  setVisible(true);
+  runSequence(distributeDurations(words, estimateSilentTotalMs(words)), sequenceToken);
+
+  return () => {
+    mode = 'done';
+    cleanupAll();
+  };
+};
+
+export default function AilaGreeting({ lang, heroPhase, returnTrigger }: { lang: ExperienceLang; heroPhase: HeroPhase; returnTrigger: number }) {
   const [visible, setVisible] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [enteredIndices, setEnteredIndices] = useState<ReadonlySet<number>>(new Set());
   const [anchor, setAnchor] = useState<Anchor | null>(null);
   const [audioUnlocked, setAudioUnlocked] = useState(false);
+  const [activeWords, setActiveWords] = useState<string[]>([]);
   const startedRef = useRef(false);
   const dismissRef = useRef<() => void>(() => undefined);
   const unlockRef = useRef<() => void>(() => undefined);
+  const stopSequenceRef = useRef<() => void>(() => undefined);
+  const langRef = useRef(lang);
+  const lastReturnTriggerRef = useRef(returnTrigger);
+  langRef.current = lang;
 
   useEffect(() => {
     if (activeIndex < 0) return;
@@ -287,120 +435,44 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
     };
   }, [visible]);
 
+  // One-time welcome sequence, triggered the moment the hero has finished
+  // revealing on page load.
   useEffect(() => {
     if (startedRef.current || heroPhase !== 'revealed') return;
     startedRef.current = true;
+    const words = buildWords(heroGreeting[langRef.current]);
+    stopSequenceRef.current = startGreetingSequence(
+      words,
+      greetingAudioSrc('welcome', langRef.current),
+      greetingTimingSrc('welcome', langRef.current),
+      { setVisible, setActiveIndex, setEnteredIndices, setAudioUnlocked, setActiveWords, dismissRef, unlockRef },
+    );
+  }, [heroPhase]);
 
-    const words = buildWords(heroGreeting[lang]);
-    let mode: 'silent' | 'audio' | 'done' = 'silent';
-    let holdTimer = 0;
-    let sequenceToken = 0;
+  // Short "need help?" nudge, replayed every time MarcelExperience detects
+  // the visitor scrolled well past the hero and then back up to it -
+  // signalled by returnTrigger incrementing. Never fires before the welcome
+  // sequence has at least started once.
+  useEffect(() => {
+    if (returnTrigger === lastReturnTriggerRef.current) return;
+    lastReturnTriggerRef.current = returnTrigger;
+    if (!startedRef.current) return;
+    stopSequenceRef.current();
+    window.dispatchEvent(new CustomEvent('aila:guide-state', { detail: { state: 'idle' } }));
+    const words = buildWords(heroGreetingReturn[langRef.current]);
+    stopSequenceRef.current = startGreetingSequence(
+      words,
+      greetingAudioSrc('return', langRef.current),
+      greetingTimingSrc('return', langRef.current),
+      { setVisible, setActiveIndex, setEnteredIndices, setAudioUnlocked, setActiveWords, dismissRef, unlockRef },
+    );
+  }, [returnTrigger]);
 
-    const audio = new Audio(`/cinematic/aila/greeting-${lang}.mp3`);
-    audio.preload = 'auto';
-    audio.setAttribute('playsinline', '');
-    // Fetched now (not on gesture) so it's ready the instant audio unlocks,
-    // instead of adding fetch latency to the click-to-speaking response.
-    const timingPromise = loadGreetingTiming(lang);
-
-    const clearTimers = () => {
-      if (holdTimer) { window.clearTimeout(holdTimer); holdTimer = 0; }
-    };
-
-    const dispatchGuideState = (state: 'speaking' | 'idle') => {
-      window.dispatchEvent(new CustomEvent('aila:guide-state', { detail: { state } }));
-    };
-
-    const cleanupAll = () => {
-      clearTimers();
-      window.removeEventListener('aila:guide-open-change', handleGuideOpen);
-      window.removeEventListener('click', handleGesture);
-      window.removeEventListener('touchstart', handleGesture);
-      window.removeEventListener('keydown', handleGesture);
-      audio.pause();
-      audio.removeAttribute('src');
-    };
-
-    const finish = () => {
-      if (mode === 'done') return;
-      mode = 'done';
-      cleanupAll();
-      dispatchGuideState('idle');
-      setVisible(false);
-      setActiveIndex(-1);
-    };
-    dismissRef.current = finish;
-
-    const runSequence = (durations: number[], token: number, leadInMs = 0) => {
-      const advance = (index: number) => {
-        if (token !== sequenceToken || mode === 'done') return;
-        if (index >= words.length) { finish(); return; }
-        setActiveIndex(index);
-        holdTimer = window.setTimeout(() => advance(index + 1), durations[index]);
-      };
-      if (leadInMs > 0) holdTimer = window.setTimeout(() => advance(0), leadInMs);
-      else advance(0);
-    };
-
-    const handleGuideOpen = (event: Event) => {
-      if ((event as CustomEvent<{ open?: boolean }>).detail?.open) finish();
-    };
-
-    const handleGesture = () => {
-      window.removeEventListener('click', handleGesture);
-      window.removeEventListener('touchstart', handleGesture);
-      window.removeEventListener('keydown', handleGesture);
-      if (mode !== 'silent') return;
-      window.dispatchEvent(new Event('aila:prime-audio'));
-      audio.play().then(() => {
-        if (mode !== 'silent') { audio.pause(); return; }
-        mode = 'audio';
-        setAudioUnlocked(true);
-        sequenceToken += 1;
-        const token = sequenceToken;
-        clearTimers();
-        dispatchGuideState('speaking');
-        audio.addEventListener('ended', finish, { once: true });
-        const applyRealTiming = () => {
-          timingPromise.then((timing) => {
-            if (token !== sequenceToken || mode === 'done') return;
-            const real = timing && buildRealDurations(timing, words.length);
-            if (real) {
-              runSequence(real.durations, token, real.leadInMs);
-              return;
-            }
-            const totalMs = Number.isFinite(audio.duration) && audio.duration > 0
-              ? audio.duration * 1000
-              : estimateSilentTotalMs(words);
-            runSequence(distributeDurations(words, totalMs), token);
-          });
-        };
-        if (Number.isFinite(audio.duration) && audio.duration > 0) {
-          applyRealTiming();
-        } else {
-          audio.addEventListener('loadedmetadata', applyRealTiming, { once: true });
-        }
-      }).catch(() => undefined);
-    };
-    unlockRef.current = handleGesture;
-
-    window.addEventListener('aila:guide-open-change', handleGuideOpen);
-    window.addEventListener('click', handleGesture);
-    window.addEventListener('touchstart', handleGesture);
-    window.addEventListener('keydown', handleGesture);
-
-    setVisible(true);
-    runSequence(distributeDurations(words, estimateSilentTotalMs(words)), sequenceToken);
-
-    return () => {
-      mode = 'done';
-      cleanupAll();
-    };
-  }, [heroPhase, lang]);
+  useEffect(() => () => stopSequenceRef.current(), []);
 
   if (!visible || activeIndex < 0 || !anchor) return null;
 
-  const words = buildWords(heroGreeting[lang]);
+  const words = activeWords;
   const gap = 12 * anchor.scale;
   const lift = (anchor.isMobile ? 12 : 20) * anchor.scale;
 
