@@ -64,9 +64,12 @@ const INSTRUCTIONS = {
 // presence EQ for clarity, compression, a tremolo acting as a mild ring
 // modulator for an audible synthetic buzz, a heavier phaser for a
 // synthetic warble, a short comb-filter echo for metallic ring, a light
-// echo-based "hall", and a final loudness boost with a limiter to guard
-// against clipping. Applied to every generated clip as a post-processing
-// pass over the raw TTS output.
+// echo-based "hall", and loudness normalization (replacing an earlier flat
+// volume+limiter pass that left clips far too quiet - measured around
+// -34dB mean volume with ~17dB of headroom still unused) so every clip
+// lands at a consistent, properly loud level regardless of its own
+// dynamics. Applied to every generated clip as a post-processing pass over
+// the raw TTS output.
 const VOICE_FILTER = [
   'equalizer=f=3200:width_type=o:width=1.0:g=2.5',
   'acompressor=threshold=-18dB:ratio=2.5:attack=15:release=150:makeup=1.9',
@@ -74,8 +77,7 @@ const VOICE_FILTER = [
   'aphaser=in_gain=0.85:out_gain=0.8:delay=3.0:decay=0.4:speed=0.4',
   'aecho=0.6:0.7:9:0.35',
   'aecho=0.75:0.6:40|70|110:0.22|0.16|0.09',
-  'volume=1.25',
-  'alimiter=limit=0.97',
+  'loudnorm=I=-15:TP=-1.0:LRA=11',
 ].join(',');
 
 const apiKey = process.env.OPENAI_API_KEY;

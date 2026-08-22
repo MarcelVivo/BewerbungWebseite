@@ -1,8 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import ffmpegPath from 'ffmpeg-static';
 import { validatePublicPost } from '@/app/lib/security';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+
+const run = promisify(execFile);
+
+// Kept in sync by hand with VOICE_FILTER in scripts/generate-aila-greeting-audio.mjs -
+// the same treatment applied there to the pre-rendered greeting clips, applied here
+// per live chat reply so AILA's voice sounds the same everywhere. If ffmpeg-static's
+// binary isn't available for some reason, falls back to the raw unprocessed voice
+// instead of failing the whole chat reply (see the catch below).
+const VOICE_FILTER = [
+  'equalizer=f=3200:width_type=o:width=1.0:g=2.5',
+  'acompressor=threshold=-18dB:ratio=2.5:attack=15:release=150:makeup=1.9',
+  'tremolo=f=55:d=0.35',
+  'aphaser=in_gain=0.85:out_gain=0.8:delay=3.0:decay=0.4:speed=0.4',
+  'aecho=0.6:0.7:9:0.35',
+  'aecho=0.75:0.6:40|70|110:0.22|0.16|0.09',
+  'loudnorm=I=-15:TP=-1.0:LRA=11',
+].join(',');
+
+async function applyVoiceFilter(buffer: ArrayBuffer): Promise<ArrayBuffer> {
+  if (!ffmpegPath) return buffer;
+  const dir = await mkdtemp(path.join(tmpdir(), 'aila-speech-'));
+  const rawPath = path.join(dir, 'raw.mp3');
+  const outPath = path.join(dir, 'out.mp3');
+  try {
+    await writeFile(rawPath, Buffer.from(buffer));
+    await run(ffmpegPath, ['-y', '-i', rawPath, '-af', VOICE_FILTER, outPath]);
+    const processed = await readFile(outPath);
+    return processed.buffer.slice(processed.byteOffset, processed.byteOffset + processed.byteLength);
+  } catch (error) {
+    console.error('AILA voice filter failed, using unprocessed audio', error instanceof Error ? error.message : 'unknown error');
+    return buffer;
+  } finally {
+    await rm(dir, { recursive: true, force: true }).catch(() => undefined);
+  }
+}
 
 export async function POST(request: NextRequest) {
   const rejected = validatePublicPost(request, {
@@ -31,8 +72,8 @@ export async function POST(request: NextRequest) {
         voice: process.env.OPENAI_AILA_VOICE || 'marin',
         input: text,
         instructions: lang === 'de'
-          ? 'Sprich als AILA: warme, ruhige, souveraene deutsche Stimme. Natuerliches Hochdeutsch mit dezenter Schweizer Tonalitaet, klar und nicht werblich.'
-          : 'Speak as AILA with a warm, calm, assured voice. Clear, natural English, concise and never salesy.',
+          ? 'Sprich als AILA: eine erkennbar synthetische, maschinelle KI-Stimme - geschlechtsneutral, weder eindeutig maennlich noch weiblich. Ruhig, klar und praezise, mit einer leicht monotonen, gleichmaessigen Sprechweise statt menschlicher Emotionalitaet. Neutral, nicht werblich, aber freundlich im Tonfall.'
+          : 'Speak as AILA: a distinctly synthetic, machine-like AI voice - gender-neutral, neither distinctly male nor female. Calm, clear and precise, with a slightly monotone, even delivery rather than human emotional inflection. Neutral, never salesy, but friendly in tone.',
         response_format: 'mp3',
       }),
       cache: 'no-store',
@@ -44,7 +85,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Sprachausgabe nicht verfuegbar.' }, { status: 502 });
     }
 
-    return new NextResponse(await response.arrayBuffer(), {
+    const processed = await applyVoiceFilter(await response.arrayBuffer());
+    return new NextResponse(processed, {
       headers: { 'Content-Type': 'audio/mpeg', 'Cache-Control': 'no-store' },
     });
   } catch (error) {

@@ -10,6 +10,11 @@ const nextConfig = {
   poweredByHeader: false,
   outputFileTracingIncludes: {
     '/api/expertise-documents/[slug]': ['./private/expertise/**/*.pdf'],
+    // The ffmpeg-static binary isn't reachable through a normal import, so
+    // Next's output file tracing wouldn't otherwise know this route needs
+    // it at runtime (post-processing AILA's live chat voice - see
+    // app/api/aila/speech/route.ts).
+    '/api/aila/speech': ['./node_modules/ffmpeg-static/ffmpeg'],
   },
   async headers() {
     // No inline-script nonce infrastructure exists yet, so Next.js's own
