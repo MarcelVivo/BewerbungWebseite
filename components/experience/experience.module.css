@@ -571,7 +571,7 @@
 
 @keyframes ailaWordDethrone {
   0% {
-    color: #eecb7a;
+    color: var(--word-gold, #c9973f);
     filter: blur(0);
     opacity: 1;
     font-size: 1.37rem;

@@ -63,7 +63,8 @@ const buildRealDurations = (timing: WordTiming[], wordCount: number): { duration
   return { durations, leadInMs };
 };
 
-const GOLD = '#eecb7a';
+const GOLD = '#c9973f';
+const COPPER_GOLD = '#b5602c';
 
 const MOBILE_QUERY = '(max-width: 1100px)';
 // The desktop grab-surface's width at its default (non-hovered, non-scaled) resting size -
@@ -114,9 +115,15 @@ const jitterPx = (index: number) => {
 // per-word jitter custom property the keyframes read from; once dethroned,
 // the keyframe animation owns opacity/filter/transform/color/font-size
 // entirely, so none of those are set here for that case.
-const wordStyle = (wordIndex: number, dethroned: boolean, entered: boolean): CSSProperties => {
+// AILA's own name gets its own copper-gold accent instead of the regular
+// gold every other word uses, both for the resting/current state below and
+// (via the --word-gold custom property) the dethrone keyframe's start color.
+const isAilaWord = (word: string) => displayWord(word).toUpperCase() === 'AILA';
+
+const wordStyle = (wordIndex: number, word: string, dethroned: boolean, entered: boolean): CSSProperties => {
   const jx = jitterPx(wordIndex);
-  const base = { '--jx': `${jx}px`, zIndex: wordIndex + 1 } as CSSProperties;
+  const tone = isAilaWord(word) ? COPPER_GOLD : GOLD;
+  const base = { '--jx': `${jx}px`, '--word-gold': tone, zIndex: wordIndex + 1 } as CSSProperties;
   if (dethroned) return base;
   if (!entered) {
     return {
@@ -124,7 +131,7 @@ const wordStyle = (wordIndex: number, dethroned: boolean, entered: boolean): CSS
       opacity: 0,
       filter: 'blur(7px)',
       transform: `translate(${jx}px, 8px) scale(.88)`,
-      color: GOLD,
+      color: tone,
       fontSize: '1.37rem',
     };
   }
@@ -133,8 +140,8 @@ const wordStyle = (wordIndex: number, dethroned: boolean, entered: boolean): CSS
     opacity: 1,
     filter: 'blur(0px)',
     transform: `translate(${jx}px, 0) scale(1)`,
-    color: GOLD,
-    fontSize: '2.05rem',
+    color: tone,
+    fontSize: '1.37rem',
   };
 };
 
@@ -318,7 +325,7 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
                 key={wordIndex}
                 className={styles.ailaGreetingWord}
                 data-dethroned={dethroned ? 'true' : undefined}
-                style={wordStyle(wordIndex, dethroned, enteredIndices.has(wordIndex))}
+                style={wordStyle(wordIndex, word, dethroned, enteredIndices.has(wordIndex))}
               >
                 {displayWord(word)}
               </div>
