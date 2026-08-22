@@ -8,6 +8,17 @@ const nextConfig = {
   // "Cannot read properties of null (reading 'precision')".
   reactStrictMode: false,
   poweredByHeader: false,
+  // ffmpeg-static resolves its own binary path from its own `__dirname` at
+  // require-time (app/api/aila/speech/route.ts's AILA-voice post-processing).
+  // Left bundled, Next's server webpack build inlines that module's code
+  // into the route's own bundle, which rewrites `__dirname` to the route's
+  // bundle location instead of node_modules/ffmpeg-static - so it looked for
+  // the binary right next to the route handler and never found it there
+  // (ENOENT), even though outputFileTracingIncludes below did correctly
+  // place the binary in the real node_modules path. Keeping the package
+  // external stops it from being bundled at all, so its own __dirname stays
+  // correct.
+  serverExternalPackages: ['ffmpeg-static'],
   outputFileTracingIncludes: {
     '/api/expertise-documents/[slug]': ['./private/expertise/**/*.pdf'],
     // The ffmpeg-static binary isn't reachable through a normal import, so
