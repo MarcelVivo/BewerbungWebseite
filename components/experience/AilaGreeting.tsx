@@ -472,16 +472,22 @@ export default function AilaGreeting({
     let frame = 0;
     const update = () => {
       frame = 0;
-      // On mobile, AILA leaving the station this sequence was anchored to
+      // On mobile, AILA leaving the hero for the tiny nav-bar dock
       // (MobileAilaCompanion's own stage, read off its data-stage attribute)
-      // makes the caption look broken next to wherever she's now docked
-      // instead - end the greeting right there instead of letting it keep
-      // following her elsewhere. Welcome/return only ever play while she's
-      // resting in the hero; about/contact expect her at their own station.
-      if (window.matchMedia(MOBILE_QUERY).matches) {
+      // makes the hero-scaled welcome/return caption look broken next to
+      // her now-icon-sized self - end the greeting right there instead of
+      // letting it keep following her into the nav bar. About/contact are
+      // deliberately exempt: on mobile, momentum scrolling regularly carries
+      // the visitor straight through those (much shorter) stations within
+      // the couple of seconds it takes to speak the nudge, and dismissing
+      // the instant the stage moved on killed the sequence - audio included,
+      // since it interrupts the still-pending audio.play() - before either
+      // had a real chance to play. Those two just run to completion
+      // regardless of where the visitor scrolls to next, same as desktop.
+      const kind = activeKindRef.current;
+      if ((kind === 'welcome' || kind === 'return') && window.matchMedia(MOBILE_QUERY).matches) {
         const stage = document.querySelector('[data-aila-entity="mobile"]')?.getAttribute('data-stage');
-        const expectedStage = activeKindRef.current === 'about' ? 'about' : activeKindRef.current === 'contact' ? 'final' : 'hero';
-        if (stage && stage !== expectedStage) { dismissRef.current(); return; }
+        if (stage && stage !== 'hero') { dismissRef.current(); return; }
       }
       setAnchor(measureAnchor());
     };
