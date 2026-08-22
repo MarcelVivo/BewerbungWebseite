@@ -120,18 +120,28 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
   // Anchored to AILA's actual rendered head element (desktop entity or mobile
   // companion, whichever is live at the current breakpoint) rather than a
   // fixed offset, so the greeting stays glued to the head's top-right corner
-  // and scales with it across mobile/tablet/desktop.
+  // and scales with it across mobile/tablet/desktop. Re-measured on scroll
+  // too (rAF-throttled) since she keeps moving along the flight path while
+  // speaking now instead of the greeting being cut short.
   useEffect(() => {
     if (!visible) return;
-    const update = () => setAnchor(measureAnchor());
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      setAnchor(measureAnchor());
+    };
+    const requestUpdate = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
     update();
-    const frame = requestAnimationFrame(update);
-    window.addEventListener('resize', update);
-    window.addEventListener('orientationchange', update);
+    window.addEventListener('scroll', requestUpdate, { passive: true });
+    window.addEventListener('resize', requestUpdate);
+    window.addEventListener('orientationchange', requestUpdate);
     return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener('resize', update);
-      window.removeEventListener('orientationchange', update);
+      if (frame) cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', requestUpdate);
+      window.removeEventListener('resize', requestUpdate);
+      window.removeEventListener('orientationchange', requestUpdate);
     };
   }, [visible]);
 
@@ -158,7 +168,6 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
 
     const cleanupAll = () => {
       clearTimers();
-      window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('aila:guide-open-change', handleGuideOpen);
       window.removeEventListener('click', handleGesture);
       window.removeEventListener('touchstart', handleGesture);
@@ -185,10 +194,6 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
         holdTimer = window.setTimeout(() => advance(index + 1), durations[index]);
       };
       advance(0);
-    };
-
-    const handleScroll = () => {
-      if (window.scrollY > 16) finish();
     };
 
     const handleGuideOpen = (event: Event) => {
@@ -223,7 +228,6 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
       }).catch(() => undefined);
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('aila:guide-open-change', handleGuideOpen);
     window.addEventListener('click', handleGesture);
     window.addEventListener('touchstart', handleGesture);
