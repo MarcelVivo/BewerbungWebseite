@@ -63,9 +63,7 @@ const buildRealDurations = (timing: WordTiming[], wordCount: number): { duration
   return { durations, leadInMs };
 };
 
-const GENERATIONS = 6;
 const GOLD = '#eecb7a';
-const FADE_GREY = '#dcdcd4';
 
 const MOBILE_QUERY = '(max-width: 1100px)';
 // The desktop grab-surface's width at its default (non-hovered, non-scaled) resting size -
@@ -107,52 +105,36 @@ const jitterPx = (index: number) => {
   return ((x - Math.floor(x)) * 2 - 1) * 7;
 };
 
-const wordStyle = (wordIndex: number, age: number, entered: boolean): CSSProperties => {
+// The fade-out is a fixed-duration CSS keyframe animation (see
+// ailaWordDethrone in experience.module.css), triggered once via the
+// [data-dethroned] attribute and then left to run completely on its own -
+// unlike the earlier age-bucket approach, it is not re-paced by how fast
+// further words keep becoming current. This function only ever supplies the
+// *resting* state (pre-entrance or "currently the active word") plus the
+// per-word jitter custom property the keyframes read from; once dethroned,
+// the keyframe animation owns opacity/filter/transform/color/font-size
+// entirely, so none of those are set here for that case.
+const wordStyle = (wordIndex: number, dethroned: boolean, entered: boolean): CSSProperties => {
   const jx = jitterPx(wordIndex);
+  const base = { '--jx': `${jx}px`, zIndex: wordIndex + 1 } as CSSProperties;
+  if (dethroned) return base;
   if (!entered) {
-    // A word is only ever new (unentered) the instant it becomes current,
-    // so the resting values it fades in toward are always the age-0 ones.
     return {
+      ...base,
       opacity: 0,
       filter: 'blur(7px)',
       transform: `translate(${jx}px, 8px) scale(.88)`,
       color: GOLD,
       fontSize: '2.05rem',
-      zIndex: GENERATIONS,
     };
   }
-  if (age === 0) {
-    return {
-      opacity: 1,
-      filter: 'blur(0px)',
-      transform: `translate(${jx}px, 0) scale(1)`,
-      color: GOLD,
-      fontSize: '2.05rem',
-      zIndex: GENERATIONS,
-    };
-  }
-  // Stays gold and sharp through most of the staircase - only the last
-  // couple of steps actually blur, shrink, dim and shift color toward grey,
-  // and slowly at that (the CSS transition duration does the "slowly").
-  const fadeByAge = [0, 1, .97, .85, .5, 0][age] ?? 0;
-  const blurByAge = [0, 0, .2, .6, 2.2, 6.5][age] ?? 6.5;
-  const scaleByAge = [1, 1, .97, .92, .82, .68][age] ?? .68;
-  const colorByAge = [GOLD, GOLD, GOLD, GOLD, FADE_GREY, FADE_GREY][age] ?? FADE_GREY;
-  // A gentle down-right staircase, close enough that consecutive steps can
-  // slightly overlap rather than being spaced far apart - wide gaps read as
-  // jerky jumps once real audio timing advances several steps within one
-  // transition's duration. Further right than down. Position keeps
-  // progressing every step regardless of the appearance staying gold/sharp
-  // above, so the word gets its full travel time toward the bottom-right.
-  const driftDownByAge = [0, 9, 19, 31, 45, 62][age] ?? 62;
-  const driftRightByAge = [0, 18, 38, 62, 90, 125][age] ?? 125;
   return {
-    opacity: fadeByAge,
-    filter: `blur(${blurByAge}px)`,
-    transform: `translate(${jx + driftRightByAge}px, ${driftDownByAge}px) scale(${scaleByAge})`,
-    color: colorByAge,
-    fontSize: '1.05rem',
-    zIndex: GENERATIONS - age,
+    ...base,
+    opacity: 1,
+    filter: 'blur(0px)',
+    transform: `translate(${jx}px, 0) scale(1)`,
+    color: GOLD,
+    fontSize: '2.05rem',
   };
 };
 
@@ -314,7 +296,6 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
   if (!visible || activeIndex < 0 || !anchor) return null;
 
   const words = buildWords(heroGreeting[lang]);
-  const generations = Array.from({ length: GENERATIONS }, (_, age) => activeIndex - age).filter((i) => i >= 0);
   const gap = 12 * anchor.scale;
   const lift = 20 * anchor.scale;
 
@@ -330,15 +311,16 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
         aria-live="polite"
       >
         <div className={styles.ailaGreetingWords}>
-          {generations.map((wordIndex) => {
-            const age = activeIndex - wordIndex;
+          {words.slice(0, activeIndex + 1).map((word, wordIndex) => {
+            const dethroned = wordIndex < activeIndex;
             return (
               <div
                 key={wordIndex}
                 className={styles.ailaGreetingWord}
-                style={wordStyle(wordIndex, age, enteredIndices.has(wordIndex))}
+                data-dethroned={dethroned ? 'true' : undefined}
+                style={wordStyle(wordIndex, dethroned, enteredIndices.has(wordIndex))}
               >
-                {displayWord(words[wordIndex])}
+                {displayWord(word)}
               </div>
             );
           })}

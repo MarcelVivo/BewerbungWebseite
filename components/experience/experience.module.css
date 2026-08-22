@@ -550,9 +550,46 @@
   letter-spacing: -.005em;
   text-shadow: 0 1px 0 rgba(255,239,180,.35), 0 3px 0 rgba(105,66,11,.5), 0 13px 30px rgba(200,154,61,.2);
   transform-origin: left bottom;
-  transition: opacity 2.4s cubic-bezier(.3,.6,.3,1), filter 2.4s cubic-bezier(.3,.6,.3,1),
-    transform 2.4s cubic-bezier(.3,.6,.3,1), color 2.8s ease, font-size 2.4s cubic-bezier(.3,.6,.3,1);
+  /* Only covers the brief entrance pop (pre-entrance -> current); the
+     fade-out below is a completely separate, fixed-duration animation so it
+     is never rushed by how fast subsequent words arrive. */
+  transition: opacity .45s cubic-bezier(.22,.61,.36,1), filter .45s cubic-bezier(.22,.61,.36,1),
+    transform .45s cubic-bezier(.22,.61,.36,1), color .4s ease, font-size .45s cubic-bezier(.22,.61,.36,1);
   will-change: transform, opacity, filter;
+}
+
+.ailaGreetingWord[data-dethroned='true'] {
+  /* Triggered exactly once, the instant a newer word takes over - runs to
+     completion on its own fixed clock regardless of anything that happens
+     afterward. Gold holds only briefly, sharpness/full opacity hold through
+     the first two-thirds of the glide, and both only ease out in the last
+     third while the drift itself runs smoothly the whole way. */
+  transition: none;
+  animation: ailaWordDethrone 4.5s cubic-bezier(.3,.5,.3,1) forwards;
+}
+
+@keyframes ailaWordDethrone {
+  0% {
+    color: #eecb7a;
+    filter: blur(0);
+    opacity: 1;
+    font-size: 2.05rem;
+    transform: translate(var(--jx, 0px), 0) scale(1);
+  }
+  38% {
+    color: #f5f1e6;
+  }
+  66% {
+    filter: blur(0);
+    opacity: 1;
+  }
+  100% {
+    color: #f5f1e6;
+    filter: blur(7px);
+    opacity: 0;
+    font-size: 1.05rem;
+    transform: translate(calc(var(--jx, 0px) + 125px), 62px) scale(.68);
+  }
 }
 
 .ailaGreetingControls {
