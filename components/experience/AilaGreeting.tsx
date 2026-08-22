@@ -265,6 +265,7 @@ const startGreetingSequence = (
   audioSrc: string,
   timingUrl: string,
   handles: SequenceHandles,
+  initiallyUnlocked: boolean,
 ): (() => void) => {
   const { setVisible, setActiveIndex, setEnteredIndices, setAudioUnlocked, setActiveWords, dismissRef, unlockRef } = handles;
   let mode: 'silent' | 'audio' | 'done' = 'silent';
@@ -321,14 +322,21 @@ const startGreetingSequence = (
     if ((event as CustomEvent<{ open?: boolean }>).detail?.open) finish();
   };
 
-  const handleGesture = () => {
-    window.removeEventListener('click', handleGesture);
-    window.removeEventListener('touchstart', handleGesture);
-    window.removeEventListener('keydown', handleGesture);
+  // Shared by both the real-gesture path (handleGesture below) and the
+  // no-gesture autoplay attempt made when a previous sequence already
+  // unlocked audio this session (see initiallyUnlocked) - browsers that have
+  // seen one real user-gesture-triggered play() on the page generally allow
+  // further JS-initiated play() calls without a fresh gesture. Does not
+  // touch the gesture listeners itself; the caller decides when those are
+  // no longer needed.
+  const attemptPlay = () => {
     if (mode !== 'silent') return;
     window.dispatchEvent(new Event('aila:prime-audio'));
     audio.play().then(() => {
       if (mode !== 'silent') { audio.pause(); return; }
+      window.removeEventListener('click', handleGesture);
+      window.removeEventListener('touchstart', handleGesture);
+      window.removeEventListener('keydown', handleGesture);
       mode = 'audio';
       setAudioUnlocked(true);
       sequenceToken += 1;
@@ -357,6 +365,13 @@ const startGreetingSequence = (
       }
     }).catch(() => undefined);
   };
+
+  const handleGesture = () => {
+    window.removeEventListener('click', handleGesture);
+    window.removeEventListener('touchstart', handleGesture);
+    window.removeEventListener('keydown', handleGesture);
+    attemptPlay();
+  };
   unlockRef.current = handleGesture;
 
   window.addEventListener('aila:guide-open-change', handleGuideOpen);
@@ -368,6 +383,14 @@ const startGreetingSequence = (
   setEnteredIndices(new Set());
   setVisible(true);
   runSequence(distributeDurations(words, estimateSilentTotalMs(words)), sequenceToken);
+
+  // A previous sequence in this session already turned an explicit gesture
+  // into a successful audio.play() - browsers treat that as durable
+  // permission for the rest of the page's lifetime, so this sequence can
+  // just start talking immediately instead of asking the visitor to
+  // re-unlock sound for every replay. Falls back to the gesture listeners
+  // above (still registered) if this particular attempt is rejected.
+  if (initiallyUnlocked) attemptPlay();
 
   return () => {
     mode = 'done';
@@ -388,7 +411,12 @@ export default function AilaGreeting({ lang, heroPhase, returnTrigger }: { lang:
   const stopSequenceRef = useRef<() => void>(() => undefined);
   const langRef = useRef(lang);
   const lastReturnTriggerRef = useRef(returnTrigger);
+  // Read inside the return-trigger effect instead of relying on
+  // audioUnlocked directly, so a mid-sequence unlock (audioUnlocked flipping
+  // true) never itself re-triggers that effect - only returnTrigger should.
+  const audioUnlockedRef = useRef(audioUnlocked);
   langRef.current = lang;
+  audioUnlockedRef.current = audioUnlocked;
 
   useEffect(() => {
     if (activeIndex < 0) return;
@@ -446,6 +474,7 @@ export default function AilaGreeting({ lang, heroPhase, returnTrigger }: { lang:
       greetingAudioSrc('welcome', langRef.current),
       greetingTimingSrc('welcome', langRef.current),
       { setVisible, setActiveIndex, setEnteredIndices, setAudioUnlocked, setActiveWords, dismissRef, unlockRef },
+      false,
     );
   }, [heroPhase]);
 
@@ -465,6 +494,7 @@ export default function AilaGreeting({ lang, heroPhase, returnTrigger }: { lang:
       greetingAudioSrc('return', langRef.current),
       greetingTimingSrc('return', langRef.current),
       { setVisible, setActiveIndex, setEnteredIndices, setAudioUnlocked, setActiveWords, dismissRef, unlockRef },
+      audioUnlockedRef.current,
     );
   }, [returnTrigger]);
 
