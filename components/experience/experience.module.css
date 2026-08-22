@@ -587,11 +587,28 @@
 
 @keyframes ailaWordDethrone {
   0% {
-    color: var(--word-gold, #d1a24e);
+    /* Opens on the exact gradient-clip look the word had a moment ago as
+       the active/current word - no hard cut at the handoff boundary itself,
+       which was reading as a jarring "restart". */
+    background-image: var(--word-gradient, none);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
     filter: blur(0);
     opacity: 1;
     font-size: 1.37rem;
     transform: translate(var(--jx, 0px), 0) scale(1);
+  }
+  10% {
+    /* The switch to flat solid color still happens as a hard cut (gradients
+       can't be interpolated), but tucked a fraction of a second into the
+       animation - once the word is already visibly in motion - instead of
+       at the perceptually-loaded instant it takes over from the entrance
+       style, it reads as part of the same continuous glide. */
+    background-image: none;
+    -webkit-background-clip: border-box;
+    background-clip: border-box;
+    color: var(--word-gold, #d1a24e);
   }
   38% {
     /* A pale warm gold instead of neutral white, so the fade-out stays

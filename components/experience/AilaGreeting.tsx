@@ -145,9 +145,14 @@ const wordStyle = (wordIndex: number, word: string, dethroned: boolean, entered:
   const jx = jitterPx(wordIndex);
   const isAila = isAilaWord(word);
   const tone = isAila ? COPPER_GOLD : GOLD;
-  const base = { '--jx': `${jx}px`, '--word-gold': tone, zIndex: wordIndex + 1 } as CSSProperties;
+  const gradient = isAila ? COPPER_GRADIENT : GOLD_GRADIENT;
+  // --word-gradient lets the dethrone keyframe open on the exact same
+  // gradient-clip look the word had a moment before, instead of hard-cutting
+  // to a flat solid color right at the handoff from this inline style to
+  // the CSS animation - that cut was reading as the word "restarting".
+  const base = { '--jx': `${jx}px`, '--word-gold': tone, '--word-gradient': gradient, zIndex: wordIndex + 1 } as CSSProperties;
   if (dethroned) return base;
-  const wordmark = gradientTextStyle(isAila ? COPPER_GRADIENT : GOLD_GRADIENT, isAila ? '.08em' : undefined);
+  const wordmark = gradientTextStyle(gradient, isAila ? '.08em' : undefined);
   if (!entered) {
     return {
       ...base,
