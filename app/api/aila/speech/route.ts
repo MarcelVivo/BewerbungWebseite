@@ -58,11 +58,8 @@ async function ensureExecutable(binPath: string): Promise<void> {
   }
 }
 
-// TEMPORARY: return value lets the route attach a diagnostic response header
-// while tracking down why this silently fell back to unprocessed audio in
-// production despite working locally - remove once confirmed fixed live.
-async function applyVoiceFilter(buffer: ArrayBuffer): Promise<{ audio: ArrayBuffer; status: string }> {
-  if (!ffmpegPath) return { audio: buffer, status: 'fallback:no-ffmpeg-path' };
+async function applyVoiceFilter(buffer: ArrayBuffer): Promise<ArrayBuffer> {
+  if (!ffmpegPath) return buffer;
   const dir = await mkdtemp(path.join(tmpdir(), 'aila-speech-'));
   const rawPath = path.join(dir, 'raw.mp3');
   const effectedPath = path.join(dir, 'fx.mp3');
@@ -73,14 +70,10 @@ async function applyVoiceFilter(buffer: ArrayBuffer): Promise<{ audio: ArrayBuff
     await run(ffmpegPath, ['-y', '-i', rawPath, '-af', VOICE_FILTER, effectedPath]);
     await twoPassLoudnorm(ffmpegPath, effectedPath, outPath);
     const processed = await readFile(outPath);
-    return {
-      audio: processed.buffer.slice(processed.byteOffset, processed.byteOffset + processed.byteLength),
-      status: 'ok',
-    };
+    return processed.buffer.slice(processed.byteOffset, processed.byteOffset + processed.byteLength);
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'unknown error';
-    console.error('AILA voice filter failed, using unprocessed audio', message);
-    return { audio: buffer, status: `fallback:${message.slice(0, 180).replace(/[\r\n]+/g, ' ')}` };
+    console.error('AILA voice filter failed, using unprocessed audio', error instanceof Error ? error.message : 'unknown error');
+    return buffer;
   } finally {
     await rm(dir, { recursive: true, force: true }).catch(() => undefined);
   }
@@ -126,12 +119,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Sprachausgabe nicht verfuegbar.' }, { status: 502 });
     }
 
-    const { audio, status } = await applyVoiceFilter(await response.arrayBuffer());
-    const speechResponse = new NextResponse(audio, {
+    const audio = await applyVoiceFilter(await response.arrayBuffer());
+    return new NextResponse(audio, {
       headers: { 'Content-Type': 'audio/mpeg', 'Cache-Control': 'no-store' },
     });
-    speechResponse.headers.set('X-Aila-Voice-Filter', status);
-    return speechResponse;
   } catch (error) {
     console.error('AILA speech failed', error instanceof Error ? error.message : 'unknown error');
     return NextResponse.json({ error: 'Sprachausgabe nicht verfuegbar.' }, { status: 500 });
