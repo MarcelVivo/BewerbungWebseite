@@ -89,7 +89,10 @@ const HEADING_TILT_MAX_DEGREES = 8;
 const AILA_IDLE_VIDEO = '/cinematic/aila/aila-attention-v2-greenscreen.mp4';
 const AILA_ATTENTION_VIDEO = '/cinematic/aila/aila-attention-v2-greenscreen.mp4';
 const AILA_THINKING_VIDEO = '/cinematic/aila/aila-thinking-v1-pingpong-greenscreen.mp4';
-const AILA_SPEAKING_VIDEO = '/cinematic/aila/aila-speaking-v1-greenscreen.mp4';
+// The idle clip's mouth-glow shimmer (a problem while merely resting, see
+// the idle-speed slowdown above) is exactly the motion actual speech needs -
+// reused here as the speaking clip instead of the dedicated one.
+const AILA_SPEAKING_VIDEO = '/cinematic/aila/aila-idle-v1-pingpong-greenscreen.mp4';
 const AILA_CTA_VIDEO = '/cinematic/aila/aila-cta-v1-greenscreen.mp4';
 type AilaVideoMode = 'idle' | 'attention' | 'thinking' | 'speaking' | 'cta' | 'confirmation';
 type AilaConversationState = AilaAnimationState;

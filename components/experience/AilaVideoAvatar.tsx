@@ -12,7 +12,10 @@ const VIDEO_BY_MODE: Record<AilaVideoMode, string> = {
   idle: '/cinematic/aila/aila-attention-v2-greenscreen.mp4',
   attention: '/cinematic/aila/aila-attention-v2-greenscreen.mp4',
   thinking: '/cinematic/aila/aila-thinking-v1-pingpong-greenscreen.mp4',
-  speaking: '/cinematic/aila/aila-speaking-v1-greenscreen.mp4',
+  // The idle clip's mouth-glow shimmer (a problem while merely resting, see
+  // the idle-speed slowdown below) is exactly the motion actual speech
+  // needs - reused here as the speaking clip instead of the dedicated one.
+  speaking: '/cinematic/aila/aila-idle-v1-pingpong-greenscreen.mp4',
   cta: '/cinematic/aila/aila-cta-v1-greenscreen.mp4',
 };
 
