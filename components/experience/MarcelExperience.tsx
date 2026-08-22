@@ -8,7 +8,6 @@ import { useLanguage } from '../../app/LanguageContext';
 import { trackWebsiteEvent } from '../../app/lib/analytics';
 import { PROJECTS } from '../../app/portfolio/data';
 import AilaGreeting from './AilaGreeting';
-import { dockingRestScrollY, dockingStopForSectionId } from './dockingRoute';
 import ExperienceNav from './ExperienceNav';
 import MarketingDockingStation from './MarketingDockingStation';
 import ProblemDockingStation from './ProblemDockingStation';
@@ -397,8 +396,21 @@ export default function MarcelExperience() {
     let leftHero = false;
     let aboutFired = false;
     let contactFired = false;
-    const aboutStop = dockingStopForSectionId('journey-about');
-    const contactStop = dockingStopForSectionId('journey-contact');
+
+    // Whether a section is substantially in view right now - used for the
+    // about/contact stations instead of dockingRestScrollY (that formula
+    // reserves extra scroll travel past a station's own top so short
+    // sections still get a meaningful "rest" fraction, which works for the
+    // docking ring but assumes there's room to keep scrolling past it. The
+    // "contact" station is the very last thing on the page and only one
+    // viewport tall, so that reserved travel lands past the page's actual
+    // maximum scroll position and could never be reached).
+    const isSubstantiallyVisible = (sectionId: string) => {
+      const el = document.getElementById(sectionId);
+      const rect = el?.getBoundingClientRect();
+      if (!rect) return false;
+      return rect.top < window.innerHeight * .7 && rect.bottom > window.innerHeight * .3;
+    };
 
     const check = () => {
       frame = 0;
@@ -407,24 +419,18 @@ export default function MarcelExperience() {
       const y = window.scrollY;
       if (!leftHero && y > top + height * 1.4) {
         leftHero = true;
-      } else if (leftHero && y < top + height * .25) {
+      } else if (leftHero && y < top + height * .6) {
         leftHero = false;
         setAilaReturnTrigger((value) => value + 1);
       }
 
-      if (!aboutFired && aboutStop) {
-        const restY = dockingRestScrollY(aboutStop);
-        if (restY !== null && y >= restY) {
-          aboutFired = true;
-          setAilaAboutTrigger((value) => value + 1);
-        }
+      if (!aboutFired && isSubstantiallyVisible('journey-about')) {
+        aboutFired = true;
+        setAilaAboutTrigger((value) => value + 1);
       }
-      if (!contactFired && contactStop) {
-        const restY = dockingRestScrollY(contactStop);
-        if (restY !== null && y >= restY) {
-          contactFired = true;
-          setAilaContactTrigger((value) => value + 1);
-        }
+      if (!contactFired && isSubstantiallyVisible('journey-contact')) {
+        contactFired = true;
+        setAilaContactTrigger((value) => value + 1);
       }
     };
 
