@@ -122,18 +122,31 @@ const jitterPx = (index: number) => {
 // (via the --word-gold custom property) the dethrone keyframe's start color.
 const isAilaWord = (word: string) => displayWord(word).toUpperCase() === 'AILA';
 
-// While she's the active word, "AILA" reads as a small wordmark moment
-// (the site's real gold gradient + wider tracking) rather than looking
-// exactly like every other word in a different color. Gradients can't be
+const GOLD_GRADIENT = 'var(--gold-gradient)';
+// A copper-toned mirror of that same gradient (#F6E3A1 -> #E7C56A -> #C89A3D
+// -> #B8862B -> #7C5A1A), for AILA's own name.
+const COPPER_GRADIENT = 'linear-gradient(135deg, #f0b978 0%, #d9823f 22%, #c2692e 48%, #a3491f 74%, #6e2f12 100%)';
+
+// Every word reads as a small gradient wordmark while active rather than a
+// flat solid color - regular words in gold, "AILA" in copper with wider
+// tracking so her name still stands apart from the rest. Gradients can't be
 // smoothly color-animated though, so this only applies pre-dethrone; once
-// fading out, it falls back to the same solid-color keyframe every other
-// word uses (via --word-gold, still her copper tone).
-const ailaWordmarkStyle: CSSProperties = {
-  backgroundImage: 'var(--gold-gradient)',
+// fading out, everything falls back to the same solid-color keyframe (via
+// --word-gold).
+const gradientTextStyle = (gradient: string, letterSpacing?: string): CSSProperties => ({
+  backgroundImage: gradient,
   WebkitBackgroundClip: 'text',
   backgroundClip: 'text',
   color: 'transparent',
-  letterSpacing: '.08em',
+  ...(letterSpacing ? { letterSpacing } : {}),
+});
+
+// Deterministic per-letter pseudo-random horizontal drift for AILA's own
+// name, spelled out as individual letters - a different seed than jitterPx
+// so it doesn't visually correlate with the word-level jitter.
+const letterJitterPx = (letterIndex: number) => {
+  const x = Math.sin(letterIndex * 78.233 + 4.7) * 12345.6789;
+  return ((x - Math.floor(x)) * 2 - 1) * 5;
 };
 
 const wordStyle = (wordIndex: number, word: string, dethroned: boolean, entered: boolean): CSSProperties => {
@@ -142,7 +155,7 @@ const wordStyle = (wordIndex: number, word: string, dethroned: boolean, entered:
   const tone = isAila ? COPPER_GOLD : GOLD;
   const base = { '--jx': `${jx}px`, '--word-gold': tone, zIndex: wordIndex + 1 } as CSSProperties;
   if (dethroned) return base;
-  const wordmark = isAila ? ailaWordmarkStyle : { color: tone };
+  const wordmark = gradientTextStyle(isAila ? COPPER_GRADIENT : GOLD_GRADIENT, isAila ? '.08em' : undefined);
   if (!entered) {
     return {
       ...base,
@@ -338,6 +351,7 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
         <div className={styles.ailaGreetingWords}>
           {words.slice(0, activeIndex + 1).map((word, wordIndex) => {
             const dethroned = wordIndex < activeIndex;
+            const spellOut = isAilaWord(word) && !dethroned;
             return (
               <div
                 key={wordIndex}
@@ -345,7 +359,17 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
                 data-dethroned={dethroned ? 'true' : undefined}
                 style={wordStyle(wordIndex, word, dethroned, enteredIndices.has(wordIndex))}
               >
-                {displayWord(word)}
+                {spellOut
+                  ? displayWord(word).split('').map((letter, letterIndex) => (
+                      <span
+                        key={letterIndex}
+                        className={styles.ailaGreetingLetter}
+                        style={{ transform: `translateX(${letterJitterPx(letterIndex)}px)` }}
+                      >
+                        {letter}
+                      </span>
+                    ))
+                  : displayWord(word)}
               </div>
             );
           })}

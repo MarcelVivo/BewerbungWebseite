@@ -558,6 +558,10 @@
   will-change: transform, opacity, filter;
 }
 
+.ailaGreetingLetter {
+  display: inline-block;
+}
+
 .ailaGreetingWord[data-dethroned='true'] {
   /* Triggered exactly once, the instant a newer word takes over - runs to
      completion on its own fixed clock regardless of anything that happens
