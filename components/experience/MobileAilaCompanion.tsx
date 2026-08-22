@@ -31,6 +31,7 @@ export default function MobileAilaCompanion({ lang }: { lang: ExperienceLang }) 
       const hero = document.querySelector<HTMLElement>('[data-mobile-aila-anchor="hero"]');
       const nav = document.querySelector<HTMLElement>('[data-mobile-aila-anchor="nav"]');
       const brand = document.querySelector<HTMLElement>('[data-mobile-aila-boundary="brand"]');
+      const language = document.querySelector<HTMLElement>('[data-mobile-aila-boundary="language"]');
       const menu = document.querySelector<HTMLElement>('[data-mobile-aila-boundary="menu"]');
       const about = document.querySelector<HTMLElement>('[data-mobile-aila-anchor="about"]');
       const final = document.querySelector<HTMLElement>('[data-mobile-aila-anchor="final"]');
@@ -39,6 +40,7 @@ export default function MobileAilaCompanion({ lang }: { lang: ExperienceLang }) 
       const heroRect = hero.getBoundingClientRect();
       const navRect = nav.getBoundingClientRect();
       const brandRect = brand?.getBoundingClientRect();
+      const languageRect = language?.getBoundingClientRect();
       const menuRect = menu?.getBoundingClientRect();
       const aboutRect = about.getBoundingClientRect();
       const finalRect = final.getBoundingClientRect();
@@ -51,13 +53,19 @@ export default function MobileAilaCompanion({ lang }: { lang: ExperienceLang }) 
       const transitProgress = ease(clamp((window.scrollY - transitStart) / (transitEnd - transitStart)));
       const travel = ease(clamp(window.scrollY / Math.max(150, window.innerHeight * .22)));
 
-      const navWidth = clamp(window.innerWidth * .27, 102, 132);
+      // 25% bigger than the plain nav-icon size, and centered between the
+      // brand and the language switch now that DE/EN sits to her right
+      // (next to the menu button) instead of overlapping where she docks.
+      const navWidth = clamp(window.innerWidth * .27, 102, 132) * 1.25;
       const navHeight = navWidth * .79;
       const freeSpaceLeft = brandRect?.right ?? 0;
-      const freeSpaceRight = menuRect?.left ?? window.innerWidth;
+      const freeSpaceRight = languageRect?.left ?? menuRect?.left ?? window.innerWidth;
       const freeSpaceCenter = freeSpaceLeft + Math.max(0, freeSpaceRight - freeSpaceLeft) / 2;
       const navLeft = freeSpaceCenter - navWidth / 2;
-      const navTop = navRect.top + navRect.height / 2 - navHeight * .38;
+      // Biased well past the app bar's own vertical center so most of her
+      // height hangs below it - floating out of the bar's bottom edge
+      // rather than sitting centered/contained inside it.
+      const navTop = navRect.top + navRect.height / 2 - navHeight * .18;
 
       if (aboutVisible || (aboutSection && window.scrollY >= aboutSection.offsetTop)) reachedAboutRef.current = true;
       if (aboutSection && window.scrollY < Math.max(0, aboutSection.offsetTop - window.innerHeight * .7)) reachedAboutRef.current = false;
@@ -142,10 +150,13 @@ export default function MobileAilaCompanion({ lang }: { lang: ExperienceLang }) 
     trackWebsiteEvent('aila_opened', { station: stage === 'final' ? 'journey-contact' : stage === 'about' || stage === 'transit' ? 'journey-about' : 'journey-start', metadata: { source: `mobile_companion_${stage}` } });
   };
 
+  // 'idle'/'attention' have half-lidded, crescent-shaped eyes that read as
+  // a glare/scowl at the small size she renders at while docked in the nav
+  // bar; 'cta' has fully open eyes and reads as alert/friendly instead.
   const videoMode: AilaVideoMode = greetingSpeaking
     ? 'speaking'
     : stage === 'nav'
-      ? 'idle'
+      ? 'cta'
       : stage === 'final'
         ? 'cta'
         : 'attention';

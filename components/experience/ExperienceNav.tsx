@@ -55,6 +55,7 @@ function LanguageSwitch({ lang, setLang, variant }: { lang: ExperienceLang; setL
       className={variant === 'desktop' ? styles.languageSwitchDesktop : styles.languageSwitchMobile}
       role="group"
       aria-label={lang === 'de' ? 'Sprache wählen' : 'Choose language'}
+      data-mobile-aila-boundary={variant === 'mobile' ? 'language' : undefined}
     >
       <button
         type="button"
@@ -199,8 +200,8 @@ export default function ExperienceNav({ lang }: { lang: ExperienceLang }) {
           </span>
         </button>
         <div className={styles.mobileAppActions}>
-          <LanguageSwitch lang={lang} setLang={setLang} variant="mobile" />
           <span className={styles.mobileAppAilaDock} data-mobile-aila-anchor="nav" aria-hidden="true" />
+          <LanguageSwitch lang={lang} setLang={setLang} variant="mobile" />
           <button type="button" className={styles.mobileAppMenuButton} data-mobile-aila-boundary="menu" onClick={() => setMenuOpen((current) => !current)} aria-expanded={menuOpen} aria-controls="mobile-experience-menu" aria-label={menuOpen ? (lang === 'de' ? 'Menü schliessen' : 'Close menu') : (lang === 'de' ? 'Menü öffnen' : 'Open menu')}>
             {menuOpen ? <X size={21} /> : <Menu size={21} />}
           </button>
