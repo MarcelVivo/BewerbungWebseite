@@ -12,6 +12,7 @@ import type {
   AilaUiAction,
 } from '@/app/lib/aila/types';
 import type { ExperienceLang } from './content';
+import { attachAilaAudioLevel } from './ailaAudioLevel';
 import AilaContactCapture from './AilaContactCapture';
 import AilaVideoAvatar from './AilaVideoAvatar';
 import styles from './experience.module.css';
@@ -162,6 +163,7 @@ export default function AilaGuide({
   const greetingSpeakingRef = useRef(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const primedAudioRef = useRef<HTMLAudioElement | null>(null);
+  const audioLevelDetachRef = useRef<() => void>(() => undefined);
   const audioUrlRef = useRef('');
   const speechRequestRef = useRef<AbortController | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -233,6 +235,8 @@ export default function AilaGuide({
     setLocalSpeaking(false);
     speechRequestRef.current?.abort();
     speechRequestRef.current = null;
+    audioLevelDetachRef.current();
+    audioLevelDetachRef.current = () => undefined;
     const audio = audioRef.current;
     if (audio) {
       audio.onended = null;
@@ -424,6 +428,8 @@ export default function AilaGuide({
       audio.onended = () => stopAudio(true);
       audio.onerror = () => stopAudio(true);
       await audio.play();
+      audioLevelDetachRef.current();
+      audioLevelDetachRef.current = attachAilaAudioLevel(audio);
       setLocalSpeaking(true);
       onStateChange('speaking');
     } catch {

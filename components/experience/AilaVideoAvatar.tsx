@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { readAilaAudioLevel } from './ailaAudioLevel';
 import styles from './experience.module.css';
 
 export type AilaVideoMode = 'idle' | 'attention' | 'thinking' | 'speaking' | 'cta';
@@ -85,6 +86,13 @@ export default function AilaVideoAvatar({ mode, alt = 'AILA' }: { mode: AilaVide
       }
 
       context.putImageData(frame, 0, 0);
+      // Ties her mouth-glow to the actual loudness of whatever is voicing
+      // her right now (see ailaAudioLevel.ts) instead of the fixed loop's
+      // own unrelated rhythm - not real lip-sync (she has no visemes to
+      // switch between), but a brightness pulse that tracks the voice. A
+      // cheap CSS filter on the whole canvas rather than more per-pixel
+      // work in the already-expensive loop above.
+      canvas.style.filter = mode === 'speaking' ? `brightness(${1 + readAilaAudioLevel() * .4})` : '';
       if (firstFrame) {
         firstFrame = false;
         setVideoReady(true);
@@ -120,6 +128,7 @@ export default function AilaVideoAvatar({ mode, alt = 'AILA' }: { mode: AilaVide
       stopped = true;
       if (animationFrame) window.cancelAnimationFrame(animationFrame);
       if (videoFrame && typeof video.cancelVideoFrameCallback === 'function') video.cancelVideoFrameCallback(videoFrame);
+      canvas.style.filter = '';
       video.pause();
     };
   }, [mode]);

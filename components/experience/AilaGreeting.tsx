@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type CSSProperties, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
 import { Volume2, X } from 'lucide-react';
 import { heroGreeting, heroGreetingReturnVariants, heroGreetingAboutVariants, heroGreetingContactVariants, type ExperienceLang } from './content';
+import { attachAilaAudioLevel } from './ailaAudioLevel';
 import styles from './experience.module.css';
 
 type HeroPhase = 'loading' | 'ignition' | 'revealed';
@@ -306,6 +307,7 @@ const startGreetingSequence = (
   let mode: 'silent' | 'audio' | 'done' = 'silent';
   let holdTimer = 0;
   let sequenceToken = 0;
+  let detachAudioLevel = () => undefined as void;
 
   const audio = new Audio(audioSrc);
   audio.preload = 'auto';
@@ -324,6 +326,7 @@ const startGreetingSequence = (
 
   const cleanupAll = () => {
     clearTimers();
+    detachAudioLevel();
     window.removeEventListener('aila:guide-open-change', handleGuideOpen);
     window.removeEventListener('click', handleGesture);
     window.removeEventListener('touchstart', handleGesture);
@@ -413,6 +416,7 @@ const startGreetingSequence = (
       mode = 'audio';
       setAudioUnlocked(true);
       markEverUnlocked();
+      detachAudioLevel = attachAilaAudioLevel(audio);
       sequenceToken += 1;
       const token = sequenceToken;
       clearTimers();

@@ -10,6 +10,7 @@ import AilaGuide from './AilaGuide';
 import AilaSolutionPreview from './AilaSolutionPreview';
 import TitleDepthLayer from './TitleDepthLayer';
 import { chapters, type ExperienceLang } from './content';
+import { readAilaAudioLevel } from './ailaAudioLevel';
 import {
   getFlightPathDraft,
   setFlightPathRuntime,
@@ -576,6 +577,13 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
     entity.dataset.ailaState = 'idle';
 
     const renderCore = () => {
+      // Ties her mouth-glow to the actual loudness of whatever is voicing
+      // her right now (see ailaAudioLevel.ts) instead of the video loop's
+      // own unrelated rhythm - not real lip-sync, but a brightness pulse
+      // that tracks the voice. Updated before every early return below so
+      // it keeps pulsing smoothly even on frames the shader itself skips
+      // redrawing.
+      coreCanvas.style.filter = videoMode === 'speaking' ? `brightness(${1 + readAilaAudioLevel() * .4})` : '';
       if (!coreRendererAvailable || !gl || !texture || !switchOffLocation || reducedMotion.matches) {
         coreCanvas.style.opacity = '0';
         fallback.style.opacity = '1';
