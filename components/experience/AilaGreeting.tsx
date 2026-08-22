@@ -467,11 +467,6 @@ export default function AilaGreeting({
   const returnVariantRef = useRef(0);
   const aboutVariantRef = useRef(0);
   const contactVariantRef = useRef(0);
-  // Which sequence is currently playing - the mobile stage-change dismissal
-  // below expects a different MobileAilaCompanion stage per kind (she's
-  // docked at a different station for each), so this can't just hard-code
-  // 'hero' like it used to when only the welcome/return kinds existed.
-  const activeKindRef = useRef<GreetingKind>('welcome');
   // True forever once ANY sequence's audio has actually played - read as
   // `initiallyUnlocked` by later sequences to decide whether to attempt
   // playing immediately without a fresh gesture. Deliberately not the same
@@ -489,7 +484,7 @@ export default function AilaGreeting({
   // her off - only the most recent request while something is playing
   // survives, so a lingering wait doesn't cause a pile-up of stale nudges.
   const isPlayingRef = useRef(false);
-  const pendingRef = useRef<{ kind: GreetingKind; words: string[]; audioSrc: string; timingSrc: string } | null>(null);
+  const pendingRef = useRef<{ words: string[]; audioSrc: string; timingSrc: string } | null>(null);
   langRef.current = lang;
 
   const handles = {
@@ -503,19 +498,18 @@ export default function AilaGreeting({
     unlockRef,
   };
 
-  const playSequence = (kind: GreetingKind, words: string[], audioSrc: string, timingSrc: string) => {
+  const playSequence = (words: string[], audioSrc: string, timingSrc: string) => {
     stopSequenceRef.current();
     window.dispatchEvent(new CustomEvent('aila:guide-state', { detail: { state: 'idle' } }));
-    activeKindRef.current = kind;
     stopSequenceRef.current = startGreetingSequence(words, audioSrc, timingSrc, handles, everUnlockedRef.current);
   };
 
-  const requestSequence = (kind: GreetingKind, words: string[], audioSrc: string, timingSrc: string) => {
+  const requestSequence = (words: string[], audioSrc: string, timingSrc: string) => {
     if (isPlayingRef.current) {
-      pendingRef.current = { kind, words, audioSrc, timingSrc };
+      pendingRef.current = { words, audioSrc, timingSrc };
       return;
     }
-    playSequence(kind, words, audioSrc, timingSrc);
+    playSequence(words, audioSrc, timingSrc);
   };
 
   // Drains a queued request the instant she finishes (or is dismissed from)
@@ -527,7 +521,7 @@ export default function AilaGreeting({
     const pending = pendingRef.current;
     if (!pending) return;
     pendingRef.current = null;
-    playSequence(pending.kind, pending.words, pending.audioSrc, pending.timingSrc);
+    playSequence(pending.words, pending.audioSrc, pending.timingSrc);
   }, [visible]);
 
   useEffect(() => {
@@ -549,23 +543,17 @@ export default function AilaGreeting({
     let frame = 0;
     const update = () => {
       frame = 0;
-      // On mobile, AILA leaving the hero for the tiny nav-bar dock
-      // (MobileAilaCompanion's own stage, read off its data-stage attribute)
-      // makes the hero-scaled welcome/return caption look broken next to
-      // her now-icon-sized self - end the greeting right there instead of
-      // letting it keep following her into the nav bar. About/contact are
-      // deliberately exempt: on mobile, momentum scrolling regularly carries
-      // the visitor straight through those (much shorter) stations within
-      // the couple of seconds it takes to speak the nudge, and dismissing
-      // the instant the stage moved on killed the sequence - audio included,
-      // since it interrupts the still-pending audio.play() - before either
-      // had a real chance to play. Those two just run to completion
-      // regardless of where the visitor scrolls to next, same as desktop.
-      const kind = activeKindRef.current;
-      if ((kind === 'welcome' || kind === 'return') && window.matchMedia(MOBILE_QUERY).matches) {
-        const stage = document.querySelector('[data-aila-entity="mobile"]')?.getAttribute('data-stage');
-        if (stage && stage !== 'hero') { dismissRef.current(); return; }
-      }
+      // Every sequence runs to completion regardless of where the visitor
+      // scrolls to meanwhile, on both mobile and desktop - the caption
+      // keeps tracking wherever she currently is via measureAnchor() below.
+      // Welcome/return used to be dismissed the instant mobile's
+      // MobileAilaCompanion stage moved away from 'hero' (she'd otherwise
+      // look broken pinned next to her now-icon-sized nav-dock self), but
+      // even a small, early scroll flips that stage - cutting the one-time
+      // welcome off mid-sentence just because the visitor started scrolling
+      // a little before she'd finished. Same call already made for
+      // about/contact: finishing the sentence matters more than avoiding
+      // that visual mismatch in the rarer case where it actually happens.
       setAnchor(measureAnchor());
     };
     const requestUpdate = () => {
@@ -589,7 +577,7 @@ export default function AilaGreeting({
     if (startedRef.current || heroPhase !== 'revealed') return;
     startedRef.current = true;
     const words = buildWords(heroGreeting[langRef.current]);
-    playSequence('welcome', words, greetingAudioSrc('welcome', langRef.current, 0), greetingTimingSrc('welcome', langRef.current, 0));
+    playSequence(words, greetingAudioSrc('welcome', langRef.current, 0), greetingTimingSrc('welcome', langRef.current, 0));
   }, [heroPhase]);
 
   // Short "need help?" nudge, replayed every time MarcelExperience detects
@@ -603,7 +591,7 @@ export default function AilaGreeting({
     const variant = returnVariantRef.current % heroGreetingReturnVariants.length;
     returnVariantRef.current += 1;
     const words = buildWords(heroGreetingReturnVariants[variant][langRef.current]);
-    requestSequence('return', words, greetingAudioSrc('return', langRef.current, variant), greetingTimingSrc('return', langRef.current, variant));
+    requestSequence(words, greetingAudioSrc('return', langRef.current, variant), greetingTimingSrc('return', langRef.current, variant));
   }, [returnTrigger]);
 
   // Nudge replayed every time AILA's scroll-docking settles her at the
@@ -616,7 +604,7 @@ export default function AilaGreeting({
     const variant = aboutVariantRef.current % heroGreetingAboutVariants.length;
     aboutVariantRef.current += 1;
     const words = buildWords(heroGreetingAboutVariants[variant][langRef.current]);
-    requestSequence('about', words, greetingAudioSrc('about', langRef.current, variant), greetingTimingSrc('about', langRef.current, variant));
+    requestSequence(words, greetingAudioSrc('about', langRef.current, variant), greetingTimingSrc('about', langRef.current, variant));
   }, [aboutTrigger]);
 
   // Nudge replayed every time AILA's scroll-docking settles her at the
@@ -629,7 +617,7 @@ export default function AilaGreeting({
     const variant = contactVariantRef.current % heroGreetingContactVariants.length;
     contactVariantRef.current += 1;
     const words = buildWords(heroGreetingContactVariants[variant][langRef.current]);
-    requestSequence('contact', words, greetingAudioSrc('contact', langRef.current, variant), greetingTimingSrc('contact', langRef.current, variant));
+    requestSequence(words, greetingAudioSrc('contact', langRef.current, variant), greetingTimingSrc('contact', langRef.current, variant));
   }, [contactTrigger]);
 
   useEffect(() => () => stopSequenceRef.current(), []);
