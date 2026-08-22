@@ -561,11 +561,12 @@
 .ailaGreetingWord[data-dethroned='true'] {
   /* Triggered exactly once, the instant a newer word takes over - runs to
      completion on its own fixed clock regardless of anything that happens
-     afterward. Gold holds only briefly, sharpness/full opacity hold through
-     the first two-thirds of the glide, and both only ease out in the last
-     third while the drift itself runs smoothly the whole way. */
+     afterward. Blur/opacity/drift all ease continuously from the very start
+     (no flat hold-then-snap plateau - that read as a jerky kick), so the
+     word is already visibly softening within the first third. Color eases
+     from gold to a warm white early on. */
   transition: none;
-  animation: ailaWordDethrone 4.5s cubic-bezier(.3,.5,.3,1) forwards;
+  animation: ailaWordDethrone 4.5s ease-out forwards;
 }
 
 @keyframes ailaWordDethrone {
@@ -578,10 +579,6 @@
   }
   38% {
     color: #f5f1e6;
-  }
-  66% {
-    filter: blur(0);
-    opacity: 1;
   }
   100% {
     color: #f5f1e6;
