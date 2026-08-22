@@ -12,7 +12,12 @@ const MIN_WORD_MS = 620;
 const MAX_WORD_MS = 1450;
 const SENTENCE_PAUSE_MS = 340;
 
-const buildWords = (lines: readonly string[]) => lines.flatMap((line) => line.split(' ').filter(Boolean));
+// A bare dash used as punctuation ("System – ein Blick") splits out as its
+// own space-separated token but is never spoken as a word, so Whisper's
+// transcription (used for real audio timing below) never produces one
+// either - dropped here so the two word lists stay index-aligned.
+const buildWords = (lines: readonly string[]) =>
+  lines.flatMap((line) => line.split(' ')).filter((token) => token.length > 0 && !/^[–—-]+$/.test(token));
 
 // Trailing punctuation reads oddly on an isolated floating word, so it is
 // stripped for display only; the original word (with punctuation) still
@@ -29,6 +34,34 @@ const distributeDurations = (words: readonly string[], totalMs: number) => {
 
 const estimateSilentTotalMs = (words: readonly string[]) =>
   Math.max(words.length * MIN_WORD_MS, (words.length / WORDS_PER_MINUTE) * 60_000);
+
+// Real per-word start/end timestamps (seconds) from transcribing the actual
+// greeting audio with Whisper - see scripts/generate-aila-greeting-timing.mjs.
+// Falls back to the char-weighted estimate above if this ever goes missing
+// or its word count drifts from buildWords() (e.g. the greeting text changes
+// without re-running that script).
+type WordTiming = { word: string; start: number; end: number };
+
+const MIN_REAL_WORD_MS = 90;
+
+const loadGreetingTiming = (lang: ExperienceLang): Promise<WordTiming[] | null> =>
+  fetch(`/cinematic/aila/greeting-${lang}-timing.json`)
+    .then((response) => (response.ok ? response.json() : null))
+    .then((data: unknown) => {
+      const words = (data as { words?: unknown } | null)?.words;
+      return Array.isArray(words) ? (words as WordTiming[]) : null;
+    })
+    .catch(() => null);
+
+const buildRealDurations = (timing: WordTiming[], wordCount: number): { durations: number[]; leadInMs: number } | null => {
+  if (timing.length !== wordCount || wordCount === 0) return null;
+  const leadInMs = Math.max(0, timing[0].start * 1000);
+  const durations = timing.map((entry, index) => {
+    const nextStart = index < timing.length - 1 ? timing[index + 1].start : entry.end;
+    return Math.max(MIN_REAL_WORD_MS, (nextStart - entry.start) * 1000);
+  });
+  return { durations, leadInMs };
+};
 
 const GENERATIONS = 3;
 const GOLD = '#eecb7a';
@@ -172,6 +205,9 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
     const audio = new Audio(`/cinematic/aila/greeting-${lang}.mp3`);
     audio.preload = 'auto';
     audio.setAttribute('playsinline', '');
+    // Fetched now (not on gesture) so it's ready the instant audio unlocks,
+    // instead of adding fetch latency to the click-to-speaking response.
+    const timingPromise = loadGreetingTiming(lang);
 
     const clearTimers = () => {
       if (holdTimer) { window.clearTimeout(holdTimer); holdTimer = 0; }
@@ -201,14 +237,15 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
     };
     dismissRef.current = finish;
 
-    const runSequence = (durations: number[], token: number) => {
+    const runSequence = (durations: number[], token: number, leadInMs = 0) => {
       const advance = (index: number) => {
         if (token !== sequenceToken || mode === 'done') return;
         if (index >= words.length) { finish(); return; }
         setActiveIndex(index);
         holdTimer = window.setTimeout(() => advance(index + 1), durations[index]);
       };
-      advance(0);
+      if (leadInMs > 0) holdTimer = window.setTimeout(() => advance(0), leadInMs);
+      else advance(0);
     };
 
     const handleGuideOpen = (event: Event) => {
@@ -231,10 +268,18 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
         dispatchGuideState('speaking');
         audio.addEventListener('ended', finish, { once: true });
         const applyRealTiming = () => {
-          const totalMs = Number.isFinite(audio.duration) && audio.duration > 0
-            ? audio.duration * 1000
-            : estimateSilentTotalMs(words);
-          runSequence(distributeDurations(words, totalMs), token);
+          timingPromise.then((timing) => {
+            if (token !== sequenceToken || mode === 'done') return;
+            const real = timing && buildRealDurations(timing, words.length);
+            if (real) {
+              runSequence(real.durations, token, real.leadInMs);
+              return;
+            }
+            const totalMs = Number.isFinite(audio.duration) && audio.duration > 0
+              ? audio.duration * 1000
+              : estimateSilentTotalMs(words);
+            runSequence(distributeDurations(words, totalMs), token);
+          });
         };
         if (Number.isFinite(audio.duration) && audio.duration > 0) {
           applyRealTiming();
