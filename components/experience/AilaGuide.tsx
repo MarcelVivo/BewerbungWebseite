@@ -53,7 +53,7 @@ const GUIDE: Record<ExperienceLang, Record<string, GuideEntry>> = {
 const COMMON = {
   de: {
     prompts: ['Ich habe ein Unternehmen', 'Ich bin selbständig', 'Ich baue ein Start-up', 'Ich habe eine konkrete Idee', 'Ich möchte sehen, was möglich ist'],
-    welcome: 'Hallo, ich bin AILA. Wie kann ich dir helfen? Ich finde mit dir heraus, was dein Unternehmen digital wirklich braucht.',
+    welcome: 'Wie kann ich dir helfen? Ich finde mit dir heraus, was dein Unternehmen digital wirklich braucht.',
     placeholder: 'Deine Frage an AILA …', send: 'Frage senden', liveLabel: 'Mit AILA Sprechen', liveStop: 'Gespräch beenden',
     thinking: 'AILA denkt nach …', listening: 'AILA hört zu …', voiceOn: 'KI-Stimme ausschalten', voiceOff: 'KI-Stimme einschalten',
     error: 'Das hat gerade nicht funktioniert. Versuche es bitte noch einmal oder besprich dein Anliegen direkt mit Marcel.',
@@ -71,7 +71,7 @@ const COMMON = {
   },
   en: {
     prompts: ['I run a company', 'I am self-employed', 'I am building a start-up', 'I have a specific idea', 'Show me what is possible'],
-    welcome: 'Hello, I’m AILA. How can I help? Together we can find out what your business really needs digitally.',
+    welcome: 'How can I help? Together we can find out what your business really needs digitally.',
     placeholder: 'Your question for AILA …', send: 'Send question', liveLabel: 'Speak with AILA', liveStop: 'End conversation',
     thinking: 'AILA is thinking …', listening: 'AILA is listening …', voiceOn: 'Turn AI voice off', voiceOff: 'Turn AI voice on',
     error: 'That did not work just now. Please try again or discuss your question directly with Marcel.',
