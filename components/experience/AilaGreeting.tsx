@@ -141,17 +141,6 @@ const gradientTextStyle = (gradient: string, letterSpacing?: string): CSSPropert
   ...(letterSpacing ? { letterSpacing } : {}),
 });
 
-// Deterministic per-letter pseudo-random horizontal drift target for AILA's
-// name, spelled out as individual letters - a different seed than jitterPx
-// so it doesn't visually correlate with the word-level jitter. This is the
-// *end* state only ("A I L A"): the letters sit tight ("AILA") while she's
-// current and only pull apart toward this offset during the dethrone
-// animation, via the ailaLetterSpread keyframe reading --letter-drift.
-const letterJitterPx = (letterIndex: number) => {
-  const x = Math.sin(letterIndex * 78.233 + 4.7) * 12345.6789;
-  return ((x - Math.floor(x)) * 2 - 1) * 14;
-};
-
 const wordStyle = (wordIndex: number, word: string, dethroned: boolean, entered: boolean): CSSProperties => {
   const jx = jitterPx(wordIndex);
   const isAila = isAilaWord(word);
@@ -354,25 +343,15 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
         <div className={styles.ailaGreetingWords}>
           {words.slice(0, activeIndex + 1).map((word, wordIndex) => {
             const dethroned = wordIndex < activeIndex;
-            const spellOut = isAilaWord(word) && !dethroned;
             return (
               <div
                 key={wordIndex}
                 className={styles.ailaGreetingWord}
                 data-dethroned={dethroned ? 'true' : undefined}
+                data-aila-name={isAilaWord(word) ? 'true' : undefined}
                 style={wordStyle(wordIndex, word, dethroned, enteredIndices.has(wordIndex))}
               >
-                {spellOut
-                  ? displayWord(word).split('').map((letter, letterIndex) => (
-                      <span
-                        key={letterIndex}
-                        className={styles.ailaGreetingLetter}
-                        style={{ '--letter-drift': `${letterJitterPx(letterIndex)}px` } as CSSProperties}
-                      >
-                        {letter}
-                      </span>
-                    ))
-                  : displayWord(word)}
+                {displayWord(word)}
               </div>
             );
           })}

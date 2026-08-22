@@ -558,23 +558,6 @@
   will-change: transform, opacity, filter;
 }
 
-.ailaGreetingLetter {
-  display: inline-block;
-}
-
-/* Runs in lockstep with ailaWordDethrone below (same duration/easing,
-   triggered by the same attribute flip) - AILA's letters sit tight
-   ("AILA") while she's current and only pull apart toward each letter's
-   own --letter-drift target ("A I L A") as the word glides out and down. */
-.ailaGreetingWord[data-dethroned='true'] .ailaGreetingLetter {
-  animation: ailaLetterSpread 4.5s ease-out forwards;
-}
-
-@keyframes ailaLetterSpread {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(var(--letter-drift, 0px)); }
-}
-
 .ailaGreetingWord[data-dethroned='true'] {
   /* Triggered exactly once, the instant a newer word takes over - runs to
      completion on its own fixed clock regardless of anything that happens
@@ -584,6 +567,19 @@
      from gold to a warm white early on. */
   transition: none;
   animation: ailaWordDethrone 4.5s ease-out forwards;
+}
+
+/* AILA's own name additionally gets its tracking pulled open the whole way
+   down - "AILA" -> "A I L A" -> "A  I  L  A" - at a steady linear rate for
+   the full 4.5s (a separate animation so this one property can run linear
+   while the rest of the glide above keeps its own ease-out). */
+.ailaGreetingWord[data-aila-name='true'][data-dethroned='true'] {
+  animation: ailaWordDethrone 4.5s ease-out forwards, ailaTrackingOpen 4.5s linear forwards;
+}
+
+@keyframes ailaTrackingOpen {
+  0% { letter-spacing: .08em; }
+  100% { letter-spacing: .95em; }
 }
 
 @keyframes ailaWordDethrone {
