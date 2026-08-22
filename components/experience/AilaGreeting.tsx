@@ -352,11 +352,22 @@ const startGreetingSequence = (
   // had time to play out. Manual dismissal (the X button, or the mobile
   // stage-change guard) intentionally skips this and calls finish()
   // directly - the visitor asked for it to go now.
+  //
+  // dispatchGuideState('idle') fires here immediately, not delayed with the
+  // rest of finish() - that event is what switches AILA's video out of
+  // "speaking" mode (mouth motion), and audio has genuinely stopped by the
+  // time this runs (natural completion only ever happens via the audio's
+  // own 'ended' event or the last word's own duration elapsing). Leaving it
+  // inside the delayed finish() kept her video mouth animating for the
+  // entire 4.5s text fade after the sound had already ended. finish()
+  // redispatches 'idle' again once it actually runs, which is a harmless
+  // no-op transition.
   let finishing = false;
   const beginFinish = () => {
     if (finishing || mode === 'done') return;
     finishing = true;
     clearTimers();
+    dispatchGuideState('idle');
     setActiveIndex(words.length);
     holdTimer = window.setTimeout(finish, 4500);
   };
