@@ -109,12 +109,24 @@ const mobileHeaderRect = (): DOMRect | null => {
   return rect && rect.width > 0 ? rect : null;
 };
 
+// On desktop the controls dock at a fixed horizontal spot - above roughly
+// where "Unternehmen" ends in the hero heading's first line - rather than
+// off the head, per an explicit request; only the horizontal position
+// comes from this, the vertical stays the same head-relative height as
+// before.
+const desktopTitleLineRight = (): number | null => {
+  const titleLine = document.querySelector<HTMLElement>(`.${styles.heroTitle} span`);
+  const rect = titleLine?.getBoundingClientRect();
+  return rect && rect.width > 0 ? rect.left + rect.width * .87 : null;
+};
+
 const measureAnchor = (): Anchor => {
   const isMobile = window.matchMedia(MOBILE_QUERY).matches;
   const el = document.querySelector<HTMLElement>(`[data-aila-entity="${isMobile ? 'mobile' : 'desktop'}"]`);
   const rect = el?.getBoundingClientRect();
   const eyebrowRect = isMobile ? mobileEyebrowRect() : null;
   const headerRect = isMobile ? mobileHeaderRect() : null;
+  const desktopControlsLeft = isMobile ? null : desktopTitleLineRight();
   // The controls dock is pinned by its own bottom-right corner (see the
   // translateY/translateX(-100%) applied where this is used), so this point
   // is where its bottom edge sits - just above the eyebrow row if that's
@@ -129,7 +141,7 @@ const measureAnchor = (): Anchor => {
     // guess near its usual start position beats not showing anything.
     const left = eyebrowRect?.left ?? window.innerWidth * .58;
     const top = window.innerHeight * .16;
-    return { left, top, controlsLeft: controlsAnchor?.left ?? left - 60, controlsTop: controlsAnchor?.top ?? top + 60, scale: 1, isMobile };
+    return { left, top, controlsLeft: controlsAnchor?.left ?? desktopControlsLeft ?? left - 60, controlsTop: controlsAnchor?.top ?? top + 60, scale: 1, isMobile };
   }
   const scale = Math.min(MAX_ANCHOR_SCALE, Math.max(MIN_ANCHOR_SCALE, rect.width / REFERENCE_HEAD_WIDTH));
   // On mobile the caption's left margin comes from the eyebrow line, the
@@ -141,7 +153,7 @@ const measureAnchor = (): Anchor => {
   return {
     left,
     top: rect.top,
-    controlsLeft: controlsAnchor?.left ?? rect.left,
+    controlsLeft: controlsAnchor?.left ?? desktopControlsLeft ?? rect.left,
     controlsTop: controlsAnchor?.top ?? rect.bottom,
     scale,
     isMobile,
