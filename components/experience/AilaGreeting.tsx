@@ -101,15 +101,14 @@ const wordStyle = (wordIndex: number, age: number, entered: boolean): CSSPropert
   const fadeByAge = [0, .34, 0][age] ?? 0;
   const blurByAge = [0, 2.4, 5][age] ?? 5;
   const scaleByAge = [1, .8, .68][age] ?? .68;
-  const liftByAge = [0, -4, -9][age] ?? -9;
-  // Fading words drift a little further right the older they get, so the
-  // fade-out reads as a gentle rightward glide rather than just shrinking
-  // and blurring in place.
-  const driftByAge = [0, 7, 15][age] ?? 15;
+  // Fading words glide down and to the right the older they get, instead of
+  // just shrinking and blurring in place.
+  const driftDownByAge = [0, 12, 26][age] ?? 26;
+  const driftRightByAge = [0, 14, 30][age] ?? 30;
   return {
     opacity: fadeByAge,
     filter: `blur(${blurByAge}px)`,
-    transform: `translate(${jx + driftByAge}px, ${liftByAge}px) scale(${scaleByAge})`,
+    transform: `translate(${jx + driftRightByAge}px, ${driftDownByAge}px) scale(${scaleByAge})`,
     color: FADE_GREY,
     fontSize: '1.05rem',
     zIndex: GENERATIONS - age,
