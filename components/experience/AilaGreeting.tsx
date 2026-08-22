@@ -76,7 +76,8 @@ const MIN_ANCHOR_SCALE = .58;
 const MAX_ANCHOR_SCALE = 1.5;
 
 type Anchor = {
-  /** Head's top-right corner - where the caption starts and grows from. */
+  /** Where the caption starts and grows rightward from - the head's
+   *  top-right corner on desktop, but its top-left on mobile (see below). */
   left: number;
   top: number;
   /** Head's bottom-left corner - the opposite side, where the controls dock
@@ -84,6 +85,7 @@ type Anchor = {
   controlsLeft: number;
   controlsTop: number;
   scale: number;
+  isMobile: boolean;
 };
 
 const measureAnchor = (): Anchor => {
@@ -95,10 +97,17 @@ const measureAnchor = (): Anchor => {
     // guess near its usual start position beats not showing anything.
     const left = window.innerWidth * .58;
     const top = window.innerHeight * .16;
-    return { left, top, controlsLeft: left - 60, controlsTop: top + 60, scale: 1 };
+    return { left, top, controlsLeft: left - 60, controlsTop: top + 60, scale: 1, isMobile };
   }
   const scale = Math.min(MAX_ANCHOR_SCALE, Math.max(MIN_ANCHOR_SCALE, rect.width / REFERENCE_HEAD_WIDTH));
-  return { left: rect.right, top: rect.top, controlsLeft: rect.left, controlsTop: rect.bottom, scale };
+  // On mobile the head sits roughly centered in a narrow viewport, so
+  // starting the (left-anchored, rightward-growing) caption from the
+  // head's right edge - as on desktop, where there's open space beside her
+  // - pushes it toward/off the screen edge instead. Starting from her left
+  // edge instead keeps the caption inside the visible column, in the open
+  // gap between her and the nav bar above.
+  const left = isMobile ? rect.left : rect.right;
+  return { left, top: rect.top, controlsLeft: rect.left, controlsTop: rect.bottom, scale, isMobile };
 };
 
 // Deterministic per-word pseudo-random so a word's sideways drift stays put
@@ -332,7 +341,10 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
 
   const words = buildWords(heroGreeting[lang]);
   const gap = 12 * anchor.scale;
-  const lift = 20 * anchor.scale;
+  // Mobile lifts further above the head to actually sit in the open gap
+  // between her and the nav bar, rather than hugging her top edge the way
+  // the tighter desktop layout (with room to the side, not above) does.
+  const lift = (anchor.isMobile ? 56 : 20) * anchor.scale;
 
   return (
     <>
