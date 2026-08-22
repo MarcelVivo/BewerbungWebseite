@@ -122,27 +122,43 @@ const jitterPx = (index: number) => {
 // (via the --word-gold custom property) the dethrone keyframe's start color.
 const isAilaWord = (word: string) => displayWord(word).toUpperCase() === 'AILA';
 
+// While she's the active word, "AILA" reads as a small wordmark moment
+// (the site's real gold gradient + wider tracking) rather than looking
+// exactly like every other word in a different color. Gradients can't be
+// smoothly color-animated though, so this only applies pre-dethrone; once
+// fading out, it falls back to the same solid-color keyframe every other
+// word uses (via --word-gold, still her copper tone).
+const ailaWordmarkStyle: CSSProperties = {
+  backgroundImage: 'var(--gold-gradient)',
+  WebkitBackgroundClip: 'text',
+  backgroundClip: 'text',
+  color: 'transparent',
+  letterSpacing: '.08em',
+};
+
 const wordStyle = (wordIndex: number, word: string, dethroned: boolean, entered: boolean): CSSProperties => {
   const jx = jitterPx(wordIndex);
-  const tone = isAilaWord(word) ? COPPER_GOLD : GOLD;
+  const isAila = isAilaWord(word);
+  const tone = isAila ? COPPER_GOLD : GOLD;
   const base = { '--jx': `${jx}px`, '--word-gold': tone, zIndex: wordIndex + 1 } as CSSProperties;
   if (dethroned) return base;
+  const wordmark = isAila ? ailaWordmarkStyle : { color: tone };
   if (!entered) {
     return {
       ...base,
+      ...wordmark,
       opacity: 0,
       filter: 'blur(7px)',
       transform: `translate(${jx}px, 8px) scale(.88)`,
-      color: tone,
       fontSize: '1.37rem',
     };
   }
   return {
     ...base,
+    ...wordmark,
     opacity: 1,
     filter: 'blur(0px)',
     transform: `translate(${jx}px, 0) scale(1)`,
-    color: tone,
     fontSize: '1.37rem',
   };
 };
