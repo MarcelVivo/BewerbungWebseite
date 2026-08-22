@@ -115,12 +115,21 @@ const measureAnchor = (): Anchor => {
   const rect = el?.getBoundingClientRect();
   const eyebrowRect = isMobile ? mobileEyebrowRect() : null;
   const headerRect = isMobile ? mobileHeaderRect() : null;
+  // The controls dock is pinned by its own bottom-right corner (see the
+  // translateY/translateX(-100%) applied where this is used), so this point
+  // is where its bottom edge sits - just above the eyebrow row if that's
+  // measurable, else just below the app bar - never inside either.
+  const controlsAnchor = eyebrowRect
+    ? { left: eyebrowRect.right, top: eyebrowRect.top - 6 }
+    : headerRect
+      ? { left: headerRect.right, top: headerRect.bottom + 34 }
+      : null;
   if (!rect || rect.width <= 0 || rect.height <= 0) {
     // AILA's head element isn't measurable yet (still mounting) - a sane
     // guess near its usual start position beats not showing anything.
     const left = eyebrowRect?.left ?? window.innerWidth * .58;
     const top = window.innerHeight * .16;
-    return { left, top, controlsLeft: headerRect?.right ?? left - 60, controlsTop: headerRect?.bottom ?? top + 60, scale: 1, isMobile };
+    return { left, top, controlsLeft: controlsAnchor?.left ?? left - 60, controlsTop: controlsAnchor?.top ?? top + 60, scale: 1, isMobile };
   }
   const scale = Math.min(MAX_ANCHOR_SCALE, Math.max(MIN_ANCHOR_SCALE, rect.width / REFERENCE_HEAD_WIDTH));
   // On mobile the caption's left margin comes from the eyebrow line, the
@@ -132,8 +141,8 @@ const measureAnchor = (): Anchor => {
   return {
     left,
     top: rect.top,
-    controlsLeft: headerRect?.right ?? rect.left,
-    controlsTop: (headerRect?.bottom ?? rect.bottom) + (headerRect ? 8 : 0),
+    controlsLeft: controlsAnchor?.left ?? rect.left,
+    controlsTop: controlsAnchor?.top ?? rect.bottom,
     scale,
     isMobile,
   };
@@ -404,10 +413,11 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
         className={styles.ailaGreetingControls}
         style={
           anchor.isMobile
-            // mobileControlsAnchor() already resolves a fully-placed point
-            // (eyebrow's right edge, with its own margin below it) - no
-            // extra head-relative nudge needed on top of that.
-            ? { left: `${anchor.controlsLeft}px`, top: `${anchor.controlsTop}px` } as CSSProperties
+            // Pinned by its own bottom-right corner (not top-left) to a
+            // point just above the eyebrow row, so it can never overlap
+            // that text regardless of the controls' own rendered height -
+            // no need to measure it, translateY(-100%) does that for free.
+            ? { left: `${anchor.controlsLeft}px`, top: `${anchor.controlsTop}px`, transform: 'translate(-100%, -100%)' } as CSSProperties
             : { left: `${anchor.controlsLeft - 6 * anchor.scale}px`, top: `${anchor.controlsTop + 8 * anchor.scale}px` } as CSSProperties
         }
       >
