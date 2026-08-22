@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import { X } from 'lucide-react';
+import { Volume2, X } from 'lucide-react';
 import { heroGreeting, type ExperienceLang } from './content';
 import styles from './experience.module.css';
 
@@ -106,6 +106,7 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
   const [activeIndex, setActiveIndex] = useState(-1);
   const [enteredIndices, setEnteredIndices] = useState<ReadonlySet<number>>(new Set());
   const [anchor, setAnchor] = useState<Anchor | null>(null);
+  const [audioUnlocked, setAudioUnlocked] = useState(false);
   const startedRef = useRef(false);
   const dismissRef = useRef<() => void>(() => undefined);
 
@@ -209,6 +210,7 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
       audio.play().then(() => {
         if (mode !== 'silent') { audio.pause(); return; }
         mode = 'audio';
+        setAudioUnlocked(true);
         sequenceToken += 1;
         const token = sequenceToken;
         clearTimers();
@@ -273,6 +275,12 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
           );
         })}
       </div>
+      {!audioUnlocked && (
+        <div className={styles.ailaGreetingSoundHint}>
+          <Volume2 size={12} strokeWidth={2.4} />
+          <span>{lang === 'de' ? 'Klicken für Ton' : 'Tap for sound'}</span>
+        </div>
+      )}
       <button
         type="button"
         className={styles.ailaGreetingDismiss}

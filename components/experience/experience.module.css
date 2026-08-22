@@ -589,6 +589,32 @@
 
 .ailaGreetingDismiss:hover { opacity: 1; border-color: rgba(231,197,106,.5); }
 
+.ailaGreetingSoundHint {
+  margin-top: .3rem;
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .3rem .55rem;
+  border: 1px solid rgba(231,197,106,.28);
+  border-radius: 999px;
+  background: rgba(10,10,8,.5);
+  color: rgba(242,223,166,.82);
+  font-family: 'Inter', sans-serif;
+  font-size: .62rem;
+  font-weight: 600;
+  letter-spacing: .01em;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: ailaSoundHintPulse 2.2s ease-in-out infinite;
+}
+
+.ailaGreetingSoundHint svg { flex-shrink: 0; }
+
+@keyframes ailaSoundHintPulse {
+  0%, 100% { opacity: .66; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-1px); }
+}
+
 .ailaContactCapture { min-height: 0; margin-top: .9rem; padding-right: .18rem; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(231,197,106,.28) transparent; }
 .ailaContactKicker { color: var(--gold-light); font: 650 .48rem/1 var(--font-chakra-petch), monospace; letter-spacing: .14em; }
 .ailaContactCapture > h3 { margin: .7rem 0 0; color: #f0efe7; font-size: 1.18rem; font-weight: 620; line-height: 1.15; letter-spacing: -.025em; }
