@@ -63,7 +63,7 @@ const buildRealDurations = (timing: WordTiming[], wordCount: number): { duration
   return { durations, leadInMs };
 };
 
-const GENERATIONS = 3;
+const GENERATIONS = 6;
 const GOLD = '#eecb7a';
 const FADE_GREY = '#dcdcd4';
 
@@ -131,13 +131,17 @@ const wordStyle = (wordIndex: number, age: number, entered: boolean): CSSPropert
       zIndex: GENERATIONS,
     };
   }
-  const fadeByAge = [0, .34, 0][age] ?? 0;
-  const blurByAge = [0, 2.4, 5][age] ?? 5;
-  const scaleByAge = [1, .8, .68][age] ?? .68;
-  // Fading words glide down and to the right the older they get, instead of
-  // just shrinking and blurring in place.
-  const driftDownByAge = [0, 12, 26][age] ?? 26;
-  const driftRightByAge = [0, 14, 30][age] ?? 30;
+  const fadeByAge = [0, .6, .42, .26, .13, 0][age] ?? 0;
+  const blurByAge = [0, 1.2, 2.2, 3.4, 4.6, 6][age] ?? 6;
+  const scaleByAge = [1, .94, .88, .82, .76, .7][age] ?? .7;
+  // Fading words glide down and to the right the older they get, further
+  // right than down, instead of just shrinking and blurring in place. Real
+  // per-word audio timing can advance faster than this transition finishes,
+  // which is fine on purpose: the CSS transition just keeps redirecting
+  // toward whatever the newest target is, so several words stay visibly
+  // mid-glide at once instead of a single word snapping through each step.
+  const driftDownByAge = [0, 5, 11, 18, 26, 36][age] ?? 36;
+  const driftRightByAge = [0, 10, 22, 36, 52, 70][age] ?? 70;
   return {
     opacity: fadeByAge,
     filter: `blur(${blurByAge}px)`,
