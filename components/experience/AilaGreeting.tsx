@@ -248,6 +248,15 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
     let frame = 0;
     const update = () => {
       frame = 0;
+      // On mobile, AILA leaving her large hero position for the tiny
+      // nav-bar dock (MobileAilaCompanion's own stage, read off its
+      // data-stage attribute) makes the hero-scaled caption look broken
+      // next to her now-icon-sized self - end the greeting right there
+      // instead of letting it keep following her into the nav bar.
+      if (window.matchMedia(MOBILE_QUERY).matches) {
+        const stage = document.querySelector('[data-aila-entity="mobile"]')?.getAttribute('data-stage');
+        if (stage && stage !== 'hero') { dismissRef.current(); return; }
+      }
       setAnchor(measureAnchor());
     };
     const requestUpdate = () => {

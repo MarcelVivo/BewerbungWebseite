@@ -674,7 +674,14 @@
   font-weight: 600;
   letter-spacing: .01em;
   white-space: nowrap;
-  pointer-events: none;
+  /* Auto, not none: this sits over live page content (nav bar, AILA's own
+     button on mobile) and a pointer-events:none hint lets clicks fall
+     through to whatever's underneath - e.g. opening the chat instead of
+     just unlocking sound. Making it the actual hit target (with no click
+     handler of its own, so the click still bubbles to the window-level
+     listener that unlocks audio) stops that passthrough entirely. */
+  pointer-events: auto;
+  cursor: default;
   animation: ailaSoundHintPulse 2.2s ease-in-out infinite;
 }
 
