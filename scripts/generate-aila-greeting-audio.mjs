@@ -10,8 +10,12 @@
  * Erneut ausfuehren, falls sich der Text in HERO_GREETING unten aendert.
  */
 
-import { writeFile } from 'node:fs/promises';
+import { writeFile, unlink } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import path from 'node:path';
+
+const run = promisify(execFile);
 
 const HERO_GREETING = {
   de: [
@@ -52,9 +56,20 @@ const HERO_GREETING_CONTACT_VARIANTS = [
 ];
 
 const INSTRUCTIONS = {
-  de: 'Sprich als AILA: warme, ruhige, souveraene deutsche Stimme. Natuerliches Hochdeutsch mit dezenter Schweizer Tonalitaet, klar und nicht werblich.',
-  en: 'Speak as AILA with a warm, calm, assured voice. Clear, natural English, concise and never salesy.',
+  de: 'Sprich als AILA: klar, freundlich und einladend, mit einer geschlechtsneutralen Stimme - weder eindeutig maennlich noch weiblich. Eine praezise, dezent futuristische KI-Persoenlichkeit. Natuerliches Hochdeutsch mit dezenter Schweizer Tonalitaet, warm aber nicht uebertrieben emotional, nicht werblich.',
+  en: 'Speak as AILA: clear, friendly and welcoming, with a gender-neutral voice - neither distinctly male nor female. A precise, subtly futuristic AI personality. Natural, warm English, never overly emotional or salesy.',
 };
+
+// Approved after A/B testing directly on the live site (see conversation):
+// presence EQ for clarity, gentle compression, a subtle phaser for a touch
+// of AI/machine character, and a light echo-based "hall". Applied to every
+// generated clip as a post-processing pass over the raw TTS output.
+const VOICE_FILTER = [
+  'equalizer=f=3200:width_type=o:width=1.0:g=2.5',
+  'acompressor=threshold=-18dB:ratio=2.5:attack=15:release=150:makeup=1.4',
+  'aphaser=in_gain=0.9:out_gain=0.85:delay=2.2:decay=0.28:speed=0.3',
+  'aecho=0.75:0.6:40|70|110:0.22|0.16|0.09',
+].join(',');
 
 const apiKey = process.env.OPENAI_API_KEY;
 if (!apiKey) {
@@ -85,8 +100,11 @@ async function generate(lines, lang, fileName) {
 
   const buffer = Buffer.from(await response.arrayBuffer());
   const outPath = path.join(outDir, fileName);
-  await writeFile(outPath, buffer);
-  console.log(`✓ ${outPath} (${(buffer.length / 1024).toFixed(1)} KB)`);
+  const rawPath = path.join(outDir, `_raw-${fileName}`);
+  await writeFile(rawPath, buffer);
+  await run('ffmpeg', ['-y', '-i', rawPath, '-af', VOICE_FILTER, outPath]);
+  await unlink(rawPath);
+  console.log(`✓ ${outPath}`);
 }
 
 // Variant 0 keeps the original unsuffixed filename (already live); further
