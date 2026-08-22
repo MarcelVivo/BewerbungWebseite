@@ -50,6 +50,7 @@ export default function TitleDepthLayer() {
     if (window.matchMedia('(max-width: 699px)').matches) return;
 
     const nativeAnchors = CSS.supports('anchor-name: --title-depth-anchor') && CSS.supports('top: anchor(top)');
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     let pairs: Array<{
       source: HTMLElement;
       clone: HTMLElement;
@@ -58,6 +59,18 @@ export default function TitleDepthLayer() {
     }> = [];
     let frame = 0;
     let rebuildQueued = false;
+    // This ran the full read/write pass below on every single rAF tick,
+    // forever, for the page's whole lifetime, regardless of whether
+    // anything moved - a constant per-frame layout-thrashing tax (one
+    // getBoundingClientRect + one getComputedStyle per title, times ~10-30
+    // titles) that Blink's main-thread-coupled scrolling punishes far more
+    // than WebKit's, which was the dominant cause of Chrome/Edge-only
+    // scroll jank on this otherwise-identical page. Throttled to ~24fps and
+    // paused while the tab is hidden or reduced-motion is set; the actual
+    // rAF scheduling still runs every frame (cheap) so it stays responsive
+    // to non-scroll-driven changes like reveal-fade CSS transitions.
+    let lastRenderAt = 0;
+    const RENDER_INTERVAL_MS = 42;
 
     const rebuild = () => {
       rebuildQueued = false;
@@ -93,7 +106,10 @@ export default function TitleDepthLayer() {
       });
     };
 
-    const render = () => {
+    const render = (now: number) => {
+      frame = window.requestAnimationFrame(render);
+      if (document.hidden || reducedMotion.matches || now - lastRenderAt < RENDER_INTERVAL_MS) return;
+      lastRenderAt = now;
       pairs.forEach(({ source, clone }) => {
         const rect = source.getBoundingClientRect();
         const revealParent = source.closest<HTMLElement>('[data-reveal]') ?? source.closest<HTMLElement>(`.${styles.heroCopy}`);
@@ -118,7 +134,6 @@ export default function TitleDepthLayer() {
         clone.style.opacity = revealStyle?.opacity ?? window.getComputedStyle(source).opacity;
         clone.style.visibility = rect.bottom < -40 || rect.top > window.innerHeight + 40 ? 'hidden' : 'visible';
       });
-      frame = window.requestAnimationFrame(render);
     };
 
     const queueRebuild = () => {
