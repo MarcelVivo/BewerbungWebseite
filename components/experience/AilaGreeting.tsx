@@ -131,23 +131,26 @@ const wordStyle = (wordIndex: number, age: number, entered: boolean): CSSPropert
       zIndex: GENERATIONS,
     };
   }
-  // Stays legible through most of the staircase and only actually fades
-  // out in the last couple of steps (bottom-right), instead of dimming
-  // right from the first step after entering.
-  const fadeByAge = [0, .95, .85, .62, .3, 0][age] ?? 0;
-  const blurByAge = [0, .3, .7, 1.6, 3.4, 6.5][age] ?? 6.5;
-  const scaleByAge = [1, .97, .93, .87, .78, .68][age] ?? .68;
+  // Stays gold and sharp through most of the staircase - only the last
+  // couple of steps actually blur, shrink, dim and shift color toward grey,
+  // and slowly at that (the CSS transition duration does the "slowly").
+  const fadeByAge = [0, 1, .97, .85, .5, 0][age] ?? 0;
+  const blurByAge = [0, 0, .2, .6, 2.2, 6.5][age] ?? 6.5;
+  const scaleByAge = [1, 1, .97, .92, .82, .68][age] ?? .68;
+  const colorByAge = [GOLD, GOLD, GOLD, GOLD, FADE_GREY, FADE_GREY][age] ?? FADE_GREY;
   // A gentle down-right staircase, close enough that consecutive steps can
   // slightly overlap rather than being spaced far apart - wide gaps read as
   // jerky jumps once real audio timing advances several steps within one
-  // transition's duration. Further right than down.
+  // transition's duration. Further right than down. Position keeps
+  // progressing every step regardless of the appearance staying gold/sharp
+  // above, so the word gets its full travel time toward the bottom-right.
   const driftDownByAge = [0, 9, 19, 31, 45, 62][age] ?? 62;
   const driftRightByAge = [0, 18, 38, 62, 90, 125][age] ?? 125;
   return {
     opacity: fadeByAge,
     filter: `blur(${blurByAge}px)`,
     transform: `translate(${jx + driftRightByAge}px, ${driftDownByAge}px) scale(${scaleByAge})`,
-    color: FADE_GREY,
+    color: colorByAge,
     fontSize: '1.05rem',
     zIndex: GENERATIONS - age,
   };
