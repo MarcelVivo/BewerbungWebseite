@@ -571,17 +571,20 @@
 
 @keyframes ailaWordDethrone {
   0% {
-    color: var(--word-gold, #c9973f);
+    color: var(--word-gold, #d1a24e);
     filter: blur(0);
     opacity: 1;
     font-size: 1.37rem;
     transform: translate(var(--jx, 0px), 0) scale(1);
   }
   38% {
-    color: #f5f1e6;
+    /* A pale warm gold instead of neutral white, so the fade-out stays
+       inside the same gold/copper family as AILA's own head rather than
+       drifting toward a cold, unrelated tone. */
+    color: #e8d3a6;
   }
   100% {
-    color: #f5f1e6;
+    color: #e8d3a6;
     filter: blur(7px);
     opacity: 0;
     font-size: .7rem;

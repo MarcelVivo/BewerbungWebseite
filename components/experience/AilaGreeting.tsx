@@ -63,8 +63,10 @@ const buildRealDurations = (timing: WordTiming[], wordCount: number): { duration
   return { durations, leadInMs };
 };
 
-const GOLD = '#c9973f';
-const COPPER_GOLD = '#b5602c';
+// Sampled from AILA's own head - the bright gold rim/light-strand tips for
+// the regular tone, the warm copper wire-pattern/mouth-glow for her name.
+const GOLD = '#d1a24e';
+const COPPER_GOLD = '#c2692e';
 
 const MOBILE_QUERY = '(max-width: 1100px)';
 // The desktop grab-surface's width at its default (non-hovered, non-scaled) resting size -
