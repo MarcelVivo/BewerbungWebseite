@@ -342,6 +342,25 @@ const startGreetingSequence = (
   };
   dismissRef.current = finish;
 
+  // Natural completion (last word spoken, audio ended) shouldn't yank the
+  // whole caption away instantly - the last word deserves the same fade
+  // every earlier word gets once superseded (ailaWordDethrone, 4.5s CSS
+  // animation), not an abrupt cut mid-glow. Setting activeIndex one past
+  // the last word index marks every word - including the last - as
+  // dethroned via the existing `wordIndex < activeIndex` check in the
+  // render below, then finish() itself is delayed until that animation has
+  // had time to play out. Manual dismissal (the X button, or the mobile
+  // stage-change guard) intentionally skips this and calls finish()
+  // directly - the visitor asked for it to go now.
+  let finishing = false;
+  const beginFinish = () => {
+    if (finishing || mode === 'done') return;
+    finishing = true;
+    clearTimers();
+    setActiveIndex(words.length);
+    holdTimer = window.setTimeout(finish, 4500);
+  };
+
   // Opening the chat while this sequence is only silently pacing (no real
   // gesture has unlocked its audio yet) cuts it off immediately - the same
   // click that opened the chat would otherwise also satisfy this
@@ -357,7 +376,7 @@ const startGreetingSequence = (
   const runSequence = (durations: number[], token: number, leadInMs = 0) => {
     const advance = (index: number) => {
       if (token !== sequenceToken || mode === 'done') return;
-      if (index >= words.length) { finish(); return; }
+      if (index >= words.length) { beginFinish(); return; }
       setActiveIndex(index);
       holdTimer = window.setTimeout(() => advance(index + 1), durations[index]);
     };
@@ -387,7 +406,7 @@ const startGreetingSequence = (
       const token = sequenceToken;
       clearTimers();
       dispatchGuideState('speaking');
-      audio.addEventListener('ended', finish, { once: true });
+      audio.addEventListener('ended', beginFinish, { once: true });
       const applyRealTiming = () => {
         timingPromise.then((timing) => {
           if (token !== sequenceToken || mode === 'done') return;
