@@ -63,13 +63,14 @@ const INSTRUCTIONS = {
 // Approved after A/B testing directly on the live site (see conversation):
 // presence EQ for clarity, compression, a tremolo acting as a mild ring
 // modulator for an audible synthetic buzz, a heavier phaser for a
-// synthetic warble, a short comb-filter echo for metallic ring, a light
-// echo-based "hall", and loudness normalization (replacing an earlier flat
-// volume+limiter pass that left clips far too quiet - measured around
-// -34dB mean volume with ~17dB of headroom still unused) so every clip
-// lands at a consistent, properly loud level regardless of its own
-// dynamics. Applied to every generated clip as a post-processing pass over
-// the raw TTS output.
+// synthetic warble, a short comb-filter echo for metallic ring, and a
+// light echo-based "hall". Loudness normalization is a separate step (see
+// twoPassLoudnorm below) - single-pass loudnorm measures and corrects in
+// the same run, which is unreliable on short clips like these (measured as
+// low as -26dB against a -15dB target on one clip) and was producing
+// inconsistent volume between clips (hero quiet, other stations loud).
+// Two-pass measures first, then applies the exact correction that
+// measurement calls for.
 const VOICE_FILTER = [
   'equalizer=f=3200:width_type=o:width=1.0:g=2.5',
   'acompressor=threshold=-18dB:ratio=2.5:attack=15:release=150:makeup=1.9',
@@ -77,8 +78,23 @@ const VOICE_FILTER = [
   'aphaser=in_gain=0.85:out_gain=0.8:delay=3.0:decay=0.4:speed=0.4',
   'aecho=0.6:0.7:9:0.35',
   'aecho=0.75:0.6:40|70|110:0.22|0.16|0.09',
-  'loudnorm=I=-15:TP=-1.0:LRA=11',
 ].join(',');
+
+const LOUDNORM_TARGET = { I: -15, TP: -1.0, LRA: 11 };
+
+async function twoPassLoudnorm(inputPath, outputPath) {
+  const { I, TP, LRA } = LOUDNORM_TARGET;
+  const { stderr } = await run('ffmpeg', [
+    '-i', inputPath,
+    '-af', `loudnorm=I=${I}:TP=${TP}:LRA=${LRA}:print_format=json`,
+    '-f', 'null', '-',
+  ], { maxBuffer: 10 * 1024 * 1024 });
+  const match = stderr.match(/\{[\s\S]*\}/);
+  if (!match) throw new Error(`loudnorm-Analyse ohne Ergebnis fuer ${inputPath}`);
+  const stats = JSON.parse(match[0]);
+  const filter = `loudnorm=I=${I}:TP=${TP}:LRA=${LRA}:measured_I=${stats.input_i}:measured_TP=${stats.input_tp}:measured_LRA=${stats.input_lra}:measured_thresh=${stats.input_thresh}:offset=${stats.target_offset}:linear=true`;
+  await run('ffmpeg', ['-y', '-i', inputPath, '-af', filter, outputPath]);
+}
 
 const apiKey = process.env.OPENAI_API_KEY;
 if (!apiKey) {
@@ -110,9 +126,12 @@ async function generate(lines, lang, fileName) {
   const buffer = Buffer.from(await response.arrayBuffer());
   const outPath = path.join(outDir, fileName);
   const rawPath = path.join(outDir, `_raw-${fileName}`);
+  const effectedPath = path.join(outDir, `_fx-${fileName}`);
   await writeFile(rawPath, buffer);
-  await run('ffmpeg', ['-y', '-i', rawPath, '-af', VOICE_FILTER, outPath]);
+  await run('ffmpeg', ['-y', '-i', rawPath, '-af', VOICE_FILTER, effectedPath]);
+  await twoPassLoudnorm(effectedPath, outPath);
   await unlink(rawPath);
+  await unlink(effectedPath);
   console.log(`✓ ${outPath}`);
 }
 

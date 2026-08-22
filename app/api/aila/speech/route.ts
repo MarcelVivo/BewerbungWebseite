@@ -16,7 +16,10 @@ const run = promisify(execFile);
 // the same treatment applied there to the pre-rendered greeting clips, applied here
 // per live chat reply so AILA's voice sounds the same everywhere. If ffmpeg-static's
 // binary isn't available for some reason, falls back to the raw unprocessed voice
-// instead of failing the whole chat reply (see the catch below).
+// instead of failing the whole chat reply (see the catch below). Loudness
+// normalization is a separate two-pass step below - single-pass loudnorm measures
+// and corrects in the same run, which is unreliable on short clips (chat replies can
+// be a single short sentence) and was producing inconsistent volume between replies.
 const VOICE_FILTER = [
   'equalizer=f=3200:width_type=o:width=1.0:g=2.5',
   'acompressor=threshold=-18dB:ratio=2.5:attack=15:release=150:makeup=1.9',
@@ -24,17 +27,34 @@ const VOICE_FILTER = [
   'aphaser=in_gain=0.85:out_gain=0.8:delay=3.0:decay=0.4:speed=0.4',
   'aecho=0.6:0.7:9:0.35',
   'aecho=0.75:0.6:40|70|110:0.22|0.16|0.09',
-  'loudnorm=I=-15:TP=-1.0:LRA=11',
 ].join(',');
+
+const LOUDNORM_TARGET = { I: -15, TP: -1.0, LRA: 11 };
+
+async function twoPassLoudnorm(ffmpegBin: string, inputPath: string, outputPath: string): Promise<void> {
+  const { I, TP, LRA } = LOUDNORM_TARGET;
+  const { stderr } = await run(ffmpegBin, [
+    '-i', inputPath,
+    '-af', `loudnorm=I=${I}:TP=${TP}:LRA=${LRA}:print_format=json`,
+    '-f', 'null', '-',
+  ], { maxBuffer: 10 * 1024 * 1024 });
+  const match = stderr.match(/\{[\s\S]*\}/);
+  if (!match) throw new Error('loudnorm analysis produced no output');
+  const stats = JSON.parse(match[0]);
+  const filter = `loudnorm=I=${I}:TP=${TP}:LRA=${LRA}:measured_I=${stats.input_i}:measured_TP=${stats.input_tp}:measured_LRA=${stats.input_lra}:measured_thresh=${stats.input_thresh}:offset=${stats.target_offset}:linear=true`;
+  await run(ffmpegBin, ['-y', '-i', inputPath, '-af', filter, outputPath]);
+}
 
 async function applyVoiceFilter(buffer: ArrayBuffer): Promise<ArrayBuffer> {
   if (!ffmpegPath) return buffer;
   const dir = await mkdtemp(path.join(tmpdir(), 'aila-speech-'));
   const rawPath = path.join(dir, 'raw.mp3');
+  const effectedPath = path.join(dir, 'fx.mp3');
   const outPath = path.join(dir, 'out.mp3');
   try {
     await writeFile(rawPath, Buffer.from(buffer));
-    await run(ffmpegPath, ['-y', '-i', rawPath, '-af', VOICE_FILTER, outPath]);
+    await run(ffmpegPath, ['-y', '-i', rawPath, '-af', VOICE_FILTER, effectedPath]);
+    await twoPassLoudnorm(ffmpegPath, effectedPath, outPath);
     const processed = await readFile(outPath);
     return processed.buffer.slice(processed.byteOffset, processed.byteOffset + processed.byteLength);
   } catch (error) {

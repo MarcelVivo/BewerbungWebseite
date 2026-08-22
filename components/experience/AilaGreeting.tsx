@@ -269,7 +269,18 @@ type SequenceHandles = {
   setVisible: (value: boolean) => void;
   setActiveIndex: (value: number) => void;
   setEnteredIndices: Dispatch<SetStateAction<ReadonlySet<number>>>;
+  // Whether *this* sequence currently has working audio - reset to false
+  // at the start of every sequence and drives the "Ton an" hint's
+  // visibility, so it correctly reappears if a later sequence's no-gesture
+  // autoplay attempt gets silently rejected (a real, not-uncommon
+  // possibility - browsers don't uniformly honor "unlocked once this
+  // session" forever). Distinct from markEverUnlocked below.
   setAudioUnlocked: (value: boolean) => void;
+  // Persists for the rest of the page's lifetime once audio has played
+  // successfully at least once - read back as `initiallyUnlocked` by later
+  // sequences to decide whether to attempt playing immediately without
+  // waiting for a fresh gesture.
+  markEverUnlocked: () => void;
   setActiveWords: (value: string[]) => void;
   dismissRef: MutableRefObject<() => void>;
   unlockRef: MutableRefObject<() => void>;
@@ -287,7 +298,11 @@ const startGreetingSequence = (
   handles: SequenceHandles,
   initiallyUnlocked: boolean,
 ): (() => void) => {
-  const { setVisible, setActiveIndex, setEnteredIndices, setAudioUnlocked, setActiveWords, dismissRef, unlockRef } = handles;
+  const { setVisible, setActiveIndex, setEnteredIndices, setAudioUnlocked, markEverUnlocked, setActiveWords, dismissRef, unlockRef } = handles;
+  // A previous sequence may have left this true - a fresh sequence hasn't
+  // proven its own audio works yet, so the "Ton an" hint should be able to
+  // reappear for it if needed (see setAudioUnlocked's doc comment above).
+  setAudioUnlocked(false);
   let mode: 'silent' | 'audio' | 'done' = 'silent';
   let holdTimer = 0;
   let sequenceToken = 0;
@@ -359,6 +374,7 @@ const startGreetingSequence = (
       window.removeEventListener('keydown', handleGesture);
       mode = 'audio';
       setAudioUnlocked(true);
+      markEverUnlocked();
       sequenceToken += 1;
       const token = sequenceToken;
       clearTimers();
@@ -456,10 +472,16 @@ export default function AilaGreeting({
   // docked at a different station for each), so this can't just hard-code
   // 'hero' like it used to when only the welcome/return kinds existed.
   const activeKindRef = useRef<GreetingKind>('welcome');
-  // Read inside the trigger effects instead of relying on audioUnlocked
-  // directly, so a mid-sequence unlock (audioUnlocked flipping true) never
-  // itself re-triggers them - only the trigger props should.
-  const audioUnlockedRef = useRef(audioUnlocked);
+  // True forever once ANY sequence's audio has actually played - read as
+  // `initiallyUnlocked` by later sequences to decide whether to attempt
+  // playing immediately without a fresh gesture. Deliberately not the same
+  // thing as the `audioUnlocked` state below: that one is reset per
+  // sequence and drives the "Ton an" hint, so it can come back if a later
+  // no-gesture autoplay attempt gets silently rejected - browsers don't
+  // uniformly honor "unlocked once this session" forever, and previously
+  // there was no way to recover the hint once audioUnlocked ever went true,
+  // which read as AILA randomly staying silent with no visible cause.
+  const everUnlockedRef = useRef(false);
   // Mirrors `visible` in a ref so the trigger effects can check "is she
   // still mid-sentence right now" without a stale closure. If a visitor
   // floats from one station into the next while she's still finishing the
@@ -469,15 +491,23 @@ export default function AilaGreeting({
   const isPlayingRef = useRef(false);
   const pendingRef = useRef<{ kind: GreetingKind; words: string[]; audioSrc: string; timingSrc: string } | null>(null);
   langRef.current = lang;
-  audioUnlockedRef.current = audioUnlocked;
 
-  const handles = { setVisible, setActiveIndex, setEnteredIndices, setAudioUnlocked, setActiveWords, dismissRef, unlockRef };
+  const handles = {
+    setVisible,
+    setActiveIndex,
+    setEnteredIndices,
+    setAudioUnlocked,
+    markEverUnlocked: () => { everUnlockedRef.current = true; },
+    setActiveWords,
+    dismissRef,
+    unlockRef,
+  };
 
   const playSequence = (kind: GreetingKind, words: string[], audioSrc: string, timingSrc: string) => {
     stopSequenceRef.current();
     window.dispatchEvent(new CustomEvent('aila:guide-state', { detail: { state: 'idle' } }));
     activeKindRef.current = kind;
-    stopSequenceRef.current = startGreetingSequence(words, audioSrc, timingSrc, handles, audioUnlockedRef.current);
+    stopSequenceRef.current = startGreetingSequence(words, audioSrc, timingSrc, handles, everUnlockedRef.current);
   };
 
   const requestSequence = (kind: GreetingKind, words: string[], audioSrc: string, timingSrc: string) => {
