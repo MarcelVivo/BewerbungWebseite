@@ -125,7 +125,7 @@ const wordStyle = (wordIndex: number, dethroned: boolean, entered: boolean): CSS
       filter: 'blur(7px)',
       transform: `translate(${jx}px, 8px) scale(.88)`,
       color: GOLD,
-      fontSize: '2.05rem',
+      fontSize: '1.37rem',
     };
   }
   return {

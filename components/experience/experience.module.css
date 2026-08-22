@@ -574,7 +574,7 @@
     color: #eecb7a;
     filter: blur(0);
     opacity: 1;
-    font-size: 2.05rem;
+    font-size: 1.37rem;
     transform: translate(var(--jx, 0px), 0) scale(1);
   }
   38% {
@@ -584,7 +584,7 @@
     color: #f5f1e6;
     filter: blur(7px);
     opacity: 0;
-    font-size: 1.05rem;
+    font-size: .7rem;
     transform: translate(calc(var(--jx, 0px) + 125px), 62px) scale(.68);
   }
 }
