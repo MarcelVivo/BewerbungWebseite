@@ -41,7 +41,16 @@ const REFERENCE_HEAD_WIDTH = 168;
 const MIN_ANCHOR_SCALE = .58;
 const MAX_ANCHOR_SCALE = 1.5;
 
-type Anchor = { left: number; top: number; scale: number };
+type Anchor = {
+  /** Head's top-right corner - where the caption starts and grows from. */
+  left: number;
+  top: number;
+  /** Head's bottom-left corner - the opposite side, where the controls dock
+   *  so the head itself visually separates them from the moving text. */
+  controlsLeft: number;
+  controlsTop: number;
+  scale: number;
+};
 
 const measureAnchor = (): Anchor => {
   const isMobile = window.matchMedia(MOBILE_QUERY).matches;
@@ -50,10 +59,12 @@ const measureAnchor = (): Anchor => {
   if (!rect || rect.width <= 0 || rect.height <= 0) {
     // AILA's head element isn't measurable yet (still mounting) - a sane
     // guess near its usual start position beats not showing anything.
-    return { left: window.innerWidth * .58, top: window.innerHeight * .16, scale: 1 };
+    const left = window.innerWidth * .58;
+    const top = window.innerHeight * .16;
+    return { left, top, controlsLeft: left - 60, controlsTop: top + 60, scale: 1 };
   }
   const scale = Math.min(MAX_ANCHOR_SCALE, Math.max(MIN_ANCHOR_SCALE, rect.width / REFERENCE_HEAD_WIDTH));
-  return { left: rect.right, top: rect.top, scale };
+  return { left: rect.right, top: rect.top, controlsLeft: rect.left, controlsTop: rect.bottom, scale };
 };
 
 // Deterministic per-word pseudo-random so a word's sideways drift stays put
@@ -252,30 +263,38 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
   const lift = 20 * anchor.scale;
 
   return (
-    <div
-      className={styles.ailaGreetingBubble}
-      style={{
-        left: `${anchor.left + gap}px`,
-        top: `${anchor.top - lift}px`,
-        '--aila-greeting-scale': anchor.scale,
-      } as CSSProperties}
-      aria-live="polite"
-    >
-      <div className={styles.ailaGreetingWords}>
-        {generations.map((wordIndex) => {
-          const age = activeIndex - wordIndex;
-          return (
-            <div
-              key={wordIndex}
-              className={styles.ailaGreetingWord}
-              style={wordStyle(wordIndex, age, enteredIndices.has(wordIndex))}
-            >
-              {displayWord(words[wordIndex])}
-            </div>
-          );
-        })}
+    <>
+      <div
+        className={styles.ailaGreetingBubble}
+        style={{
+          left: `${anchor.left + gap}px`,
+          top: `${anchor.top - lift}px`,
+          '--aila-greeting-scale': anchor.scale,
+        } as CSSProperties}
+        aria-live="polite"
+      >
+        <div className={styles.ailaGreetingWords}>
+          {generations.map((wordIndex) => {
+            const age = activeIndex - wordIndex;
+            return (
+              <div
+                key={wordIndex}
+                className={styles.ailaGreetingWord}
+                style={wordStyle(wordIndex, age, enteredIndices.has(wordIndex))}
+              >
+                {displayWord(words[wordIndex])}
+              </div>
+            );
+          })}
+        </div>
       </div>
-      <div className={styles.ailaGreetingControls}>
+      <div
+        className={styles.ailaGreetingControls}
+        style={{
+          left: `${anchor.controlsLeft - 6 * anchor.scale}px`,
+          top: `${anchor.controlsTop + 8 * anchor.scale}px`,
+        } as CSSProperties}
+      >
         {!audioUnlocked && (
           <div className={styles.ailaGreetingSoundHint}>
             <Volume2 size={11} strokeWidth={2.4} />
@@ -291,6 +310,6 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
           <X size={12} strokeWidth={2.2} color="#e7c56a" />
         </button>
       </div>
-    </div>
+    </>
   );
 }

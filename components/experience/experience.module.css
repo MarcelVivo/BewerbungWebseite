@@ -566,15 +566,20 @@
 }
 
 .ailaGreetingControls {
-  /* Docked well clear of the word stack below (which jitters and tilts in
-     3D) instead of hugging its moving edge - a calm, separate UI strip
-     anchored near AILA's head rather than reading as part of the caption. */
-  position: absolute;
-  left: 0;
-  top: -1.9rem;
+  /* A fully separate fixed element, docked at AILA's head's bottom-left -
+     the opposite corner from where the caption starts and grows - so her
+     head itself visually separates the controls from the moving text,
+     rather than the two sharing one box with just a rem of padding. */
+  position: fixed;
+  z-index: 285;
+  /* controlsLeft/controlsTop are the head's bottom-left corner; shifting the
+     whole row left by its own width tucks it just outside that corner
+     instead of growing rightward back under the head. */
+  transform: translateX(-100%);
   display: flex;
   align-items: center;
   gap: .4rem;
+  pointer-events: none;
 }
 
 .ailaGreetingDismiss {
