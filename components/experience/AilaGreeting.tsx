@@ -88,6 +88,16 @@ type Anchor = {
   isMobile: boolean;
 };
 
+// On mobile the controls dock below the hero eyebrow line ("... · BERN,
+// SCHWEIZ", top-right of the header) instead of at the head, which is
+// straight below AILA's chin there and not a natural spot for them.
+const mobileControlsAnchor = (): { left: number; top: number } | null => {
+  const eyebrow = document.querySelector<HTMLElement>(`.${styles.eyebrow}`);
+  const rect = eyebrow?.getBoundingClientRect();
+  if (!rect || rect.width <= 0) return null;
+  return { left: rect.right, top: rect.bottom + 10 };
+};
+
 const measureAnchor = (): Anchor => {
   const isMobile = window.matchMedia(MOBILE_QUERY).matches;
   const el = document.querySelector<HTMLElement>(`[data-aila-entity="${isMobile ? 'mobile' : 'desktop'}"]`);
@@ -97,9 +107,11 @@ const measureAnchor = (): Anchor => {
     // guess near its usual start position beats not showing anything.
     const left = window.innerWidth * .58;
     const top = window.innerHeight * .16;
-    return { left, top, controlsLeft: left - 60, controlsTop: top + 60, scale: 1, isMobile };
+    const controls = isMobile ? mobileControlsAnchor() : null;
+    return { left, top, controlsLeft: controls?.left ?? left - 60, controlsTop: controls?.top ?? top + 60, scale: 1, isMobile };
   }
   const scale = Math.min(MAX_ANCHOR_SCALE, Math.max(MIN_ANCHOR_SCALE, rect.width / REFERENCE_HEAD_WIDTH));
+  const mobileControls = isMobile ? mobileControlsAnchor() : null;
   // On mobile the head sits roughly centered in a narrow viewport, so
   // starting the (left-anchored, rightward-growing) caption from the
   // head's right edge - as on desktop, where there's open space beside her
@@ -107,7 +119,14 @@ const measureAnchor = (): Anchor => {
   // edge instead keeps the caption inside the visible column, in the open
   // gap between her and the nav bar above.
   const left = isMobile ? rect.left : rect.right;
-  return { left, top: rect.top, controlsLeft: rect.left, controlsTop: rect.bottom, scale, isMobile };
+  return {
+    left,
+    top: rect.top,
+    controlsLeft: mobileControls?.left ?? rect.left,
+    controlsTop: mobileControls?.top ?? rect.bottom,
+    scale,
+    isMobile,
+  };
 };
 
 // Deterministic per-word pseudo-random so a word's sideways drift stays put
@@ -341,10 +360,7 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
 
   const words = buildWords(heroGreeting[lang]);
   const gap = 12 * anchor.scale;
-  // Mobile lifts further above the head to actually sit in the open gap
-  // between her and the nav bar, rather than hugging her top edge the way
-  // the tighter desktop layout (with room to the side, not above) does.
-  const lift = (anchor.isMobile ? 56 : 20) * anchor.scale;
+  const lift = (anchor.isMobile ? 12 : 20) * anchor.scale;
 
   return (
     <>
@@ -376,10 +392,14 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
       </div>
       <div
         className={styles.ailaGreetingControls}
-        style={{
-          left: `${anchor.controlsLeft - 6 * anchor.scale}px`,
-          top: `${anchor.controlsTop + 8 * anchor.scale}px`,
-        } as CSSProperties}
+        style={
+          anchor.isMobile
+            // mobileControlsAnchor() already resolves a fully-placed point
+            // (eyebrow's right edge, with its own margin below it) - no
+            // extra head-relative nudge needed on top of that.
+            ? { left: `${anchor.controlsLeft}px`, top: `${anchor.controlsTop}px` } as CSSProperties
+            : { left: `${anchor.controlsLeft - 6 * anchor.scale}px`, top: `${anchor.controlsTop + 8 * anchor.scale}px` } as CSSProperties
+        }
       >
         {!audioUnlocked && (
           <div className={styles.ailaGreetingSoundHint}>
