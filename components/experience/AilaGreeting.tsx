@@ -31,11 +31,69 @@ const distributeDurations = (words: readonly string[], totalMs: number) => {
 const estimateSilentTotalMs = (words: readonly string[]) =>
   Math.max(words.length * MIN_WORD_MS, (words.length / WORDS_PER_MINUTE) * 60_000);
 
+const GENERATIONS = 3;
+const GOLD = '#eecb7a';
+const FADE_GREY = '#dcdcd4';
+
+// Deterministic per-word pseudo-random so a word's sideways drift stays put
+// across re-renders instead of jittering every tick.
+const jitterPx = (index: number) => {
+  const x = Math.sin(index * 12.9898) * 43758.5453;
+  return ((x - Math.floor(x)) * 2 - 1) * 7;
+};
+
+const wordStyle = (wordIndex: number, age: number, entered: boolean): CSSProperties => {
+  const jx = jitterPx(wordIndex);
+  if (!entered) {
+    // A word is only ever new (unentered) the instant it becomes current,
+    // so the resting values it fades in toward are always the age-0 ones.
+    return {
+      opacity: 0,
+      filter: 'blur(7px)',
+      transform: `translate(${jx}px, 8px) scale(.88)`,
+      color: GOLD,
+      fontSize: '2.05rem',
+      zIndex: GENERATIONS,
+    };
+  }
+  if (age === 0) {
+    return {
+      opacity: 1,
+      filter: 'blur(0px)',
+      transform: `translate(${jx}px, 0) scale(1)`,
+      color: GOLD,
+      fontSize: '2.05rem',
+      zIndex: GENERATIONS,
+    };
+  }
+  const fadeByAge = [0, .34, 0][age] ?? 0;
+  const blurByAge = [0, 2.4, 5][age] ?? 5;
+  const scaleByAge = [1, .8, .68][age] ?? .68;
+  const liftByAge = [0, -4, -9][age] ?? -9;
+  return {
+    opacity: fadeByAge,
+    filter: `blur(${blurByAge}px)`,
+    transform: `translate(${jx}px, ${liftByAge}px) scale(${scaleByAge})`,
+    color: FADE_GREY,
+    fontSize: '1.05rem',
+    zIndex: GENERATIONS - age,
+  };
+};
+
 export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang; heroPhase: HeroPhase }) {
   const [visible, setVisible] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [enteredIndices, setEnteredIndices] = useState<ReadonlySet<number>>(new Set());
   const startedRef = useRef(false);
   const dismissRef = useRef<() => void>(() => undefined);
+
+  useEffect(() => {
+    if (activeIndex < 0) return;
+    const frame = requestAnimationFrame(() => {
+      setEnteredIndices((prev) => (prev.has(activeIndex) ? prev : new Set(prev).add(activeIndex)));
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [activeIndex]);
 
   useEffect(() => {
     if (startedRef.current || heroPhase !== 'revealed') return;
@@ -144,7 +202,7 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
 
   const start = getFlightPathDraft().start;
   const words = buildWords(heroGreeting[lang]);
-  const previousIndex = activeIndex - 1;
+  const generations = Array.from({ length: GENERATIONS }, (_, age) => activeIndex - age).filter((i) => i >= 0);
 
   return (
     <div
@@ -153,14 +211,18 @@ export default function AilaGreeting({ lang, heroPhase }: { lang: ExperienceLang
       aria-live="polite"
     >
       <div className={styles.ailaGreetingWords}>
-        {previousIndex >= 0 && (
-          <div key={previousIndex} className={styles.ailaGreetingPrev}>
-            {displayWord(words[previousIndex])}
-          </div>
-        )}
-        <div key={activeIndex} className={styles.ailaGreetingCurrent}>
-          {displayWord(words[activeIndex])}
-        </div>
+        {generations.map((wordIndex) => {
+          const age = activeIndex - wordIndex;
+          return (
+            <div
+              key={wordIndex}
+              className={styles.ailaGreetingWord}
+              style={wordStyle(wordIndex, age, enteredIndices.has(wordIndex))}
+            >
+              {displayWord(words[wordIndex])}
+            </div>
+          );
+        })}
       </div>
       <button
         type="button"

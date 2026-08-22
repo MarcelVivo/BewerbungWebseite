@@ -539,46 +539,26 @@
 }
 
 .ailaGreetingWords {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: .1rem;
+  position: relative;
+  min-height: 3.1rem;
 }
 
-.ailaGreetingPrev {
-  color: rgba(228,228,220,.42);
-  font-family: 'Inter', sans-serif;
-  font-weight: 700;
-  font-size: 1.05rem;
-  text-transform: uppercase;
-  letter-spacing: .01em;
-  filter: blur(1.6px);
-  animation: ailaWordSettle .5s ease both;
-}
-
-.ailaGreetingCurrent {
-  color: transparent;
-  background: var(--gold-gradient);
-  -webkit-background-clip: text;
-  background-clip: text;
+.ailaGreetingWord {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  margin: 0;
+  white-space: nowrap;
   font-family: 'Inter', sans-serif;
   font-weight: 800;
-  font-size: 2.05rem;
   line-height: 1.1;
   text-transform: uppercase;
   letter-spacing: -.005em;
-  text-shadow: 0 1px 0 rgba(255,239,180,.4), 0 3px 0 rgba(105,66,11,.6), 0 13px 30px rgba(200,154,61,.22);
-  animation: ailaWordPop .42s cubic-bezier(.22,.61,.36,1) both;
-}
-
-@keyframes ailaWordPop {
-  from { opacity: 0; filter: blur(9px); transform: scale(.82) translateY(8px); }
-  to { opacity: 1; filter: blur(0); transform: scale(1) translateY(0); }
-}
-
-@keyframes ailaWordSettle {
-  from { opacity: 1; filter: blur(0); transform: scale(1.3) translateY(4px); }
-  to { opacity: 1; filter: blur(1.6px); transform: scale(1) translateY(0); }
+  text-shadow: 0 1px 0 rgba(255,239,180,.35), 0 3px 0 rgba(105,66,11,.5), 0 13px 30px rgba(200,154,61,.2);
+  transform-origin: left bottom;
+  transition: opacity .75s cubic-bezier(.22,.61,.36,1), filter .75s cubic-bezier(.22,.61,.36,1),
+    transform .75s cubic-bezier(.22,.61,.36,1), color .6s ease, font-size .75s cubic-bezier(.22,.61,.36,1);
+  will-change: transform, opacity, filter;
 }
 
 .ailaGreetingDismiss {
@@ -609,8 +589,7 @@
     transform: translateX(-50%);
     width: min(18rem, calc(100vw - 2.5rem));
   }
-  .ailaGreetingCurrent { font-size: 1.65rem; }
-  .ailaGreetingPrev { font-size: .9rem; }
+  .ailaGreetingWords { transform: scale(.8); transform-origin: left bottom; }
   .ailaGreetingDismiss { right: 0; top: -1.6rem; }
 }
 
