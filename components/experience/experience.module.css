@@ -402,6 +402,15 @@
   transition: opacity .18s linear;
 }
 
+/* entityCoreHover above also animates `filter` (a subtle idle brightness
+   breathing effect) - a running CSS animation always wins the cascade for
+   whatever property it animates, so it was silently overriding the
+   audio-reactive brightness filter ScrollEntity.tsx sets on this same
+   canvas element while she's actually speaking (readAilaAudioLevel in
+   ailaAudioLevel.ts). Paused for exactly that window so the JS-driven
+   filter can take over. */
+.scrollEntity[data-aila-state='speaking'] .scrollEntityVideo { animation-play-state: paused; }
+
 .scrollEntityFallback {
   transform-origin: center;
   transition: opacity .18s linear;
