@@ -44,8 +44,8 @@ export const heroGreetingReturnVariants = [
     en: ['Need some help?', "Click on me, I'm happy to help."],
   },
   {
-    de: ['Bist du noch da?', 'Ich bin nur einen Klick entfernt, falls du mich brauchst.'],
-    en: ['Still here?', "I'm just one click away if you need me."],
+    de: ['Ich bin nur einen Klick entfernt, falls du mich brauchst.'],
+    en: ["I'm just one click away if you need me."],
   },
   {
     de: ['Falls noch Fragen offen sind,', 'sag einfach Bescheid, ich höre dir gerne zu.'],

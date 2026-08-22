@@ -39,7 +39,7 @@ const HERO_GREETING = {
 // heroGreetingContactVariants in components/experience/content.ts.
 const HERO_GREETING_RETURN_VARIANTS = [
   { de: ['Benötigst du Hilfe?', 'Klicke einfach auf mich, ich helfe dir gerne weiter.'], en: ['Need some help?', "Click on me, I'm happy to help."] },
-  { de: ['Bist du noch da?', 'Ich bin nur einen Klick entfernt, falls du mich brauchst.'], en: ['Still here?', "I'm just one click away if you need me."] },
+  { de: ['Ich bin nur einen Klick entfernt, falls du mich brauchst.'], en: ["I'm just one click away if you need me."] },
   { de: ['Falls noch Fragen offen sind,', 'sag einfach Bescheid, ich höre dir gerne zu.'], en: ['If you still have questions,', "just let me know, I'm listening."] },
 ];
 
