@@ -85,10 +85,14 @@ const MIN_HOLD_VIEWPORTS = 0.4;
 const HEADING_TILT_MAX_DEGREES = 8;
 // The attention clip's posture fits AILA floating/resting better than the
 // dedicated idle clip does, but looped as-is it repeats identically every
-// ~6s - this is that same clip at 2x speed followed by the same clip at 1x
-// speed reversed (ends back where the 2x pass started, so it still loops
-// seamlessly), for more variation across a loop.
-const AILA_IDLE_VIDEO = '/cinematic/aila/aila-idle-attention-loop-v1-greenscreen.mp4';
+// ~6s. This is that same clip at 2x speed followed by the same clip at 1x
+// speed reversed (v1, ~9s - ends back at the frame the 2x pass started
+// from), with that whole v1 pass appended once more at half speed
+// (~18s) right after itself for even more variation - the seam is
+// jump-free because v1 already starts and ends on the same frame, so its
+// slowed repeat picks up exactly where the first pass left off, and ends
+// there too.
+const AILA_IDLE_VIDEO = '/cinematic/aila/aila-idle-attention-loop-v2-greenscreen.mp4';
 const AILA_ATTENTION_VIDEO = '/cinematic/aila/aila-attention-v2-greenscreen.mp4';
 const AILA_THINKING_VIDEO = '/cinematic/aila/aila-thinking-v1-pingpong-greenscreen.mp4';
 // The idle clip's mouth-glow shimmer (a problem while merely resting, see
