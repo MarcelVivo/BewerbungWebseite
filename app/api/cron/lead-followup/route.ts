@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import * as Sentry from '@sentry/nextjs';
 import { Resend } from 'resend';
 import { createClient } from '@supabase/supabase-js';
 
@@ -9,6 +10,14 @@ const PUBLIC_SITE_URL = 'https://www.marcelspahr.ch';
 // Nachfassen erst nach dem im Formular gegebenen Zwei-Werktage-Versprechen,
 // damit die Mail nie vor Marcels eigener Antwort ankommt.
 const FOLLOW_UP_AFTER_MS = 3 * 24 * 60 * 60 * 1000;
+// Ohne Obergrenze hat ein einziger Lauf (follow_up_sent_at war fuer den
+// gesamten historischen Bestand NULL) hunderte "vor einigen Tagen..."-Mails
+// an teils monatealte Leads verschickt - inhaltlich falsch (es waren keine
+// "einigen Tage") und wirkt wie Spam. 21 Tage haelt die Zusage im Text
+// wahr; MAX_PER_RUN begrenzt zusaetzlich jeden einzelnen Lauf hart, falls
+// trotzdem nochmal ein groesserer Rueckstand auflaeuft.
+const MAX_FOLLOW_UP_AGE_MS = 21 * 24 * 60 * 60 * 1000;
+const MAX_PER_RUN = 25;
 
 const ESCAPE_MAP: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 function escapeHtml(value: string) {
@@ -26,6 +35,7 @@ export async function GET(request: Request) {
 
   const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
   const cutoff = new Date(Date.now() - FOLLOW_UP_AFTER_MS).toISOString();
+  const maxAgeCutoff = new Date(Date.now() - MAX_FOLLOW_UP_AGE_MS).toISOString();
   const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
   let kiCheckFollowUps = 0;
@@ -38,8 +48,13 @@ export async function GET(request: Request) {
     .eq('status', 'anfrage')
     .is('follow_up_sent_at', null)
     .not('email', 'is', null)
-    .lt('created_at', cutoff);
-  if (kiError) console.error('[cron:lead-followup] kunden query:', kiError.message);
+    .lt('created_at', cutoff)
+    .gte('created_at', maxAgeCutoff)
+    .limit(MAX_PER_RUN);
+  if (kiError) {
+    console.error('[cron:lead-followup] kunden query:', kiError.message);
+    Sentry.captureException(kiError);
+  }
 
   if (resend && kiLeads?.length) {
     for (const lead of kiLeads) {
@@ -72,6 +87,7 @@ export async function GET(request: Request) {
         kiCheckFollowUps += 1;
       } catch (e) {
         console.error('[cron:lead-followup] ki-check send:', e);
+        Sentry.captureException(e);
       }
     }
   }
@@ -82,8 +98,13 @@ export async function GET(request: Request) {
     .select('id, name, email')
     .eq('status', 'neu')
     .is('follow_up_sent_at', null)
-    .lt('created_at', cutoff);
-  if (anfrageError) console.error('[cron:lead-followup] re_anfragen query:', anfrageError.message);
+    .lt('created_at', cutoff)
+    .gte('created_at', maxAgeCutoff)
+    .limit(MAX_PER_RUN);
+  if (anfrageError) {
+    console.error('[cron:lead-followup] re_anfragen query:', anfrageError.message);
+    Sentry.captureException(anfrageError);
+  }
 
   if (resend && anfragen?.length) {
     for (const lead of anfragen) {
@@ -114,8 +135,19 @@ export async function GET(request: Request) {
         anfrageFollowUps += 1;
       } catch (e) {
         console.error('[cron:lead-followup] anfrage send:', e);
+        Sentry.captureException(e);
       }
     }
+  }
+
+  // A run hitting the cap on either table means more are still queued up
+  // and will keep hitting it again tomorrow - worth a heads-up rather than
+  // silently trickling out a growing backlog indefinitely.
+  if (kiCheckFollowUps >= MAX_PER_RUN || anfrageFollowUps >= MAX_PER_RUN) {
+    Sentry.captureMessage('[cron:lead-followup] Hit MAX_PER_RUN cap - backlog likely still queued', {
+      level: 'warning',
+      extra: { kiCheckFollowUps, anfrageFollowUps, maxPerRun: MAX_PER_RUN },
+    });
   }
 
   return NextResponse.json({ ok: true, kiCheckFollowUps, anfrageFollowUps });
