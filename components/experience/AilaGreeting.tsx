@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type CSSProperties, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
 import { Volume2, X } from 'lucide-react';
+import * as Sentry from '@sentry/nextjs';
 import { heroGreeting, heroGreetingReturnVariants, heroGreetingAboutVariants, heroGreetingContactVariants, type ExperienceLang } from './content';
 import { attachAilaAudioLevel } from './ailaAudioLevel';
 import styles from './experience.module.css';
@@ -423,10 +424,27 @@ const startGreetingSequence = (
   // further JS-initiated play() calls without a fresh gesture. Does not
   // touch the gesture listeners itself; the caller decides when those are
   // no longer needed.
+  //
+  // `attempting` guards against a single tap's touchstart+touchend both
+  // reaching handleGesture while the first play() call is still in flight -
+  // without it they'd race a second concurrent play() on the same element.
+  // It intentionally does NOT gate retries after a real rejection: mobile
+  // browsers often ignore preload="auto" until a gesture, so this first
+  // play() is frequently also the first real fetch of the mp3, and on a
+  // flaky connection it can reject (timeout, decode error, dropped
+  // connection). The gesture listeners below are left attached in that case
+  // specifically so the next tap/scroll can retry instead of leaving this
+  // sequence permanently silent with no way to recover - previously a
+  // rejection here was swallowed with no listener left standing, no log,
+  // and no Sentry visibility, which read as AILA randomly staying silent on
+  // mobile with no diagnosable cause.
+  let attempting = false;
   const attemptPlay = () => {
-    if (mode !== 'silent') return;
+    if (mode !== 'silent' || attempting) return;
+    attempting = true;
     window.dispatchEvent(new Event('aila:prime-audio'));
     audio.play().then(() => {
+      attempting = false;
       if (mode !== 'silent') { audio.pause(); return; }
       window.removeEventListener('click', handleGesture);
       window.removeEventListener('touchstart', handleGesture);
@@ -460,14 +478,20 @@ const startGreetingSequence = (
       } else {
         audio.addEventListener('loadedmetadata', applyRealTiming, { once: true });
       }
-    }).catch(() => undefined);
+    }).catch((error) => {
+      attempting = false;
+      Sentry.withScope((scope) => {
+        scope.setTag('feature', 'aila-greeting');
+        scope.setContext('aila-greeting', { audioSrc });
+        Sentry.captureException(error);
+      });
+    });
   };
 
+  // Deliberately does not remove the gesture listeners itself - attemptPlay's
+  // own success branch above does that once play() has actually resolved, so
+  // a rejected attempt leaves them standing for a retry on the next tap.
   const handleGesture = () => {
-    window.removeEventListener('click', handleGesture);
-    window.removeEventListener('touchstart', handleGesture);
-    window.removeEventListener('touchend', handleGesture);
-    window.removeEventListener('keydown', handleGesture);
     attemptPlay();
   };
   unlockRef.current = handleGesture;

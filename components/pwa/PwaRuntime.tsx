@@ -91,12 +91,26 @@ export default function PwaRuntime() {
         });
       }).catch(() => undefined);
 
-      let refreshing = false;
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (refreshing) return;
-        refreshing = true;
-        window.location.reload();
-      });
+      // 'controllerchange' also fires the very first time this page is ever
+      // visited - the freshly-registered worker installs, activates, and
+      // claims this client with nothing "old" to replace. Reloading then
+      // was self-inflicted: it silently restarted the page moments after
+      // load, killing whatever was happening at that moment (most visibly,
+      // cutting AILA's opening greeting off mid-sentence on a visitor's
+      // first-ever visit - exactly the "sometimes she just doesn't speak on
+      // mobile" pattern, since a repeat visitor already has a controller
+      // from before and never hits this path). The reload is only correct
+      // for the actual update case - the "Aktualisieren" banner's worker
+      // taking over FROM an existing controller - so it's now only wired up
+      // when one was already present when this ran.
+      if (navigator.serviceWorker.controller) {
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (refreshing) return;
+          refreshing = true;
+          window.location.reload();
+        });
+      }
     }
 
     const params = new URLSearchParams(window.location.search);
