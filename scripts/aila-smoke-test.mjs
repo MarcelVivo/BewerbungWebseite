@@ -7,16 +7,17 @@
  * gegen die Live-Seite gefunden wurde). Kein Ersatz fuer einen echten
  * Testrunner - nur ein wiederholbarer manueller Check vor AILA-Pushes.
  *
- * Aufruf: node scripts/aila-smoke-test.mjs [--url=http://localhost:3000] [--webkit]
+ * Aufruf: node scripts/aila-smoke-test.mjs [--url=http://localhost:3000] [--webkit] [--firefox]
  * Voraussetzung: `npm install` (playwright ist als devDependency gelistet).
  */
 
-import { chromium, webkit, devices } from 'playwright';
+import { chromium, webkit, firefox, devices } from 'playwright';
 
 const args = process.argv.slice(2);
 const urlArg = args.find((arg) => arg.startsWith('--url='));
 const baseUrl = urlArg ? urlArg.split('=')[1] : 'http://localhost:3000';
 const useWebkit = args.includes('--webkit');
+const useFirefox = args.includes('--firefox');
 const EXPECTED_SPEAKING_CLIP = 'aila-speaking-v1-greenscreen.mp4';
 
 let failureCount = 0;
@@ -134,6 +135,15 @@ async function main() {
     await runScenario({
       label: 'Desktop (WebKit/Safari-Engine)',
       browserType: webkit,
+      contextOptions: { viewport: { width: 1440, height: 900 } },
+      videoSelector: '[data-aila-state] video',
+    });
+  }
+
+  if (useFirefox) {
+    await runScenario({
+      label: 'Desktop (Firefox)',
+      browserType: firefox,
       contextOptions: { viewport: { width: 1440, height: 900 } },
       videoSelector: '[data-aila-state] video',
     });
