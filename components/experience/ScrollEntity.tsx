@@ -1443,11 +1443,7 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
           onClick={openGuide}
         >
           <span className={styles.ailaDustPrompt} aria-hidden="true">
-            <span className={styles.ailaResonanceField}>
-              <span className={styles.ailaResonanceWave}>
-                <i /><i /><i /><i /><i /><i /><i />
-              </span>
-            </span>
+            <span className={styles.ailaResonanceField} />
             <span className={styles.ailaDustCloud}>
               {AILA_DUST_PARTICLES.map((particle, index) => <i key={index} data-tone={particle.tone} style={particle.style} />)}
             </span>

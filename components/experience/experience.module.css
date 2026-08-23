@@ -140,43 +140,6 @@
   transition: opacity .42s ease, filter .52s ease, transform .52s cubic-bezier(.18,.82,.18,1);
 }
 
-.ailaResonanceWave {
-  position: absolute;
-  z-index: 1;
-  left: 50%;
-  top: .22rem;
-  height: 2.85rem;
-  display: flex;
-  align-items: center;
-  gap: .42rem;
-  transform: translateX(-50%);
-}
-
-.ailaResonanceWave i {
-  width: 3px;
-  height: 72%;
-  display: block;
-  border-radius: 999px;
-  background: linear-gradient(to bottom, #fff0b8, #ffc866 32%, #ec873b 68%, #a9343e);
-  box-shadow: 0 0 2px rgba(255,244,194,.96), 0 0 .72rem rgba(238,135,53,.9);
-  transform: scaleY(.16);
-  transform-origin: center;
-}
-
-.ailaResonanceWave i:nth-child(1),
-.ailaResonanceWave i:nth-child(7) { height: 34%; }
-.ailaResonanceWave i:nth-child(2),
-.ailaResonanceWave i:nth-child(6) { height: 58%; }
-.ailaResonanceWave i:nth-child(3),
-.ailaResonanceWave i:nth-child(5) { height: 82%; }
-.ailaResonanceWave i:nth-child(4) { height: 100%; }
-.ailaResonanceWave i:nth-child(2) { animation-delay: -.6s; }
-.ailaResonanceWave i:nth-child(3) { animation-delay: -.4s; }
-.ailaResonanceWave i:nth-child(4) { animation-delay: -.2s; }
-.ailaResonanceWave i:nth-child(5) { animation-delay: -.75s; }
-.ailaResonanceWave i:nth-child(6) { animation-delay: -.48s; }
-.ailaResonanceWave i:nth-child(7) { animation-delay: -.28s; }
-
 .ailaDustCloud { position: absolute; z-index: 1; inset: 0; pointer-events: none; }
 
 .ailaDustCloud::before,
@@ -252,11 +215,6 @@
   animation: ailaResonanceMist 5.1s ease-in-out -.9s infinite reverse;
 }
 
-.scrollEntityGrabSurface:hover .ailaResonanceWave i,
-.scrollEntityGrabSurface:focus-visible .ailaResonanceWave i {
-  animation: ailaResonanceBar .95s ease-in-out infinite alternate;
-}
-
 .scrollEntityGrabSurface:hover .ailaDustCloud i,
 .scrollEntityGrabSurface:focus-visible .ailaDustCloud i {
   animation: ailaDustParticleResonance 3.4s ease-in-out var(--dust-delay) infinite;
@@ -278,11 +236,6 @@
 .scrollEntityGrabSurface[data-guide-open='true'] .ailaDustCloud::before,
 .scrollEntityGrabSurface[data-guide-open='true'] .ailaDustCloud::after {
   animation: ailaResonanceMistOpen .72s ease-out both;
-}
-
-@keyframes ailaResonanceBar {
-  0% { opacity: .76; transform: scaleY(.28); }
-  100% { opacity: 1; transform: scaleY(1); }
 }
 
 @keyframes ailaResonanceOpen {
@@ -320,7 +273,6 @@
   .ailaResonanceField {
     animation: ailaTouchResonance 7.2s ease-in-out 2.4s infinite;
   }
-  .ailaResonanceWave i { animation: ailaResonanceBar 1.05s ease-in-out infinite alternate; }
   .ailaDustCloud i { animation: ailaDustParticleResonance 3.4s ease-in-out calc(2.4s + var(--dust-delay)) infinite; }
 }
 
@@ -6230,7 +6182,6 @@
   .scrollEntityTrail { display: none; }
   .ailaDustCloud { display: none; }
   .ailaResonanceField { animation: none !important; filter: none; opacity: 0; }
-  .ailaResonanceWave i { animation: none !important; transform: scaleY(.7); }
   .scrollEntityGrabSurface:hover .ailaResonanceField,
   .scrollEntityGrabSurface:focus-visible .ailaResonanceField { opacity: .96; transform: translate3d(-50%, -50%, 0) scale(1); }
   .scrollEntityGrabSurface[data-guide-open='true'] .ailaResonanceField { opacity: 0; }
