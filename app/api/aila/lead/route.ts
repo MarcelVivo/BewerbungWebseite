@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import * as Sentry from '@sentry/nextjs';
 import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 import { escapeHtml, isSpamSubmission, tooLong } from '@/app/lib/spamGuard';
@@ -68,6 +69,9 @@ export async function POST(request: NextRequest) {
     const resendKey = process.env.RESEND_API_KEY;
     if (!supabaseUrl || !serviceKey || !resendKey) {
       console.error('[aila-lead] Missing Supabase or Resend configuration');
+      // A lost lead is a lost sale, not just a bug - flagged as its own
+      // level so it stands out from routine caught exceptions in Sentry.
+      Sentry.captureMessage('[aila-lead] Missing Supabase or Resend configuration', 'fatal');
       return NextResponse.json({ error: 'Kontaktübergabe ist nicht vollständig konfiguriert' }, { status: 503 });
     }
 
@@ -242,11 +246,15 @@ export async function POST(request: NextRequest) {
         ? `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#20231f"><h1>Thank you, ${safe.name}.</h1><p>${hasConversationContext ? 'Your details and the context from your conversation with AILA' : 'Your contact details and enquiry'} have reached me. I will review everything personally and contact you within two business days.</p><p>Kind regards<br><strong>Marcel Spahr</strong></p></div>`
         : `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#20231f"><h1>Danke, ${safe.name}.</h1><p>${hasConversationContext ? 'Deine Kontaktdaten und der Kontext aus deinem Gespräch mit AILA' : 'Deine Kontaktdaten und dein Anliegen'} sind bei mir angekommen. Ich prüfe alles persönlich und melde mich innerhalb von zwei Arbeitstagen.</p><p>Freundliche Grüsse<br><strong>Marcel Spahr</strong></p></div>`,
     });
-    if (customerMail.error) console.error('[aila-lead] Customer confirmation:', customerMail.error.message);
+    if (customerMail.error) {
+      console.error('[aila-lead] Customer confirmation:', customerMail.error.message);
+      Sentry.captureMessage('[aila-lead] Customer confirmation email failed', { level: 'warning', extra: { message: customerMail.error.message } });
+    }
 
     return NextResponse.json({ ok: true, requestId: requestRow?.id, customerId, dealId: dealRow?.id });
   } catch (error) {
     console.error('[aila-lead]', error instanceof Error ? error.message : 'Unknown error');
+    Sentry.captureException(error, { level: 'fatal' });
     return NextResponse.json({ error: 'Die Kontaktübergabe konnte nicht abgeschlossen werden.' }, { status: 500 });
   }
 }

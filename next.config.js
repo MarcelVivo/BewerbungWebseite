@@ -1,3 +1,5 @@
+import { withSentryConfig } from '@sentry/nextjs';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // BrainBackground builds its Three.js scene imperatively inside a single
@@ -39,6 +41,17 @@ const nextConfig = {
     // connect-src or every dashboard data fetch gets silently blocked.
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
     const supabaseWsUrl = supabaseUrl.replace(/^https:/, 'wss:');
+    // Sentry's error reports go straight from the browser to its own ingest
+    // host (not through /api/*), so that origin needs its own connect-src
+    // entry - derived from the DSN itself rather than hardcoded, since the
+    // exact ingest subdomain (org id + region) is only known once the DSN is.
+    let sentryIngestUrl = '';
+    try {
+      const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
+      if (dsn) sentryIngestUrl = `https://${new URL(dsn).host}`;
+    } catch {
+      // Malformed/missing DSN - Sentry reporting just won't work, not a reason to break the build.
+    }
     const csp = [
       "default-src 'self'",
       `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''}`,
@@ -48,7 +61,7 @@ const nextConfig = {
       "font-src 'self' data:",
       "worker-src 'self' blob:",
       "manifest-src 'self'",
-      `connect-src 'self'${supabaseUrl ? ` ${supabaseUrl} ${supabaseWsUrl}` : ''}`,
+      `connect-src 'self'${supabaseUrl ? ` ${supabaseUrl} ${supabaseWsUrl}` : ''}${sentryIngestUrl ? ` ${sentryIngestUrl}` : ''}`,
       "frame-ancestors 'none'",
       "object-src 'none'",
       "base-uri 'self'",
@@ -150,4 +163,18 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  // org/project slugs and an auth token are only needed for source-map
+  // upload at build time - without them the plugin just skips that step
+  // silently, error *capture* at runtime only needs the DSN (set on the
+  // client/server config files, not here).
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  silent: !process.env.CI,
+  widenClientFileUpload: true,
+  webpack: {
+    treeshake: { removeDebugLogging: true },
+    automaticVercelMonitors: false,
+  },
+});

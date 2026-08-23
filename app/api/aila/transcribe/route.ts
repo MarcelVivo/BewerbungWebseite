@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import * as Sentry from '@sentry/nextjs';
 import { validatePublicPost } from '@/app/lib/security';
 
 export const runtime = 'nodejs';
@@ -45,11 +46,13 @@ export async function POST(request: NextRequest) {
     const payload = await response.json();
     if (!response.ok || typeof payload?.text !== 'string') {
       console.error('AILA transcription error', response.status, payload?.error?.type);
+      Sentry.captureMessage('AILA transcription error', { level: 'error', extra: { status: response.status } });
       return NextResponse.json({ error: lang === 'de' ? 'Die Aufnahme konnte nicht verstanden werden.' : 'The recording could not be understood.' }, { status: 502 });
     }
     return NextResponse.json({ text: payload.text.trim() });
   } catch (error) {
     console.error('AILA transcription failed', error instanceof Error ? error.message : 'unknown error');
+    Sentry.captureException(error);
     return NextResponse.json({ error: 'Spracherkennung nicht verfuegbar.' }, { status: 500 });
   }
 }

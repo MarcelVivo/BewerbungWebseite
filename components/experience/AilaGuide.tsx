@@ -1,6 +1,7 @@
 'use client';
 
 import { ArrowRight, AudioLines, Check, LoaderCircle, Send, Volume2, VolumeX, X } from 'lucide-react';
+import * as Sentry from '@sentry/nextjs';
 import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from 'react';
 import { buildAilaLeadObject, createInitialAilaSalesContext, sanitizeAilaSalesContext } from '@/app/lib/aila/engine';
 import { trackWebsiteEvent } from '@/app/lib/analytics';
@@ -63,6 +64,8 @@ const COMMON = {
     micSecure: 'Die Spracheingabe funktioniert nur über eine sichere HTTPS-Verbindung.',
     micUnsupported: 'Dieser Browser unterstützt die Spracheingabe leider nicht. Du kannst deine Frage weiterhin eintippen.',
     micError: 'Das Live-Gespräch konnte nicht gestartet werden. Prüfe den Mikrofonzugriff und versuche es erneut.',
+    micTimeout: 'Die Verbindung hat zu lange gedauert. Versuche es bitte noch einmal.',
+    liveDropped: 'Die Verbindung wurde unterbrochen. Du kannst das Gespräch jederzeit neu starten.',
     offline: 'Du bist gerade offline. Ich behalte unseren bisherigen Gesprächskontext in dieser Browser-Sitzung und wir können weitermachen, sobald die Verbindung wieder da ist.',
     next: 'Nächstes Kapitel', contact: 'Mit Marcel sprechen', close: 'AILA schliessen',
     handoverKicker: 'PERSÖNLICH WEITER', handoverTitle: 'Kontakt mit Marcel aufnehmen',
@@ -81,6 +84,8 @@ const COMMON = {
     micSecure: 'Voice input requires a secure HTTPS connection.',
     micUnsupported: 'This browser does not support voice input. You can still type your question.',
     micError: 'The live conversation could not be started. Check microphone access and try again.',
+    micTimeout: 'The connection took too long. Please try again.',
+    liveDropped: 'The connection was interrupted. You can restart the conversation anytime.',
     offline: 'You are currently offline. I will keep our existing context in this browser session and we can continue as soon as the connection returns.',
     next: 'Next chapter', contact: 'Talk to Marcel', close: 'Close AILA',
     handoverKicker: 'CONTINUE PERSONALLY', handoverTitle: 'Contact Marcel',
@@ -286,6 +291,21 @@ export default function AilaGuide({
     }
     wasOpenRef.current = open;
   }, [open, sectionId]);
+
+  // WebRTC/audio callbacks (RTCPeerConnection, MediaStream, HTMLAudioElement
+  // event handlers) run outside React's render tree, so a rejected promise
+  // in one of them never reaches an ErrorBoundary or app/global-error.tsx -
+  // this is the only safety net for that class of failure.
+  useEffect(() => {
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      Sentry.withScope((scope) => {
+        scope.setTag('feature', 'aila-live');
+        Sentry.captureException(event.reason);
+      });
+    };
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+    return () => window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+  }, []);
 
   useEffect(() => {
     if (!open || !sessionReady) return;
@@ -630,6 +650,7 @@ export default function AilaGuide({
     }
     if (type === 'error') {
       console.error('AILA realtime event error', payload.error?.message || 'unknown error');
+      setMessages((current) => [...current, { id: messageId(), role: 'assistant', content: common.micError }]);
       setLiveStatus('error');
       setBusy(false);
       onStateChange('idle');
@@ -709,26 +730,37 @@ export default function AilaGuide({
       };
       peerConnection.onconnectionstatechange = () => {
         if (peerConnection.connectionState === 'failed' || peerConnection.connectionState === 'disconnected') {
+          setMessages((current) => [...current, { id: messageId(), role: 'assistant', content: common.liveDropped }]);
           stopLiveConversation();
         }
       };
 
+      // The server's own upstream fetch times out after 25s (see
+      // AbortSignal.timeout in app/api/aila/realtime/route.ts) - without a
+      // shorter client-side bound, a hung network leaves the UI stuck in
+      // "connecting" forever, since nothing here would ever reject on its own.
+      const connectTimeout = new AbortController();
+      const timeoutId = window.setTimeout(() => connectTimeout.abort(), 14000);
       const offer = await peerConnection.createOffer();
       await peerConnection.setLocalDescription(offer);
       const response = await fetch(`/api/aila/realtime?lang=${lang}&sectionId=${encodeURIComponent(sectionId)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/sdp' },
         body: offer.sdp,
+        signal: connectTimeout.signal,
       });
       if (!response.ok) throw new Error('realtime session failed');
       await peerConnection.setRemoteDescription({ type: 'answer', sdp: await response.text() });
+      window.clearTimeout(timeoutId);
     } catch (error) {
       const name = error instanceof DOMException ? error.name : '';
-      const content = name === 'NotAllowedError' || name === 'SecurityError'
-        ? common.micPermission
-        : name === 'NotFoundError' || name === 'NotReadableError' || name === 'OverconstrainedError'
-          ? common.micUnavailable
-          : common.micError;
+      const content = name === 'AbortError'
+        ? common.micTimeout
+        : name === 'NotAllowedError' || name === 'SecurityError'
+          ? common.micPermission
+          : name === 'NotFoundError' || name === 'NotReadableError' || name === 'OverconstrainedError'
+            ? common.micUnavailable
+            : common.micError;
       stopLiveConversation(false);
       setLiveStatus('error');
       setMessages((current) => [...current, { id: messageId(), role: 'assistant', content }]);

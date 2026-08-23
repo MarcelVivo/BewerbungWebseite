@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import * as Sentry from '@sentry/nextjs';
 import type { AilaLanguage } from '@/app/lib/ailaKnowledge';
 import {
   buildFallbackAilaResponse,
@@ -93,6 +94,7 @@ export async function POST(request: NextRequest) {
     const payload = await openAiResponse.json();
     if (!openAiResponse.ok) {
       console.error('AILA response error', openAiResponse.status, payload?.error?.type);
+      Sentry.captureMessage('AILA response error', { level: 'error', extra: { status: openAiResponse.status, type: payload?.error?.type } });
       const fallback = buildFallbackAilaResponse(currentContext, lang);
       return NextResponse.json({
         answer: fallback.message,
@@ -172,6 +174,7 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error('AILA chat failed', error instanceof Error ? error.message : 'unknown error');
+    Sentry.captureException(error);
     return NextResponse.json({ error: 'AILA ist voruebergehend nicht erreichbar.' }, { status: 500 });
   }
 }

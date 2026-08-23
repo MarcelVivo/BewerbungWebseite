@@ -108,14 +108,19 @@ const AILA_SWITCH_STRENGTH = 0.34;
 const AILA_DUST_PARTICLES = Array.from({ length: 132 }, (_, index) => {
   const angle = index * 2.3999632297;
   const spread = 14 + (index % 11) * 3.2;
+  // Rounded rather than raw Math.cos/sin output - the SSR pass (Node's V8)
+  // and the client hydration pass (browser's V8) can disagree in the very
+  // last bit of a double, which React reports as a hydration mismatch on
+  // every load even though it's visually meaningless at this precision.
+  const round = (value: number) => Math.round(value * 1000) / 1000;
   return {
     style: {
       '--dust-x': `${3 + ((index * 37) % 95)}%`,
       '--dust-y': `${8 + ((index * 53) % 84)}%`,
-      '--dust-from-x': `${Math.cos(angle) * spread}px`,
-      '--dust-from-y': `${Math.sin(angle) * spread * .46}px`,
-      '--dust-away-x': `${Math.cos(angle + .8) * (spread + 24)}px`,
-      '--dust-away-y': `${Math.sin(angle + .8) * (spread + 15)}px`,
+      '--dust-from-x': `${round(Math.cos(angle) * spread)}px`,
+      '--dust-from-y': `${round(Math.sin(angle) * spread * .46)}px`,
+      '--dust-away-x': `${round(Math.cos(angle + .8) * (spread + 24))}px`,
+      '--dust-away-y': `${round(Math.sin(angle + .8) * (spread + 15))}px`,
       '--dust-delay': `${(index % 23) * .035}s`,
       '--dust-size': `${index % 17 === 0 ? 1.15 : index % 5 === 0 ? .78 : .48}px`,
       '--dust-alpha': `${.38 + (index % 7) * .075}`,
@@ -280,7 +285,16 @@ export default function ScrollEntity({ rootRef, lang }: ScrollEntityProps) {
     }
 
     const context = canvas.getContext('2d');
-    if (!context) return;
+    if (!context) {
+      // Without this, a failed 2D context (used only for the cursor trail
+      // below, not the WebGL avatar itself) would bail out of the whole
+      // setup effect before the WebGL init and fallback-image logic further
+      // down ever run, leaving a blank area instead of the static fallback
+      // the WebGL-failure path already falls back to correctly.
+      coreCanvas.style.opacity = '0';
+      fallback.style.opacity = '1';
+      return;
+    }
 
     const gl = coreCanvas.getContext('webgl', {
       alpha: true,

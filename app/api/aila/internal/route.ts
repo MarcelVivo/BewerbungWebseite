@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import * as Sentry from '@sentry/nextjs';
 import { createClient } from '@/lib/supabase/server';
 import { runAilaToolLoop } from '@/app/lib/aila/internalEngine';
 
@@ -59,6 +60,7 @@ export async function POST(request: Request) {
     return NextResponse.json(result);
   } catch (err) {
     console.error('[aila:internal] failed', err instanceof Error ? err.message : 'unknown error');
+    Sentry.captureException(err);
     return NextResponse.json({ error: 'AILA ist vorübergehend nicht erreichbar.' }, { status: 500 });
   }
 }

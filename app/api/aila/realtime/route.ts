@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { NextRequest, NextResponse } from 'next/server';
+import * as Sentry from '@sentry/nextjs';
 import type { AilaLanguage } from '@/app/lib/ailaKnowledge';
 import { buildAilaRealtimeInstructions } from '@/app/lib/aila/prompt';
 import { validatePublicPost } from '@/app/lib/security';
@@ -77,6 +78,7 @@ export async function POST(request: NextRequest) {
     const answerSdp = await response.text();
     if (!response.ok) {
       console.error('AILA realtime session error', response.status, answerSdp.slice(0, 240));
+      Sentry.captureMessage('AILA realtime session error', { level: 'error', extra: { status: response.status } });
       return NextResponse.json({ error: 'Die Live-Verbindung konnte nicht aufgebaut werden.' }, { status: response.status });
     }
     return new NextResponse(answerSdp, {
@@ -85,6 +87,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('AILA realtime failed', error instanceof Error ? error.message : 'unknown error');
+    Sentry.captureException(error);
     return NextResponse.json({ error: 'AILA Live ist vorübergehend nicht erreichbar.' }, { status: 502 });
   }
 }

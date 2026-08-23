@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import * as Sentry from '@sentry/nextjs';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { access, chmod, constants as fsConstants, mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
@@ -103,6 +104,7 @@ async function applyVoiceFilter(buffer: ArrayBuffer): Promise<ArrayBuffer> {
     return processed.buffer.slice(processed.byteOffset, processed.byteOffset + processed.byteLength);
   } catch (error) {
     console.error('AILA voice filter failed, using unprocessed audio', error instanceof Error ? error.message : 'unknown error');
+    Sentry.captureException(error, { level: 'warning' });
     return buffer;
   } finally {
     await rm(dir, { recursive: true, force: true }).catch(() => undefined);
@@ -146,6 +148,7 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       console.error('AILA speech error', response.status);
+      Sentry.captureMessage('AILA speech error', { level: 'error', extra: { status: response.status } });
       return NextResponse.json({ error: 'Sprachausgabe nicht verfuegbar.' }, { status: 502 });
     }
 
@@ -155,6 +158,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('AILA speech failed', error instanceof Error ? error.message : 'unknown error');
+    Sentry.captureException(error);
     return NextResponse.json({ error: 'Sprachausgabe nicht verfuegbar.' }, { status: 500 });
   }
 }
