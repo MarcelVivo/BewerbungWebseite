@@ -347,6 +347,7 @@ const startGreetingSequence = (
     window.removeEventListener('aila:guide-open-change', handleGuideOpen);
     window.removeEventListener('click', handleGesture);
     window.removeEventListener('touchstart', handleGesture);
+    window.removeEventListener('touchend', handleGesture);
     window.removeEventListener('keydown', handleGesture);
     audio.pause();
     audio.removeAttribute('src');
@@ -429,6 +430,7 @@ const startGreetingSequence = (
       if (mode !== 'silent') { audio.pause(); return; }
       window.removeEventListener('click', handleGesture);
       window.removeEventListener('touchstart', handleGesture);
+      window.removeEventListener('touchend', handleGesture);
       window.removeEventListener('keydown', handleGesture);
       mode = 'audio';
       setAudioUnlocked(true);
@@ -464,6 +466,7 @@ const startGreetingSequence = (
   const handleGesture = () => {
     window.removeEventListener('click', handleGesture);
     window.removeEventListener('touchstart', handleGesture);
+    window.removeEventListener('touchend', handleGesture);
     window.removeEventListener('keydown', handleGesture);
     attemptPlay();
   };
@@ -472,6 +475,14 @@ const startGreetingSequence = (
   window.addEventListener('aila:guide-open-change', handleGuideOpen);
   window.addEventListener('click', handleGesture);
   window.addEventListener('touchstart', handleGesture);
+  // iOS Safari has, across versions, been inconsistent about which touch
+  // event actually carries "user activation" for HTMLMediaElement.play() -
+  // touchstart alone isn't reliably enough there (this is why a real iPhone
+  // tap/scroll still left AILA silent even though touchstart is registered
+  // above and works fine on every other engine tested). touchend is the
+  // other commonly-required one; keeping both covers the actual range of
+  // iOS Safari behavior instead of guessing which single event is "right".
+  window.addEventListener('touchend', handleGesture);
   window.addEventListener('keydown', handleGesture);
 
   setActiveWords(words);
